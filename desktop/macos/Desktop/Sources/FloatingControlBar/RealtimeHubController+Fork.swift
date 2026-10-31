@@ -97,6 +97,7 @@ extension RealtimeHubController {
       return .succeeded("Não consegui abrir o Claude Code: \(error.localizedDescription)")
     }
     log("RealtimeHub: pedir_ao_claude iniciado (pid \(processo.processIdentifier))")
-    return .succeeded("Pedido enviado ao Claude Code. A resposta fica em ~/.omi/pedidos-claude/\(arquivo.lastPathComponent).")
+    return .succeeded(
+      "Pedido enviado ao Claude Code. A resposta fica em ~/.omi/pedidos-claude/\(arquivo.lastPathComponent).")
   }
 }
