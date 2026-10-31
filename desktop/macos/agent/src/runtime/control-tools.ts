@@ -348,7 +348,8 @@ const spawnAgentPublicShape = {
   // not fail before the child-admission boundary.
   brief: z.string().min(1).optional(),
   requestedAgentCount: z.coerce.number().int().min(1).max(8).default(1),
-  provider: z.enum(["openclaw", "hermes"]).optional(),
+  // Fork: "claude" é o Claude Code do Mac (adapter acp, com a config de ~/.claude).
+  provider: z.enum(["openclaw", "hermes", "claude"]).transform((p) => (p === "claude" ? "acp" : p)).optional(),
   parentRunId: z.string().min(1).optional(),
   visible: z.boolean().default(true),
   title: z.string().min(1).optional(),
@@ -706,7 +707,7 @@ function assertAdapterAllowedForControlRun(context: AgentControlToolContext, ada
 function assertAdapterAllowedForTopLevelLocalProviderSpawn(
   context: AgentControlToolContext,
   adapterId: string,
-  directedProvider?: "hermes" | "openclaw",
+  directedProvider?: "hermes" | "openclaw" | "acp",
 ): void {
   const hasDirectedLocalProvider = directedProvider === adapterId;
   if (!context.trustedUserControl && !hasDirectedLocalProvider) {
@@ -1251,7 +1252,7 @@ export async function handleAgentControlToolCall(
         );
         const adapterId =
           (isAuthorizedManagedPiAlias ? "pi-mono" : parsed.adapterId) ??
-          (parsed.provider === "openclaw" ? "openclaw" : parsed.provider === "hermes" ? "hermes" : undefined) ??
+          parsed.provider ??
           inheritedAdapterId;
         /**
          * A kernel-authorized primary model tool carries its producing run so

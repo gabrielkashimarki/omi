@@ -732,16 +732,6 @@ enum GeneratedToolCapabilities {
     ]
     ),
     Capability(
-      toolName: "pedir_ao_claude",
-      title: "Pedir ao Claude",
-      latency: .fastLocal,
-      surfaces: Set([.realtimeHub]),
-      summary: "Hand a request to the local Claude Code CLI, which runs it in the background.",
-      bullets: [
-      "Use only when the user explicitly asks to send, pass or delegate something to Claude or Claude Code."
-    ]
-    ),
-    Capability(
       toolName: "web_search",
       title: "Web Search",
       latency: .asyncBackground,
@@ -905,6 +895,6 @@ enum GeneratedToolCapabilities {
   }
 
   static var realtimeToolNames: [String] {
-    ["cancel_agent_run","check_permission_status","create_action_item","create_calendar_event","create_context_reminder","get_action_items","get_agent_run","get_conversations","get_daily_recap","get_memories","get_tasks","inspect_agent_artifacts","list_agent_sessions","pedir_ao_claude","perguntar_cerebro","point_click","read_conversation_evidence","read_tool_output","report_screen_observation","request_permission","screenshot","search_conversation_evidence","search_conversations","search_memories","search_screen_history","search_tool_output","set_desktop_attention_override","spawn_agent","think_deeper","update_action_item","update_agent_artifact_lifecycle","web_search"]
+    ["cancel_agent_run","check_permission_status","create_action_item","create_calendar_event","create_context_reminder","get_action_items","get_agent_run","get_conversations","get_daily_recap","get_memories","get_tasks","inspect_agent_artifacts","list_agent_sessions","perguntar_cerebro","point_click","read_conversation_evidence","read_tool_output","report_screen_observation","request_permission","screenshot","search_conversation_evidence","search_conversations","search_memories","search_screen_history","search_tool_output","set_desktop_attention_override","spawn_agent","think_deeper","update_action_item","update_agent_artifact_lifecycle","web_search"]
   }
 }

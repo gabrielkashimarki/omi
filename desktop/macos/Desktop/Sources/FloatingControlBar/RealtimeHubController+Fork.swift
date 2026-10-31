@@ -2,7 +2,6 @@ import Foundation
 
 // Fork: ferramentas de voz que o upstream não tem.
 // perguntar_cerebro chama o MCP "brain" do ~/.omi/mcp.json (o mesmo que o chat digitado usa).
-// pedir_ao_claude abre `claude -p` em segundo plano e grava a resposta em ~/.omi/pedidos-claude.
 extension RealtimeHubController {
   static let cerebroServidor = "brain"
   static let cerebroFerramenta = "buscar_contexto"
@@ -63,41 +62,5 @@ extension RealtimeHubController {
       let conteudo = (json["result"] as? [String: Any])?["content"] as? [[String: Any]]
     else { return "" }
     return conteudo.compactMap { $0["text"] as? String }.joined(separator: "\n")
-  }
-
-  func pedirAoClaude(_ pedido: String) -> AuthorizedRealtimeToolExecutionResult {
-    let fm = FileManager.default
-    let home = fm.homeDirectoryForCurrentUser
-    let candidatos = ["/opt/homebrew/bin/claude", "/usr/local/bin/claude", home.path + "/.local/bin/claude"]
-    guard let claude = candidatos.first(where: { fm.isExecutableFile(atPath: $0) }) else {
-      return .succeeded("Não achei o Claude Code instalado neste Mac.")
-    }
-    let pasta = home.appendingPathComponent(".omi/pedidos-claude")
-    try? fm.createDirectory(at: pasta, withIntermediateDirectories: true)
-    let carimbo = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
-    let arquivo = pasta.appendingPathComponent("\(carimbo).md")
-    fm.createFile(atPath: arquivo.path, contents: Data("# Pedido\n\n\(pedido)\n\n# Resposta\n\n".utf8))
-    guard let saida = try? FileHandle(forWritingTo: arquivo) else {
-      return .succeeded("Não consegui criar o arquivo do pedido.")
-    }
-    saida.seekToEndOfFile()
-    let processo = Process()
-    processo.executableURL = URL(fileURLWithPath: claude)
-    processo.arguments = ["-p", pedido]
-    processo.currentDirectoryURL = home
-    processo.standardOutput = saida
-    processo.standardError = saida
-    processo.terminationHandler = { p in
-      try? saida.close()
-      log("RealtimeHub: pedir_ao_claude terminou com código \(p.terminationStatus)")
-    }
-    do {
-      try processo.run()
-    } catch {
-      return .succeeded("Não consegui abrir o Claude Code: \(error.localizedDescription)")
-    }
-    log("RealtimeHub: pedir_ao_claude iniciado (pid \(processo.processIdentifier))")
-    return .succeeded(
-      "Pedido enviado ao Claude Code. A resposta fica em ~/.omi/pedidos-claude/\(arquivo.lastPathComponent).")
   }
 }

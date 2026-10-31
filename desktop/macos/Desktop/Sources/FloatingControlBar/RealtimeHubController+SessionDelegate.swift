@@ -667,9 +667,6 @@ extension RealtimeHubController {
         pergunta: (command.input["pergunta"] as? String) ?? turnTranscript,
         cliente: command.input["cliente"] as? String)
 
-    case .pedirAoClaude:
-      return pedirAoClaude((command.input["pedido"] as? String) ?? turnTranscript)
-
     default:
       return .failed(Self.authorizedRealtimeToolError(code: "wrong_realtime_executor_tool"))
     }

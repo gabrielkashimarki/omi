@@ -1919,6 +1919,13 @@ final class AgentPillsManager: ObservableObject {
     pill.suggestedFollowUps = AgentPillsManager.deriveFollowUps(for: pill)
     pill.markContentChanged()
     ensureTerminalJournalMaterialization(for: pill)
+    // Fork: pílula pedida pela voz fala o resultado ao terminar (o upstream só grava e espera o usuário perguntar).
+    if !trimmed.isEmpty,
+      pill.producingJournalSurface?.surfaceKind == AgentSurfaceReference.realtimeVoice().surfaceKind
+    {
+      // ponytail: corte fixo de fala; o texto inteiro fica na pílula.
+      FloatingBarVoicePlaybackService.shared.speakOneShot(String(trimmed.prefix(600)))
+    }
   }
 
   private func fail(pill: AgentPill, errorText: String) {

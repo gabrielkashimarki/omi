@@ -165,7 +165,6 @@ final class RealtimeHubTestHarness: NSObject, RealtimeHubSessionDelegate {
     case .reportScreenObservation: stub = "Screen observation accepted."
     case .pointClick: stub = "Clicked."
     case .perguntarCerebro: stub = "2026-10-22: primeiro lote do réveillon a R$ 1.000."
-    case .pedirAoClaude: stub = "Pedido enviado ao Claude Code."
     case .none: stub = "ok"
     }
     session?.sendToolResult(callId: callId, name: name, output: stub)

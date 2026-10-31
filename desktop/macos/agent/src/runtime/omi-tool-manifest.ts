@@ -6,6 +6,13 @@ import {
   type AgentControlManifestTool,
 } from "./control-tool-manifest.js";
 
+// Fork: o provider "claude" roda o Claude Code do Mac (adapter acp) com a config inteira de ~/.claude
+// (Cérebro, Composio, skills, subagentes, comando-central). É o "Jarvis" de fundo da voz.
+export const CLAUDE_PROVIDER_DESCRIPTION =
+  "Use claude (the user's own Claude Code with the agency Brain, Gmail/Calendar/Drive/Notion, ads, reservations, skills, subagents and Mac control) for any work about the user's business, clients, agenda, email, decisions or tasks to execute; hermes/openclaw only when the user names them; omit only for simple app/browser chores.";
+export const FORK_CLAUDE_SPAWN_HINT =
+  "For anything about the user's companies, clients, agenda, email, ads, reservations, decisions, analysis or a task to execute, call this with provider=claude and a complete self-contained objective in Portuguese (who, what, which client, what output the user wants). Tell the user in one short sentence that you are on it; the answer is spoken when the pill finishes.";
+
 export type OmiToolAdapterId = "pi-mono" | "omi-tools-stdio" | "local-agent-api";
 export type OmiToolCondition =
   | "always"
@@ -872,19 +879,6 @@ const swiftToolSurfacePatches: Record<string, OmiToolSurfacePatch> = {
     voice: {
       realtimeDescription:
         "Search the user's agency Brain (Cérebro) and get back source excerpts. ALWAYS call this first for any question about one of the user's clients or companies (any company or client name the user mentions): decisions, prices, status, pending items, what was agreed. Pass the full question in Portuguese with the client name. It takes several seconds; call immediately without a wait-line. Answer only from the returned excerpts, citing the date they carry; if nothing relevant comes back, say you did not find it.",
-    },
-  },
-  pedir_ao_claude: {
-    surfaces: ["realtime_voice"],
-    capabilityDoc: doc(
-      "Pedir ao Claude",
-      "Hand a request to the local Claude Code CLI, which runs it in the background.",
-      ["Use only when the user explicitly asks to send, pass or delegate something to Claude or Claude Code."],
-    ),
-    executor: { kind: "swiftTool", executorName: "realtimeHub" },
-    voice: {
-      realtimeDescription:
-        "Start a background Claude Code session on this Mac with the user's request. Call ONLY when the user explicitly asks to send, pass, or delegate something to Claude or Claude Code ('pede pro Claude', 'manda pro Claude Code'). Write a complete, self-contained request in Portuguese. It returns at once; tell the user it was sent and that the answer will be saved in ~/.omi/pedidos-claude.",
     },
   },
   web_search: {
@@ -1953,25 +1947,6 @@ const swiftToolManifestDrafts: OmiToolManifestEntryDraft[] = [
     adapters: {},
   },
   {
-    name: "pedir_ao_claude",
-    label: "Pedir ao Claude",
-    description: "Abre uma sessão do Claude Code local (claude -p) em segundo plano com o pedido do usuário.",
-    promptSnippet: "pedir_ao_claude - Repassa um pedido ao Claude Code local",
-    latency: "fast local",
-    inputSchema: schema(
-      {
-        pedido: { type: "string", description: "Pedido completo e autossuficiente para o Claude Code." },
-      },
-      ["pedido"],
-    ),
-    annotations: localWrite,
-    timeoutClass: "normal",
-    executor: { kind: "swiftTool", executorName: "realtimeHub" },
-    intendedForAgents: true,
-    runtimePreconditions: ["Realtime voice only; requires a logged-in claude CLI."],
-    adapters: {},
-  },
-  {
     name: "web_search",
     label: "Web Search",
     description: "Search the live public web through the typed-chat retrieval lane.",
@@ -2261,11 +2236,12 @@ export const swiftToolManifest: OmiToolManifestEntry[] = finalizeManifestEntries
 const controlVoicePatches: Partial<Record<AgentControlManifestTool["name"], OmiToolVoiceConfig>> = {
   spawn_agent: {
     realtimeDescription:
-      "Start canonical Omi background work. Visible runs appear as floating-bar pills. Use for multi-step work in the user's apps/browser/files that you cannot do directly.",
+      "Start canonical Omi background work. Visible runs appear as floating-bar pills. Use for multi-step work in the user's apps/browser/files that you cannot do directly. " +
+      FORK_CLAUDE_SPAWN_HINT,
     schemaOverride: schema(
       {
         objective: { type: "string", description: "Self-contained background-agent objective." },
-        provider: { type: "string", enum: ["openclaw", "hermes"], description: "Optional local provider override only when the current user explicitly names it; omit for a regular Omi agent." },
+        provider: { type: "string", enum: ["openclaw", "hermes", "claude"], description: CLAUDE_PROVIDER_DESCRIPTION },
         parent_run_id: { type: "string", description: "Optional parent run to link via delegation." },
         visible: { type: "boolean", description: "Whether to project into floating-bar pill UI. Default true." },
         title: { type: "string", description: "Optional visible session title." },

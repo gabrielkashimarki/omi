@@ -29,7 +29,6 @@ enum HubTool: String {
   case createCalendarEvent = "create_calendar_event"
   case thinkDeeper = "think_deeper"
   case perguntarCerebro = "perguntar_cerebro"
-  case pedirAoClaude = "pedir_ao_claude"
   case webSearch = "web_search"
   case screenshot = "screenshot"
   case reportScreenObservation = "report_screen_observation"
@@ -300,7 +299,7 @@ enum GeneratedRealtimeTools {
   {
     "type": "function",
     "name": "spawn_agent",
-    "description": "Start canonical Omi background work. Visible runs appear as floating-bar pills. Use for multi-step work in the user's apps/browser/files that you cannot do directly.",
+    "description": "Start canonical Omi background work. Visible runs appear as floating-bar pills. Use for multi-step work in the user's apps/browser/files that you cannot do directly. For anything about the user's companies, clients, agenda, email, ads, reservations, decisions, analysis or a task to execute, call this with provider=claude and a complete self-contained objective in Portuguese (who, what, which client, what output the user wants). Tell the user in one short sentence that you are on it; the answer is spoken when the pill finishes.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -312,9 +311,10 @@ enum GeneratedRealtimeTools {
           "type": "string",
           "enum": [
             "openclaw",
-            "hermes"
+            "hermes",
+            "claude"
           ],
-          "description": "Optional local provider override only when the current user explicitly names it; omit for a regular Omi agent."
+          "description": "Use claude (the user's own Claude Code with the agency Brain, Gmail/Calendar/Drive/Notion, ads, reservations, skills, subagents and Mac control) for any work about the user's business, clients, agenda, email, decisions or tasks to execute; hermes/openclaw only when the user names them; omit only for simple app/browser chores."
         },
         "parent_run_id": {
           "type": "string",
@@ -797,23 +797,6 @@ enum GeneratedRealtimeTools {
       },
       "required": [
         "pergunta"
-      ]
-    }
-  },
-  {
-    "type": "function",
-    "name": "pedir_ao_claude",
-    "description": "Start a background Claude Code session on this Mac with the user's request. Call ONLY when the user explicitly asks to send, pass, or delegate something to Claude or Claude Code ('pede pro Claude', 'manda pro Claude Code'). Write a complete, self-contained request in Portuguese. It returns at once; tell the user it was sent and that the answer will be saved in ~/.omi/pedidos-claude.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "pedido": {
-          "type": "string",
-          "description": "Pedido completo e autossuficiente para o Claude Code."
-        }
-      },
-      "required": [
-        "pedido"
       ]
     }
   },

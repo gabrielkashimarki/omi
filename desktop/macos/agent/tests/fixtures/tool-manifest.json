@@ -2782,10 +2782,11 @@
         },
         "provider": {
           "type": "string",
-          "description": "Optional local provider override only when the current user explicitly names it; omit for a regular Omi agent.",
+          "description": "Local provider: claude = the user's Claude Code (acp) with all their tools; hermes/openclaw only when named.",
           "enum": [
             "openclaw",
-            "hermes"
+            "hermes",
+            "claude"
           ]
         },
         "parentRunId": {
@@ -2853,10 +2854,11 @@
         },
         "provider": {
           "type": "string",
-          "description": "Optional local provider override only when the current user explicitly names it; omit for a regular Omi agent.",
+          "description": "Local provider: claude = the user's Claude Code (acp) with all their tools; hermes/openclaw only when named.",
           "enum": [
             "openclaw",
-            "hermes"
+            "hermes",
+            "claude"
           ]
         },
         "parentRunId": {
@@ -2932,7 +2934,7 @@
       ]
     },
     "voice": {
-      "realtimeDescription": "Start canonical Omi background work. Visible runs appear as floating-bar pills. Use for multi-step work in the user's apps/browser/files that you cannot do directly.",
+      "realtimeDescription": "Start canonical Omi background work. Visible runs appear as floating-bar pills. Use for multi-step work in the user's apps/browser/files that you cannot do directly. For anything about the user's companies, clients, agenda, email, ads, reservations, decisions, analysis or a task to execute, call this with provider=claude and a complete self-contained objective in Portuguese (who, what, which client, what output the user wants). Tell the user in one short sentence that you are on it; the answer is spoken when the pill finishes.",
       "schemaOverride": {
         "type": "object",
         "properties": {
@@ -2944,9 +2946,10 @@
             "type": "string",
             "enum": [
               "openclaw",
-              "hermes"
+              "hermes",
+              "claude"
             ],
-            "description": "Optional local provider override only when the current user explicitly names it; omit for a regular Omi agent."
+            "description": "Use claude (the user's own Claude Code with the agency Brain, Gmail/Calendar/Drive/Notion, ads, reservations, skills, subagents and Mac control) for any work about the user's business, clients, agenda, email, decisions or tasks to execute; hermes/openclaw only when the user names them; omit only for simple app/browser chores."
           },
           "parent_run_id": {
             "type": "string",
@@ -5430,54 +5433,6 @@
     },
     "voice": {
       "realtimeDescription": "Search the user's agency Brain (Cérebro) and get back source excerpts. ALWAYS call this first for any question about one of the user's clients or companies (any company or client name the user mentions): decisions, prices, status, pending items, what was agreed. Pass the full question in Portuguese with the client name. It takes several seconds; call immediately without a wait-line. Answer only from the returned excerpts, citing the date they carry; if nothing relevant comes back, say you did not find it."
-    }
-  },
-  {
-    "name": "pedir_ao_claude",
-    "label": "Pedir ao Claude",
-    "description": "Abre uma sessão do Claude Code local (claude -p) em segundo plano com o pedido do usuário.",
-    "promptSnippet": "pedir_ao_claude - Repassa um pedido ao Claude Code local",
-    "latency": "fast local",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "pedido": {
-          "type": "string",
-          "description": "Pedido completo e autossuficiente para o Claude Code."
-        }
-      },
-      "required": [
-        "pedido"
-      ],
-      "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "openWorldHint": false
-    },
-    "timeoutClass": "normal",
-    "executor": {
-      "kind": "swiftTool",
-      "executorName": "realtimeHub"
-    },
-    "intendedForAgents": true,
-    "runtimePreconditions": [
-      "Realtime voice only; requires a logged-in claude CLI."
-    ],
-    "adapters": {},
-    "surfaces": [
-      "realtime_voice"
-    ],
-    "capabilityDoc": {
-      "title": "Pedir ao Claude",
-      "summary": "Hand a request to the local Claude Code CLI, which runs it in the background.",
-      "bullets": [
-        "Use only when the user explicitly asks to send, pass or delegate something to Claude or Claude Code."
-      ]
-    },
-    "voice": {
-      "realtimeDescription": "Start a background Claude Code session on this Mac with the user's request. Call ONLY when the user explicitly asks to send, pass, or delegate something to Claude or Claude Code ('pede pro Claude', 'manda pro Claude Code'). Write a complete, self-contained request in Portuguese. It returns at once; tell the user it was sent and that the answer will be saved in ~/.omi/pedidos-claude."
     }
   },
   {

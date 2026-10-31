@@ -269,7 +269,10 @@ enum RealtimeHubTools {
         "type": "string",
         "enum": availableDirectedProviders,
         "description":
-          "Optional local provider override only when the current user explicitly names it; omit for a regular Omi agent.",
+          availableDirectedProviders.contains("claude")
+          ? "Use claude (the user's own Claude Code with the agency Brain, Gmail/Calendar/Drive/Notion, ads, reservations, skills, subagents and Mac control) for any work about the user's business, clients, agenda, email, decisions or tasks to execute; hermes/openclaw only when the user names them; omit only for simple app/browser chores."
+          : "Optional local provider override only when the current user explicitly names it; omit for a regular Omi agent."
+          ,
       ]
     return GeneratedRealtimeTools.baseOpenAITools(providerProperty: providerProperty)
   }
