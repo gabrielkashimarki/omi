@@ -1,0 +1,40 @@
+# Fork: compila o app de Mac com as ferramentas de voz perguntar_cerebro e pedir_ao_claude.
+# Gera o executável "Omi Computer" (release) e o agent/dist para trocar dentro de uma cópia do Omi.app.
+name: Fork voz build
+on:
+  workflow_dispatch:
+  push:
+    branches: [voz-cerebro-claude]
+    paths: ["desktop/macos/**", ".github/workflows/fork-voz-build.yml"]
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: desktop/macos
+      - name: Xcode
+        run: |
+          sudo xcode-select -s "$(jq -r .app_path desktop/macos/ci/xcode-pin.json)"
+          swift --version
+      - name: Agente (Node)
+        working-directory: desktop/macos/agent
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          node --experimental-strip-types scripts/generate-tool-surfaces.mjs --check
+      - name: Swift (release)
+        run: xcrun swift build -c release --package-path desktop/macos/Desktop -Xswiftc -emit-const-values
+      - name: Empacotar
+        run: |
+          mkdir -p saida
+          bin="$(xcrun swift build -c release --package-path desktop/macos/Desktop --show-bin-path)"
+          cp "$bin/Omi Computer" saida/
+          tar -czf saida/agent-dist.tgz -C desktop/macos/agent dist
+          shasum -a 256 saida/* > saida/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: omi-fork-voz
+          path: saida
+          retention-days: 14

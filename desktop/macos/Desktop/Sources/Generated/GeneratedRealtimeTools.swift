@@ -28,6 +28,8 @@ enum HubTool: String {
   case getTasks = "get_tasks"
   case createCalendarEvent = "create_calendar_event"
   case thinkDeeper = "think_deeper"
+  case perguntarCerebro = "perguntar_cerebro"
+  case pedirAoClaude = "pedir_ao_claude"
   case webSearch = "web_search"
   case screenshot = "screenshot"
   case reportScreenObservation = "report_screen_observation"
@@ -774,6 +776,44 @@ enum GeneratedRealtimeTools {
       },
       "required": [
         "query"
+      ]
+    }
+  },
+  {
+    "type": "function",
+    "name": "perguntar_cerebro",
+    "description": "Search the user's agency Brain (Cérebro) and get back source excerpts. ALWAYS call this first for any question about one of the user's clients or companies (any company or client name the user mentions): decisions, prices, status, pending items, what was agreed. Pass the full question in Portuguese with the client name. It takes several seconds; call immediately without a wait-line. Answer only from the returned excerpts, citing the date they carry; if nothing relevant comes back, say you did not find it.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "pergunta": {
+          "type": "string",
+          "description": "Pergunta completa, com o nome do cliente."
+        },
+        "cliente": {
+          "type": "string",
+          "description": "Slug do cliente, se souber."
+        }
+      },
+      "required": [
+        "pergunta"
+      ]
+    }
+  },
+  {
+    "type": "function",
+    "name": "pedir_ao_claude",
+    "description": "Start a background Claude Code session on this Mac with the user's request. Call ONLY when the user explicitly asks to send, pass, or delegate something to Claude or Claude Code ('pede pro Claude', 'manda pro Claude Code'). Write a complete, self-contained request in Portuguese. It returns at once; tell the user it was sent and that the answer will be saved in ~/.omi/pedidos-claude.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "pedido": {
+          "type": "string",
+          "description": "Pedido completo e autossuficiente para o Claude Code."
+        }
+      },
+      "required": [
+        "pedido"
       ]
     }
   },

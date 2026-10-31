@@ -23,6 +23,7 @@ enum RealtimeSlowToolAcknowledgementKind: String, CaseIterable, Sendable {
     switch HubTool(rawValue: toolName) {
     case .thinkDeeper: self = .deeperThinking
     case .webSearch: self = .publicWebSearch
+    case .perguntarCerebro: self = .publicWebSearch  // fork: avisa durante os ~10 s da busca
     default: return nil
     }
   }

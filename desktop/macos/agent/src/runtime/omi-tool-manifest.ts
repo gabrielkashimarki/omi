@@ -858,6 +858,35 @@ const swiftToolSurfacePatches: Record<string, OmiToolSurfacePatch> = {
       ),
     },
   },
+  perguntar_cerebro: {
+    surfaces: ["realtime_voice"],
+    capabilityDoc: doc(
+      "Perguntar ao Cérebro",
+      "Search the agency's Brain (Cérebro) for decisions, prices, status and history about the user's clients and companies.",
+      [
+        "Use for any question about a client or company of the user (any company or client name the user mentions): what was decided, prices, status, pending items.",
+        "Prefer it over search_conversations and semantic_search for client business facts.",
+      ],
+    ),
+    executor: { kind: "swiftTool", executorName: "realtimeHub" },
+    voice: {
+      realtimeDescription:
+        "Search the user's agency Brain (Cérebro) and get back source excerpts. ALWAYS call this first for any question about one of the user's clients or companies (any company or client name the user mentions): decisions, prices, status, pending items, what was agreed. Pass the full question in Portuguese with the client name. It takes several seconds; call immediately without a wait-line. Answer only from the returned excerpts, citing the date they carry; if nothing relevant comes back, say you did not find it.",
+    },
+  },
+  pedir_ao_claude: {
+    surfaces: ["realtime_voice"],
+    capabilityDoc: doc(
+      "Pedir ao Claude",
+      "Hand a request to the local Claude Code CLI, which runs it in the background.",
+      ["Use only when the user explicitly asks to send, pass or delegate something to Claude or Claude Code."],
+    ),
+    executor: { kind: "swiftTool", executorName: "realtimeHub" },
+    voice: {
+      realtimeDescription:
+        "Start a background Claude Code session on this Mac with the user's request. Call ONLY when the user explicitly asks to send, pass, or delegate something to Claude or Claude Code ('pede pro Claude', 'manda pro Claude Code'). Write a complete, self-contained request in Portuguese. It returns at once; tell the user it was sent and that the answer will be saved in ~/.omi/pedidos-claude.",
+    },
+  },
   web_search: {
     surfaces: ["desktop_chat", "realtime_voice"],
     capabilityDoc: doc(
@@ -1900,6 +1929,46 @@ const swiftToolManifestDrafts: OmiToolManifestEntryDraft[] = [
     executor: { kind: "swiftTool", executorName: "realtimeHub" },
     intendedForAgents: true,
     runtimePreconditions: ["Realtime voice only."],
+    adapters: {},
+  },
+  // Fork: ferramentas de voz que chamam o MCP "brain" do ~/.omi/mcp.json e o Claude Code local.
+  {
+    name: "perguntar_cerebro",
+    label: "Perguntar ao Cérebro",
+    description: "Busca no Cérebro da agência (MCP brain local) decisões, preços, status e histórico de clientes.",
+    promptSnippet: "perguntar_cerebro - Busca decisões e histórico de clientes no Cérebro",
+    latency: "fast network",
+    inputSchema: schema(
+      {
+        pergunta: { type: "string", description: "Pergunta completa, com o nome do cliente." },
+        cliente: { type: "string", description: "Slug do cliente, se souber." },
+      },
+      ["pergunta"],
+    ),
+    annotations: readOnlyOpenWorld,
+    timeoutClass: "long",
+    executor: { kind: "swiftTool", executorName: "realtimeHub" },
+    intendedForAgents: true,
+    runtimePreconditions: ["Realtime voice only; requires server 'brain' in ~/.omi/mcp.json."],
+    adapters: {},
+  },
+  {
+    name: "pedir_ao_claude",
+    label: "Pedir ao Claude",
+    description: "Abre uma sessão do Claude Code local (claude -p) em segundo plano com o pedido do usuário.",
+    promptSnippet: "pedir_ao_claude - Repassa um pedido ao Claude Code local",
+    latency: "fast local",
+    inputSchema: schema(
+      {
+        pedido: { type: "string", description: "Pedido completo e autossuficiente para o Claude Code." },
+      },
+      ["pedido"],
+    ),
+    annotations: localWrite,
+    timeoutClass: "normal",
+    executor: { kind: "swiftTool", executorName: "realtimeHub" },
+    intendedForAgents: true,
+    runtimePreconditions: ["Realtime voice only; requires a logged-in claude CLI."],
     adapters: {},
   },
   {
