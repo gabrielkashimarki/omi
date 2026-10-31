@@ -1,3 +1,4 @@
+# Para ligar: mover para .github/workflows/ (precisa de token com escopo workflow).
 # Fork: compila o app de Mac com as ferramentas de voz perguntar_cerebro e pedir_ao_claude.
 # Gera o executável "Omi Computer" (release) e o agent/dist para trocar dentro de uma cópia do Omi.app.
 name: Fork voz build
