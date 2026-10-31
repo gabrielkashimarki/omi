@@ -241,6 +241,13 @@ private final class VoiceTurnOmniDelegateProxy: RealtimeOmniServiceDelegate {
 ///   pendingLockDecision → [timeout] → finalizing → sends query → idle
 @MainActor
 class PushToTalkManager: ObservableObject {
+  // Fork: modo conversa. Toque duplo no atalho liga; a fala vai sozinha depois de uma pausa e,
+  // terminada a resposta, ele volta a ouvir. Um toque encerra.
+  private var forkConversaAtiva = false
+  private var forkUltimaFalaEm: Date?
+  private var forkOuvindoDesde = Date()
+  nonisolated static let forkPausaParaEnviar: TimeInterval = 1.3
+  nonisolated static let forkSilencioParaEncerrar: TimeInterval = 20
   static let shared = PushToTalkManager()
 
   /// An automation turn drives provider/reducer boundaries itself;
@@ -561,6 +568,7 @@ class PushToTalkManager: ObservableObject {
       performTerminalCleanup(
         discardBufferedAudio: record.reason == .ownerChanged,
         parkWarm: Self.terminalReasonKeepsWarmCapture(record.reason))
+      forkRetomarConversa(depoisDe: record.reason)
     case .scheduleDeadline, .cancelDeadline, .cancelAllDeadlines,
       .staleEventDropped, .invalidTransition:
       break
@@ -722,6 +730,7 @@ class PushToTalkManager: ObservableObject {
 
     case .lockedRecording:
       // Tap while locked → finalize
+      forkConversaAtiva = false
       finalize()
 
     case .finalizing:
@@ -843,6 +852,9 @@ class PushToTalkManager: ObservableObject {
 
   func enterLockedListening() {
     if isBlockedByUsageLimit() { return }
+    forkConversaAtiva = true
+    forkUltimaFalaEm = nil
+    forkOuvindoDesde = Date()
     RealtimeHubController.shared.prefetchVoiceContextSnapshotIfNeeded()
     warmPTTInputRouting()
     FloatingBarVoicePlaybackService.shared.interruptCurrentResponse()
@@ -2609,6 +2621,7 @@ class PushToTalkManager: ObservableObject {
     _ audioData: Data, generation: UInt64, turnID: VoiceTurnID, batchMode: Bool
   ) {
     pttLifecycle.ingestAudioChunk(audioData)
+    defer { forkObservarPausa(audioData) }
     // Once the turn is a dictation, the microphone only records: the whole
     // turn is transcribed and pasted at key-up, and no model is asked anything
     // meanwhile. Route transitions the reducer makes from here on (warm-wait
@@ -4262,5 +4275,48 @@ final class MicCaptureLease: @unchecked Sendable {
     lock.lock()
     defer { lock.unlock() }
     return (generation, batchMode, turnID)
+  }
+}
+
+// MARK: - Fork: modo conversa
+
+extension PushToTalkManager {
+  /// No modo travado, envia o turno quando a pessoa para de falar; encerra se ninguém falar.
+  fileprivate func forkObservarPausa(_ audio: Data) {
+    guard forkConversaAtiva, phase == .lockedRecording else { return }
+    let agora = Date()
+    if Self.speechLikeAudioSeconds(pcm16k: audio).speechLike > 0.04 {
+      forkUltimaFalaEm = agora
+      return
+    }
+    if let ultima = forkUltimaFalaEm {
+      guard agora.timeIntervalSince(ultima) >= Self.forkPausaParaEnviar else { return }
+      forkUltimaFalaEm = nil
+      log("PushToTalkManager: [fork] pausa detectada — enviando turno")
+      finalize()
+    } else if agora.timeIntervalSince(forkOuvindoDesde) >= Self.forkSilencioParaEncerrar {
+      log("PushToTalkManager: [fork] silêncio longo — encerrando conversa")
+      forkConversaAtiva = false
+      finalize()
+    }
+  }
+
+  /// Depois de uma resposta completa, volta a ouvir sozinho enquanto a conversa estiver ativa.
+  fileprivate func forkRetomarConversa(depoisDe motivo: VoiceTurnTerminalReason) {
+    guard forkConversaAtiva else { return }
+    guard motivo == .success else {
+      forkConversaAtiva = false
+      return
+    }
+    Task { @MainActor [weak self] in
+      try? await Task.sleep(nanoseconds: 400_000_000)
+      guard let self, self.forkConversaAtiva else { return }
+      switch self.phase {
+      case nil, .idle?, .terminal?: break
+      default: return
+      }
+      log("PushToTalkManager: [fork] voltando a ouvir")
+      self.enterLockedListening()
+    }
   }
 }
