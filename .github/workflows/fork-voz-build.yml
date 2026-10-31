@@ -1,4 +1,3 @@
-# Para ligar: mover para .github/workflows/ (precisa de token com escopo workflow).
 # Fork: compila o app de Mac com as ferramentas de voz perguntar_cerebro e pedir_ao_claude.
 # Gera o executável "Omi Computer" (release) e o agent/dist para trocar dentro de uma cópia do Omi.app.
 name: Fork voz build
@@ -32,6 +31,9 @@ jobs:
           mkdir -p saida
           bin="$(xcrun swift build -c release --package-path desktop/macos/Desktop --show-bin-path)"
           cp "$bin/Omi Computer" saida/
+          # o swift build linka o libwebp do Homebrew e não põe Frameworks no rpath; o Omi.app já traz os dois
+          webp="$(otool -L "saida/Omi Computer" | awk '/libwebp\.7\.dylib/{print $1; exit}')"
+          install_name_tool -change "$webp" @rpath/libwebp.7.dylib -add_rpath @executable_path/../Frameworks "saida/Omi Computer"
           tar -czf saida/agent-dist.tgz -C desktop/macos/agent dist
           shasum -a 256 saida/* > saida/SHA256SUMS
       - uses: actions/upload-artifact@v4
