@@ -28,21 +28,22 @@ enum RealtimeSlowToolAcknowledgementKind: String, CaseIterable, Sendable {
     }
   }
 
+  // Fork: frases de aviso em português.
   var phrases: [String] {
     switch self {
     case .deeperThinking:
       return [
-        "Let me think that through.",
-        "Give me a moment to think that through.",
-        "Let me dig into that.",
-        "I'll take a closer look.",
+        "Deixa eu pensar nisso.",
+        "Me dá um instante pra pensar.",
+        "Vou olhar isso a fundo.",
+        "Vou olhar com calma.",
       ]
     case .publicWebSearch:
       return [
-        "Let me look that up.",
-        "I'll check the latest on that.",
-        "Let me verify that.",
-        "Checking the latest now.",
+        "Deixa eu ver isso.",
+        "Vou conferir o mais recente.",
+        "Deixa eu confirmar.",
+        "Conferindo agora.",
       ]
     }
   }
@@ -67,27 +68,27 @@ final class FloatingBarVoicePlaybackService: NSObject, AVAudioPlayerDelegate, AV
 
   nonisolated private static let voiceSampleText = "Hey, how is it going?"
   nonisolated static let backgroundAgentKickoffPhrases: [String] = [
-    "I'll get an agent on that.",
-    "Starting an agent for that now.",
-    "Got it. I'm handing this to an agent.",
-    "I'll have an agent work on that.",
-    "I'm getting an agent started.",
-    "I'll have an agent take it from here.",
-    "Got it. I'm starting an agent now.",
-    "I'll put an agent on that.",
-    "An agent is getting started on that.",
-    "I'm kicking off an agent now.",
+    "Vou colocar um agente nisso.",
+    "Já tô abrindo um agente pra isso.",
+    "Beleza, vou passar pra um agente.",
+    "Um agente vai cuidar disso.",
+    "Tô começando um agente.",
+    "Um agente segue daqui.",
+    "Entendi, abrindo um agente agora.",
+    "Vou pôr um agente nisso.",
+    "Um agente já está começando.",
+    "Abrindo o agente agora.",
   ]
 
   nonisolated private static let fillerPhrases: [String] = [
-    "Let me check.",
-    "One moment.",
-    "Looking into it.",
-    "Let me see.",
-    "Checking now.",
-    "Hold on.",
-    "One sec.",
-    "Working on it.",
+    "Deixa eu ver.",
+    "Um momento.",
+    "Tô vendo.",
+    "Deixa eu olhar.",
+    "Conferindo.",
+    "Só um instante.",
+    "Um segundo.",
+    "Tô nisso.",
   ]
 
   private var playbackTask: Task<Void, Never>?
@@ -1103,6 +1104,10 @@ final class FloatingBarVoicePlaybackService: NSObject, AVAudioPlayerDelegate, AV
 
   private func preferredSystemVoice() -> AVSpeechSynthesisVoice? {
     let voices = AVSpeechSynthesisVoice.speechVoices()
+    // Fork: voz do sistema em português do Brasil (a melhor instalada), antes das vozes em inglês.
+    if let pt = voices.filter({ $0.language == "pt-BR" }).max(by: { $0.quality.rawValue < $1.quality.rawValue }) {
+      return pt
+    }
     let preferredNames = ["Ava", "Allison", "Samantha", "Karen", "Moira"]
     for name in preferredNames {
       if let voice = voices.first(where: {
@@ -1227,7 +1232,7 @@ final class FloatingBarVoicePlaybackService: NSObject, AVAudioPlayerDelegate, AV
   }
 
   private nonisolated static func randomBackgroundAgentKickoffPhrase() -> String {
-    backgroundAgentKickoffPhrases.randomElement() ?? "Starting an agent for that now."
+    backgroundAgentKickoffPhrases.randomElement() ?? "Já tô abrindo um agente pra isso."
   }
 
   private nonisolated static func cachedOrSynthesizedBackgroundAgentKickoffAudio(

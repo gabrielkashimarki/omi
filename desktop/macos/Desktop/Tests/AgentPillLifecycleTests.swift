@@ -339,7 +339,7 @@ import XCTest
 
     XCTAssertTrue(voiceServiceSource.contains("static let backgroundAgentKickoffPhrases: [String]"))
     XCTAssertTrue(voiceServiceSource.contains("\"I'll get an agent on that.\""))
-    XCTAssertTrue(voiceServiceSource.contains("\"Starting an agent for that now.\""))
+    XCTAssertTrue(voiceServiceSource.contains("\"Já tô abrindo um agente pra isso.\""))
     XCTAssertTrue(voiceServiceSource.contains("\"Got it. I'm handing this to an agent.\""))
     XCTAssertTrue(voiceServiceSource.contains("\"I'll have an agent work on that.\""))
     XCTAssertTrue(voiceServiceSource.contains("\"I'm getting an agent started.\""))

@@ -592,7 +592,8 @@ class ShortcutSettings: ObservableObject {
     self.draggableBarEnabled = UserDefaults.standard.object(forKey: "shortcut_draggableBarEnabled") as? Bool ?? false
     self.floatingBarTypedQuestionVoiceAnswersEnabled =
       UserDefaults.standard.object(forKey: "shortcut_floatingBarTypedQuestionVoiceAnswersEnabled") as? Bool ?? false
-    self.voicePlaybackSpeed = UserDefaults.standard.object(forKey: "shortcut_voicePlaybackSpeed") as? Float ?? 1.4
+    // Fork: padrão 1.0; o 1.4 do upstream atropelava o português.
+    self.voicePlaybackSpeed = UserDefaults.standard.object(forKey: "shortcut_voicePlaybackSpeed") as? Float ?? 1.0
 
     NotificationCenter.default.addObserver(forName: .modelTierDidChange, object: nil, queue: .main) { [weak self] _ in
       Task { @MainActor [weak self] in
