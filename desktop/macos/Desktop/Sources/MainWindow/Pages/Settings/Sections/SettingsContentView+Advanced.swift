@@ -195,6 +195,13 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           }
+          // Fork: a voz usa a chave própria de Developer Keys quando existe (sem ela, depende do plano Omi).
+          Text(
+            "Chave própria (Developer Keys): Gemini \(APIKeyService.byokKey(.gemini) == nil ? "não" : "sim") · "
+              + "OpenAI \(APIKeyService.byokKey(.openai) == nil ? "não" : "sim")"
+          )
+          .scaledFont(size: OmiType.caption)
+          .foregroundColor(Ink.secondary)
         }
       }
 
