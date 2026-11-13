@@ -1371,6 +1371,21 @@ final class TranscriptionFinalizationStateMachineTests: XCTestCase {
       "stored-id")
   }
 
+  func testCompactionNeverEndsBeforeItStartsWhenSegmentsGoBackInTime() {
+    // Índices pares andam para frente, ímpares voltam 100 s: igual às sessões locais recusadas.
+    let segments = (0..<1024).map { index in
+      let base = Double(index) * 3 - (index.isMultiple(of: 2) ? 0 : 100)
+      return APIClient.UploadSegment(
+        text: "s\(index)", speaker: "SPEAKER_00", speaker_id: 0, is_user: true,
+        person_id: nil, start: max(0, base), end: max(0, base) + 2)
+    }
+
+    let compacted = ConversationFinalizationService.compactSegmentsForBackendLimit(segments)
+
+    XCTAssertEqual(compacted.count, 500)
+    XCTAssertTrue(compacted.allSatisfy { $0.end > $0.start })
+  }
+
   func testCompactsOversizedLocalUploadWithoutDroppingText() {
     let segments = (0..<750).map { index in
       APIClient.UploadSegment(

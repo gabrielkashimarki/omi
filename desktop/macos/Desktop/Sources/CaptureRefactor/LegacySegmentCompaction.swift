@@ -28,8 +28,10 @@ extension ConversationFinalizationService {
           speaker_id: sameSpeaker ? first.speaker_id : nil,
           is_user: sameSpeaker ? first.is_user : false,
           person_id: sameSpeaker ? first.person_id : nil,
-          start: first.start,
-          end: last.end
+          // Segmentos locais podem voltar no tempo (318 de 1024 numa sessão real);
+          // first.start/last.end gerava fim antes do início e o backend recusava para sempre.
+          start: group.map(\.start).min() ?? first.start,
+          end: group.map(\.end).max() ?? last.end
         )
       )
     }

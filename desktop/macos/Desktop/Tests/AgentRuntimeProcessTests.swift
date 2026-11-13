@@ -1449,6 +1449,14 @@ final class AgentRuntimeProcessTests: XCTestCase {
     XCTAssertFalse(reader.contains("while !Task.isCancelled"))
   }
 
+  func testStdoutBufferSplitsManyLinesAndKeepsPartialTail() {
+    var buffer = AgentRuntimeOrderedStdoutBuffer()
+
+    XCTAssertEqual(buffer.ingest(Data("a\nbb\ncc".utf8), sequence: 0), [Data("a".utf8), Data("bb".utf8)])
+    XCTAssertTrue(buffer.ingest(Data("c".utf8), sequence: 1).isEmpty)
+    XCTAssertEqual(buffer.ingest(Data("c\n\nd\n".utf8), sequence: 2), [Data("ccc".utf8), Data(), Data("d".utf8)])
+  }
+
   func testStdoutChunksAreReorderedBeforeJSONLFraming() {
     let frame =
       Data(

@@ -128,11 +128,16 @@ struct AgentRuntimeOrderedStdoutBuffer {
     var lines: [Data] = []
     while let chunk = pendingChunks.removeValue(forKey: nextSequence) {
       nextSequence &+= 1
-      lineBuffer.append(chunk)
-      while let newlineIndex = lineBuffer.firstIndex(of: UInt8(ascii: "\n")) {
-        lines.append(Data(lineBuffer[lineBuffer.startIndex..<newlineIndex]))
-        lineBuffer = Data(lineBuffer[lineBuffer.index(after: newlineIndex)...])
+      // Procura "\n" só no pedaço novo: varrer e recopiar o buffer inteiro a cada pedaço
+      // era quadrático em linha grande e segurava 1 núcleo inteiro (amostra de 13/11/2026).
+      var rest = chunk[...]
+      while let newlineIndex = rest.firstIndex(of: UInt8(ascii: "\n")) {
+        lineBuffer.append(rest[rest.startIndex..<newlineIndex])
+        lines.append(lineBuffer)
+        lineBuffer = Data()
+        rest = rest[rest.index(after: newlineIndex)...]
       }
+      lineBuffer.append(rest)
     }
     return lines
   }
