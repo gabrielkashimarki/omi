@@ -190,7 +190,7 @@ struct BrowserKeywordListView: View {
           .disabled(newKeyword.trimmingCharacters(in: .whitespaces).isEmpty)
       }
 
-      Text("\(palavras-chave.count) keywords")
+      Text("\(keywords.count) palavras-chave")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
     }

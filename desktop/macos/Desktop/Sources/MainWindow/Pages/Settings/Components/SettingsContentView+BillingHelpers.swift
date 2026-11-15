@@ -834,7 +834,7 @@ extension SettingsContentView {
     if minutes == 1 {
       return "1 minuto"
     } else if minutes < 60 {
-      return "\(minutos) minutes"
+      return "\(minutes) minutos"
     } else {
       return "1 hora"
     }
@@ -844,7 +844,7 @@ extension SettingsContentView {
     if seconds == 0 {
       return "Instantâneo"
     } else if seconds < 60 {
-      return "\(segundos) seconds"
+      return "\(seconds) segundos"
     } else if seconds == 60 {
       return "1 minuto"
     } else {
@@ -854,7 +854,7 @@ extension SettingsContentView {
 
   func formatExtractionInterval(_ seconds: Double) -> String {
     if seconds < 60 {
-      return "\(Int(segundos)) seconds"
+      return "\(Int(seconds)) segundos"
     } else if seconds < 3600 {
       let minutes = Int(seconds / 60)
       return minutes == 1 ? "1 minuto" : "\(minutes) minutos"
