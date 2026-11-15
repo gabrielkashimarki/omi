@@ -5,7 +5,7 @@ import Foundation
 extension RealtimeHubController {
   // ponytail: corte fixo para caber no contexto da voz.
   static let atticusLimiteCaracteres = 2000
-  static let atticusTempoMaximo: TimeInterval = 180
+  nonisolated static let atticusTempoMaximo: TimeInterval = 180
 
   nonisolated static var atticusPasta: URL? {
     Bundle.main.resourceURL?.appendingPathComponent("atticus", isDirectory: true)
@@ -38,16 +38,14 @@ extension RealtimeHubController {
       let cano = Pipe()
       p.standardOutput = cano
       p.standardError = FileHandle.nullDevice
-      let relogio = DispatchWorkItem { if p.isRunning { p.terminate() } }
       p.terminationHandler = { processo in
-        relogio.cancel()
         let dados = cano.fileHandleForReading.readDataToEndOfFile()
         let texto = String(decoding: dados, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
         continuacao.resume(returning: (texto, processo.terminationStatus))
       }
       do {
         try p.run()
-        DispatchQueue.global().asyncAfter(deadline: .now() + atticusTempoMaximo, execute: relogio)
+        DispatchQueue.global().asyncAfter(deadline: .now() + atticusTempoMaximo) { if p.isRunning { p.terminate() } }
       } catch {
         continuacao.resume(returning: ("Não consegui abrir o motor do Atticus: \(error.localizedDescription)", -1))
       }
