@@ -11,12 +11,12 @@ struct MeetingMemoryBriefCard: View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
       HStack(alignment: .firstTextBaseline, spacing: OmiSpacing.md) {
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Before \(brief.title)")
+          Text("Antes de \(brief.title)")
             .scaledFont(size: OmiType.subheading, weight: .semibold)
             .foregroundColor(Ink.primary)
             .lineLimit(2)
 
-          Text("\(OmiDateFormat.timestamp(brief.startsAt)) · From \(brief.sourceConversationTitle)")
+          Text("\(OmiDateFormat.timestamp(brief.startsAt)) · De \(brief.sourceConversationTitle)")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
             .lineLimit(1)
@@ -24,7 +24,7 @@ struct MeetingMemoryBriefCard: View {
 
         Spacer(minLength: OmiSpacing.sm)
 
-        OmiIconButton("xmark", help: "Dismiss meeting brief", size: .compact, action: onDismiss)
+        OmiIconButton("xmark", help: "Dispensar resumo da reunião", size: .compact, action: onDismiss)
           .accessibilityIdentifier("meeting-brief-dismiss")
       }
 
@@ -51,7 +51,7 @@ struct MeetingMemoryBriefCard: View {
           .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(fact.kind.label): \(fact.text). Open cited transcript")
+        .accessibilityLabel("\(fact.kind.label): \(fact.text). Abrir transcrição citada")
         .accessibilityIdentifier("meeting-brief-source-\(fact.kind.label)")
       }
     }

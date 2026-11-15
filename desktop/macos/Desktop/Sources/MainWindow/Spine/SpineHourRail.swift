@@ -130,8 +130,8 @@ struct SpineHourRail: View {
   /// `nonisolated` for the same reason `renderedHours` is: this is copy to read, not chrome to draw
   /// with.
   nonisolated static func headlineCaption(_ count: Int?) -> String {
-    guard let count else { return "counting screen moments" }
-    return count == 1 ? "screen moment" : "screen moments"
+    guard let count else { return "contando momentos de tela" }
+    return count == 1 ? "momento de tela" : "momentos de tela"
   }
 
   /// The day the headline number belongs to — the rail's half of "state your own scope".
@@ -204,7 +204,7 @@ struct SpineHourRail: View {
   /// line instead of drawing a blank one and speaking a sentence with a hole in it.
   nonisolated static func footer(conversationCount: Int) -> String? {
     guard conversationCount > 0 else { return nil }
-    return SpineFormat.plural(conversationCount, "conversation", "conversations")
+    return SpineFormat.plural(conversationCount, "conversa", "conversas")
   }
 
   /// The whole rail as one spoken sentence, because the whole rail is one accessibility element.
@@ -229,11 +229,11 @@ struct SpineHourRail: View {
     // The em dash is a visual placeholder; spoken, it has to be the sentence it stands for.
     let count =
       momentCount == nil
-      ? "Counting screen moments"
+      ? "Contando momentos de tela"
       : "\(headlineNumber(momentCount)) \(headlineCaption(momentCount))"
     var text = headlineScope(dayTitle).map { "\($0): \(count)." } ?? "\(count)."
     if let footer = footer(conversationCount: conversationCount) { text += " \(footer)." }
-    if let currentHour { text += " Reading \(SpineFormat.hourLabel(currentHour))." }
+    if let currentHour { text += " Lendo \(SpineFormat.hourLabel(currentHour))." }
     return text
   }
 

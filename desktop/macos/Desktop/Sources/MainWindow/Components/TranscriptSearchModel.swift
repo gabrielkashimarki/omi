@@ -26,11 +26,11 @@ struct TranscriptSearchModel: Equatable {
 
   var currentMatch: Match? { currentIndex.map { matches[$0] } }
 
-  /// "3 of 12", "No matches", or empty while there is no query.
+  /// "3 of 12", "Nenhum resultado", or empty while there is no query.
   var countLabel: String {
     guard isActive else { return "" }
-    guard let currentIndex else { return "No matches" }
-    return "\(currentIndex + 1) of \(matches.count)"
+    guard let currentIndex else { return "Nenhum resultado" }
+    return "\(currentIndex + 1) de \(matches.count)"
   }
 
   /// Re-runs the search. A changed query starts at the first match; the same query over refreshed

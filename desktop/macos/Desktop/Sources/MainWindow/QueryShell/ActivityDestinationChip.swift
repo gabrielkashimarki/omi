@@ -33,11 +33,11 @@ enum ActivityDestinationChip: String, CaseIterable, Identifiable {
 
   var title: String {
     switch self {
-    case .activity: return "Activity"
-    case .conversations: return "Conversations"
-    case .memories: return "Memories"
+    case .activity: return "Atividade"
+    case .conversations: return "Conversas"
+    case .memories: return "Memórias"
     case .rewind: return "Rewind"
-    case .brainMap: return "Brain Map"
+    case .brainMap: return "Mapa do cérebro"
     }
   }
 

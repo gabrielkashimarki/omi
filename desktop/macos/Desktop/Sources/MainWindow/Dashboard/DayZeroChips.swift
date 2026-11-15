@@ -55,20 +55,20 @@ enum DayZeroChips {
   /// Screen-grounded: the single best-performing first question in the sample
   /// (57% got a real description of the user's work; every one produced a
   /// follow-up). Phrased as a summary so the answer is an artifact, not a list.
-  static let summarizeScreen = "Summarize what's on my screen"
+  static let summarizeScreen = "Resuma o que está na minha tela"
   /// Screen history answers this within minutes of install; memory recall needs days.
-  static let lastHour = "What have I been working on in the last hour?"
+  static let lastHour = "No que eu venho trabalhando na última hora?"
   /// Task extraction from what is in front of the user was the strongest
   /// zero-history capability observed; this makes it user-invoked.
-  static let screenToTasks = "Turn what's on my screen into tasks"
+  static let screenToTasks = "Transforme o que está na minha tela em tarefas"
   /// The teach-and-quiz thread was the longest observed first session. This
   /// chip is a draft, not a send: it lands in the composer for the user to finish.
-  static let rememberDraft = "Remember that I…"
+  static let rememberDraft = "Lembre que eu…"
   /// Emitted by `SBPostOnboardingGuidance` from the onboarding connector state;
   /// the Home top-up has no live connector signal, so it does not offer this.
-  static let calendarToday = "What's on my calendar today?"
+  static let calendarToday = "O que tenho na agenda hoje?"
 
-  static func switchLanguage(to name: String) -> String { "Switch to \(name)" }
+  static func switchLanguage(to name: String) -> String { "Mudar para \(name)" }
 
   /// The top-up chips for a user with no personalized questions yet, in
   /// priority order. Never the week-scale questions, never "what can you do".

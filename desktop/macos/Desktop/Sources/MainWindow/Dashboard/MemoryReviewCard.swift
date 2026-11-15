@@ -99,9 +99,9 @@ struct MemoryReviewRowModel: Equatable, Sendable {
   var statusText: String? {
     switch displayed {
     case .none: return nil
-    case .accepted: return "Confirmed. I'll act on this."
-    case .rejected: return "Dropped. I'll avoid facts like this."
-    case .updated: return "Updated."
+    case .accepted: return "Confirmado. Vou agir com base nisso."
+    case .rejected: return "Descartado. Vou evitar fatos assim."
+    case .updated: return "Atualizado."
     }
   }
 }
@@ -136,7 +136,7 @@ enum MemoryReviewEvent: Equatable, Sendable {
 
 /// Pure transition table for one row. No I/O, no actor, no view.
 enum MemoryReviewReducer {
-  static let failureMessage = "Couldn't save, try again"
+  static let failureMessage = "Não foi possível salvar, tente de novo"
 
   static func reduce(
     _ model: MemoryReviewRowModel,

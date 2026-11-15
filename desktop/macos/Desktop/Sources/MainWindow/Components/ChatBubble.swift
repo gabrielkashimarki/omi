@@ -333,7 +333,7 @@ struct ChatBubble: View {
     // user turn has ever had.
     .contextMenu { messageContextMenu(copyPayload: copyPayload(rowText)) }
     .accessibilityElement(children: .contain)
-    .accessibilityLabel(message.sender == .user ? "You" : "Omi")
+    .accessibilityLabel(message.sender == .user ? "Você" : "Omi")
   }
 
   /// The text the row's copy actions put on the pasteboard. `copyableText`
@@ -363,7 +363,7 @@ struct ChatBubble: View {
     if !copyPayload.isEmpty {
       // Selecting is done in the words themselves now; this stays for the
       // whole message, which a drag would have to be exact to reproduce.
-      Button("Copy Message") { copyMessageToPasteboard() }
+      Button("Copiar mensagem") { copyMessageToPasteboard() }
     }
   }
 
@@ -412,7 +412,7 @@ struct ChatBubble: View {
         HStack(spacing: OmiSpacing.xs) {
           Image(systemName: "doc.on.doc")
             .scaledFont(size: OmiType.caption)
-          Text("Duplicate message")
+          Text("Mensagem duplicada")
             .scaledFont(size: OmiType.caption)
           Image(systemName: "chevron.down")
             .scaledFont(size: OmiType.micro)
@@ -471,18 +471,18 @@ struct ChatBubble: View {
     case .none:
       EmptyView()
     case .emptyTurnStamp:
-      Text("This turn didn't finish")
+      Text("Esta resposta não terminou")
         .scaledFont(size: OmiType.micro, weight: .medium)
         .foregroundColor(PageGlass.warning)
     case .sessionExpired:
-      Text("Session expired")
+      Text("Sessão expirada")
         .scaledFont(size: OmiType.micro, weight: .medium)
         .foregroundColor(PageGlass.warning)
     case .truncatedAnswer:
       HStack(spacing: OmiSpacing.xxs) {
         Text("\u{2026}")
           .scaledFont(size: OmiType.caption, weight: .semibold)
-        Text("Interrupted")
+        Text("Interrompida")
           .scaledFont(size: OmiType.micro, weight: .medium)
       }
       .foregroundColor(Ink.secondary)
@@ -537,12 +537,12 @@ struct ChatBubble: View {
 
   private var showMoreButton: some View {
     Button(action: { isExpanded = true }) {
-      Text("Show more")
+      Text("Mostrar mais")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.accent)
     }
     .buttonStyle(.plain)
-    .accessibilityHint("Expand the full message")
+    .accessibilityHint("Expandir a mensagem completa")
   }
 
   @ViewBuilder
@@ -550,7 +550,7 @@ struct ChatBubble: View {
     if backgroundAgentSummary == nil, rowText.exceedsBudget {
       if isExpanded {
         Button(action: { isExpanded.toggle() }) {
-          Text("Show less")
+          Text("Mostrar menos")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.accent)
         }
@@ -727,7 +727,7 @@ struct ChatBubble: View {
       }
       .buttonStyle(.plain)
       .focused($isMetadataControlFocused)
-      .help("Helpful response")
+      .help("Resposta útil")
 
       // Thumbs down
       Button(action: {
@@ -753,10 +753,10 @@ struct ChatBubble: View {
       }
       .buttonStyle(.plain)
       .focused($isMetadataControlFocused)
-      .help("Not helpful")
+      .help("Resposta não útil")
 
       if showRatingFeedback {
-        Text("Thank you")
+        Text("Obrigado")
           .scaledFont(size: OmiType.micro)
           .foregroundColor(Ink.secondary)
           .transition(.opacity)
@@ -818,7 +818,7 @@ struct ChatBubble: View {
     // Only while this row's control strip holds keyboard focus. A window-wide
     // ⌘C would take the shortcut away from selected prose and the composer.
     .modifier(ChatCopyKeyboardShortcut(isActive: isMetadataControlFocused))
-    .help("Copy message")
+    .help("Copiar mensagem")
   }
 
   /// Response Context popover — observed turn evidence (tools, screenshot,
@@ -838,7 +838,7 @@ struct ChatBubble: View {
     }
     .buttonStyle(.plain)
     .focused($isMetadataControlFocused)
-    .help("View response context")
+    .help("Ver o contexto da resposta")
     .popover(isPresented: $showInfoPopover, arrowEdge: .bottom) {
       if let metadata = message.metadata {
         MessageMetadataPopover(metadata: metadata)
@@ -883,21 +883,21 @@ private struct BackgroundAgentSummaryCard: View {
           .foregroundColor(Ink.listeningGreen)
       } content: {
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Background agent")
+          Text("Agente em segundo plano")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Ink.primary)
             .lineLimit(2)
             .fixedSize(horizontal: false, vertical: true)
           if !isExpanded,
             !ChatContinuityInvariants.agentCardPreviewText(
-              title: "Background agent",
+              title: "Agente em segundo plano",
               prompt: summary.prompt,
               output: summary.output
             ).isEmpty
           {
             Text(
               ChatContinuityInvariants.agentCardPreviewText(
-                title: "Background agent",
+                title: "Agente em segundo plano",
                 prompt: summary.prompt,
                 output: summary.output
               )
@@ -925,7 +925,7 @@ private struct BackgroundAgentSummaryCard: View {
           // update. FC-selection-overlay-layout-loop.
           OmiMarkdown(text: summary.output, sender: .ai, appKitProseSelection: true)
           if showUnavailable {
-            Text("Agent unavailable — it may have been dismissed.")
+            Text("Agente indisponível. Ele pode ter sido dispensado.")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
               .textSelection(.disabled)
@@ -1003,7 +1003,7 @@ struct AgentSpawnCard: View {
         }
       } content: {
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text(title.isEmpty ? "Background agent" : title)
+          Text(title.isEmpty ? "Agente em segundo plano" : title)
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Ink.primary)
             .lineLimit(2)
@@ -1031,7 +1031,7 @@ struct AgentSpawnCard: View {
       if showUnavailable {
         Divider()
           .padding(.horizontal, OmiSpacing.sm)
-        Text("Agent unavailable — it may have been dismissed.")
+        Text("Agente indisponível. Ele pode ter sido dispensado.")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
           .padding(.horizontal, OmiSpacing.md)
@@ -1088,7 +1088,7 @@ struct AgentCompletionCard: View {
           .foregroundColor(statusColor)
       } content: {
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text(title.isEmpty ? "Background agent" : title)
+          Text(title.isEmpty ? "Agente em segundo plano" : title)
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Ink.primary)
             .lineLimit(2)
@@ -1130,7 +1130,7 @@ struct AgentCompletionCard: View {
           // a card that parents rebuild. Keep prose on the NSTextView path.
           OmiMarkdown(text: output, sender: .ai, appKitProseSelection: true)
           if showUnavailable {
-            Text("Agent unavailable — it may have been dismissed.")
+            Text("Agente indisponível. Ele pode ter sido dispensado.")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
               .textSelection(.disabled)
@@ -1528,11 +1528,11 @@ enum ToolActivityTimelinePresentation {
 
   static func accessibilityValue(for status: ToolCallStatus) -> String {
     switch status {
-    case .running: return "Running"
-    case .slow: return "Still working"
-    case .stalled: return "Taking longer than usual"
-    case .completed: return "Completed"
-    case .failed: return "Failed"
+    case .running: return "Em execução"
+    case .slow: return "Ainda trabalhando"
+    case .stalled: return "Demorando mais que o normal"
+    case .completed: return "Concluído"
+    case .failed: return "Falhou"
     }
   }
 
@@ -1724,7 +1724,7 @@ struct ToolCallCard: View {
         VStack(alignment: .leading, spacing: OmiSpacing.sm) {
           if let details = input?.details {
             VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-              Text("Input")
+              Text("Entrada")
                 .scaledFont(size: OmiType.micro, weight: .semibold)
                 .foregroundColor(Ink.secondary)
 
@@ -1737,7 +1737,7 @@ struct ToolCallCard: View {
 
           if let output = output, !output.isEmpty {
             VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-              Text("Output")
+              Text("Saída")
                 .scaledFont(size: OmiType.micro, weight: .semibold)
                 .foregroundColor(Ink.secondary)
 
@@ -1749,7 +1749,7 @@ struct ToolCallCard: View {
           }
 
           if showUnavailable {
-            Text("Agent unavailable — it may have been dismissed.")
+            Text("Agente indisponível. Ele pode ter sido dispensado.")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           }
@@ -1794,7 +1794,7 @@ struct ToolCallCard: View {
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityHint(isExpanded ? "Collapse tool details" : "Expand tool details")
+        .accessibilityHint(isExpanded ? "Recolher detalhes da ferramenta" : "Expandir detalhes da ferramenta")
       } else {
         toolHeaderLabel(showsDisclosure: false)
           .frame(maxWidth: .infinity, alignment: .leading)
@@ -1816,7 +1816,7 @@ struct ToolCallCard: View {
               .contentShape(Rectangle())
           }
           .buttonStyle(.plain)
-          .help("Open agent")
+          .help("Abrir agente")
         } else if agentOpenRef != nil {
           Color.clear
         }
@@ -2013,14 +2013,14 @@ struct ToolCallStalledBanner: View {
         .scaledFont(size: OmiType.caption)
         .foregroundColor(PageGlass.warning)
 
-      Text("This is taking longer than usual.")
+      Text("Isto está demorando mais que o normal.")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
 
       Spacer(minLength: 4)
 
       Button(action: onCancel) {
-        Text("Cancel")
+        Text("Cancelar")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.surface)
           .padding(.horizontal, OmiSpacing.sm)
@@ -2061,7 +2061,7 @@ struct ThinkingBlock: View {
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
 
-          Text("Thinking")
+          Text("Pensando")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.secondary)
             .italic()

@@ -60,7 +60,7 @@ struct NameSpeakerSheet: View {
     VStack(alignment: .leading, spacing: 0) {
       // Header
       HStack {
-        Text("Name Speaker")
+        Text("Nomear falante")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -104,16 +104,16 @@ struct NameSpeakerSheet: View {
       HStack {
         // Back to anonymous "Speaker N": no person, not you.
         if Self.canUnassign(segment) {
-          Button("Unassign") {
+          Button("Desatribuir") {
             Task { await save(personId: nil, isUser: false) }
           }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
           .disabled(isSaving)
-          .help("Return this speaker to \(SpeakerLabelFormatter.anonymousLabel(speakerId: segment.speakerId))")
+          .help("Voltar este falante para \(SpeakerLabelFormatter.anonymousLabel(speakerId: segment.speakerId))")
           .accessibilityIdentifier("name-speaker-unassign")
         }
         Spacer()
-        Button("Cancel") {
+        Button("Cancelar") {
           onDismiss()
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
@@ -126,7 +126,7 @@ struct NameSpeakerSheet: View {
             ProgressView()
               .controlSize(.small)
           } else {
-            Text("Save")
+            Text("Salvar")
           }
         }
         .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -150,7 +150,7 @@ struct NameSpeakerSheet: View {
   }
 
   private var currentAssignmentName: String? {
-    if segment.isUser { return "You" }
+    if segment.isUser { return "Você" }
     guard let personId = segment.personId else { return nil }
     return people.first { $0.id == personId }?.name
   }
@@ -173,7 +173,7 @@ struct NameSpeakerSheet: View {
             .scaledFont(size: OmiType.body, weight: .medium)
             .foregroundColor(Ink.primary)
           if let current = currentAssignmentName {
-            Text("Currently: \(current)")
+            Text("Atualmente: \(current)")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           }
@@ -198,13 +198,13 @@ struct NameSpeakerSheet: View {
 
   private var peopleSelectionSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      Text("Who is this?")
+      Text("Quem é?")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.secondary)
 
       FlowLayout(spacing: OmiSpacing.sm) {
         // "You" chip
-        personChip(label: "You", isSelected: isUserSelected) {
+        personChip(label: "Você", isSelected: isUserSelected) {
           isUserSelected = true
           selectedPersonId = nil
           isAddingNewPerson = false
@@ -223,7 +223,7 @@ struct NameSpeakerSheet: View {
           }
         }
 
-        personChip(label: "+ Add Person", isSelected: isAddingNewPerson, isAction: true) {
+        personChip(label: "+ Adicionar pessoa", isSelected: isAddingNewPerson, isAction: true) {
           isAddingNewPerson = true
           isUserSelected = false
           selectedPersonId = nil
@@ -235,7 +235,7 @@ struct NameSpeakerSheet: View {
       if isAddingNewPerson {
         VStack(alignment: .leading, spacing: OmiSpacing.xs) {
           HStack(spacing: OmiSpacing.sm) {
-            TextField("Person name", text: $newPersonName)
+            TextField("Nome da pessoa", text: $newPersonName)
               .textFieldStyle(.plain)
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.primary)
@@ -270,7 +270,7 @@ struct NameSpeakerSheet: View {
   private var tagOtherSegmentsToggle: some View {
     Toggle(isOn: $tagAllFromSpeaker) {
       Text(
-        "Also tag \(sameSpeakerSegments.count - 1) other segment\(sameSpeakerSegments.count - 1 == 1 ? "" : "s") from this speaker"
+        "Marcar também \(sameSpeakerSegments.count - 1) \(sameSpeakerSegments.count - 1 == 1 ? "outro trecho" : "outros trechos") deste falante"
       )
       .scaledFont(size: OmiType.body)
       .foregroundColor(Ink.secondary)
@@ -292,7 +292,7 @@ struct NameSpeakerSheet: View {
   private func validateName(_ name: String) {
     let trimmed = name.trimmingCharacters(in: .whitespaces)
     if people.contains(where: { $0.name.lowercased() == trimmed.lowercased() }) {
-      duplicateWarning = "A person with this name already exists"
+      duplicateWarning = "Já existe uma pessoa com este nome"
     } else {
       duplicateWarning = nil
     }
@@ -311,7 +311,7 @@ struct NameSpeakerSheet: View {
     if succeeded {
       onDismiss()
     } else {
-      saveError = "Couldn't assign this speaker. Try again."
+      saveError = "Não foi possível atribuir este falante. Tente de novo."
     }
   }
 

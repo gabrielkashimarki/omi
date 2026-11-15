@@ -86,12 +86,12 @@ struct ChatQuotaBannerView: View {
       Spacer(minLength: OmiSpacing.md)
 
       Button(action: onViewPlan) {
-        Text("View plan")
+        Text("Ver plano")
       }
       .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
       .accessibilityIdentifier("chat-quota-banner-view-plan")
 
-      DismissButton(action: onDismiss, accessibilityLabel: "Dismiss", size: .compact)
+      DismissButton(action: onDismiss, accessibilityLabel: "Dispensar", size: .compact)
         .accessibilityIdentifier("chat-quota-banner-dismiss")
     }
     .padding(.horizontal, OmiSpacing.md)

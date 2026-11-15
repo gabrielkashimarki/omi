@@ -213,7 +213,7 @@ final class CaptureArchiveRepository: ObservableObject {
     } catch {
       guard token == activeListLoadToken else { return }
       // Do not retry without the source predicate. The user must choose Refresh.
-      errorMessage = "Omi-device captures are unavailable. Refresh to try again."
+      errorMessage = "As capturas do dispositivo Omi estão indisponíveis. Atualize para tentar de novo."
     }
   }
 
@@ -257,7 +257,7 @@ final class CaptureArchiveRepository: ObservableObject {
       guard token == activeDetailLoadToken else { return nil }
       guard detail.isOmiCaptureArchiveRecord else {
         guard token == activeDetailLoadToken else { return nil }
-        errorMessage = "This capture is no longer available."
+        errorMessage = "Esta captura não está mais disponível."
         return nil
       }
       selectedCapture = detail
@@ -270,7 +270,7 @@ final class CaptureArchiveRepository: ObservableObject {
       return detail
     } catch {
       guard token == activeDetailLoadToken else { return nil }
-      errorMessage = "This Omi-device capture is unavailable. Refresh to try again."
+      errorMessage = "Esta captura do dispositivo Omi está indisponível. Atualize para tentar de novo."
       return nil
     }
   }
@@ -297,7 +297,7 @@ final class CaptureArchiveRepository: ObservableObject {
       guard token == activeListLoadToken else { return }
       // Cache rows may remain visible, but the state is never silently healthy:
       // archive data is unavailable rather than silently replaced with a mixed list.
-      errorMessage = "Omi-device captures are unavailable. Refresh to try again."
+      errorMessage = "As capturas do dispositivo Omi estão indisponíveis. Atualize para tentar de novo."
     }
   }
 

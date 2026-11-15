@@ -181,12 +181,12 @@ private struct QueryAnswerFailureNotice: View {
         .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
       if classified.retryable {
-        Button("Try Again", action: onRetry)
+        Button("Tentar de novo", action: onRetry)
           .buttonStyle(.plain)
           .scaledFont(size: OmiType.caption, weight: .semibold)
           .foregroundStyle(Ink.accent)
       }
-      DismissButton(action: { onDismiss() }, accessibilityLabel: "Dismiss", size: .compact)
+      DismissButton(action: { onDismiss() }, accessibilityLabel: "Dispensar", size: .compact)
     }
     .padding(.horizontal, OmiSpacing.md)
     .padding(.vertical, OmiSpacing.sm)

@@ -71,7 +71,7 @@ struct TaskDetailPanel: View {
   private var header: some View {
     HStack(spacing: OmiSpacing.sm) {
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Task Details")
+        Text("Detalhes da tarefa")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Text(content.status)
@@ -88,7 +88,7 @@ struct TaskDetailPanel: View {
 
   private var descriptionSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      sectionTitle("Task")
+      sectionTitle("Tarefa")
       Text(content.description)
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.primary)
@@ -104,7 +104,7 @@ struct TaskDetailPanel: View {
   private var prioritySection: some View {
     if let onPriorityChange {
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        sectionTitle("Priority")
+        sectionTitle("Prioridade")
         HStack(spacing: OmiSpacing.xs) {
           ForEach(TaskDetailPanel.priorityOptions, id: \.value) { option in
             let isSelected = task.priority?.lowercased() == option.value
@@ -123,7 +123,7 @@ struct TaskDetailPanel: View {
                 .contentShape(Capsule())
             }
             .buttonStyle(.plain)
-            .help("Set \(option.label.lowercased()) priority")
+            .help("Definir prioridade \(option.label.lowercased())")
             .accessibilityIdentifier("task-detail-priority-\(option.value)")
           }
         }
@@ -132,12 +132,12 @@ struct TaskDetailPanel: View {
   }
 
   private static let priorityOptions: [(value: String, label: String)] = [
-    ("low", "Low"), ("medium", "Medium"), ("high", "High"),
+    ("low", "Baixa"), ("medium", "Média"), ("high", "Alta"),
   ]
 
   private var whySection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      sectionTitle("Why Omi added this")
+      sectionTitle("Por que o Omi adicionou isto")
       Text(content.whyOmiAddedThis)
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
@@ -155,15 +155,15 @@ struct TaskDetailPanel: View {
   private var linkedSourcesSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
       HStack(alignment: .firstTextBaseline) {
-        sectionTitle("Linked sources")
+        sectionTitle("Fontes vinculadas")
         Spacer()
-        Text("\(content.linkedSources.count) linked source\(content.linkedSources.count == 1 ? "" : "s")")
+        Text("\(content.linkedSources.count) \(content.linkedSources.count == 1 ? "fonte vinculada" : "fontes vinculadas")")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
       }
 
       if content.linkedSources.isEmpty {
-        Text("This task has no source to open.")
+        Text("Esta tarefa não tem fonte para abrir.")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
       } else {
@@ -223,7 +223,7 @@ struct TaskDetailPanel: View {
 
   private var detailsSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      sectionTitle("Details")
+      sectionTitle("Detalhes")
       VStack(alignment: .leading, spacing: OmiSpacing.xs) {
         ForEach(content.fields) { field in
           HStack(alignment: .top, spacing: OmiSpacing.sm) {
@@ -250,16 +250,16 @@ struct TaskDetailPanel: View {
       || metadata["reasoning"] as? String != nil
     {
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        sectionTitle("Context")
+        sectionTitle("Contexto")
         VStack(alignment: .leading, spacing: OmiSpacing.sm) {
           if let summary = task.contextSummary ?? metadata["context_summary"] as? String, !summary.isEmpty {
-            detailBlock("Summary", summary)
+            detailBlock("Resumo", summary)
           }
           if let activity = task.currentActivity ?? metadata["current_activity"] as? String, !activity.isEmpty {
-            detailBlock("Activity", activity)
+            detailBlock("Atividade", activity)
           }
           if let reasoning = metadata["reasoning"] as? String, !reasoning.isEmpty {
-            detailBlock("Reasoning", reasoning)
+            detailBlock("Raciocínio", reasoning)
           }
         }
       }
@@ -268,19 +268,19 @@ struct TaskDetailPanel: View {
 
   private var actionsSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      sectionTitle("Actions")
+      sectionTitle("Ações")
       VStack(spacing: OmiSpacing.xs) {
         actionButton(
-          title: task.completed ? "Mark as active" : "Mark complete",
+          title: task.completed ? "Marcar como ativa" : "Marcar como concluída",
           systemImage: task.completed ? "circle" : "checkmark.circle",
           action: onToggle,
           identifier: "task-detail-toggle"
         )
-        actionButton(title: "Edit task", systemImage: "pencil", action: onEdit, identifier: "task-detail-edit")
+        actionButton(title: "Editar tarefa", systemImage: "pencil", action: onEdit, identifier: "task-detail-edit")
 
         if let onOpenChat {
           actionButton(
-            title: task.workstreamId == nil ? "Work on This with Omi" : "Open Thread",
+            title: task.workstreamId == nil ? "Trabalhar nisso com o Omi" : "Abrir conversa",
             systemImage: task.workstreamId == nil ? "sparkles" : "bubble.left",
             action: onOpenChat,
             identifier: "task-detail-chat"
@@ -288,7 +288,7 @@ struct TaskDetailPanel: View {
         }
         if let onDecrementIndent {
           actionButton(
-            title: "Decrease Indent",
+            title: "Diminuir recuo",
             systemImage: "arrow.left.to.line",
             action: onDecrementIndent,
             identifier: "task-detail-outdent"
@@ -296,14 +296,14 @@ struct TaskDetailPanel: View {
         }
         if let onIncrementIndent {
           actionButton(
-            title: "Increase Indent",
+            title: "Aumentar recuo",
             systemImage: "arrow.right.to.line",
             action: onIncrementIndent,
             identifier: "task-detail-indent"
           )
         }
         actionButton(
-          title: isCopyingLink ? "Copying Link…" : (copyStatus ?? "Copy Task Link"),
+          title: isCopyingLink ? "Copiando link…" : (copyStatus ?? "Copiar link da tarefa"),
           systemImage: copyStatus == nil ? "link" : "checkmark",
           action: copyShareLink,
           identifier: "task-detail-copy-link"
@@ -311,7 +311,7 @@ struct TaskDetailPanel: View {
         .disabled(isCopyingLink)
 
         Button(role: .destructive, action: onDelete) {
-          Label("Delete Task", systemImage: "trash")
+          Label("Apagar tarefa", systemImage: "trash")
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
@@ -370,15 +370,15 @@ struct TaskDetailPanel: View {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         if pasteboard.setString(url, forType: .string) {
-          copyStatus = "Link copied"
+          copyStatus = "Link copiado"
           if let sid = DesktopBackendEnvironment.shareID(from: url) {
             AnalyticsManager.shared.shareAction(category: "task", properties: ["share_id": sid, "target_app": "copy"])
           }
         } else {
-          copyStatus = "Copy failed"
+          copyStatus = "Falha ao copiar"
         }
       } catch {
-        copyStatus = "Copy failed"
+        copyStatus = "Falha ao copiar"
         log("Failed to get task share link: \(error)")
       }
     }

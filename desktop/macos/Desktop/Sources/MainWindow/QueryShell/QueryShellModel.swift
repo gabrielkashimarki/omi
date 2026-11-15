@@ -38,10 +38,10 @@ enum QueryShellKind: String, CaseIterable, Identifiable, Sendable {
 
   var title: String {
     switch self {
-    case .all: return "All"
-    case .conversations: return "Conversations"
-    case .memories: return "Memories"
-    case .tasks: return "Tasks"
+    case .all: return "Tudo"
+    case .conversations: return "Conversas"
+    case .memories: return "Memórias"
+    case .tasks: return "Tarefas"
     case .rewind: return "Rewind"
     }
   }
@@ -61,10 +61,10 @@ enum QueryShellRange: String, CaseIterable, Identifiable, Sendable {
 
   var title: String {
     switch self {
-    case .today: return "Today"
-    case .week: return "Last 7 days"
-    case .month: return "Last 30 days"
-    case .all: return "All time"
+    case .today: return "Hoje"
+    case .week: return "Últimos 7 dias"
+    case .month: return "Últimos 30 dias"
+    case .all: return "Todo o período"
     }
   }
 
@@ -187,7 +187,7 @@ enum ChatComposerAutomationSnapshot {
 /// says the one thing it always means — `Ask Omi` — whatever the transcript holds. Only the search
 /// placement carries a different prompt, because it is a different control.
 enum QueryComposerPlaceholder {
-  static let chat = "Ask Omi"
+  static let chat = "Perguntar ao Omi"
 
   static func text(mode: QueryShellMode) -> String {
     switch mode {
@@ -427,7 +427,7 @@ enum QueryShellCount {
   ///
   /// It is one constant rather than three literals so the three branches cannot end up describing
   /// three different corpora — which is the drift that produced the contradiction in the first place.
-  static let scope = "everything Omi has kept"
+  static let scope = "tudo o que o Omi guardou"
 
   /// - Parameter isSettled: whether `total` is a finished count. While the account is still paging
   ///   in, the number climbs under the reader — so it says that instead of presenting a moving
@@ -435,11 +435,11 @@ enum QueryShellCount {
   static func sentence(matching: Int, total: Int, isFiltering: Bool, isSettled: Bool) -> String {
     guard isFiltering else {
       guard isSettled else {
-        return "\(number(total)) so far · still counting \(scope)"
+        return "\(number(total)) até agora · ainda contando \(scope)"
       }
-      return "\(number(total)) moment\(total == 1 ? "" : "s") in \(scope)"
+      return "\(number(total)) \(total == 1 ? "momento" : "momentos") em \(scope)"
     }
-    return "\(number(matching)) result\(matching == 1 ? "" : "s") · of \(number(total)) in \(scope)"
+    return "\(number(matching)) \(matching == 1 ? "resultado" : "resultados") · de \(number(total)) em \(scope)"
   }
 
   /// Grouped digits, because the count is routinely five figures and an ungrouped one is unreadable

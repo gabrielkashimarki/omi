@@ -22,11 +22,11 @@ enum CaptureTranscriptResyncError: LocalizedError, Equatable {
   var errorDescription: String? {
     switch self {
     case .noAudio:
-      return "Audio is not ready to sync against."
+      return "O áudio não está pronto para sincronizar."
     case .nothingRecognized:
-      return "No speech was recognized in the audio."
+      return "Nenhuma fala foi reconhecida no áudio."
     case .tooFewMatches(let matched, let alignable):
-      return "Only \(matched) of \(alignable) sentences were found in the audio; the transcript was left as is."
+      return "Só \(matched) de \(alignable) frases foram encontradas no áudio. A transcrição foi mantida como estava."
     }
   }
 }
@@ -250,7 +250,7 @@ final class CaptureTranscriptResyncer: ObservableObject {
     do {
       localURL = try await fetcher.download(artifact.signedURL)
     } catch {
-      _ = publish(.failed("Couldn't download the audio: \(error.localizedDescription)"), for: startedGeneration)
+      _ = publish(.failed("Não foi possível baixar o áudio: \(error.localizedDescription)"), for: startedGeneration)
       return nil
     }
     defer { try? FileManager.default.removeItem(at: localURL) }
@@ -264,7 +264,7 @@ final class CaptureTranscriptResyncer: ObservableObject {
     do {
       words = try await recognizer.recognizeWords(in: localURL)
     } catch {
-      _ = publish(.failed("On-device recognition failed: \(error.localizedDescription)"), for: startedGeneration)
+      _ = publish(.failed("O reconhecimento no dispositivo falhou: \(error.localizedDescription)"), for: startedGeneration)
       return nil
     }
     guard !words.isEmpty else {

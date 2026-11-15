@@ -31,15 +31,15 @@ enum DesktopUpdateStatusPresentation {
       case .idle:
         return ""
       case .checking:
-        return "Checking for updates…"
+        return "Verificando atualizações…"
       case .downloading:
-        return "Downloading Update…"
+        return "Baixando atualização…"
       case .updateAvailable:
-        return "Update Available"
+        return "Atualização disponível"
       case .restartImminent:
-        return "Update ready — Omi will restart"
+        return "Atualização pronta. O Omi vai reiniciar"
       case .deferredForRecording:
-        return "Update ready — waiting for quiet moment"
+        return "Atualização pronta, aguardando um momento tranquilo"
       }
     }
 
@@ -60,15 +60,15 @@ enum DesktopUpdateStatusPresentation {
       case .idle:
         return ""
       case .checking:
-        return "Checking…"
+        return "Verificando…"
       case .downloading(let version):
-        return version.isEmpty ? "Downloading…" : "Downloading v\(version)…"
+        return version.isEmpty ? "Baixando…" : "Baixando v\(version)…"
       case .updateAvailable(let version):
-        return version.isEmpty ? "Update Available" : "Update v\(version)"
+        return version.isEmpty ? "Atualização disponível" : "Atualização v\(version)"
       case .restartImminent:
-        return "Restarting…"
+        return "Reiniciando…"
       case .deferredForRecording:
-        return "Update waiting…"
+        return "Atualização em espera…"
       }
     }
 
@@ -82,15 +82,15 @@ enum DesktopUpdateStatusPresentation {
     var checkActionTitle: String {
       switch self {
       case .idle, .updateAvailable:
-        return "Check Now"
+        return "Verificar agora"
       case .checking:
-        return "Checking…"
+        return "Verificando…"
       case .downloading:
-        return "Downloading…"
+        return "Baixando…"
       case .restartImminent:
-        return "Restarting…"
+        return "Reiniciando…"
       case .deferredForRecording:
-        return "Waiting…"
+        return "Aguardando…"
       }
     }
   }
@@ -112,7 +112,7 @@ enum DesktopUpdateStatusPresentation {
     if sessionInProgress && updateAvailable {
       return .downloading(version: availableVersion)
     }
-    // Only surface "Checking…" for user-initiated checks. Automatic Sparkle
+    // Only surface "Verificando…" for user-initiated checks. Automatic Sparkle
     // polls (every 2–10 min) also set sessionInProgress and would otherwise
     // flash a non-actionable chip in the chat-first top bar (#11108 / cubic).
     if sessionInProgress && userInitiatedCheck {
@@ -126,7 +126,7 @@ enum DesktopUpdateStatusPresentation {
 }
 
 /// Compact spinner for update chrome. macOS `ProgressView()` defaults to a
-/// linear bar (~100pt+), which left a blank gap beside "Downloading…" in the
+/// linear bar (~100pt+), which left a blank gap beside "Baixando…" in the
 /// top-bar chip; pin circular style and a caption-sized frame.
 struct DesktopUpdateStatusProgressIndicator: View {
   var diameter: CGFloat = 16

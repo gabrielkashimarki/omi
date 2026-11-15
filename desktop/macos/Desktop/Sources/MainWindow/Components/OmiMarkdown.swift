@@ -187,7 +187,7 @@ struct OmiMarkdownContent: View, Equatable {
       .frame(maxWidth: .infinity)
       .frame(height: 1)
       .padding(.vertical, OmiSpacing.sm)
-      .accessibilityLabel("Section break")
+      .accessibilityLabel("Quebra de seção")
   }
 
   @ViewBuilder
@@ -911,7 +911,7 @@ private struct OmiMarkdownCopyToast: View {
   let fontScale: CGFloat
 
   var body: some View {
-    Text("Copied")
+    Text("Copiado")
       .font(.system(size: round(11 * fontScale), weight: .semibold))
       .foregroundColor(.white)
       .padding(.horizontal, 7)
@@ -962,9 +962,9 @@ private struct OmiMarkdownInlineCodeCopyButton: View {
       }
     }
     .zIndex(copied ? 1 : 0)
-    .accessibilityLabel(copied ? "Copied" : "Copy inline code")
+    .accessibilityLabel(copied ? "Copiado" : "Copiar código em linha")
     .accessibilityValue(code)
-    .help(copied ? "Copied" : "Click to copy code")
+    .help(copied ? "Copiado" : "Clique para copiar o código")
   }
 
   private func copyCode() {
@@ -1302,10 +1302,10 @@ private struct ChatCitationToken: View {
         }
       }
     }
-    .accessibilityLabel("Source \(reference.ordinal): \(reference.displayTitle)")
-    .accessibilityHint(reference.canOpen ? "Open this source" : "This source is unavailable")
+    .accessibilityLabel("Fonte \(reference.ordinal): \(reference.displayTitle)")
+    .accessibilityHint(reference.canOpen ? "Abrir esta fonte" : "Esta fonte está indisponível")
     .accessibilityIdentifier("query-shell-citation-\(reference.ordinal)")
-    .help("Source \(reference.ordinal): \(reference.displayTitle)")
+    .help("Fonte \(reference.ordinal): \(reference.displayTitle)")
   }
 
   private func schedulePreviewDismiss(generation: Int) {
@@ -1344,12 +1344,12 @@ struct ChatCitationPreview: View {
       }
       if reference.canOpen {
         Button(action: onOpen) {
-          Label("Open \(reference.kind.title)", systemImage: "arrow.up.right")
+          Label("Abrir \(reference.kind.title)", systemImage: "arrow.up.right")
             .font(.system(size: round(11 * fontScale), weight: .semibold))
         }
         .buttonStyle(.plain)
         .foregroundStyle(Ink.accent)
-        .accessibilityHint("Open the cited source")
+        .accessibilityHint("Abrir a fonte citada")
       }
     }
     .padding(OmiSpacing.md)
@@ -1545,8 +1545,8 @@ private struct OmiMarkdownTableView: View {
     }
     .background(VerticalWheelPassthrough())
     .frame(maxWidth: .infinity, alignment: .leading)
-    .accessibilityLabel("Scrollable markdown table")
-    .accessibilityHint("Scroll horizontally to view additional columns")
+    .accessibilityLabel("Tabela markdown rolável")
+    .accessibilityHint("Role na horizontal para ver mais colunas")
   }
 
   private var tableGrid: some View {
@@ -1705,10 +1705,10 @@ private struct OmiMarkdownCodeBlockView: View {
     .onTapGesture { copyCode() }
     .accessibilityElement(children: .combine)
     .accessibilityAddTraits(.isButton)
-    .accessibilityLabel(copied ? "Copied" : "Copy code block")
-    .accessibilityHint("Click anywhere in the code block to copy")
+    .accessibilityLabel(copied ? "Copiado" : "Copiar bloco de código")
+    .accessibilityHint("Clique em qualquer ponto do bloco de código para copiar")
     .accessibilityAction { copyCode() }
-    .help(copied ? "Copied" : "Click anywhere to copy code")
+    .help(copied ? "Copiado" : "Clique em qualquer ponto para copiar o código")
   }
 
   private func copyCode() {

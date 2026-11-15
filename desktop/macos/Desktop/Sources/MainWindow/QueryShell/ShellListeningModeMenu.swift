@@ -28,16 +28,16 @@ enum ShellListeningMenuItem: Hashable {
   var title: String {
     switch self {
     case .mode(let mode): return CaptureListeningLogic.audioRecordingModeTitle(mode)
-    case .audioSettings: return "Audio Settings…"
+    case .audioSettings: return "Ajustes de áudio…"
     }
   }
 
   /// The line under a mode saying what it records. Sentence case, no trailing period (§8).
   var detail: String? {
     switch self {
-    case .mode(.off): return "Nothing is recorded"
-    case .mode(.always): return "Records everything your microphone hears"
-    case .mode(.onlyMeetings): return "Records only while you are on a call"
+    case .mode(.off): return "Nada é gravado"
+    case .mode(.always): return "Grava tudo o que o microfone ouve"
+    case .mode(.onlyMeetings): return "Grava só enquanto você está em uma chamada"
     case .audioSettings: return nil
     }
   }
@@ -100,7 +100,7 @@ struct ShellListeningModeMenu: View {
     }
     .onAppear { isFocused = true }
     .accessibilityElement(children: .contain)
-    .accessibilityLabel("Audio recording")
+    .accessibilityLabel("Gravação de áudio")
   }
 
   private func row(_ item: ShellListeningMenuItem, at index: Int) -> some View {

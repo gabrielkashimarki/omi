@@ -17,23 +17,23 @@ struct ConversationStatusBadge: View {
     case .awaitingFirstOpen:
       Pill(
         icon: "sparkles",
-        text: "Tap to summarize",
+        text: "Toque para resumir",
         color: Ink.accent,
-        help: "The transcript is saved. Open the conversation to generate its title and summary."
+        help: "A transcrição está salva. Abra a conversa para gerar o título e o resumo."
       )
     case .locked:
       Pill(
         icon: "hourglass",
-        text: "Saved and waiting",
+        text: "Salva e aguardando",
         color: PageGlass.warning,
-        help: "This conversation is saved. Check your plan and usage to see when processing is available."
+        help: "Esta conversa está salva. Veja seu plano e uso para saber quando o processamento estará disponível."
       )
     case .failed:
       Pill(
         icon: "exclamationmark.triangle.fill",
-        text: "Failed",
+        text: "Falhou",
         color: Ink.errorRed,
-        help: "Processing failed. Try Reprocess to rerun the title and summary."
+        help: "O processamento falhou. Use Reprocessar para gerar o título e o resumo de novo."
       )
     case .untitledRecoverable:
       Pill(
@@ -83,20 +83,20 @@ private struct ProcessingPill: View {
 
   static func label(for phase: ConversationProcessingPhase) -> String {
     switch phase {
-    case .summarizing: return "Summarizing"
-    case .slow: return "Taking longer than usual"
-    case .stalled: return "Stuck"
+    case .summarizing: return "Resumindo"
+    case .slow: return "Demorando mais que o normal"
+    case .stalled: return "Travada"
     }
   }
 
   static func help(for phase: ConversationProcessingPhase) -> String {
     switch phase {
     case .summarizing:
-      return "Omi is writing the title and summary. This usually takes under two minutes."
+      return "O Omi está escrevendo o título e o resumo. Isso costuma levar menos de dois minutos."
     case .slow:
-      return "Still processing. Longer conversations and busy periods can take a few minutes."
+      return "Ainda processando. Conversas longas e horários de pico podem levar alguns minutos."
     case .stalled:
-      return "This has been processing for over ten minutes. Reprocess to run it again."
+      return "Está processando há mais de dez minutos. Reprocese para tentar de novo."
     }
   }
 

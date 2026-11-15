@@ -114,7 +114,7 @@ final class SpineStore: ObservableObject {
     let conversationTitles = Dictionary(
       lastWriteWins: conversations.map { conversation in
         let title = conversation.structured.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        return (conversation.id, title.isEmpty ? "Untitled conversation" : title)
+        return (conversation.id, title.isEmpty ? "Conversa sem título" : title)
       })
     self.memories = memories.map {
       SpineMemory(

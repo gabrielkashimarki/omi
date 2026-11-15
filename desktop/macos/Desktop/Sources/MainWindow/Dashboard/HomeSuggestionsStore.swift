@@ -6,7 +6,7 @@ import Foundation
 /// question plus two personalized follow-ups generated from the user's own
 /// memories, conversations, tasks, and goals.
 enum HomeSuggestionComposer {
-  static let universalFirstQuestion = "What should I do today?"
+  static let universalFirstQuestion = "O que devo fazer hoje?"
 
   /// Longest personalized question that still fits a single chip line.
   static let maxPersonalizedLength = 72
@@ -15,6 +15,7 @@ enum HomeSuggestionComposer {
   /// that must not repeat in the personalized slots.
   private static let universalQuestions: Set<String> = [
     "what should i do today?",
+    "o que devo fazer hoje?",
     "what should i focus on today to achieve my goals?",
   ]
 

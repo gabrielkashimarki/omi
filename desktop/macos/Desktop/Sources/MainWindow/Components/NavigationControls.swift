@@ -34,7 +34,7 @@ struct BackChip: View {
 
   @State private var isHovering = false
 
-  init(_ title: String = "Back", accessibilityIdentifier: String? = nil, action: @escaping () -> Void) {
+  init(_ title: String = "Voltar", accessibilityIdentifier: String? = nil, action: @escaping () -> Void) {
     self.title = title
     self.accessibilityIdentifier = accessibilityIdentifier
     self.action = action
@@ -69,7 +69,7 @@ struct BackChip: View {
   }
 
   nonisolated static func helpText(for title: String) -> String {
-    title == "Back" ? "Back (Esc)" : "Back to \(title) (Esc)"
+    (title == "Back" || title == "Voltar") ? "Voltar (Esc)" : "Voltar para \(title) (Esc)"
   }
 }
 
@@ -83,7 +83,7 @@ struct DismissButton: View {
   let action: () -> Void
   var icon: String = "xmark"
   var showBackground: Bool = true
-  var accessibilityLabel: String = "Close"
+  var accessibilityLabel: String = "Fechar"
   var size: Size = .regular
 
   enum Size {
@@ -139,9 +139,9 @@ struct SafeDismissButton: View {
       .clipShape(Circle())
       .contentShape(Circle())
       .opacity(isPressed ? 0.7 : 1.0)
-      .help("Close (Esc)")
+      .help("Fechar (Esc)")
       .accessibilityElement()
-      .accessibilityLabel("Close")
+      .accessibilityLabel("Fechar")
       .accessibilityAddTraits(.isButton)
       .onTapGesture {
         guard !isPressed else { return }  // Prevent double-tap
@@ -181,7 +181,7 @@ struct SafeDismissButton: View {
 /// The clear control inside a search or text field: a filled circle-x at the field's trailing edge.
 /// It clears the field; it never closes anything, which is why it is not a `DismissButton`.
 struct ClearFieldButton: View {
-  var help: String = "Clear Search"
+  var help: String = "Limpar busca"
   let action: () -> Void
 
   var body: some View {

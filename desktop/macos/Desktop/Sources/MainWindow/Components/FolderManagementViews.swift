@@ -9,14 +9,14 @@ struct FolderColors {
   /// folder already saved with either hex still renders its stored colour — the stored value is user
   /// data, and silently repainting someone's folders is a worse defect than the one being fixed.
   static let palette: [(name: String, hex: String)] = [
-    ("Gray", "#6B7280"),
-    ("Red", "#EF4444"),
-    ("Orange", "#F97316"),
-    ("Amber", "#F59E0B"),
-    ("Green", "#22C55E"),
-    ("Teal", "#14B8A6"),
-    ("Blue", "#3B82F6"),
-    ("Pink", "#EC4899"),
+    ("Cinza", "#6B7280"),
+    ("Vermelho", "#EF4444"),
+    ("Laranja", "#F97316"),
+    ("Âmbar", "#F59E0B"),
+    ("Verde", "#22C55E"),
+    ("Azul-petróleo", "#14B8A6"),
+    ("Azul", "#3B82F6"),
+    ("Rosa", "#EC4899"),
   ]
 }
 
@@ -35,7 +35,7 @@ struct FolderTabsStrip: View {
       HStack(spacing: OmiSpacing.xs) {
         // "All" tab
         folderTab(
-          label: "All",
+          label: "Todas",
           icon: "tray.2",
           isSelected: appState.selectedFolderId == nil && !appState.showStarredOnly
         ) {
@@ -51,7 +51,7 @@ struct FolderTabsStrip: View {
 
         // "Starred" tab
         folderTab(
-          label: "Starred",
+          label: "Favoritas",
           icon: appState.showStarredOnly ? "star.fill" : "star",
           isSelected: appState.showStarredOnly
         ) {
@@ -84,12 +84,12 @@ struct FolderTabsStrip: View {
             Button {
               onEditFolder(folder)
             } label: {
-              Label("Edit", systemImage: "pencil")
+              Label("Editar", systemImage: "pencil")
             }
             Button(role: .destructive) {
               onDeleteFolder(folder)
             } label: {
-              Label("Delete", systemImage: "trash")
+              Label("Apagar", systemImage: "trash")
             }
           }
         }
@@ -157,7 +157,7 @@ struct FolderFormSheet: View {
     VStack(alignment: .leading, spacing: 0) {
       // Header
       HStack {
-        Text(isEditing ? "Edit Folder" : "New Folder")
+        Text(isEditing ? "Editar pasta" : "Nova pasta")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -170,10 +170,10 @@ struct FolderFormSheet: View {
       VStack(alignment: .leading, spacing: OmiSpacing.lg) {
         // Name field
         VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-          Text("Name")
+          Text("Nome")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.secondary)
-          TextField("Folder name", text: $name)
+          TextField("Nome da pasta", text: $name)
             .textFieldStyle(.plain)
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.primary)
@@ -191,10 +191,10 @@ struct FolderFormSheet: View {
 
         // Description field
         VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-          Text("Description")
+          Text("Descrição")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.secondary)
-          TextField("Optional description", text: $descriptionText)
+          TextField("Descrição (opcional)", text: $descriptionText)
             .textFieldStyle(.plain)
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.primary)
@@ -212,7 +212,7 @@ struct FolderFormSheet: View {
 
         // Color picker
         VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-          Text("Color")
+          Text("Cor")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.secondary)
 
@@ -249,7 +249,7 @@ struct FolderFormSheet: View {
       // Action buttons
       HStack {
         Spacer()
-        Button("Cancel") {
+        Button("Cancelar") {
           onDismiss()
         }
         .buttonStyle(.plain)
@@ -263,7 +263,7 @@ struct FolderFormSheet: View {
               .scaleEffect(0.6)
               .frame(width: 14, height: 14)
           } else {
-            Text(isEditing ? "Save" : "Create")
+            Text(isEditing ? "Salvar" : "Criar")
           }
         }
         .buttonStyle(.plain)
@@ -330,7 +330,7 @@ struct DeleteFolderSheet: View {
     VStack(alignment: .leading, spacing: 0) {
       // Header
       HStack {
-        Text("Delete Folder")
+        Text("Apagar pasta")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -341,20 +341,20 @@ struct DeleteFolderSheet: View {
       Divider().background(Ink.rowFillHover)
 
       VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-        Text("Are you sure you want to delete \"\(folder.name)\"?")
+        Text("Tem certeza de que quer apagar \"\(folder.name)\"?")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.primary)
 
         if folder.conversationCount > 0 {
           Text(
-            "This folder has \(folder.conversationCount) conversation\(folder.conversationCount == 1 ? "" : "s"). Choose where to move them:"
+            "Esta pasta tem \(folder.conversationCount) \(folder.conversationCount == 1 ? "conversa" : "conversas"). Escolha para onde movê-las:"
           )
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
 
           // Move destination picker
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            moveOption(label: "No folder (unfiled)", folderId: nil)
+            moveOption(label: "Sem pasta (sem classificação)", folderId: nil)
 
             ForEach(appState.folders.filter { $0.id != folder.id }) { otherFolder in
               moveOption(label: otherFolder.name, folderId: otherFolder.id, color: otherFolder.color)
@@ -369,7 +369,7 @@ struct DeleteFolderSheet: View {
       // Action buttons
       HStack {
         Spacer()
-        Button("Cancel") {
+        Button("Cancelar") {
           onDismiss()
         }
         .buttonStyle(.plain)
@@ -383,7 +383,7 @@ struct DeleteFolderSheet: View {
               .scaleEffect(0.6)
               .frame(width: 14, height: 14)
           } else {
-            Text("Delete")
+            Text("Apagar")
           }
         }
         .buttonStyle(.plain)

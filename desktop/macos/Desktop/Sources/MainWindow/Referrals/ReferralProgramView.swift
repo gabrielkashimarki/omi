@@ -61,12 +61,12 @@ struct ReferralProgramView: View {
           .accessibilityHidden(true)
 
         VStack(spacing: OmiSpacing.sm) {
-          Text("Give a friend one free month of Omi Pro")
+          Text("Dê a um amigo um mês grátis do Omi Pro")
             .scaledFont(size: OmiType.title, weight: .semibold)
             .foregroundColor(Ink.primary)
             .multilineTextAlignment(.center)
 
-          Text("Share your unique link. When a friend joins Omi, they'll get one month of Omi Pro free.")
+          Text("Compartilhe seu link exclusivo. Quando um amigo entrar no Omi, ele ganha um mês grátis do Omi Pro.")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
             .multilineTextAlignment(.center)
@@ -84,7 +84,7 @@ struct ReferralProgramView: View {
   private var referralControl: some View {
     switch viewModel.state {
     case .idle, .loading:
-      ProgressView("Getting your link…")
+      ProgressView("Obtendo seu link…")
         .controlSize(.small)
         .foregroundColor(Ink.secondary)
         .frame(minHeight: 44)
@@ -105,17 +105,17 @@ struct ReferralProgramView: View {
         Button {
           copy(link)
         } label: {
-          Label(copied ? "Copied" : "Copy link", systemImage: copied ? "checkmark" : "doc.on.doc")
+          Label(copied ? "Copiado" : "Copiar link", systemImage: copied ? "checkmark" : "doc.on.doc")
         }
         .buttonStyle(OmiButtonStyle(.primary, size: .compact))
         .accessibilityIdentifier("copy-referral-link")
       }
     case .failed:
       VStack(spacing: OmiSpacing.sm) {
-        Text("We couldn't get your referral link.")
+        Text("Não conseguimos obter o seu link de indicação.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
-        Button("Try Again") {
+        Button("Tentar de novo") {
           Task { await viewModel.load() }
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
@@ -163,7 +163,7 @@ struct ReferralTopBarButton: View {
         Image(systemName: "gift")
           .scaledFont(size: OmiType.caption, weight: .semibold)
           .frame(width: TopNavigationPillMetrics.iconWidth)
-        Text("Refer")
+        Text("Indicar")
           .scaledFont(size: OmiType.caption, weight: .semibold)
           .lineLimit(1)
           .fixedSize()
@@ -183,8 +183,8 @@ struct ReferralTopBarButton: View {
     }
     .buttonStyle(.plain)
     .onHover { isHovering = $0 }
-    .help("Refer a friend")
-    .accessibilityLabel("Refer a friend")
+    .help("Indicar um amigo")
+    .accessibilityLabel("Indicar um amigo")
     .accessibilityIdentifier("top-navigation-refer")
   }
 }

@@ -1114,7 +1114,7 @@ struct ChatMessagesView<WelcomeContent: View>: View {
           ProgressView()
             .scaleEffect(0.8)
         } else {
-          Text(action == .loadMoreRows ? "Load earlier messages" : "Show older messages")
+          Text(action == .loadMoreRows ? "Carregar mensagens anteriores" : "Mostrar mensagens mais antigas")
             .font(.caption)
             .foregroundColor(.secondary)
         }
@@ -1131,7 +1131,7 @@ struct ChatMessagesView<WelcomeContent: View>: View {
       VStack(spacing: OmiSpacing.md) {
         ProgressView()
           .scaleEffect(0.8)
-        Text("Loading…")
+        Text("Carregando…")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
@@ -1222,7 +1222,7 @@ struct ChatMessagesView<WelcomeContent: View>: View {
         .scaledFont(size: OmiType.hero)
         .foregroundColor(Ink.errorRed)
 
-      Text("Failed to load chats")
+      Text("Falha ao carregar os chats")
         .scaledFont(size: OmiType.subheading, weight: .medium)
         .foregroundColor(Ink.primary)
 
@@ -1233,7 +1233,7 @@ struct ChatMessagesView<WelcomeContent: View>: View {
 
       if let onRetry {
         Button(action: onRetry) {
-          Text("Try Again")
+          Text("Tentar de novo")
             .scaledFont(size: OmiType.body, weight: .medium)
             .foregroundColor(Ink.primary)
             .padding(.horizontal, OmiSpacing.xl)
@@ -1329,7 +1329,7 @@ struct ChatMessagesView<WelcomeContent: View>: View {
         .scaleEffect(hasActivityBelow ? 1.08 : 1.0)
       }
       .buttonStyle(.plain)
-      .accessibilityLabel("Jump to latest message")
+      .accessibilityLabel("Ir para a mensagem mais recente")
       .padding(.bottom, OmiSpacing.lg)
       .padding(
         .trailing,

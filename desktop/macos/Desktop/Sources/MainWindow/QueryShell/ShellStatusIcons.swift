@@ -251,7 +251,7 @@ enum ShellStatusGlyph {
 enum ShellStatusTooltip {
   /// What a click on the audio control does in every state but blocked. It opens the mode menu, so
   /// the sentence promises the menu, never a particular next mode.
-  static let audioOpensMenu = "Click to choose what Omi records"
+  static let audioOpensMenu = "Clique para escolher o que o Omi grava"
 
   /// `mode` is `CaptureListeningLogic.listeningModeTitle`: "Always On", "Only Meetings", "In
   /// Meeting", or a named mic. `.armed` is the Only Meetings wait: switched on, nothing recorded
@@ -263,35 +263,35 @@ enum ShellStatusTooltip {
     switch state {
     case .blocked:
       if microphoneSignalMissing {
-        let recording = systemAudioContinues ? "System audio is still recording. " : ""
-        return "Audio — no microphone signal. \(recording)Click to check your microphone in Audio Settings"
+        let recording = systemAudioContinues ? "O áudio do sistema continua sendo gravado. " : ""
+        return "Áudio: sem sinal do microfone. \(recording)Clique para verificar o microfone nos Ajustes de áudio"
       }
-      return "Audio — transcription unavailable. Click to open Audio Settings"
+      return "Áudio: transcrição indisponível. Clique para abrir os Ajustes de áudio"
     case .armed:
       // Without the grant no call can be recorded, so the sentence names what is missing instead
       // of promising a recording that cannot start.
       guard hasMicrophonePermission else {
-        return "Audio — \(mode), but Omi needs microphone access to record a call. \(audioOpensMenu)"
+        return "Áudio: \(mode), mas o Omi precisa de acesso ao microfone para gravar uma chamada. \(audioOpensMenu)"
       }
-      return "Audio — \(mode), waiting for a call. Recording starts when one is detected. \(audioOpensMenu)"
+      return "Áudio: \(mode), aguardando uma chamada. A gravação começa quando uma for detectada. \(audioOpensMenu)"
     case .active:
-      return "Audio — recording (\(mode)). \(audioOpensMenu)"
+      return "Áudio: gravando (\(mode)). \(audioOpensMenu)"
     case .inactive:
       guard hasMicrophonePermission else {
-        return "Audio — off. Omi needs microphone access to record. \(audioOpensMenu)"
+        return "Áudio: desligado. O Omi precisa de acesso ao microfone para gravar. \(audioOpensMenu)"
       }
-      return "Audio — off. Nothing is being recorded. \(audioOpensMenu)"
+      return "Áudio: desligado. Nada está sendo gravado. \(audioOpensMenu)"
     }
   }
 
   static func screen(state: HomeStatusState) -> String {
     switch state {
     case .blocked:
-      return "Screen — capture needs permission. Click to grant it."
+      return "Tela: a captura precisa de permissão. Clique para conceder."
     case .active, .armed:
-      return "Screen — capturing. Rewind is recording. Click to stop."
+      return "Tela: capturando. O Rewind está gravando. Clique para parar."
     case .inactive:
-      return "Screen — off. Nothing is being recorded. Click to start."
+      return "Tela: desligada. Nada está sendo gravado. Clique para iniciar."
     }
   }
 }

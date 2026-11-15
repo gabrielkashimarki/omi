@@ -50,9 +50,9 @@ struct UndoToast: View {
 
       Spacer(minLength: OmiSpacing.md)
 
-      Button("Undo", action: onUndo)
+      Button("Desfazer", action: onUndo)
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
-        .help("Undo")
+        .help("Desfazer")
     }
     .padding(.horizontal, OmiSpacing.lg)
     .padding(.vertical, OmiSpacing.md)
@@ -101,12 +101,12 @@ final class OmiToastCenter: ObservableObject {
   /// Copies `text` and confirms with `message`. Returns whether anything was copied; an empty
   /// string copies nothing and shows "Nothing to copy" instead of a false "Copied".
   @discardableResult
-  func copy(_ text: String, confirming message: String = "Copied") -> Bool {
+  func copy(_ text: String, confirming message: String = "Copiado") -> Bool {
     if OmiClipboard.copy(text) {
       confirm(message)
       return true
     }
-    notice("Nothing to copy")
+    notice("Nada para copiar")
     return false
   }
 }

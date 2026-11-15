@@ -72,7 +72,7 @@ struct StableChatCardHeader<Identity: View, Content: View>: View {
               .contentShape(Rectangle())
           }
           .buttonStyle(.plain)
-          .help("Open agent")
+          .help("Abrir agente")
         } else {
           Color.clear
         }

@@ -96,7 +96,7 @@ struct ShellConfirmationDialog: View {
         Spacer(minLength: 0)
 
         Button(action: onCancel) {
-          Text("Cancel")
+          Text("Cancelar")
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         .keyboardShortcut(.cancelAction)

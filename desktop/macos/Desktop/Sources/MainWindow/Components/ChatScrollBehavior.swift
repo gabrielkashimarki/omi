@@ -995,7 +995,7 @@ struct ChatScrollContainer<Content: View>: View {
         .opacity(hasActivityBelow ? 1 : 0.88)
       }
       .buttonStyle(.plain)
-      .accessibilityLabel("Jump to latest message")
+      .accessibilityLabel("Ir para a mensagem mais recente")
       .padding(.bottom, OmiSpacing.md)
       .transition(.scale.combined(with: .opacity))
     }

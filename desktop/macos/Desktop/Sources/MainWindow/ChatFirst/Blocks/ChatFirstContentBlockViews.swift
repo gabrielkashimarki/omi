@@ -69,7 +69,7 @@ struct QuestionCardView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      Label("Question", systemImage: "questionmark.circle")
+      Label("Pergunta", systemImage: "questionmark.circle")
         .scaledFont(size: OmiType.caption, weight: .semibold)
         .foregroundStyle(Ink.secondary)
 
@@ -107,13 +107,13 @@ struct QuestionCardView: View {
             .buttonStyle(.plain)
             .disabled(!optionsPresentation.isPressable)
             .opacity(optionsPresentation.isPressable ? 1 : 0.45)
-            .accessibilityLabel("Send suggestion: \(option.label)")
+            .accessibilityLabel("Enviar sugestão: \(option.label)")
             .accessibilityIdentifier("chat-first-question-\(questionID)-option-\(option.id)")
           }
         }
 
         if !optionsPresentation.isPressable {
-          Text("Answering is unavailable right now")
+          Text("Não é possível responder agora")
             .scaledFont(size: OmiType.caption)
             .foregroundStyle(Ink.secondary)
             .accessibilityIdentifier("chat-first-question-\(questionID)-unavailable")
@@ -284,7 +284,7 @@ struct TaskCardView: View {
   private func card(_ task: TaskActionItem) -> some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
       HStack(spacing: OmiSpacing.xs) {
-        Label("Task", systemImage: "checklist")
+        Label("Tarefa", systemImage: "checklist")
           .scaledFont(size: OmiType.caption, weight: .semibold)
           .foregroundStyle(Ink.secondary)
       }
@@ -310,7 +310,7 @@ struct TaskCardView: View {
         .buttonStyle(.plain)
         .disabled(isToggling)
         .accessibilityLabel(
-          task.completed ? "Mark \(task.description) incomplete" : "Mark \(task.description) complete"
+          task.completed ? "Marcar \(task.description) como pendente" : "Marcar \(task.description) como concluída"
         )
         .accessibilityIdentifier("chat-first-task-\(taskID)-toggle")
 
@@ -324,7 +324,7 @@ struct TaskCardView: View {
           HStack(spacing: OmiSpacing.xs) {
             if let goalID = task.goalId, !goalID.isEmpty {
               ChatFirstDestinationBadge(
-                title: "Goal",
+                title: "Meta",
                 systemImage: "target",
                 accessibilityID: "chat-first-task-\(taskID)-goal-\(goalID)"
               ) {
@@ -333,7 +333,7 @@ struct TaskCardView: View {
             }
             if let conversationID = ChatFirstCaptureLinkPolicy.captureID(for: task) {
               ChatFirstDestinationBadge(
-                title: "Capture",
+                title: "Captura",
                 systemImage: "waveform",
                 accessibilityID: "chat-first-task-\(taskID)-capture-\(conversationID)"
               ) {
@@ -510,10 +510,10 @@ struct GoalLinkView: View {
         ChatFirstUnavailableBlockView(entityName: "Goal")
       } else {
         ChatFirstLinkBlockView(
-          eyebrow: "Goal",
+          eyebrow: "Meta",
           systemImage: "target",
           summary: summary,
-          actionTitle: "Open in Goals",
+          actionTitle: "Abrir em Metas",
           isOpening: isOpening,
           accessibilityID: "chat-first-goal-\(goalID)-open"
         ) {
@@ -568,10 +568,10 @@ struct CaptureLinkView: View {
         ChatFirstUnavailableBlockView(entityName: "Conversation")
       } else {
         ChatFirstLinkBlockView(
-          eyebrow: "Conversation",
+          eyebrow: "Conversa",
           systemImage: "waveform",
           summary: summary,
-          actionTitle: "Open conversation",
+          actionTitle: "Abrir conversa",
           isOpening: isOpening,
           accessibilityID: "chat-first-capture-\(conversationID)-open"
         ) {
@@ -626,7 +626,7 @@ struct ConversationLinkView: View {
   private var sendSummaryTitle: String? {
     guard let first = shareRecipients.first else { return nil }
     let extra = shareRecipients.count - 1
-    return extra > 0 ? "Send to \(first.shortLabel) +\(extra)" : "Send to \(first.shortLabel)"
+    return extra > 0 ? "Enviar para \(first.shortLabel) +\(extra)" : "Enviar para \(first.shortLabel)"
   }
 
   private var statusLine: (message: String, systemImage: String, color: Color)? {
@@ -653,10 +653,10 @@ struct ConversationLinkView: View {
         ChatFirstUnavailableBlockView(entityName: "Conversation")
       } else {
         ChatFirstLinkBlockView(
-          eyebrow: "Meeting notes ready",
+          eyebrow: "Notas da reunião prontas",
           systemImage: "text.document",
           summary: summary,
-          actionTitle: "Open conversation",
+          actionTitle: "Abrir conversa",
           isOpening: isOpening,
           accessibilityID: "chat-first-conversation-\(conversationID)-open",
           action: { openConversation() },
@@ -665,17 +665,17 @@ struct ConversationLinkView: View {
             guard let taskID = item.taskID else { return }
             navigation.open(focus: .task(id: taskID))
           },
-          secondaryActionTitle: "Copy share link",
+          secondaryActionTitle: "Copiar link de compartilhamento",
           secondaryActionSystemImage: "link",
           isSecondaryBusy: isCopyingLink,
           secondaryAccessibilityID: "chat-first-conversation-\(conversationID)-copy-link",
-          secondaryHelp: "Copy share link — anyone with the link can view",
+          secondaryHelp: "Copiar link de compartilhamento (qualquer pessoa com o link pode ver)",
           secondaryAction: { copyShareLink() },
           tertiaryActionTitle: sendSummaryTitle,
           tertiaryActionSystemImage: "paperplane",
           isTertiaryBusy: isSendingSummary,
           tertiaryAccessibilityID: "chat-first-conversation-\(conversationID)-send-summary",
-          tertiaryHelp: shareRecipients.first.map { "Email the summary to \($0.email)" },
+          tertiaryHelp: shareRecipients.first.map { "Enviar o resumo por e-mail para \($0.email)" },
           tertiaryAction: { sendSummary() },
           statusMessage: statusLine?.message,
           statusSystemImage: statusLine?.systemImage,
@@ -710,10 +710,10 @@ struct ConversationLinkView: View {
           recipientEmails: shareRecipients.map(\.email)
         )
         summarySendStatus = (
-          "Summary sent to \(sent.joined(separator: ", ")) — anyone with the link can view", true
+          "Resumo enviado para \(sent.joined(separator: ", ")) (qualquer pessoa com o link pode ver)", true
         )
       } catch {
-        summarySendStatus = ("Couldn't send the summary — try again", false)
+        summarySendStatus = ("Não foi possível enviar o resumo. Tente de novo", false)
       }
     }
   }
@@ -839,10 +839,10 @@ struct MemoryLinkView: View {
 
   var body: some View {
     ChatFirstLinkBlockView(
-      eyebrow: "Memory",
+      eyebrow: "Memória",
       systemImage: "brain.head.profile",
       summary: summary,
-      actionTitle: "Open in Memories",
+      actionTitle: "Abrir em Memórias",
       isOpening: false,
       accessibilityID: "chat-first-memory-\(memoryID)-open"
     ) {
@@ -923,7 +923,7 @@ private struct ChatFirstLinkBlockView: View {
 
       if !recommendedActionItems.isEmpty {
         VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-          Text("Recommended next steps")
+          Text("Próximos passos recomendados")
             .scaledFont(size: OmiType.micro, weight: .semibold)
             .foregroundStyle(Ink.secondary)
 
@@ -1028,7 +1028,7 @@ private struct ChatFirstLinkBlockView: View {
         recommendedActionItemLabel(item, showsOpenIndicator: true)
       }
       .buttonStyle(.plain)
-      .accessibilityLabel("Open task: \(item.description)")
+      .accessibilityLabel("Abrir tarefa: \(item.description)")
     } else {
       recommendedActionItemLabel(item, showsOpenIndicator: false)
     }
@@ -1074,8 +1074,17 @@ struct ChatFirstDestinationBadge: View {
         .glassChip()
     }
     .buttonStyle(.plain)
-    .accessibilityLabel("Open \(title)")
+    .accessibilityLabel("Abrir \(title)")
     .accessibilityIdentifier(accessibilityID)
+  }
+}
+
+fileprivate func chatFirstEntityDisplayName(_ entityName: String) -> String {
+  switch entityName {
+  case "Task": return "Tarefa"
+  case "Goal": return "Meta"
+  case "Conversation": return "Conversa"
+  default: return entityName
   }
 }
 
@@ -1083,7 +1092,7 @@ struct ChatFirstUnavailableBlockView: View {
   let entityName: String
 
   var body: some View {
-    Label("\(entityName) is no longer available", systemImage: "exclamationmark.circle")
+    Label("\(chatFirstEntityDisplayName(entityName)) não está mais disponível", systemImage: "exclamationmark.circle")
       .scaledFont(size: OmiType.caption, weight: .medium)
       .foregroundStyle(Ink.secondary)
       .padding(.horizontal, OmiSpacing.md)
@@ -1095,7 +1104,7 @@ struct ChatFirstUnavailableBlockView: View {
         RoundedRectangle(cornerRadius: PageGlass.rowRadius, style: .continuous)
           .stroke(Ink.glassEdge, lineWidth: 1)
       )
-      .accessibilityLabel("\(entityName) is no longer available")
+      .accessibilityLabel("\(chatFirstEntityDisplayName(entityName)) não está mais disponível")
       .accessibilityIdentifier("chat-first-\(entityName.lowercased())-unavailable")
   }
 }
@@ -1107,7 +1116,7 @@ private struct ChatFirstLoadingBlockView: View {
     HStack(spacing: OmiSpacing.sm) {
       ProgressView()
         .controlSize(.small)
-      Text("Loading \(entityName.lowercased())")
+      Text("Carregando \(chatFirstEntityDisplayName(entityName).lowercased())")
         .scaledFont(size: OmiType.caption, weight: .medium)
         .foregroundStyle(Ink.secondary)
     }
@@ -1120,7 +1129,7 @@ private struct ChatFirstLoadingBlockView: View {
       RoundedRectangle(cornerRadius: PageGlass.rowRadius, style: .continuous)
         .stroke(Ink.glassEdge, lineWidth: 1)
     )
-    .accessibilityLabel("Loading \(entityName.lowercased())")
+    .accessibilityLabel("Carregando \(chatFirstEntityDisplayName(entityName).lowercased())")
     .accessibilityIdentifier("chat-first-\(entityName.lowercased())-loading")
   }
 }

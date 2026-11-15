@@ -24,10 +24,10 @@ struct LiveTranscriptPanel: View {
           .scaledFont(size: 48)
           .foregroundColor(Ink.secondary)
           .opacity(0.5)
-        Text("Live Transcript")
+        Text("Transcrição ao vivo")
           .scaledFont(size: OmiType.subheading, weight: .medium)
           .foregroundColor(Ink.secondary)
-        Text("Start speaking and your transcript will appear here")
+        Text("Comece a falar e a transcrição vai aparecer aqui")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
           .multilineTextAlignment(.center)
@@ -102,7 +102,7 @@ struct RecordingBarTranscriptText: View {
         .truncationMode(.head)
         .frame(maxWidth: 260, alignment: .leading)
     } else {
-      Text("Listening")
+      Text("Ouvindo")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
     }
@@ -132,7 +132,7 @@ struct ConversationsLiveTranscript: View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
       HStack(spacing: OmiSpacing.xs) {
         Circle().fill(Ink.errorRed).frame(width: 7, height: 7)
-        Text("Live").scaledFont(size: OmiType.caption, weight: .semibold)
+        Text("Ao vivo").scaledFont(size: OmiType.caption, weight: .semibold)
           .foregroundColor(Ink.secondary)
         Spacer()
         if onExpand != nil {
@@ -142,7 +142,7 @@ struct ConversationsLiveTranscript: View {
         }
       }
       if monitor.isEmpty {
-        Text("Listening…").scaledFont(size: OmiType.body).foregroundColor(Ink.secondary)
+        Text("Ouvindo…").scaledFont(size: OmiType.body).foregroundColor(Ink.secondary)
           .padding(.vertical, OmiSpacing.sm)
       } else {
         LiveTranscriptView(segments: monitor.segments)
@@ -185,7 +185,7 @@ struct ConversationsSavingCaptureCard: View {
           .frame(width: 7, height: 7)
           .opacity(pulse ? 0.4 : 1.0)
           .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: pulse)
-        Text("Saving").scaledFont(size: OmiType.caption, weight: .semibold)
+        Text("Salvando").scaledFont(size: OmiType.caption, weight: .semibold)
           .foregroundColor(Ink.secondary)
         Spacer()
       }
@@ -196,7 +196,7 @@ struct ConversationsSavingCaptureCard: View {
           .lineLimit(2)
           .padding(.vertical, OmiSpacing.sm)
       } else {
-        Text("Adding to your conversations…").scaledFont(size: OmiType.body).foregroundColor(Ink.secondary)
+        Text("Adicionando às suas conversas…").scaledFont(size: OmiType.body).foregroundColor(Ink.secondary)
           .padding(.vertical, OmiSpacing.sm)
       }
     }
@@ -250,7 +250,7 @@ private struct LiveTranscriptExpandTap: ViewModifier {
         }
         .onHover { setHovered($0) }
         .onDisappear { setHovered(false) }
-        .help("Expand live transcript")
+        .help("Expandir transcrição ao vivo")
     } else {
       content
     }
@@ -272,7 +272,7 @@ struct ConversationsLiveTranscriptFullScreen: View {
     VStack(alignment: .leading, spacing: 0) {
       HStack(spacing: OmiSpacing.sm) {
         Circle().fill(Ink.errorRed).frame(width: 8, height: 8)
-        Text("Live Transcript")
+        Text("Transcrição ao vivo")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -285,7 +285,7 @@ struct ConversationsLiveTranscriptFullScreen: View {
         }
         .buttonStyle(.plain)
         .keyboardShortcut(.escape, modifiers: [])
-        .help("Collapse")
+        .help("Recolher")
       }
       .padding(.horizontal, OmiSpacing.xxl)
       .padding(.top, OmiSpacing.lg)
@@ -299,7 +299,7 @@ struct ConversationsLiveTranscriptFullScreen: View {
             .scaledFont(size: 48)
             .foregroundColor(Ink.secondary)
             .opacity(0.5)
-          Text("Listening…")
+          Text("Ouvindo…")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
         }

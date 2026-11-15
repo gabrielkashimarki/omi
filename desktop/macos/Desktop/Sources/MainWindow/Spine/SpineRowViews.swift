@@ -261,8 +261,8 @@ struct SpineStarButton: View {
     .buttonStyle(.plain)
     .opacity(isStarred || isRowHovering ? 1 : 0)
     .allowsHitTesting(isStarred || isRowHovering)
-    .accessibilityLabel(Text(isStarred ? "Starred" : "Star"))
-    .help(isStarred ? "Unstar" : "Star")
+    .accessibilityLabel(Text(isStarred ? "Favorito" : "Favoritar"))
+    .help(isStarred ? "Desfavoritar" : "Favoritar")
   }
 }
 
@@ -349,7 +349,7 @@ private struct SpineMemoryLine: View {
         .padding(.horizontal, -SpineMetrics.memoryHoverInset)
     )
     .accessibilityAddTraits(.isButton)
-    .accessibilityHint("Opens this memory")
+    .accessibilityHint("Abre esta memória")
     .accessibilityIdentifier("spine-memory-\(memory.id)")
   }
 }
@@ -374,7 +374,7 @@ struct SpineTasksRow: View {
               .foregroundStyle(task.task.completed ? Ink.listeningGreen : Ink.secondary)
           }
           .buttonStyle(.plain)
-          .help(task.task.completed ? "Mark incomplete" : "Mark complete")
+          .help(task.task.completed ? "Marcar como pendente" : "Marcar como concluída")
 
           VStack(alignment: .leading, spacing: 3) {
             Text(task.text)
@@ -422,15 +422,15 @@ struct SpineMomentsRow: View {
       if total > moments.count {
         Button(action: onShowAll) {
           Text(
-            "\(SpineFormat.number(moments.count)) of \(SpineFormat.plural(total, "moment", "moments"))"
+            "\(SpineFormat.number(moments.count)) de \(SpineFormat.plural(total, "momento", "momentos"))"
           )
           .inkStyle(.statusLabel, color: Ink.secondary)
           .underline(isHoveringCount, pattern: .solid)
         }
         .buttonStyle(.plain)
         .onHover { isHoveringCount = $0 }
-        .help("Show all of this hour in Rewind")
-        .accessibilityHint(Text("Opens Rewind"))
+        .help("Mostrar toda esta hora no Rewind")
+        .accessibilityHint(Text("Abre o Rewind"))
       }
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: 9) {
@@ -544,12 +544,12 @@ struct SpineMomentTile: View {
     .onHover { isHovering = $0 }
     .help(moment.label)
     .contextMenu {
-      Button("Quick Look", action: onOpen)
+      Button("Visualização rápida", action: onOpen)
       Divider()
-      Button("Show All in Rewind", action: onShowAll)
+      Button("Mostrar tudo no Rewind", action: onShowAll)
     }
     .accessibilityLabel(Text("\(moment.label), \(moment.appName), \(SpineFormat.time(moment.timestamp))"))
-    .accessibilityHint(Text("Opens this moment in Quick Look"))
+    .accessibilityHint(Text("Abre este momento na Visualização rápida"))
     .task(id: moment.id) {
       // Synchronous cache hit first, so a tile scrolling back into view never flashes an empty well.
       let screenshot = moment.screenshot

@@ -7,7 +7,7 @@ import SwiftUI
 ///
 /// Each used to be drawn per page, and the pages disagreed about everything a reader compares across
 /// them: glyph sizes of 28, 32, 36, 40 and 48; a heading-weight title on one page and a medium one on
-/// the next; three different error glyphs; and seven styles of "Try Again". These are the one
+/// the next; three different error glyphs; and seven styles of "Tentar de novo". These are the one
 /// version. A page that needs a state picks one of these and a `placement`; it does not draw its own.
 enum GlassPageState {
   /// One glyph size for every empty and error state.
@@ -15,7 +15,7 @@ enum GlassPageState {
   /// The one error glyph. An outline, not the filled triangle: a failed load is not an alarm.
   static let errorSymbol = "exclamationmark.triangle"
   /// The one retry label (see ux-contract.md §8, Words).
-  static let retryTitle = "Try Again"
+  static let retryTitle = "Tentar de novo"
   /// The one retry style: an error state is a recoverable pause, so its action is secondary.
   @MainActor static var retryStyle: OmiButtonStyle { OmiButtonStyle(.secondary, size: .compact) }
 }
@@ -118,7 +118,7 @@ extension GlassEmptyState where Actions == EmptyView {
   }
 }
 
-/// A load that failed and can be tried again. One glyph, one title rung, one "Try Again".
+/// A load that failed and can be tried again. One glyph, one title rung, one "Tentar de novo".
 struct GlassErrorState: View {
   let title: String
   var message: String?

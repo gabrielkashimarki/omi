@@ -76,14 +76,14 @@ struct SpineDayRecapRow: View {
   private var emptyState: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.xs) {
       HStack(spacing: OmiSpacing.sm) {
-        Text(isWorking ? "Generating recap…" : "No recap for this day")
+        Text(isWorking ? "Gerando resumo…" : "Sem resumo para este dia")
           .scaledFont(size: OmiType.caption, weight: .regular)
           .foregroundStyle(Ink.secondary)
         Spacer(minLength: OmiSpacing.sm)
         if isWorking {
           ProgressView().controlSize(.small)
         } else {
-          Button("Generate recap") { Task { await runGenerate() } }
+          Button("Gerar resumo") { Task { await runGenerate() } }
             .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
             .accessibilityIdentifier("spine-day-recap-generate")
         }
@@ -107,7 +107,7 @@ struct SpineDayRecapRow: View {
         // The day header directly above already shows the recap's emoji and is
         // the fold control: no second emoji, no second arrow. The body's whole
         // surface opens the page (pointer + tooltip say so).
-        Text(nonEmpty(record.headline) ?? "Your day in review")
+        Text(nonEmpty(record.headline) ?? "O resumo do seu dia")
           .scaledFont(size: OmiType.caption, weight: .semibold)
           .foregroundStyle(Ink.primary)
           .lineLimit(1)
@@ -154,8 +154,8 @@ struct SpineDayRecapRow: View {
           bottomLeadingRadius: 10, bottomTrailingRadius: 10, style: .continuous))
     )
     .accessibilityIdentifier("spine-day-recap")
-    .accessibilityLabel(Text("Open the daily recap"))
-    .help("Open the full recap for this day")
+    .accessibilityLabel(Text("Abrir o resumo do dia"))
+    .help("Abrir o resumo completo deste dia")
   }
 
   private func runGenerate() async {
@@ -175,7 +175,7 @@ struct SpineDayRecapRow: View {
       // generate" report raises.
       log("SpineDayRecapRow: generate failed for \(dateKey): \(error)")
       errorMessage = ChatDailySummaryPresentation.generationFailureMessage(
-        for: error, fallback: "Couldn't generate this recap.")
+        for: error, fallback: "Não foi possível gerar este resumo.")
     }
   }
 

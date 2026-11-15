@@ -68,8 +68,8 @@ enum ChatDailySummaryPresentation {
     let today = calendar.startOfDay(for: now)
     let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: day), to: today).day
     switch days {
-    case 0: return "Today"
-    case 1: return "Yesterday"
+    case 0: return "Hoje"
+    case 1: return "Ontem"
     default:
       let formatter = DateFormatter()
       formatter.calendar = calendar
@@ -88,11 +88,11 @@ enum ChatDailySummaryPresentation {
     for date: String?, now: Date, calendar: Calendar = .current, locale: Locale = .current
   ) -> String {
     switch dateLabel(for: date, now: now, calendar: calendar, locale: locale) {
-    case "Today": return "What did I do today?"
-    case nil, "Yesterday": return "What did I do yesterday?"
+    case "Hoje": return "O que eu fiz hoje?"
+    case nil, "Ontem": return "O que eu fiz ontem?"
     // A summary from further back names its day, so the chip asks about the day the card shows
     // rather than about a yesterday the summary is not about.
-    case .some(let label): return "What did I do on \(label)?"
+    case .some(let label): return "O que eu fiz em \(label)?"
     }
   }
 
@@ -113,9 +113,9 @@ enum ChatDailySummaryPresentation {
     for date: String?, now: Date, calendar: Calendar = .current, locale: Locale = .current
   ) -> String {
     guard let label = dateLabel(for: date, now: now, calendar: calendar, locale: locale) else {
-      return "Several days old"
+      return "Há vários dias"
     }
-    return "\(label) · several days old"
+    return "\(label) · há vários dias"
   }
 
   /// Longest overview that still reads as a banner rather than a wall of text.
@@ -137,7 +137,7 @@ enum ChatDailySummaryPresentation {
   static func cardTitle(for record: DailySummaryRecord) -> String {
     let emoji = (record.dayEmoji ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
     let headline = (record.headline ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-    let text = headline.isEmpty ? "Your day in review" : headline
+    let text = headline.isEmpty ? "O resumo do seu dia" : headline
     return emoji.isEmpty ? text : "\(emoji) \(text)"
   }
 
@@ -209,11 +209,11 @@ enum ChatDailySummaryPresentation {
     guard case APIError.httpError(let statusCode, _) = error else { return fallback }
     switch statusCode {
     case 400:
-      return "Nothing to summarize yet — a recap needs a recorded conversation from this day."
+      return "Ainda não há nada para resumir. O resumo precisa de uma conversa gravada neste dia."
     case 409:
-      return "Already being generated — check back in a moment."
+      return "Já está sendo gerado. Volte em instantes."
     case 429:
-      return "Just generated — wait a moment before trying again."
+      return "Acabou de ser gerado. Espere um pouco antes de tentar de novo."
     default:
       return fallback
     }

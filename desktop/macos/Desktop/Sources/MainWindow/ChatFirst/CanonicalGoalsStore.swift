@@ -180,7 +180,7 @@ final class CanonicalGoalsStore: ObservableObject {
       guard scopeIsCurrent(scope), activeLoadToken == token else { return }
       goals = []
       selectedGoalDetail = nil
-      let message = "Goals are unavailable right now. Try again."
+      let message = "As metas estão indisponíveis agora. Tente de novo."
       self.error = message
       availability = .unavailable(message)
     }
@@ -212,7 +212,7 @@ final class CanonicalGoalsStore: ObservableObject {
       // A missing/revoked target must remain an inert link or an honest page
       // state; do not substitute a legacy-goal record.
       selectedGoalDetail = nil
-      self.error = "This goal is no longer available."
+      self.error = "Esta meta não está mais disponível."
       return nil
     }
   }
@@ -224,7 +224,7 @@ final class CanonicalGoalsStore: ObservableObject {
   func setAsFocus(goalID: String) async -> Bool {
     guard let scope = captureScope(), let normalizedGoalID = normalized(goalID) else { return false }
     guard activeGoals.contains(where: { $0.goalId == normalizedGoalID }) else {
-      error = "This goal is no longer available."
+      error = "Esta meta não está mais disponível."
       return false
     }
     if primaryFocusedGoal?.goalId == normalizedGoalID { return true }
@@ -251,7 +251,7 @@ final class CanonicalGoalsStore: ObservableObject {
       return true
     } catch {
       guard scopeIsCurrent(scope) else { return false }
-      self.error = "Goal focus could not be updated."
+      self.error = "Não foi possível atualizar o foco da meta."
       return false
     }
   }
@@ -313,7 +313,7 @@ final class CanonicalGoalsStore: ObservableObject {
     goals = []
     selectedGoalDetail = nil
     focusMutationGoalID = nil
-    let message = "Goals are unavailable right now. Try again."
+    let message = "As metas estão indisponíveis agora. Tente de novo."
     error = message
     availability = .unavailable(message)
   }

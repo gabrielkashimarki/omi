@@ -40,7 +40,7 @@ struct ChatBudgetPauseView: View {
       }
       .sheet(isPresented: $showingSheet, onDismiss: { Task { await limiter.syncQuota() } }) {
         VStack(alignment: .trailing) {
-          DismissButton(action: { showingSheet = false }, accessibilityLabel: "Dismiss", size: .compact)
+          DismissButton(action: { showingSheet = false }, accessibilityLabel: "Dispensar", size: .compact)
             .padding(OmiSpacing.md)
           ScrollView {
             StorefrontPlansSection(

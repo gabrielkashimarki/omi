@@ -441,7 +441,7 @@ private struct ChatFirstAppsHost: View {
         TransparentWindowStatusPanel {
           VStack(spacing: OmiSpacing.md) {
             ProgressView().controlSize(.small)
-            Text("Loading apps…")
+            Text("Carregando apps…")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundStyle(Ink.secondary)
           }

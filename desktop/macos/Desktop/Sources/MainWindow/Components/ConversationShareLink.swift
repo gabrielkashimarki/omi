@@ -16,8 +16,8 @@ enum ConversationShareLinkFeedback: Equatable {
 
   var message: String {
     switch self {
-    case .copied: return "Link copied — anyone with the link can view"
-    case .failed: return "Couldn't create link"
+    case .copied: return "Link copiado (qualquer pessoa com o link pode ver)"
+    case .failed: return "Não foi possível criar o link"
     }
   }
 
@@ -93,10 +93,10 @@ struct ConversationShareLinkButton: View {
     .disabled(isCopyingLink || !canShare)
     .help(
       canShare
-        ? "Copy share link — anyone with the link can view"
-        : "Sharing is unavailable while the transcript is locked"
+        ? "Copiar link de compartilhamento (qualquer pessoa com o link pode ver)"
+        : "O compartilhamento fica indisponível enquanto a transcrição está bloqueada"
     )
-    .accessibilityLabel(feedback?.message ?? "Copy share link")
+    .accessibilityLabel(feedback?.message ?? "Copiar link de compartilhamento")
     .overlay(alignment: .trailing) {
       if let feedback {
         Text(feedback.message)

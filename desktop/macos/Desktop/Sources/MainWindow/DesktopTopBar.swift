@@ -128,12 +128,12 @@ struct DesktopTopBar: View {
         }
       }
     } label: {
-      Label("Navigate", systemImage: "sidebar.left")
+      Label("Navegar", systemImage: "sidebar.left")
         .scaledFont(size: OmiType.caption, weight: .semibold)
         .frame(height: 32)
     }
-    .help("Navigate")
-    .accessibilityLabel("Navigate")
+    .help("Navegar")
+    .accessibilityLabel("Navegar")
     .accessibilityIdentifier("compact-navigation-menu")
   }
 

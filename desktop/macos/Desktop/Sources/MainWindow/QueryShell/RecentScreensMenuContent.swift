@@ -23,14 +23,14 @@ struct RecentScreenFrameRow: Identifiable, Equatable {
   /// freshness bound — a person picking from this menu needs to see that
   /// distance, not compute it.
   func menuTitle(now: Date = Date()) -> String {
-    return "\(appName) — \(Self.ageDescription(from: timestamp, to: now))"
+    return "\(appName) · \(Self.ageDescription(from: timestamp, to: now))"
   }
 
   static func ageDescription(from date: Date, to now: Date) -> String {
     let age = now.timeIntervalSince(date)
-    if age < 60 { return "just now" }
-    if age < 3_600 { return "\(Int(age / 60))m ago" }
-    if age < 86_400 { return "\(Int(age / 3_600))h ago" }
+    if age < 60 { return "agora" }
+    if age < 3_600 { return "há \(Int(age / 60)) min" }
+    if age < 86_400 { return "há \(Int(age / 3_600)) h" }
     return dayFormatter.string(from: date)
   }
 

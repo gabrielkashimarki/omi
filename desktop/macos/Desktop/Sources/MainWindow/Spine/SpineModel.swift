@@ -41,11 +41,11 @@ enum SpineKind: String, CaseIterable, Identifiable, Sendable {
 
   var title: String {
     switch self {
-    case .everything: return "Everything"
-    case .conversations: return "Conversations"
-    case .memories: return "Memories"
-    case .tasks: return "Tasks"
-    case .screen: return "Screen"
+    case .everything: return "Tudo"
+    case .conversations: return "Conversas"
+    case .memories: return "Memórias"
+    case .tasks: return "Tarefas"
+    case .screen: return "Tela"
     }
   }
 
@@ -127,12 +127,12 @@ struct SpineTask: Identifiable, Equatable {
   var timestamp: Date { task.createdAt }
   var conversationID: String? { task.conversationId }
   var sourceLabel: String {
-    if let sourceConversationTitle { return "From \(sourceConversationTitle)" }
+    if let sourceConversationTitle { return "De \(sourceConversationTitle)" }
     switch task.source {
-    case "screenshot": return "From screen capture"
-    case "manual": return "Added manually"
-    case .some(let source) where source.hasPrefix("transcription"): return "From a recording"
-    default: return "Task"
+    case "screenshot": return "Da captura de tela"
+    case "manual": return "Adicionada manualmente"
+    case .some(let source) where source.hasPrefix("transcription"): return "De uma gravação"
+    default: return "Tarefa"
     }
   }
 }
@@ -193,10 +193,10 @@ struct SpineConversation: Identifiable, Equatable {
   var subtitle: String {
     var parts: [String] = []
     if duration >= 1 { parts.append(SpineFormat.duration(duration)) }
-    if memoryCount > 0 { parts.append(SpineFormat.plural(memoryCount, "memory", "memories")) }
-    if taskCount > 0 { parts.append(SpineFormat.plural(taskCount, "task", "tasks")) }
+    if memoryCount > 0 { parts.append(SpineFormat.plural(memoryCount, "memória", "memórias")) }
+    if taskCount > 0 { parts.append(SpineFormat.plural(taskCount, "tarefa", "tarefas")) }
     if momentCount > 0 {
-      parts.append(SpineFormat.plural(momentCount, "screen moment", "screen moments"))
+      parts.append(SpineFormat.plural(momentCount, "momento de tela", "momentos de tela"))
     }
     if parts.isEmpty { parts.append(SpineFormat.time(startedAt)) }
     return parts.joined(separator: " · ")
@@ -218,13 +218,13 @@ struct SpineBrainMap: Equatable, Sendable {
   let memoryCount: Int
   let clusterCount: Int
 
-  var headline: String { "How today's memories connect" }
+  var headline: String { "Como as memórias de hoje se conectam" }
 
   var detail: String {
-    let memories = SpineFormat.plural(memoryCount, "new memory", "new memories")
-    guard clusterCount > 1 else { return "\(memories) today. Open the map to see what they connect to." }
-    let clusters = SpineFormat.plural(clusterCount, "cluster", "clusters")
-    return "\(memories), \(clusters). Open the map to see what they connect to."
+    let memories = SpineFormat.plural(memoryCount, "nova memória", "novas memórias")
+    guard clusterCount > 1 else { return "\(memories) hoje. Abra o mapa para ver a que elas se conectam." }
+    let clusters = SpineFormat.plural(clusterCount, "grupo", "grupos")
+    return "\(memories), \(clusters). Abra o mapa para ver a que elas se conectam."
   }
 }
 
@@ -301,10 +301,10 @@ struct SpineDay: Identifiable, Equatable {
     var parts: [String] = []
     if momentCount > 0 { parts.append(SpineFormat.plural(momentCount, "moment", "moments")) }
     if conversationCount > 0 {
-      parts.append(SpineFormat.plural(conversationCount, "conversation", "conversations"))
+      parts.append(SpineFormat.plural(conversationCount, "conversa", "conversas"))
     }
-    if memoryCount > 0 { parts.append(SpineFormat.plural(memoryCount, "memory", "memories")) }
-    if taskCount > 0 { parts.append(SpineFormat.plural(taskCount, "task", "tasks")) }
+    if memoryCount > 0 { parts.append(SpineFormat.plural(memoryCount, "memória", "memórias")) }
+    if taskCount > 0 { parts.append(SpineFormat.plural(taskCount, "tarefa", "tarefas")) }
     return parts.joined(separator: " · ")
   }
 
@@ -652,7 +652,7 @@ enum SpineComposer {
           kind: .memories,
           isAttached: false,
           content: .brainMap(SpineBrainMap(memoryCount: dayMemoryCount, clusterCount: clusters)),
-          searchText: "brain map how today's memories connect"
+          searchText: "brain map mapa do cérebro how today's memories connect como as memórias de hoje se conectam"
         ))
     }
 
@@ -816,10 +816,10 @@ enum SpineFormat {
   /// The hour a rail label states: "6 AM", "12 PM".
   static func hourLabel(_ hour: Int) -> String {
     switch hour {
-    case 0: return "12 AM"
-    case 12: return "12 PM"
-    case ..<12: return "\(hour) AM"
-    default: return "\(hour - 12) PM"
+    case 0: return "0h"
+    case 12: return "12h"
+    case ..<12: return "\(hour)h"
+    default: return "\(hour)h"
     }
   }
 

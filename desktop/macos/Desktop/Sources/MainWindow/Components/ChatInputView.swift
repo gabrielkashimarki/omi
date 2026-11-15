@@ -69,7 +69,7 @@ struct ChatInputView: View {
   var onStop: (() -> Void)? = nil
   let isSending: Bool
   var isStopping: Bool = false
-  var placeholder: String = "Type a message…"
+  var placeholder: String = "Digite uma mensagem…"
   @Binding var mode: ChatMode
   /// Optional text to pre-fill the input (e.g. task context). Consumed on change.
   var pendingText: Binding<String>?
@@ -135,7 +135,7 @@ struct ChatInputView: View {
               .frame(width: 32, height: 32)
           }
           .buttonStyle(.plain)
-          .help("Attach files")
+          .help("Anexar arquivos")
           .disabled(currentAttachments.count >= kMaxChatAttachments)
         }
 
@@ -217,8 +217,8 @@ struct ChatInputView: View {
         }
         .buttonStyle(ChatComposerActionStyle(isBusy: isStopping))
         .disabled(isStopping || (isSending ? onStop == nil : !canSend))
-        .accessibilityLabel(isStopping ? "Stopping response" : isSending ? "Stop response" : "Send message")
-        .help(isSending ? "Stop response" : "Send message (Return)")
+        .accessibilityLabel(isStopping ? "Interrompendo a resposta" : isSending ? "Interromper resposta" : "Enviar mensagem")
+        .help(isSending ? "Interromper resposta" : "Enviar mensagem (Return)")
 
       }
     }
@@ -456,7 +456,7 @@ private struct AttachmentChip: View {
       .clipShape(RoundedRectangle(cornerRadius: OmiChrome.smallControlRadius, style: .continuous))
       .overlay(alignment: .bottom) {
         if case .failed = attachment.state {
-          Text("Failed")
+          Text("Falhou")
             .scaledFont(size: OmiType.micro, weight: .semibold)
             .foregroundColor(.white)
             .padding(.horizontal, OmiSpacing.xxs)
@@ -554,8 +554,8 @@ struct ChatModeToggle: View {
 
   var body: some View {
     HStack(spacing: 0) {
-      modeButton(for: .ask, label: "Ask")
-      modeButton(for: .act, label: "Act")
+      modeButton(for: .ask, label: "Perguntar")
+      modeButton(for: .act, label: "Agir")
     }
     // A track with a raised pill on it, the way a real segmented control reads. The dark version
     // inverted that — a near-black pill under white type — which on glass was a slab.

@@ -150,7 +150,7 @@ enum SpineScreenIndex {
         SpineMoment(
           id: id,
           timestamp: timestamp,
-          appName: row["appName"] ?? "Unknown",
+          appName: row["appName"] ?? "Desconhecido",
           windowTitle: row["windowTitle"],
           imagePath: row["imagePath"],
           videoChunkPath: videoChunkPath,

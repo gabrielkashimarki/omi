@@ -56,9 +56,9 @@ struct LiveNotesView: View {
     }
     .shellConfirmation(
       isPresented: $isConfirmingDelete,
-      title: "Delete Note?",
-      message: "This permanently deletes the note. It can't be undone.",
-      confirmTitle: "Delete"
+      title: "Apagar nota?",
+      message: "Isto apaga a nota definitivamente. Não dá para desfazer.",
+      confirmTitle: "Apagar"
     ) {
       if let noteToDelete { deleteNote(noteToDelete) }
       noteToDelete = nil
@@ -69,7 +69,7 @@ struct LiveNotesView: View {
 
   private var headerView: some View {
     HStack {
-      Text("Notes")
+      Text("Notas")
         .scaledFont(size: OmiType.body, weight: .semibold)
         .foregroundColor(Ink.primary)
 
@@ -105,8 +105,8 @@ struct LiveNotesView: View {
     // size and the two rungs glass allows.
     GlassEmptyState(
       systemImage: "note.text",
-      title: "Notes will appear here",
-      message: monitor.isAiEnabled ? "AI generates notes as you speak" : nil
+      title: "As notas vão aparecer aqui",
+      message: monitor.isAiEnabled ? "A IA gera notas enquanto você fala" : nil
     )
   }
 
@@ -152,7 +152,7 @@ struct LiveNotesView: View {
       GlassSeparator()
 
       HStack(spacing: OmiSpacing.sm) {
-        TextField("Add a note…", text: $manualNoteText)
+        TextField("Adicionar uma nota…", text: $manualNoteText)
           .textFieldStyle(.plain)
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.primary)
@@ -285,11 +285,11 @@ private struct NoteRowView: View {
       if isHovering || isEditing {
         HStack(spacing: OmiSpacing.xxs) {
           if isEditing {
-            OmiIconButton("checkmark", help: "Save Note", size: .compact, action: onSaveEdit)
-            OmiIconButton("arrow.uturn.backward", help: "Cancel Editing", size: .compact, action: onCancelEdit)
+            OmiIconButton("checkmark", help: "Salvar nota", size: .compact, action: onSaveEdit)
+            OmiIconButton("arrow.uturn.backward", help: "Cancelar edição", size: .compact, action: onCancelEdit)
           } else {
-            OmiIconButton("pencil", help: "Edit Note", size: .compact, action: onStartEdit)
-            OmiIconButton("trash", help: "Delete Note…", size: .compact, isDestructive: true, action: onDelete)
+            OmiIconButton("pencil", help: "Editar nota", size: .compact, action: onStartEdit)
+            OmiIconButton("trash", help: "Apagar nota…", size: .compact, isDestructive: true, action: onDelete)
           }
         }
       }

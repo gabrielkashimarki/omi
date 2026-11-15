@@ -19,13 +19,13 @@ struct DailyTaskCreationSheet: View {
             .scaledFont(size: OmiType.heading)
             .foregroundColor(Ink.primary)
 
-          Text("Create Daily Task")
+          Text("Criar tarefa diária")
             .scaledFont(size: OmiType.heading, weight: .semibold)
             .foregroundColor(Ink.primary)
 
           Spacer()
 
-          Button("Cancel") {
+          Button("Cancelar") {
             dismiss()
           }
           .buttonStyle(.plain)
@@ -33,18 +33,18 @@ struct DailyTaskCreationSheet: View {
           .foregroundColor(Ink.secondary)
         }
 
-        Text("This task will repeat every day until completed")
+        Text("Esta tarefa se repete todo dia até ser concluída")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
 
       // Task description
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        Text("Task Description")
+        Text("Descrição da tarefa")
           .scaledFont(size: OmiType.body, weight: .medium)
           .foregroundColor(Ink.primary)
 
-        TextField("What needs to be done daily?", text: $taskDescription)
+        TextField("O que precisa ser feito todo dia?", text: $taskDescription)
           .textFieldStyle(.roundedBorder)
           .scaledFont(size: OmiType.body)
           .focused($isTextFieldFocused)
@@ -55,7 +55,7 @@ struct DailyTaskCreationSheet: View {
 
       // Priority selection
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        Text("Priority")
+        Text("Prioridade")
           .scaledFont(size: OmiType.body, weight: .medium)
           .foregroundColor(Ink.primary)
 
@@ -104,7 +104,7 @@ struct DailyTaskCreationSheet: View {
             } else {
               Image(systemName: "plus.circle.fill")
             }
-            Text(isCreating ? "Creating…" : "Create Daily Task")
+            Text(isCreating ? "Criando…" : "Criar tarefa diária")
           }
           .scaledFont(size: OmiType.body, weight: .medium)
           .foregroundColor(Ink.surface)

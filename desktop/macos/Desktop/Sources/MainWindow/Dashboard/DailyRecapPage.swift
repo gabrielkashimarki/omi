@@ -52,7 +52,7 @@ struct DailyRecapPage: View {
       BackChip((navigation.dailyRecapOrigin ?? .chat).title, accessibilityIdentifier: "daily-recap-back") {
         navigation.closeDailyRecap()
       }
-      GlassPageHeader(title: "Daily recap") {
+      GlassPageHeader(title: "Resumo do dia") {
         topBarActions
       }
     }
@@ -67,7 +67,7 @@ struct DailyRecapPage: View {
     Button {
       askAboutThisDay()
     } label: {
-      Label("Ask about this day", systemImage: "text.bubble")
+      Label("Perguntar sobre este dia", systemImage: "text.bubble")
         .lineLimit(1)
         .fixedSize(horizontal: true, vertical: false)
     }
@@ -78,7 +78,7 @@ struct DailyRecapPage: View {
       Button {
         Task { await regenerate() }
       } label: {
-        Label(isRegenerating ? "Regenerating…" : "Regenerate", systemImage: "arrow.clockwise")
+        Label(isRegenerating ? "Gerando de novo…" : "Gerar de novo", systemImage: "arrow.clockwise")
           .lineLimit(1)
           .fixedSize(horizontal: true, vertical: false)
       }
@@ -105,7 +105,7 @@ struct DailyRecapPage: View {
         memoriesLearnedSection(record)
         learningsSection(record)
         if let failedLinkID {
-          Text("Couldn't open that conversation.")
+          Text("Não foi possível abrir essa conversa.")
             .scaledFont(size: OmiType.caption)
             .foregroundStyle(Ink.errorRed)
             .accessibilityIdentifier("daily-recap-open-failed")
@@ -136,7 +136,7 @@ struct DailyRecapPage: View {
       HStack(alignment: .firstTextBaseline, spacing: OmiSpacing.sm + 2) {
         Text(nonEmpty(record.dayEmoji) ?? "📅")
           .scaledFont(size: OmiType.title)
-        Text(nonEmpty(record.headline) ?? "Your day in review")
+        Text(nonEmpty(record.headline) ?? "O resumo do seu dia")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundStyle(HomePalette.ink)
           .lineLimit(3)
@@ -201,7 +201,7 @@ struct DailyRecapPage: View {
   private func highlightsSection(_ record: DailySummaryRecord) -> some View {
     let highlights = ChatDailySummaryPresentation.highlights(in: record)
     if !highlights.isEmpty {
-      section("Highlights") {
+      section("Destaques") {
         ForEach(Array(highlights.enumerated()), id: \.offset) { _, highlight in
           RecapRow(
             leading: nonEmpty(highlight.emoji) ?? "•",
@@ -221,7 +221,7 @@ struct DailyRecapPage: View {
       let completed = items.filter { $0.completed == true }
       // Open work first, like mobile: what is still to do is the reason the reader looks.
       let ordered = completed.count < items.count ? items.filter { $0.completed != true } + completed : items
-      section("Tasks", accessory: "\(completed.count)/\(items.count)") {
+      section("Tarefas", accessory: "\(completed.count)/\(items.count)") {
         ForEach(Array(ordered.enumerated()), id: \.offset) { _, item in
           RecapTaskRow(item: item, conversationID: item.sourceConversationId, onOpen: openConversation(_:))
         }
@@ -233,7 +233,7 @@ struct DailyRecapPage: View {
   private func unresolvedQuestionsSection(_ record: DailySummaryRecord) -> some View {
     let questions = (record.unresolvedQuestions ?? []).filter { !($0.question ?? "").isEmpty }
     if !questions.isEmpty {
-      section("Unresolved questions") {
+      section("Perguntas em aberto") {
         ForEach(Array(questions.enumerated()), id: \.offset) { _, question in
           RecapRow(
             detail: question.question ?? "",
@@ -248,7 +248,7 @@ struct DailyRecapPage: View {
   private func decisionsSection(_ record: DailySummaryRecord) -> some View {
     let decisions = (record.decisionsMade ?? []).filter { !($0.decision ?? "").isEmpty }
     if !decisions.isEmpty {
-      section("Decisions") {
+      section("Decisões") {
         ForEach(Array(decisions.enumerated()), id: \.offset) { _, decision in
           RecapRow(
             detail: decision.decision ?? "",
@@ -274,7 +274,7 @@ struct DailyRecapPage: View {
   private func learningsSection(_ record: DailySummaryRecord) -> some View {
     let nuggets = (record.knowledgeNuggets ?? []).filter { !($0.insight ?? "").isEmpty }
     if !nuggets.isEmpty {
-      section("Things I learned today") {
+      section("O que aprendi hoje") {
         ForEach(Array(nuggets.enumerated()), id: \.offset) { _, nugget in
           RecapRow(
             detail: nugget.insight ?? "",
@@ -309,7 +309,7 @@ struct DailyRecapPage: View {
   private var loading: some View {
     VStack(spacing: OmiSpacing.md) {
       ProgressView().controlSize(.small)
-      Text("Opening the recap…")
+      Text("Abrindo o resumo…")
         .scaledFont(size: OmiType.caption)
         .foregroundStyle(Ink.secondary)
     }
@@ -320,10 +320,10 @@ struct DailyRecapPage: View {
   /// backend no longer knows. Says so instead of showing a stale or empty page.
   private var unavailable: some View {
     VStack(spacing: OmiSpacing.sm) {
-      Text("This recap isn't available.")
+      Text("Este resumo não está disponível.")
         .scaledFont(size: OmiType.subheading, weight: .medium)
         .foregroundStyle(Ink.primary)
-      Text("It may have been removed, or it belongs to a different account.")
+      Text("Ele pode ter sido removido ou pertencer a outra conta.")
         .scaledFont(size: OmiType.caption)
         .foregroundStyle(Ink.secondary)
     }
@@ -386,7 +386,7 @@ struct DailyRecapPage: View {
     } catch {
       log("DailyRecapPage: regenerate failed for \(record.id): \(error)")
       regenerateError = ChatDailySummaryPresentation.generationFailureMessage(
-        for: error, fallback: "Couldn't regenerate this recap.")
+        for: error, fallback: "Não foi possível gerar este resumo de novo.")
     }
   }
 

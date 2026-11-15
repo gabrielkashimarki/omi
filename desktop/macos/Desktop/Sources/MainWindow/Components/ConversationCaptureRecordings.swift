@@ -7,11 +7,11 @@ extension ConversationSource {
   /// The device name a person recognises, shared by the list badge and the detail header.
   var captureLabel: String {
     switch self {
-    case .desktop: return "Desktop"
-    case .omi: return "Pendant"
-    case .phone: return "Phone"
+    case .desktop: return "Computador"
+    case .omi: return "Pingente"
+    case .phone: return "Celular"
     case .appleWatch: return "Apple Watch"
-    case .workflow: return "Workflow"
+    case .workflow: return "Fluxo de trabalho"
     case .screenpipe: return "Screenpipe"
     case .friend, .friendCom: return "Friend"
     case .openglass: return "OpenGlass"
@@ -19,7 +19,7 @@ extension ConversationSource {
     case .bee: return "Bee"
     case .limitless: return "Limitless"
     case .plaud: return "Plaud"
-    default: return "Unknown"
+    default: return "Desconhecido"
     }
   }
 
@@ -117,7 +117,7 @@ extension CaptureGroupPresentation {
   }
 
   static func countLabel(_ count: Int) -> String {
-    count == 1 ? "1 recording" : "\(count) recordings"
+    count == 1 ? "1 gravação" : "\(count) gravações"
   }
 
   /// Opens a member by id: the loaded row when the list has it, otherwise a fetch.
@@ -235,8 +235,8 @@ struct CaptureRecordingsStackButton: View {
     }
     .buttonStyle(.plain)
     .anchorPreference(key: CaptureRecordingsAnchorKey.self, value: .bounds) { $0 }
-    .help("Recorded by " + recordings.map(\.source.captureLabel).joined(separator: ", "))
-    .accessibilityLabel("\(CaptureGroupPresentation.countLabel(recordings.count)) of this conversation")
+    .help("Gravado por " + recordings.map(\.source.captureLabel).joined(separator: ", "))
+    .accessibilityLabel("\(CaptureGroupPresentation.countLabel(recordings.count)) desta conversa")
     .accessibilityIdentifier("conversation-detail-recordings")
   }
 }
@@ -253,7 +253,7 @@ struct CaptureRecordingsPanel: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Text("Recordings of this conversation")
+      Text("Gravações desta conversa")
         .scaledFont(size: OmiType.caption, weight: .semibold)
         .foregroundColor(Ink.secondary)
         .padding(.horizontal, OmiSpacing.md)
@@ -268,7 +268,7 @@ struct CaptureRecordingsPanel: View {
       }
 
       if case .failed = phase {
-        Label("Couldn’t separate. Try again.", systemImage: "exclamationmark.circle")
+        Label("Não foi possível separar. Tente de novo.", systemImage: "exclamationmark.circle")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(PageGlass.warning)
           .padding(.horizontal, OmiSpacing.md)
@@ -319,7 +319,7 @@ struct CaptureRecordingsPanel: View {
             Image(systemName: "checkmark")
               .scaledFont(size: OmiType.caption, weight: .semibold)
               .foregroundColor(Ink.primary)
-              .help("You’re viewing this recording")
+              .help("Você está vendo esta gravação")
           }
         }
         .contentShape(Rectangle())
@@ -329,15 +329,15 @@ struct CaptureRecordingsPanel: View {
       .allowsHitTesting(!recording.isCurrent && !isSeparating)
       .accessibilityLabel(
         recording.isCurrent
-          ? "\(CaptureGroupPresentation.label(of: recording)), current recording"
-          : "Open \(CaptureGroupPresentation.label(of: recording)) recording"
+          ? "\(CaptureGroupPresentation.label(of: recording)), gravação atual"
+          : "Abrir a gravação de \(CaptureGroupPresentation.label(of: recording))"
       )
       .accessibilityIdentifier("conversation-detail-recording-\(recording.id)")
 
       Button {
         onSeparate(recording)
       } label: {
-        Text("Separate…")
+        Text("Separar…")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
           .padding(.horizontal, OmiSpacing.xs)
@@ -346,7 +346,7 @@ struct CaptureRecordingsPanel: View {
       }
       .buttonStyle(.plain)
       .disabled(phase.isSeparating)
-      .help("Show this recording as its own conversation")
+      .help("Mostrar esta gravação como uma conversa própria")
       .accessibilityIdentifier("conversation-detail-recording-separate-\(recording.id)")
     }
     .padding(.horizontal, OmiSpacing.md)
@@ -410,9 +410,9 @@ struct CaptureRecordingsPanelHost: ViewModifier {
       }
       .shellConfirmation(
         isPresented: Binding(get: { pendingSeparation != nil }, set: { if !$0 { pendingSeparation = nil } }),
-        title: "Separate This Recording?",
+        title: "Separar esta gravação?",
         message: pending.map(Self.separationMessage) ?? "",
-        confirmTitle: "Separate",
+        confirmTitle: "Separar",
         isDestructive: false
       ) {
         if let pending { onSeparate(pending) }
@@ -420,7 +420,7 @@ struct CaptureRecordingsPanelHost: ViewModifier {
   }
 
   static func separationMessage(for recording: CaptureGroupRecording) -> String {
-    "\(CaptureGroupPresentation.label(of: recording)) will show as its own conversation and won’t be grouped with this event again."
+    "\(CaptureGroupPresentation.label(of: recording)) vai aparecer como uma conversa própria e não será mais agrupada com este evento."
   }
 }
 

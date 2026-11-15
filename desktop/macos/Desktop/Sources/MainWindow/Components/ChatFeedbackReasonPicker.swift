@@ -18,7 +18,7 @@ struct ChatFeedbackReasonPicker: View {
 
   var body: some View {
     HStack(spacing: OmiSpacing.xxs) {
-      Text("What went wrong?")
+      Text("O que deu errado?")
         .scaledFont(size: OmiType.micro)
         .foregroundColor(Ink.secondary)
 
@@ -37,10 +37,10 @@ struct ChatFeedbackReasonPicker: View {
         }
         .buttonStyle(.plain)
         .help(reason.help)
-        .accessibilityLabel("Reason: \(reason.label)")
+        .accessibilityLabel("Motivo: \(reason.label)")
       }
 
-      DismissButton(action: onSkip, accessibilityLabel: "Skip", size: .compact)
+      DismissButton(action: onSkip, accessibilityLabel: "Pular", size: .compact)
     }
   }
 }

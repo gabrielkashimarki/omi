@@ -18,12 +18,12 @@ enum CapturePlaybackResolution: Equatable, Sendable {
 
   var userFacingMessage: String {
     switch self {
-    case .readyAggregate: return "Playback ready"
-    case .fileFallback: return "A single audio part is ready. Timestamped seeking is preparing."
-    case .pending: return "Audio is preparing. Try again shortly."
-    case .locked: return "Audio is locked for this capture."
-    case .unavailable: return "Audio is unavailable for this capture."
-    case .noAudio: return "No audio is available for this capture."
+    case .readyAggregate: return "Reprodução pronta"
+    case .fileFallback: return "Uma parte do áudio está pronta. A busca por horário está sendo preparada."
+    case .pending: return "O áudio está sendo preparado. Tente de novo em instantes."
+    case .locked: return "O áudio está bloqueado nesta captura."
+    case .unavailable: return "O áudio está indisponível nesta captura."
+    case .noAudio: return "Não há áudio disponível nesta captura."
     }
   }
 }
@@ -360,7 +360,7 @@ final class CapturePlaybackController: ObservableObject {
   @discardableResult
   func playOrPause() -> Bool {
     guard let player else {
-      playbackError = "Audio is not ready. Check audio and try again."
+      playbackError = "O áudio não está pronto. Verifique o áudio e tente de novo."
       return false
     }
 
@@ -510,7 +510,7 @@ final class CapturePlaybackController: ObservableObject {
           isPlaybackRequested = false
           isPlaying = false
           isBuffering = false
-          playbackError = "Audio could not be played. Check audio to refresh the link."
+          playbackError = "Não foi possível reproduzir o áudio. Verifique o áudio para renovar o link."
         case .unknown:
           break
         @unknown default:
@@ -537,7 +537,7 @@ final class CapturePlaybackController: ObservableObject {
         isPlaybackRequested = false
         isPlaying = false
         isBuffering = false
-        playbackError = "Audio stopped unexpectedly. Check audio to try again."
+        playbackError = "O áudio parou inesperadamente. Verifique o áudio para tentar de novo."
       }
       .store(in: &playerCancellables)
 

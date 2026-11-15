@@ -15,7 +15,7 @@ struct TextPromptSheet: View {
   var message: String?
   var placeholder: String = ""
   @Binding var text: String
-  var confirmTitle: String = "Save"
+  var confirmTitle: String = "Salvar"
   var isBusy: Bool = false
   let onConfirm: () -> Void
   let onCancel: () -> Void
@@ -58,7 +58,7 @@ struct TextPromptSheet: View {
 
       HStack(spacing: OmiSpacing.sm) {
         Spacer(minLength: 0)
-        Button("Cancel", action: onCancel)
+        Button("Cancelar", action: onCancel)
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
           .keyboardShortcut(.cancelAction)
         Button(confirmTitle, action: onConfirm)

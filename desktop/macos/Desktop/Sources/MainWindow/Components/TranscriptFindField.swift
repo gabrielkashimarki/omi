@@ -23,7 +23,7 @@ struct TranscriptFindField: View {
       if isOpen {
         openField
       } else {
-        OmiIconButton("magnifyingglass", help: "Find in transcript (⌘F)", action: onOpen)
+        OmiIconButton("magnifyingglass", help: "Buscar na transcrição (⌘F)", action: onOpen)
           .accessibilityIdentifier("conversation-detail-transcript-find")
       }
     }
@@ -45,10 +45,10 @@ struct TranscriptFindField: View {
           .foregroundStyle(Ink.secondary)
       }
       .buttonStyle(.plain)
-      .help("Find in transcript (⌘F)")
+      .help("Buscar na transcrição (⌘F)")
       .accessibilityHidden(true)
 
-      TextField("Find in transcript", text: $query)
+      TextField("Buscar na transcrição", text: $query)
         .textFieldStyle(.plain)
         .scaledFont(size: OmiType.body)
         .foregroundStyle(Ink.primary)
@@ -67,15 +67,15 @@ struct TranscriptFindField: View {
           .accessibilityIdentifier("conversation-detail-transcript-find-count")
       }
 
-      OmiIconButton("chevron.up", help: "Previous match (⇧⌘G)", size: .compact) { onStep(false) }
+      OmiIconButton("chevron.up", help: "Resultado anterior (⇧⌘G)", size: .compact) { onStep(false) }
         .keyboardShortcut("g", modifiers: [.command, .shift])
         .disabled(!hasMatches)
 
-      OmiIconButton("chevron.down", help: "Next match (⌘G)", size: .compact) { onStep(true) }
+      OmiIconButton("chevron.down", help: "Próximo resultado (⌘G)", size: .compact) { onStep(true) }
         .keyboardShortcut("g", modifiers: .command)
         .disabled(!hasMatches)
 
-      ClearFieldButton(help: "Clear and close find (Esc)", action: onClose)
+      ClearFieldButton(help: "Limpar e fechar a busca (Esc)", action: onClose)
     }
     .padding(.horizontal, OmiSpacing.sm)
     .frame(minHeight: OmiIconButtonSize.regular.diameter)

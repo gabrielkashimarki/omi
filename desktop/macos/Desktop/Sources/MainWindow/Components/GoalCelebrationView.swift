@@ -32,7 +32,7 @@ struct GoalCelebrationView: View {
         // Celebration text
         if phase == .text, let goal = completedGoal {
           VStack(spacing: OmiSpacing.lg) {
-            Text("Goal completed")
+            Text("Meta concluída")
               .scaledFont(size: 32, weight: .bold)
               .foregroundStyle(
                 LinearGradient(
@@ -49,7 +49,7 @@ struct GoalCelebrationView: View {
               .multilineTextAlignment(.center)
               .padding(.horizontal, OmiSpacing.page)
 
-            Text("\(Int(goal.targetValue)) \(goal.unit ?? "") reached")
+            Text("\(Int(goal.targetValue)) \(goal.unit ?? "") alcançado")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }

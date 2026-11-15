@@ -12,10 +12,10 @@ struct MeetingFollowUpDraftSheet: View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
       HStack(alignment: .top, spacing: OmiSpacing.md) {
         VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-          Text("Draft follow-up")
+          Text("Rascunho de acompanhamento")
             .scaledFont(size: OmiType.subheading, weight: .semibold)
             .foregroundColor(Ink.primary)
-          Text("Based on your cited commitments from this meeting. Check the transcript and edit before sharing.")
+          Text("Baseado nos compromissos citados nesta reunião. Confira a transcrição e edite antes de compartilhar.")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
             .fixedSize(horizontal: false, vertical: true)
@@ -36,10 +36,10 @@ struct MeetingFollowUpDraftSheet: View {
         .accessibilityIdentifier("meeting-follow-up-draft-text")
 
       HStack(spacing: OmiSpacing.sm) {
-        Button("Review transcript", action: onReviewTranscript)
+        Button("Revisar transcrição", action: onReviewTranscript)
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         Spacer(minLength: 0)
-        Button("Copy draft", action: onCopy)
+        Button("Copiar rascunho", action: onCopy)
           .buttonStyle(OmiButtonStyle(.primary, size: .compact))
           .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
           .accessibilityIdentifier("meeting-follow-up-copy")

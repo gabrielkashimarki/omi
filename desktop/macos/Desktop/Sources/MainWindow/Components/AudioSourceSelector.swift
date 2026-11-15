@@ -36,7 +36,7 @@ struct AudioSourceSelector: View {
           Text(source.displayName)
             .scaledFont(size: OmiType.body, weight: .medium)
 
-          Text(AudioCaptureService.getCurrentMicrophoneName() ?? "Default")
+          Text(AudioCaptureService.getCurrentMicrophoneName() ?? "Padrão")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
             .lineLimit(1)

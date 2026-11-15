@@ -103,7 +103,7 @@ struct ConversationRowView: View {
   @ViewBuilder
   private func statusCluster(phase: ConversationProcessingPhase) -> some View {
     if conversation.discarded {
-      Text("Discarded")
+      Text("Descartada")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
     } else {
@@ -116,7 +116,7 @@ struct ConversationRowView: View {
         HStack(spacing: 4) {
           Image(systemName: isReprocessing ? "arrow.triangle.2.circlepath" : "wand.and.stars")
             .scaledFont(size: 9, weight: .semibold)
-          Text(isReprocessing ? "Reprocessing…" : "Reprocess")
+          Text(isReprocessing ? "Reprocessando…" : "Reprocessar")
             .scaledFont(size: 10, weight: .semibold)
         }
         .foregroundColor(Ink.primary)
@@ -126,7 +126,7 @@ struct ConversationRowView: View {
       }
       .buttonStyle(.plain)
       .disabled(isReprocessing)
-      .help("Run the title and summary again")
+      .help("Gerar o título e o resumo de novo")
       .accessibilityIdentifier("conversation-row-reprocess-\(conversation.id)")
     }
   }
@@ -158,7 +158,7 @@ struct ConversationRowView: View {
         Text("·")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
-        Text("Adding memories & tasks…")
+        Text("Adicionando memórias e tarefas…")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
           .transition(.opacity)
@@ -189,9 +189,9 @@ struct ConversationRowView: View {
           .foregroundColor(Ink.secondary)
       }
     }
-    .help("Recorded by " + captureSources.map(\.captureLabel).joined(separator: " and "))
+    .help("Gravado por " + captureSources.map(\.captureLabel).joined(separator: " e "))
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Recorded by " + captureSources.map(\.captureLabel).joined(separator: " and "))
+    .accessibilityLabel("Gravado por " + captureSources.map(\.captureLabel).joined(separator: " e "))
   }
 
   private func toggleStar() async {
@@ -215,11 +215,11 @@ struct ConversationRowView: View {
       source = await appState.loadConversationDetail(source)
     }
     guard source.transcriptPresenceState != .lockedOrRedacted else {
-      OmiToastCenter.shared.confirm("This transcript is locked")
+      OmiToastCenter.shared.confirm("Esta transcrição está bloqueada")
       return
     }
     let text = SpeakerLabelFormatter(people: appState.people).transcript(source.transcriptSegments)
-    OmiToastCenter.shared.copy(text, confirming: "Transcript copied")
+    OmiToastCenter.shared.copy(text, confirming: "Transcrição copiada")
   }
 
   private func copyLink() async {
@@ -240,7 +240,7 @@ struct ConversationRowView: View {
       onFailure: { log("Failed to get share link: \($0)") }
     )
     if feedback == .copied {
-      OmiToastCenter.shared.confirm("Share link copied — anyone with the link can view")
+      OmiToastCenter.shared.confirm("Link de compartilhamento copiado (qualquer pessoa com o link pode ver)")
     }
   }
 
@@ -288,7 +288,7 @@ struct ConversationRowView: View {
       Button {
         Task { await restoreConversation() }
       } label: {
-        Text(isReprocessing ? "Restoring…" : "Restore Conversation")
+        Text(isReprocessing ? "Restaurando…" : "Restaurar conversa")
       }
       .disabled(isReprocessing)
       .accessibilityIdentifier("conversation-row-restore-\(conversation.id)")
@@ -297,7 +297,7 @@ struct ConversationRowView: View {
         Task { await reprocessConversation() }
       } label: {
         Label(
-          isReprocessing ? "Reprocessing…" : "Reprocess Title & Summary",
+          isReprocessing ? "Reprocessando…" : "Reprocessar título e resumo",
           systemImage: isReprocessing ? "arrow.triangle.2.circlepath" : "wand.and.stars")
       }
       .disabled(isReprocessing)
@@ -306,20 +306,20 @@ struct ConversationRowView: View {
     Button {
       prompts.requestRename(conversation)
     } label: {
-      Label("Edit Title…", systemImage: "pencil")
+      Label("Editar título…", systemImage: "pencil")
     }
 
     Button {
       Task { await copyTranscript() }
     } label: {
-      Label("Copy Transcript", systemImage: "doc.on.doc")
+      Label("Copiar transcrição", systemImage: "doc.on.doc")
     }
 
     Button {
       Task { await copyLink() }
     } label: {
       Label(
-        isCopyingLink ? "Generating Link…" : "Copy Share Link",
+        isCopyingLink ? "Gerando link…" : "Copiar link de compartilhamento",
         systemImage: isCopyingLink ? "arrow.triangle.2.circlepath" : "link")
     }
     .disabled(isCopyingLink)
@@ -330,7 +330,7 @@ struct ConversationRowView: View {
           Button {
             Task { await onMoveToFolder(conversation.id, nil) }
           } label: {
-            Label("Remove from Folder", systemImage: "folder.badge.minus")
+            Label("Remover da pasta", systemImage: "folder.badge.minus")
           }
           Divider()
         }
@@ -348,7 +348,7 @@ struct ConversationRowView: View {
           .disabled(conversation.folderId == folder.id)
         }
       } label: {
-        Label("Move to Folder", systemImage: "folder")
+        Label("Mover para a pasta", systemImage: "folder")
       }
     }
 
@@ -357,7 +357,7 @@ struct ConversationRowView: View {
     Button(role: .destructive) {
       prompts.requestDelete(conversation)
     } label: {
-      Label("Delete Conversation…", systemImage: "trash")
+      Label("Apagar conversa…", systemImage: "trash")
     }
   }
 
@@ -367,19 +367,19 @@ struct ConversationRowView: View {
     defer { isReprocessing = false }
     do {
       _ = try await appState.restoreConversation(conversation.id)
-      OmiToastCenter.shared.confirm("Conversation restored")
+      OmiToastCenter.shared.confirm("Conversa restaurada")
     } catch is CancellationError {
       // The account changed before the response arrived.
     } catch {
-      OmiToastCenter.shared.notice("Couldn't restore conversation. Try again.", systemImage: "exclamationmark.triangle")
+      OmiToastCenter.shared.notice("Não foi possível restaurar a conversa. Tente de novo.", systemImage: "exclamationmark.triangle")
     }
   }
 
   private var inlineActionMenu: some View {
-    OmiIconMenu(systemName: "ellipsis", help: "Conversation Actions", size: .compact) {
+    OmiIconMenu(systemName: "ellipsis", help: "Ações da conversa", size: .compact) {
       actionMenuItems
     }
-    .accessibilityLabel("Actions for \(conversation.displayTitle)")
+    .accessibilityLabel("Ações para \(conversation.displayTitle)")
     .accessibilityIdentifier("conversation-row-actions-\(conversation.id)")
   }
 
@@ -395,8 +395,8 @@ struct ConversationRowView: View {
     }
     .buttonStyle(.plain)
     .disabled(isStarring)
-    .help(conversation.starred ? "Remove from Starred" : "Add to Starred")
-    .accessibilityLabel(conversation.starred ? "Remove from Starred" : "Add to Starred")
+    .help(conversation.starred ? "Remover dos favoritos" : "Adicionar aos favoritos")
+    .accessibilityLabel(conversation.starred ? "Remover dos favoritos" : "Adicionar aos favoritos")
   }
 
   // MARK: - Compact Row (single line)

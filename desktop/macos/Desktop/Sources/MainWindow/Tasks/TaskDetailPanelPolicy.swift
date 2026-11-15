@@ -48,7 +48,7 @@ struct TaskDetailPanelContent: Equatable {
     Self(
       taskID: task.id,
       description: task.description,
-      status: task.completed ? "Completed" : "Active",
+      status: task.completed ? "Concluída" : "Ativa",
       whyOmiAddedThis: TaskDetailSourceLinkPolicy.whyOmiAddedThis(for: task),
       linkedSources: TaskDetailSourceLinkPolicy.links(for: task),
       fields: TaskDetailSourceLinkPolicy.detailFields(for: task)
@@ -142,7 +142,7 @@ enum TaskDetailSourceLinkPolicy {
         // `conversationId` remains the original/canonical source. Routing every
         // ref through that one field makes later provenance open the wrong row.
         route = conversationRoute(task: task, id: evidenceID)
-        title = task.source == "transcription:omi" ? "Omi capture" : "Conversation"
+        title = task.source == "transcription:omi" ? "Captura do Omi" : "Conversa"
         subtitle = evidenceID
         systemImage = "bubble.left.and.bubble.right"
       case .chat_message:
@@ -151,12 +151,12 @@ enum TaskDetailSourceLinkPolicy {
         // would be a plausible-looking but invalid destination.
         guard let conversationID = normalizedOptional(task.conversationId) else { continue }
         route = conversationRoute(task: task, id: conversationID)
-        title = task.source == "transcription:omi" ? "Omi capture" : "Conversation"
+        title = task.source == "transcription:omi" ? "Captura do Omi" : "Conversa"
         subtitle = conversationID
         systemImage = "bubble.left.and.bubble.right"
       case .memory_item:
         route = .memory(id: evidenceID)
-        title = "Memory"
+        title = "Memória"
         subtitle = evidenceID
         systemImage = "brain.head.profile"
       case .local_screen:
@@ -165,8 +165,8 @@ enum TaskDetailSourceLinkPolicy {
           currentDeviceID: ClientDeviceService.shared.clientDeviceId
         )?.screenshotID {
           route = .rewindFrame(id: screenshotID)
-          title = "Screen evidence"
-          subtitle = "Open Rewind · frame \(screenshotID)"
+          title = "Evidência de tela"
+          subtitle = "Abrir o Rewind · quadro \(screenshotID)"
         } else {
           // Every screen ref this policy cannot resolve to an exact frame —
           // `capture.v2` rows written before the frame contract existed, refs
@@ -176,14 +176,14 @@ enum TaskDetailSourceLinkPolicy {
           // destination, so fall back to it rather than dropping the only
           // provenance the task has.
           route = .rewind
-          title = "Screen context"
-          subtitle = "Open Rewind"
+          title = "Contexto de tela"
+          subtitle = "Abrir o Rewind"
         }
         systemImage = "rectangle.dashed.and.paperclip"
       case .external:
         guard let url = URL(string: evidenceID), url.scheme != nil else { continue }
         route = .external(url)
-        title = "External source"
+        title = "Fonte externa"
         subtitle = url.host ?? evidenceID
         systemImage = "arrow.up.right.square"
       case .workstream_event, .artifact, ._unknown:
@@ -212,7 +212,7 @@ enum TaskDetailSourceLinkPolicy {
       links.append(
         TaskDetailSourceLink(
           id: sourceIdentity(route),
-          title: task.source == "transcription:omi" ? "Omi capture" : "Conversation",
+          title: task.source == "transcription:omi" ? "Captura do Omi" : "Conversa",
           subtitle: conversationID,
           systemImage: "bubble.left.and.bubble.right",
           route: route
@@ -225,52 +225,52 @@ enum TaskDetailSourceLinkPolicy {
 
   static func whyOmiAddedThis(for task: TaskActionItem) -> String {
     if task.source == nil || task.source == "manual" {
-      return "You added this task directly."
+      return "Você adicionou esta tarefa diretamente."
     }
     if task.source?.contains("screen") == true || task.source == "screenshot" {
-      return "Omi spotted it on your screen."
+      return "O Omi viu isso na sua tela."
     }
     if task.source?.contains("transcription") == true || task.source?.contains("conversation") == true {
-      return "It came from a conversation you captured."
+      return "Veio de uma conversa que você captou."
     }
-    return "It came from an authorized Omi source."
+    return "Veio de uma fonte autorizada do Omi."
   }
 
   static func detailFields(for task: TaskActionItem) -> [TaskDetailField] {
     var fields = [
-      TaskDetailField(label: "Status", value: task.completed ? "Completed" : "Active")
+      TaskDetailField(label: "Status", value: task.completed ? "Concluída" : "Ativa")
     ]
     if let category = task.category, !category.isEmpty {
-      fields.append(TaskDetailField(label: "Category", value: category.capitalized))
+      fields.append(TaskDetailField(label: "Categoria", value: category.capitalized))
     }
     if !task.tags.isEmpty {
       fields.append(TaskDetailField(label: "Tags", value: task.tags.joined(separator: ", ")))
     }
     // Priority is not a read-only field here — the panel edits it directly.
     if let source = task.source, !source.isEmpty {
-      fields.append(TaskDetailField(label: "Source", value: "\(task.sourceLabel) (\(source))"))
+      fields.append(TaskDetailField(label: "Fonte", value: "\(task.sourceLabel) (\(source))"))
     }
     if let app = task.sourceApp, !app.isEmpty {
-      fields.append(TaskDetailField(label: "Source App", value: app))
+      fields.append(TaskDetailField(label: "App de origem", value: app))
     }
     if let window = task.windowTitle, !window.isEmpty {
-      fields.append(TaskDetailField(label: "Window", value: window))
+      fields.append(TaskDetailField(label: "Janela", value: window))
     }
-    fields.append(TaskDetailField(label: "Created", value: formatDate(task.createdAt)))
+    fields.append(TaskDetailField(label: "Criada", value: formatDate(task.createdAt)))
     if let dueAt = task.dueAt {
-      fields.append(TaskDetailField(label: "Due", value: formatDate(dueAt)))
+      fields.append(TaskDetailField(label: "Prazo", value: formatDate(dueAt)))
     }
     if let completedAt = task.completedAt {
-      fields.append(TaskDetailField(label: "Completed", value: formatDate(completedAt)))
+      fields.append(TaskDetailField(label: "Concluída", value: formatDate(completedAt)))
     }
     if let goalID = normalizedOptional(task.goalId) {
-      fields.append(TaskDetailField(label: "Goal", value: goalID))
+      fields.append(TaskDetailField(label: "Meta", value: goalID))
     }
     if let conversationID = normalizedOptional(task.conversationId) {
-      fields.append(TaskDetailField(label: "Conversation", value: conversationID))
+      fields.append(TaskDetailField(label: "Conversa", value: conversationID))
     }
     if let confidence = task.confidence {
-      fields.append(TaskDetailField(label: "Confidence", value: "\(Int(confidence * 100))%"))
+      fields.append(TaskDetailField(label: "Confiança", value: "\(Int(confidence * 100))%"))
     }
     fields.append(contentsOf: metadataFields(for: task))
     return fields

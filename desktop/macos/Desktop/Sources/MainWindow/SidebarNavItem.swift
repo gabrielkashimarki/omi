@@ -38,14 +38,14 @@ enum SidebarNavItem: Int, CaseIterable {
   case permissions = 10
   var title: String {
     switch self {
-    case .dashboard: return "Home"
-    case .conversations: return "Conversations"
-    case .memories: return "Memories"
-    case .tasks: return "Tasks"
+    case .dashboard: return "Início"
+    case .conversations: return "Conversas"
+    case .memories: return "Memórias"
+    case .tasks: return "Tarefas"
     case .rewind: return "Rewind"
     case .apps: return "Apps"
-    case .settings: return "Settings"
-    case .permissions: return "Permissions"
+    case .settings: return "Ajustes"
+    case .permissions: return "Permissões"
     }
   }
   var icon: String {

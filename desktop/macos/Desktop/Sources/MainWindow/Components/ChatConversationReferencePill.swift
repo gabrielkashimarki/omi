@@ -17,8 +17,8 @@ struct ChatConversationReferencePill: View {
           pillContent(showsOpenIndicator: true)
         }
         .buttonStyle(.plain)
-        .help("Open \(reference.displayTitle)")
-        .accessibilityLabel("Open attached conversation: \(reference.displayTitle)")
+        .help("Abrir \(reference.displayTitle)")
+        .accessibilityLabel("Abrir conversa anexada: \(reference.displayTitle)")
         .accessibilityIdentifier("chat-conversation-reference-\(reference.sourceID)-open")
       } else {
         pillContent(showsOpenIndicator: false)
@@ -67,7 +67,7 @@ struct ChatConversationReferencePill: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Remove \(reference.displayTitle)")
+        .accessibilityLabel("Remover \(reference.displayTitle)")
       }
     }
     .padding(.horizontal, OmiSpacing.sm)

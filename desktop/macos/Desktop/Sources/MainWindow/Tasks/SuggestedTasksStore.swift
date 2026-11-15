@@ -145,11 +145,11 @@ enum SuggestedCardAction: String, Equatable, Hashable {
   /// User-facing label for the Tasks-page review row.
   var label: String {
     switch self {
-    case .doNow: return "Accept"
-    case .later: return "Later"
-    case .dismiss: return "Reject"
-    case .saveEdit: return "Save"
-    case .cancelEdit: return "Cancel"
+    case .doNow: return "Aceitar"
+    case .later: return "Depois"
+    case .dismiss: return "Rejeitar"
+    case .saveEdit: return "Salvar"
+    case .cancelEdit: return "Cancelar"
     }
   }
 
@@ -384,7 +384,7 @@ final class SuggestedTasksStore: ObservableObject {
       control = try await client.getCandidateWorkflowControl()
     } catch {
       guard loadScopeIsCurrent(ownerScope, token: loadToken) else { return }
-      self.error = "Suggested items could not be refreshed."
+      self.error = "Não foi possível atualizar os itens sugeridos."
       return
     }
     guard loadScopeIsCurrent(ownerScope, token: loadToken) else { return }
@@ -415,7 +415,7 @@ final class SuggestedTasksStore: ObservableObject {
       return
     } catch {
       guard loadScopeIsCurrent(ownerScope, token: loadToken) else { return }
-      self.error = "Suggested items could not be refreshed."
+      self.error = "Não foi possível atualizar os itens sugeridos."
       return
     }
     guard loadScopeIsCurrent(ownerScope, token: loadToken) else { return }
@@ -431,7 +431,7 @@ final class SuggestedTasksStore: ObservableObject {
       .prefix(Self.maxVisibleCandidates)
     recordsByID = Dictionary(lastWriteWins: visible.map { ($0.record.candidateId, $0.record) })
     candidates = visible.map(\.candidate)
-    error = pendingFeedback.isEmpty ? nil : "Saved feedback attribution will retry automatically."
+    error = pendingFeedback.isEmpty ? nil : "A atribuição do feedback salvo será tentada de novo automaticamente."
   }
 
   @discardableResult
@@ -507,7 +507,7 @@ final class SuggestedTasksStore: ObservableObject {
         return nil
       }
       restoreCandidate(removed)
-      self.error = "That Suggested action did not sync. Try again."
+      self.error = "Essa ação em Sugeridas não sincronizou. Tente de novo."
       return nil
     }
     guard ownersAreCurrent(suppressionOwnerID: suppressionOwnerID, feedbackOwnerID: feedbackOwnerID)
@@ -533,7 +533,7 @@ final class SuggestedTasksStore: ObservableObject {
           refreshOwnerScopedState()
           return nil
         }
-        self.error = "The task was kept, but the edit did not sync."
+        self.error = "A tarefa foi mantida, mas a edição não sincronizou."
       }
     }
     let feedbackRequest = OmiAPI.FeedbackCreate(
@@ -616,7 +616,7 @@ final class SuggestedTasksStore: ObservableObject {
         return
       }
       restoreCandidate(removed)
-      self.error = "That Suggested action did not sync. Try again."
+      self.error = "Essa ação em Sugeridas não sincronizou. Tente de novo."
       return
     }
     // Backend reject succeeded — clear the local pending/accepted receipt by
@@ -905,7 +905,7 @@ final class SuggestedTasksStore: ObservableObject {
           interventionIdempotencyKey: preparedRequest.interventionId == nil
             ? Self.interventionIdempotencyKey(for: record) : nil
         ))
-      self.error = "Saved. Feedback attribution will retry automatically."
+      self.error = "Salvo. A atribuição do feedback será tentada de novo automaticamente."
       return nil
     }
   }
@@ -1071,8 +1071,8 @@ final class SuggestedTasksStore: ObservableObject {
     if let proposal = record.workstreamProposal { return proposal.title }
     switch record.taskChange {
     case .create(let task): return task.description_
-    case .change(let task): return task.description_ ?? "Review a task update"
-    case .none: return "Review suggested work"
+    case .change(let task): return task.description_ ?? "Revisar uma atualização de tarefa"
+    case .none: return "Revisar trabalho sugerido"
     }
   }
 

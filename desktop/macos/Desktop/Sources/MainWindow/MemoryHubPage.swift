@@ -168,7 +168,7 @@ struct MemoryHubPage: View {
           QuerySearchBar(
             text: $brainMapSearchText,
             accessibilityID: "brain-map-search-field",
-            placeholder: "Search Brain Map",
+            placeholder: "Buscar no mapa do cérebro",
             searchSurface: .brainMap
           )
         },
@@ -188,7 +188,7 @@ struct MemoryHubPage: View {
     if let onOpenConversationRecord {
       Task { @MainActor in
         guard let conversation = try? await APIClient.shared.getConversation(id: conversationID) else {
-          OmiToastCenter.shared.confirm("Couldn't open the source conversation")
+          OmiToastCenter.shared.confirm("Não foi possível abrir a conversa de origem")
           return
         }
         onOpenConversationRecord(conversation)

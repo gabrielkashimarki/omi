@@ -65,7 +65,7 @@ enum ConversationSnapshotSource: Equatable {
 enum ConversationRestoreError: LocalizedError {
   case stillDiscarded
 
-  var errorDescription: String? { "This conversation couldn't be restored. Try again." }
+  var errorDescription: String? { "Não foi possível restaurar esta conversa. Tente de novo." }
 }
 
 struct ConversationRepositorySnapshot: Equatable {

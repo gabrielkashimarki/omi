@@ -81,10 +81,10 @@ enum SpineFoot: Equatable, Sendable {
   /// reach in *days* is made of, which is the part of the wait a person can actually feel. Without a
   /// credible total the sentence drops the numbers rather than inventing a denominator.
   static func fillingNote(conversations: Int, of total: Int?) -> String {
-    guard let total, total > conversations else { return "Loading the rest of your history…" }
+    guard let total, total > conversations else { return "Carregando o resto do seu histórico…" }
     let loaded = total.formatted(.number.grouping(.automatic))
     let done = conversations.formatted(.number.grouping(.automatic))
-    return "Loading your history… \(done) of \(loaded) conversations"
+    return "Carregando seu histórico… \(done) de \(loaded) conversas"
   }
 }
 

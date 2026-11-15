@@ -20,7 +20,7 @@ struct MemoryReviewSection: View {
   init(
     items: [MemoryReviewItem],
     source: MemoryReviewSource,
-    title: String = "Things I learned today",
+    title: String = "O que aprendi hoje",
     store: MemoryReviewCardStore? = nil
   ) {
     self.title = title
@@ -142,13 +142,13 @@ struct MemoryReviewRowView: View {
 
   private var controls: some View {
     HStack(spacing: OmiSpacing.xs) {
-      control("checkmark", label: "Right", identifier: "memory-review-accept") {
+      control("checkmark", label: "Certo", identifier: "memory-review-accept") {
         send(.accept)
       }
-      control("xmark", label: "Wrong", identifier: "memory-review-reject") {
+      control("xmark", label: "Errado", identifier: "memory-review-reject") {
         send(.reject)
       }
-      control("pencil", label: "Fix", identifier: "memory-review-edit") {
+      control("pencil", label: "Corrigir", identifier: "memory-review-edit") {
         send(.beginEdit(prefill: item.content))
       }
     }
@@ -193,7 +193,7 @@ struct MemoryReviewRowView: View {
           return .handled
         }
         .accessibilityIdentifier("memory-review-editor")
-      Button("Save") { commitEdit() }
+      Button("Salvar") { commitEdit() }
         .buttonStyle(.plain)
         .scaledFont(size: OmiType.micro, weight: .semibold)
         .foregroundStyle(HomePalette.secondary)

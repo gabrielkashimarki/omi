@@ -234,14 +234,14 @@ struct QueryHeroBar: View {
         heroPrimary(systemImage: "stop.fill", isProminent: !isStopping, action: onStop)
           .disabled(isStopping)
           .accessibilityIdentifier("query-shell-stop")
-          .accessibilityLabel("Stop response")
-          .help("Stop this response")
+          .accessibilityLabel("Interromper resposta")
+          .help("Interromper esta resposta")
       } else {
         heroPrimary(systemImage: "arrow.up", isProminent: canSend, action: onAsk)
           .keyboardShortcut(.return, modifiers: .command)
           .accessibilityIdentifier("query-shell-ask-hint")
-          .accessibilityLabel("Send")
-          .help("Send (⏎)")
+          .accessibilityLabel("Enviar")
+          .help("Enviar (⏎)")
       }
     }
   }
@@ -289,16 +289,16 @@ struct QueryHeroBar: View {
         panelPrimary(systemImage: "stop.fill", isProminent: !isStopping, action: onStop)
           .disabled(isStopping)
           .accessibilityIdentifier("query-shell-stop")
-          .accessibilityLabel("Stop response")
-          .help("Stop this response")
+          .accessibilityLabel("Interromper resposta")
+          .help("Interromper esta resposta")
       } else {
         panelPrimary(systemImage: "arrow.up", isProminent: canSend, action: onAsk)
           .keyboardShortcut(.return, modifiers: .command)
           .accessibilityIdentifier("query-shell-ask-hint")
-          .accessibilityLabel("Send")
+          .accessibilityLabel("Enviar")
           // **The key hint is help text, not paint.** `⏎ Send` written across the control was the
           // widest thing in the row and the reason it needed a pill to sit in at all.
-          .help("Send (⏎)")
+          .help("Enviar (⏎)")
       }
     }
   }
@@ -451,7 +451,7 @@ struct QueryHeroBar: View {
       if !recentScreenFrames.isEmpty {
         Divider()
       }
-      Button("Attach Files…") { pickFiles() }
+      Button("Anexar arquivos…") { pickFiles() }
     } label: {
       Image(systemName: "paperclip")
         .scaledFont(size: glyphSize, weight: .medium)
@@ -473,8 +473,8 @@ struct QueryHeroBar: View {
     // menu paints it; what it can never again do is move the field.
     .frame(width: diameter)
     .disabled(attachments.count >= kMaxChatAttachments)
-    .help("Attach files or a recent screen frame")
-    .accessibilityLabel("Attach files")
+    .help("Anexar arquivos ou uma captura de tela recente")
+    .accessibilityLabel("Anexar arquivos")
     .accessibilityIdentifier("query-shell-attach")
   }
 

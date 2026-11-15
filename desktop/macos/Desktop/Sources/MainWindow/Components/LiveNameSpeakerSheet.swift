@@ -31,7 +31,7 @@ struct LiveNameSpeakerSheet: View {
     VStack(alignment: .leading, spacing: 0) {
       // Header
       HStack {
-        Text("Name Speaker")
+        Text("Nomear falante")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -62,7 +62,7 @@ struct LiveNameSpeakerSheet: View {
       // Action buttons
       HStack {
         Spacer()
-        Button("Cancel") {
+        Button("Cancelar") {
           onDismiss()
         }
         .buttonStyle(.plain)
@@ -75,7 +75,7 @@ struct LiveNameSpeakerSheet: View {
           if isSaving {
             ProgressView().controlSize(.small)
           } else {
-            Text("Save")
+            Text("Salvar")
           }
         }
         .buttonStyle(.plain)
@@ -112,7 +112,7 @@ struct LiveNameSpeakerSheet: View {
               .scaledFont(size: OmiType.caption, weight: .semibold)
               .foregroundColor(Ink.primary)
           )
-        Text("Speaker \(speakerId)")
+        Text("Falante \(speakerId)")
           .scaledFont(size: OmiType.body, weight: .medium)
           .foregroundColor(Ink.primary)
       }
@@ -135,7 +135,7 @@ struct LiveNameSpeakerSheet: View {
 
   private var peopleSelectionSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      Text("Who is this?")
+      Text("Quem é?")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.secondary)
 
@@ -150,8 +150,8 @@ struct LiveNameSpeakerSheet: View {
           }
         }
 
-        // "+ Add Person" chip
-        personChip(label: "+ Add Person", isSelected: isAddingNewPerson, isAction: true) {
+        // "+ Adicionar pessoa" chip
+        personChip(label: "+ Adicionar pessoa", isSelected: isAddingNewPerson, isAction: true) {
           isAddingNewPerson = true
           selectedPersonId = nil
           duplicateWarning = nil
@@ -169,7 +169,7 @@ struct LiveNameSpeakerSheet: View {
       if isAddingNewPerson {
         VStack(alignment: .leading, spacing: OmiSpacing.xs) {
           HStack(spacing: OmiSpacing.sm) {
-            TextField("Person name", text: $newPersonName)
+            TextField("Nome da pessoa", text: $newPersonName)
               .textFieldStyle(.plain)
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.primary)
@@ -198,7 +198,7 @@ struct LiveNameSpeakerSheet: View {
               if isCreating {
                 ProgressView().controlSize(.small)
               } else {
-                Text("Add")
+                Text("Adicionar")
                   .scaledFont(size: OmiType.caption, weight: .medium)
               }
             }
@@ -223,7 +223,7 @@ struct LiveNameSpeakerSheet: View {
       }
 
       Text(
-        "This name will apply to all segments from this speaker in the current recording and will be saved when the conversation ends."
+        "Este nome vai valer para todos os trechos deste falante na gravação atual e será salvo quando a conversa terminar."
       )
       .scaledFont(size: OmiType.caption)
       .foregroundColor(Ink.secondary)
@@ -245,7 +245,7 @@ struct LiveNameSpeakerSheet: View {
   private func validateName(_ name: String) {
     let trimmed = name.trimmingCharacters(in: .whitespaces)
     if people.contains(where: { $0.name.lowercased() == trimmed.lowercased() }) {
-      duplicateWarning = "A person with this name already exists"
+      duplicateWarning = "Já existe uma pessoa com este nome"
     } else {
       duplicateWarning = nil
     }
@@ -274,7 +274,7 @@ struct LiveNameSpeakerSheet: View {
       if saved {
         onDismiss()
       } else {
-        saveError = "Could not save this speaker. Please try again."
+        saveError = "Não foi possível salvar este falante. Tente de novo."
       }
     }
   }

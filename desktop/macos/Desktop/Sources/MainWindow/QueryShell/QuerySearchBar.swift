@@ -63,8 +63,8 @@ struct QuerySearchBar: View {
         }
         .buttonStyle(.plain)
         .onHover { isClearHovered = $0 }
-        .accessibilityLabel("Clear Search")
-        .help("Clear the search")
+        .accessibilityLabel("Limpar busca")
+        .help("Limpar a busca")
       }
     }
     .padding(.horizontal, QueryShellLayout.barPaddingHorizontal)

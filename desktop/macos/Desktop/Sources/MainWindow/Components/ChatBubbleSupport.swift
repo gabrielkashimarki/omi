@@ -263,35 +263,35 @@ enum ChatStructuredFallbackText {
   private static func line(for block: ChatContentBlock) -> String {
     switch block {
     case .text(_, let text):
-      return nonEmpty(text, or: "Message")
+      return nonEmpty(text, or: "Mensagem")
     case .toolCall(_, let name, _, _, let input, let output):
-      return labelled("Tool", name, output ?? input?.summary)
+      return labelled("Ferramenta", name, output ?? input?.summary)
     case .thinking(_, let text):
-      return labelled("Thinking", text)
+      return labelled("Pensando", text)
     case .discoveryCard(_, let title, let summary, _):
-      return labelled("Discovery", title, summary)
+      return labelled("Descoberta", title, summary)
     case .questionCard(_, _, let text, _, _, _, _):
-      return nonEmpty(text, or: "Question")
+      return nonEmpty(text, or: "Pergunta")
     case .taskCard:
-      return "Task"
+      return "Tarefa"
     case .goalLink(_, _, let summary):
-      return labelled("Goal", summary)
+      return labelled("Meta", summary)
     case .captureLink(_, _, _, let summary):
-      return labelled("Capture", summary)
+      return labelled("Captura", summary)
     case .conversationLink(_, _, let summary, _):
-      return labelled("Meeting notes ready", summary)
+      return labelled("Notas da reunião prontas", summary)
     case .memoryLink(_, _, let summary):
-      return labelled("Memory", summary)
+      return labelled("Memória", summary)
     case .citation(_, let reference):
-      return labelled("Source", reference.title, reference.preview)
+      return labelled("Fonte", reference.title, reference.preview)
     case .agentSpawn(_, _, _, _, let title, let objective, _):
-      return labelled("Agent started", title, objective)
+      return labelled("Agente iniciado", title, objective)
     case .agentCompletion(_, _, _, _, let title, _, let output, _):
-      return labelled("Agent completed", title, output)
+      return labelled("Agente concluído", title, output)
     case .memoryReviewCard:
-      return "Memory review"
+      return "Revisão de memória"
     case .followUp(_, let question):
-      return nonEmpty(question, or: "Follow-up")
+      return nonEmpty(question, or: "Continuação")
     }
   }
 }
@@ -496,22 +496,22 @@ struct ProactiveNotificationBadge: Equatable {
   init(kind: ProactiveNotificationKind) {
     switch kind {
     case .suggestion:
-      (label, systemImage) = ("Focus", Self.suggestionSystemImage)
+      (label, systemImage) = ("Foco", Self.suggestionSystemImage)
     case .insight, .resurface, .goal:
       (label, systemImage) = ("Insight", Self.insightSystemImage)
     case .task, .meetingNotes:
-      (label, systemImage) = ("Task", "checkmark.circle")
+      (label, systemImage) = ("Tarefa", "checkmark.circle")
     case .memory:
-      (label, systemImage) = ("Memory", "brain.head.profile")
+      (label, systemImage) = ("Memória", "brain.head.profile")
     case .integration:
-      (label, systemImage) = ("Integration", "sparkles.rectangle.stack")
+      (label, systemImage) = ("Integração", "sparkles.rectangle.stack")
     case .functional, .proactivityV2:
       (label, systemImage) = ("Omi", "bell")
     case .general:
       // Decode-only: rows journaled before proactive kinds were part of the
       // continuity key. No producer can reach it (`showNotification` requires a
       // kind), so this arm is history, not a category.
-      (label, systemImage) = ("Notification", "bell")
+      (label, systemImage) = ("Notificação", "bell")
     case .trial, .onboarding:
       // Never journaled, so never rendered as a transcript row. Kept exhaustive
       // so a future decision to journal them has to state its badge here.
@@ -520,7 +520,7 @@ struct ProactiveNotificationBadge: Equatable {
       // Never journaled either — the recap's transcript presence is the
       // dedicated `ChatDailyRecapRow` day boundary, not a bell card. Kept
       // exhaustive for the same reason.
-      (label, systemImage) = ("Daily Recap", "calendar")
+      (label, systemImage) = ("Resumo do dia", "calendar")
     }
   }
 }
@@ -562,7 +562,7 @@ struct BackgroundAgentSummary: Equatable {
 
     return BackgroundAgentSummary(
       agentID: agentID,
-      prompt: remainder.isEmpty ? "Background agent" : remainder,
+      prompt: remainder.isEmpty ? "Agente em segundo plano" : remainder,
       output: output
     )
   }
@@ -688,7 +688,7 @@ struct ChatSuggestedTaskRow: View {
         .background(Ink.rowFill, in: Circle())
         .accessibilityHidden(true)
       VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-        Text("Suggested task")
+        Text("Tarefa sugerida")
           .scaledFont(size: OmiType.micro, weight: .semibold)
           .foregroundColor(Ink.secondary)
         Text(card.description)
@@ -696,7 +696,7 @@ struct ChatSuggestedTaskRow: View {
           .foregroundColor(Ink.primary)
           .textSelection(.enabled)
         if failed {
-          Text("That didn't sync. Try again.")
+          Text("Não sincronizou. Tente de novo.")
             .scaledFont(size: OmiType.micro)
             .foregroundColor(Ink.secondary)
         }
@@ -705,7 +705,7 @@ struct ChatSuggestedTaskRow: View {
         } label: {
           HStack(spacing: OmiSpacing.xxs) {
             Image(systemName: isAdded ? "checkmark" : "plus")
-            Text(isAdded ? "Added to Tasks" : "Add to Tasks")
+            Text(isAdded ? "Adicionada às Tarefas" : "Adicionar às Tarefas")
           }
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(isAdded ? Ink.listeningGreen : Ink.primary)
@@ -733,7 +733,7 @@ struct ChatSuggestedTaskRow: View {
         .stroke(Ink.glassEdge, lineWidth: 1)
     )
     .accessibilityElement(children: .combine)
-    .accessibilityLabel("Suggested task: \(card.description)")
+    .accessibilityLabel("Tarefa sugerida: \(card.description)")
   }
 
   private func add() {

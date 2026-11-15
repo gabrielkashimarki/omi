@@ -36,7 +36,7 @@ struct ChatFirstGoalsPage: View {
           unavailableState(message)
         case .inactive, .loading:
           if goalsStore.activeGoals.isEmpty {
-            GlassLoadingState(label: "Loading goals…")
+            GlassLoadingState(label: "Carregando metas…")
           } else {
             goalContent
           }
@@ -70,7 +70,7 @@ struct ChatFirstGoalsPage: View {
       BackChip((navigation.goalsOrigin ?? .chat).title, accessibilityIdentifier: "chat-first-goals-back") {
         navigation.closeGoals()
       }
-      GlassPageHeader(title: "Goals") {
+      GlassPageHeader(title: "Metas") {
         refreshButton
       }
     }
@@ -79,7 +79,7 @@ struct ChatFirstGoalsPage: View {
   }
 
   private var refreshButton: some View {
-    OmiIconButton("arrow.clockwise", help: "Refresh goals") {
+    OmiIconButton("arrow.clockwise", help: "Atualizar metas") {
       Task { await refreshProjectionAndDetail() }
     }
     .disabled(goalsStore.isLoading)
@@ -102,12 +102,12 @@ struct ChatFirstGoalsPage: View {
           )
           .id(detail.goal.goalId)
         } else if goalsStore.primaryFocusedGoal != nil || pendingGoalID != nil {
-          GlassLoadingState(label: "Loading goal…", placement: .scrolling)
+          GlassLoadingState(label: "Carregando meta…", placement: .scrolling)
         }
 
         if !goalsStore.otherActiveGoals.isEmpty {
           VStack(alignment: .leading, spacing: OmiSpacing.md) {
-            Text("Other active goals")
+            Text("Outras metas ativas")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundStyle(Ink.primary)
 
@@ -137,10 +137,10 @@ struct ChatFirstGoalsPage: View {
   private var emptyState: some View {
     GlassEmptyState(
       systemImage: "target",
-      title: "No Active Goals",
-      message: "Tell Omi what you're working toward and it'll help turn it into a goal."
+      title: "Nenhuma meta ativa",
+      message: "Conte ao Omi o que você quer alcançar e ele ajuda a transformar isso em uma meta."
     ) {
-      Button("Talk to Omi About a Goal") {
+      Button("Falar com o Omi sobre uma meta") {
         navigation.discuss(.goals, using: chatProvider)
       }
       .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -150,7 +150,7 @@ struct ChatFirstGoalsPage: View {
 
   private func unavailableState(_ message: String) -> some View {
     GlassErrorState(
-      title: "Goals Are Unavailable",
+      title: "Metas indisponíveis",
       message: message,
       retryAccessibilityIdentifier: "chat-first-goals-unavailable-refresh",
       retry: { Task { await refreshProjectionAndDetail() } }
@@ -237,7 +237,7 @@ private struct ChatFirstFocusedGoalSection: View {
           .glassCard(cornerRadius: OmiChrome.chipRadius)
 
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Focused goal")
+          Text("Meta em foco")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundStyle(Ink.secondary)
           Text(detail.goal.title)
@@ -259,9 +259,9 @@ private struct ChatFirstFocusedGoalSection: View {
 
       VStack(alignment: .leading, spacing: OmiSpacing.xs) {
         HStack {
-          Text("Progress")
+          Text("Progresso")
           Spacer()
-          Text("\(completedCount) of \(detail.tasks.count) tasks")
+          Text("\(completedCount) de \(detail.tasks.count) tarefas")
         }
         .scaledFont(size: OmiType.caption, weight: .medium)
         .foregroundStyle(Ink.secondary)
@@ -271,7 +271,7 @@ private struct ChatFirstFocusedGoalSection: View {
 
       if !nextTasks.isEmpty {
         VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-          Text("Next up")
+          Text("A seguir")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundStyle(Ink.secondary)
           ForEach(nextTasks, id: \.id) { task in
@@ -285,11 +285,11 @@ private struct ChatFirstFocusedGoalSection: View {
       }
 
       HStack(spacing: OmiSpacing.lg) {
-        Button("View related tasks", action: onViewTasks)
+        Button("Ver tarefas relacionadas", action: onViewTasks)
           .buttonStyle(.plain)
           .foregroundStyle(Ink.secondary)
           .accessibilityIdentifier("chat-first-goal-\(detail.goal.goalId)-tasks")
-        Button("Continue in Chat", action: onContinueInChat)
+        Button("Continuar no Chat", action: onContinueInChat)
           .buttonStyle(.plain)
           .foregroundStyle(Ink.secondary)
           .accessibilityIdentifier("chat-first-goal-\(detail.goal.goalId)-discuss")
@@ -322,7 +322,7 @@ private struct ChatFirstGoalTaskRow: View {
       .buttonStyle(.plain)
       .disabled(isResolving)
       .accessibilityLabel(
-        task.completed ? "Mark \(task.description_) incomplete" : "Mark \(task.description_) complete"
+        task.completed ? "Marcar \(task.description_) como pendente" : "Marcar \(task.description_) como concluída"
       )
       .accessibilityIdentifier("chat-first-goal-task-\(task.id)-toggle")
 
@@ -374,7 +374,7 @@ private struct ChatFirstGoalRow: View {
       }
       Spacer(minLength: OmiSpacing.md)
       VStack(alignment: .trailing, spacing: OmiSpacing.sm) {
-        Button("Discuss", action: onDiscuss)
+        Button("Discutir", action: onDiscuss)
           .buttonStyle(.plain)
           .foregroundStyle(Ink.secondary)
           .accessibilityIdentifier("chat-first-goal-\(goal.goalId)-discuss")
@@ -383,7 +383,7 @@ private struct ChatFirstGoalRow: View {
         } label: {
           HStack(spacing: OmiSpacing.xxs) {
             if isSettingFocus { ProgressView().controlSize(.small) }
-            Text("Set as focus")
+            Text("Definir como foco")
           }
         }
         .buttonStyle(.plain)
@@ -413,9 +413,9 @@ enum ChatFirstGoalProgressPolicy {
     // the current value has overshot that unconfigured default, the target
     // carries no information; report the value alone.
     if goal.unit == nil, goal.targetValue <= 1, goal.currentValue > goal.targetValue {
-      return "Progress: \(formatted(goal.currentValue))"
+      return "Progresso: \(formatted(goal.currentValue))"
     }
-    return "Progress: \(formatted(goal.currentValue)) of \(formatted(goal.targetValue))\(unit)"
+    return "Progresso: \(formatted(goal.currentValue)) de \(formatted(goal.targetValue))\(unit)"
   }
 
   private static func formatted(_ value: Double) -> String {

@@ -53,7 +53,7 @@ enum HomeChatTranscript {
       .compactMap { message -> String? in
         let body = message.copyableText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !body.isEmpty else { return nil }
-        let speaker = message.sender == .user ? "You" : assistantName
+        let speaker = message.sender == .user ? "Você" : assistantName
         return "\(speaker): \(body)"
       }
       .joined(separator: "\n\n")

@@ -218,9 +218,9 @@ struct QueryShellHome: View {
     // Usage, rather than naming a price and a plan the Settings page does not offer.
     .shellConfirmation(
       isPresented: $chatProvider.showOmiThresholdAlert,
-      title: "Chat Limit Reached",
-      message: "You've used this plan's chat allowance. Upgrade your plan to keep chatting.",
-      confirmTitle: "See Plans",
+      title: "Limite de chat atingido",
+      message: "Você usou toda a cota de chat deste plano. Faça upgrade do plano para continuar conversando.",
+      confirmTitle: "Ver planos",
       isDestructive: false
     ) {
       NotificationCenter.default.post(
@@ -232,9 +232,9 @@ struct QueryShellHome: View {
     }
     .shellConfirmation(
       isPresented: $showClearConfirmation,
-      title: "Clear Chat?",
-      message: "This removes every message in this chat. It can't be undone.",
-      confirmTitle: "Clear Chat"
+      title: "Limpar o chat?",
+      message: "Isto remove todas as mensagens deste chat. Não dá para desfazer.",
+      confirmTitle: "Limpar chat"
     ) {
       clearTranscript()
     }
@@ -394,9 +394,9 @@ struct QueryShellHome: View {
   /// Settings gear that is already present on every page.
   private var chatMenu: some View {
     Menu {
-      Button(didCopyTranscript ? "Copied" : "Copy Chat", action: copyTranscript)
+      Button(didCopyTranscript ? "Copiado" : "Copiar chat", action: copyTranscript)
         .disabled(!menu.canCopy)
-      Button("Clear Chat…", role: .destructive) { showClearConfirmation = true }
+      Button("Limpar chat…", role: .destructive) { showClearConfirmation = true }
         .disabled(!menu.canClear)
     } label: {
       QueryPanelChipLabel(
@@ -409,8 +409,8 @@ struct QueryShellHome: View {
     // Same override and same reason as `Filter ›`: a `Menu` label inherits the shell's `.tint`,
     // which on this surface is the accent that belongs to `⌘⏎ Ask` alone.
     .tint(Ink.primary)
-    .help("Chat actions")
-    .accessibilityLabel("Chat actions")
+    .help("Ações do chat")
+    .accessibilityLabel("Ações do chat")
     .accessibilityIdentifier("query-shell-chat-menu")
   }
 
@@ -466,7 +466,7 @@ struct QueryShellHome: View {
       // Silence here would read as "the click did nothing". Every nil on this
       // path (bytes unreadable, row excluded mid-decode, write failed) says so.
       guard let data = await RewindFrameLoader.shared.loadData(forRowID: row.id) else {
-        chatProvider.errorMessage = "Couldn't load that screen frame. Try another one, or paste a screenshot with ⌘V."
+        chatProvider.errorMessage = "Não foi possível carregar essa captura de tela. Tente outra ou cole uma captura com ⌘V."
         return
       }
       guard
@@ -476,7 +476,7 @@ struct QueryShellHome: View {
           capturedAt: row.timestamp
         )
       else {
-        chatProvider.errorMessage = "Couldn't stage that screen frame. Try another one, or paste a screenshot with ⌘V."
+        chatProvider.errorMessage = "Não foi possível preparar essa captura de tela. Tente outra ou cole uma captura com ⌘V."
         return
       }
       chatProvider.addAttachments([attachment])

@@ -13,20 +13,20 @@ struct ConversationProcessingBanner: View {
   @State private var isReprocessing = false
 
   static func title(phase: ConversationProcessingPhase, deferred: Bool) -> String {
-    if deferred { return "Summarizing now…" }
+    if deferred { return "Resumindo agora…" }
     switch phase {
-    case .summarizing: return "Summarizing…"
-    case .slow: return "Taking longer than usual"
-    case .stalled: return "Processing looks stuck"
+    case .summarizing: return "Resumindo…"
+    case .slow: return "Demorando mais que o normal"
+    case .stalled: return "O processamento parece travado"
     }
   }
 
   static func detail(phase: ConversationProcessingPhase, deferred: Bool) -> String {
-    if deferred { return "Opening this conversation started its title, summary and action items" }
+    if deferred { return "Abrir esta conversa iniciou o título, o resumo e os itens de ação" }
     switch phase {
-    case .summarizing: return "Title, summary and action items usually land within two minutes"
-    case .slow: return "Long conversations and busy periods can take a few minutes. The transcript is below."
-    case .stalled: return "It has been over ten minutes. Reprocess runs the title and summary again."
+    case .summarizing: return "Título, resumo e itens de ação costumam ficar prontos em até dois minutos"
+    case .slow: return "Conversas longas e horários de pico podem levar alguns minutos. A transcrição está abaixo."
+    case .stalled: return "Já se passaram mais de dez minutos. Reprocessar gera o título e o resumo de novo."
     }
   }
 
@@ -57,7 +57,7 @@ struct ConversationProcessingBanner: View {
           Button {
             Task { await reprocess() }
           } label: {
-            Text(isReprocessing ? "Reprocessing…" : "Reprocess")
+            Text(isReprocessing ? "Reprocessando…" : "Reprocessar")
               .scaledFont(size: OmiType.caption, weight: .semibold)
               .foregroundColor(Ink.primary)
               .padding(.horizontal, OmiSpacing.md)

@@ -143,7 +143,7 @@ struct QueryResultsPanel<Content: View, TopAccessory: View, Accessory: View, Foo
   /// `Filter ›` — a menu of time windows, and the only control that narrows the panel by *when*.
   private var filterControl: some View {
     Menu {
-      Picker("Time", selection: $request.range) {
+      Picker("Período", selection: $request.range) {
         ForEach(QueryShellRange.allCases) { range in
           Text(range.title).tag(range)
         }
@@ -179,9 +179,9 @@ struct QueryResultsPanel<Content: View, TopAccessory: View, Accessory: View, Foo
 
   private var filterHelp: String {
     if case .none = chipBehavior {
-      return "Choose a time range, then use the timeline below to move within it."
+      return "Escolha um período e use a linha do tempo abaixo para navegar nele."
     }
-    return "Narrow the panel to a time window"
+    return "Restringir o painel a um período"
   }
 
   /// In answer mode the same corner carries the way back, because asking is a mode of this query and
@@ -191,7 +191,7 @@ struct QueryResultsPanel<Content: View, TopAccessory: View, Accessory: View, Foo
       HStack(spacing: 6) {
         Image(systemName: "chevron.left")
           .scaledFont(size: OmiType.micro, weight: .semibold)
-        Text("Results")
+        Text("Resultados")
           .scaledFont(size: OmiType.caption, weight: .semibold)
       }
       .foregroundStyle(Ink.primary)
@@ -202,14 +202,14 @@ struct QueryResultsPanel<Content: View, TopAccessory: View, Accessory: View, Foo
     .buttonStyle(.plain)
     // The key is named here because the composer under the transcript no longer advertises it: a
     // chat composer with an `esc Results` hint in it is a search control on a conversation.
-    .help("Back to what you captured — esc")
+    .help("Voltar ao que você captou (esc)")
     .accessibilityIdentifier("query-shell-exit-answer")
   }
 
   private var countSentence: String {
-    guard let total else { return "Counting what you've captured…" }
+    guard let total else { return "Contando o que você captou…" }
     if mode == .answer {
-      return "\(QueryShellCount.number(total)) captured moment\(total == 1 ? "" : "s") available"
+      return "\(QueryShellCount.number(total)) \(total == 1 ? "momento captado disponível" : "momentos captados disponíveis")"
     }
     return QueryShellCount.sentence(
       matching: matching, total: total, isFiltering: request.isFiltering, isSettled: corpusSettled)
@@ -266,9 +266,9 @@ enum QueryPanelChipBehavior {
   /// of destinations under the word `Filter` describes something the row does not do.
   var disclosureLabel: String {
     switch self {
-    case .none: return "Time range"
-    case .filterKinds: return "Filter"
-    case .openDestinations: return "View"
+    case .none: return "Período"
+    case .filterKinds: return "Filtro"
+    case .openDestinations: return "Ver"
     }
   }
 }

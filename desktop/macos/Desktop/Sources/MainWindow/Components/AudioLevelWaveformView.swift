@@ -101,28 +101,28 @@ private struct BarView: View {
     VStack(spacing: OmiSpacing.xl) {
       // Idle state
       HStack {
-        Text("Idle:")
+        Text("Parado:")
           .foregroundColor(Ink.primary)
         AudioLevelWaveformView(level: 0.0, isActive: false)
       }
 
       // Low level
       HStack {
-        Text("Low:")
+        Text("Baixo:")
           .foregroundColor(Ink.primary)
         AudioLevelWaveformView(level: 0.1)
       }
 
       // Medium level
       HStack {
-        Text("Medium:")
+        Text("Médio:")
           .foregroundColor(Ink.primary)
         AudioLevelWaveformView(level: 0.4)
       }
 
       // High level
       HStack {
-        Text("High:")
+        Text("Alto:")
           .foregroundColor(Ink.primary)
         AudioLevelWaveformView(level: 0.8)
       }

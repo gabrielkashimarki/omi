@@ -35,11 +35,11 @@ enum OmiDateFormat {
     _ date: Date, now: Date = Date(), calendar: Calendar = .autoupdatingCurrent,
     locale: Locale = .autoupdatingCurrent
   ) -> String {
-    if calendar.isDate(date, inSameDayAs: now) { return "Today" }
+    if calendar.isDate(date, inSameDayAs: now) { return "Hoje" }
     if let yesterday = calendar.date(byAdding: .day, value: -1, to: now),
       calendar.isDate(date, inSameDayAs: yesterday)
     {
-      return "Yesterday"
+      return "Ontem"
     }
     if calendar.isDate(date, equalTo: now, toGranularity: .year) {
       return date.formatted(style(calendar, locale).weekday(.wide).month(.abbreviated).day())
@@ -57,7 +57,7 @@ enum OmiDateFormat {
     if let yesterday = calendar.date(byAdding: .day, value: -1, to: now),
       calendar.isDate(date, inSameDayAs: yesterday)
     {
-      return "Yesterday, \(time(date, calendar: calendar, locale: locale))"
+      return "Ontem, \(time(date, calendar: calendar, locale: locale))"
     }
     if calendar.isDate(date, equalTo: now, toGranularity: .year) {
       return date.formatted(style(calendar, locale).month(.abbreviated).day().hour().minute())
@@ -79,7 +79,7 @@ enum OmiDateFormat {
 
   /// "just now", "5 min ago", "2 hr ago", "yesterday" — for freshness, never as the only date.
   static func relative(_ date: Date, now: Date = Date(), locale: Locale = .autoupdatingCurrent) -> String {
-    if abs(now.timeIntervalSince(date)) < 60 { return "just now" }
+    if abs(now.timeIntervalSince(date)) < 60 { return "agora" }
     return date.formatted(.relative(presentation: .named, unitsStyle: .abbreviated).locale(locale))
   }
 

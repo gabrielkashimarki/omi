@@ -17,7 +17,7 @@ struct ConversationCapturePlaybackSection: View {
         Image(systemName: "waveform")
           .scaledFont(size: OmiType.body)
           .foregroundStyle(Ink.secondary)
-        Text("Audio")
+        Text("Áudio")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundStyle(Ink.secondary)
         Spacer()
@@ -39,11 +39,11 @@ struct ConversationCapturePlaybackSection: View {
     if playback.isResolving {
       HStack(spacing: OmiSpacing.sm) {
         ProgressView()
-        Text("Preparing audio")
+        Text("Preparando o áudio")
           .scaledFont(size: OmiType.body)
           .foregroundStyle(Ink.secondary)
       }
-      .accessibilityLabel("Preparing capture audio")
+      .accessibilityLabel("Preparando o áudio da captura")
     } else if let resolution = playback.resolution {
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
         HStack(spacing: OmiSpacing.md) {
@@ -53,18 +53,18 @@ struct ConversationCapturePlaybackSection: View {
               playback.playOrPause()
             } label: {
               Label(
-                playback.isPlaybackRequested ? "Pause" : "Play audio",
+                playback.isPlaybackRequested ? "Pausar" : "Reproduzir áudio",
                 systemImage: playback.isPlaybackRequested ? "pause.fill" : "play.fill"
               )
             }
             .buttonStyle(.bordered)
-            .accessibilityLabel(playback.isPlaybackRequested ? "Pause capture audio" : "Play capture audio")
+            .accessibilityLabel(playback.isPlaybackRequested ? "Pausar o áudio da captura" : "Reproduzir o áudio da captura")
             .accessibilityIdentifier("chat-first-capture-play")
           case .pending, .locked, .unavailable, .noAudio:
-            Button("Check audio", action: onRefresh)
+            Button("Verificar áudio", action: onRefresh)
               .buttonStyle(.bordered)
               .disabled(capture.isLocked)
-              .accessibilityLabel("Check capture audio")
+              .accessibilityLabel("Verificar o áudio da captura")
               .accessibilityIdentifier("chat-first-capture-check-audio-\(capture.id)")
           }
 
@@ -84,16 +84,16 @@ struct ConversationCapturePlaybackSection: View {
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundStyle(Ink.secondary)
             .monospacedDigit()
-            .accessibilityLabel("Capture position \(Self.playbackTimestamp(Self.wallPosition(playback, resolution)))")
+            .accessibilityLabel("Posição na captura \(Self.playbackTimestamp(Self.wallPosition(playback, resolution)))")
           }
         }
 
         if playback.isBuffering {
-          Label("Buffering audio…", systemImage: "circle.dotted")
+          Label("Carregando o áudio…", systemImage: "circle.dotted")
             .scaledFont(size: OmiType.caption)
             .foregroundStyle(Ink.secondary)
         } else if playback.isPlaying {
-          Label("Playing", systemImage: "speaker.wave.2.fill")
+          Label("Reproduzindo", systemImage: "speaker.wave.2.fill")
             .scaledFont(size: OmiType.caption)
             .foregroundStyle(Ink.secondary)
         }
@@ -105,15 +105,15 @@ struct ConversationCapturePlaybackSection: View {
             Label(playbackError, systemImage: "exclamationmark.triangle")
               .scaledFont(size: OmiType.caption)
               .foregroundStyle(Ink.errorRed)
-            Button("Refresh", action: onRefresh)
+            Button("Atualizar", action: onRefresh)
               .buttonStyle(.link)
           }
         }
       }
     } else {
-      Button("Prepare audio", action: onPrepare)
+      Button("Preparar áudio", action: onPrepare)
         .buttonStyle(.bordered)
-        .accessibilityLabel("Prepare capture audio")
+        .accessibilityLabel("Preparar o áudio da captura")
         .accessibilityIdentifier("chat-first-capture-prepare-audio")
     }
   }
@@ -126,13 +126,13 @@ struct ConversationCapturePlaybackSection: View {
     case .idle:
       EmptyView()
     case .downloading:
-      resyncLine("Downloading audio to sync the transcript…", systemImage: "arrow.down.circle")
+      resyncLine("Baixando o áudio para sincronizar a transcrição…", systemImage: "arrow.down.circle")
     case .preparingModel:
-      resyncLine("Preparing the on-device speech model (first time only)…", systemImage: "cpu")
+      resyncLine("Preparando o modelo de fala no dispositivo (só na primeira vez)…", systemImage: "cpu")
     case .listening:
-      resyncLine("Listening to the audio on this Mac to sync the transcript…", systemImage: "ear")
+      resyncLine("Ouvindo o áudio neste Mac para sincronizar a transcrição…", systemImage: "ear")
     case .aligning:
-      resyncLine("Aligning sentences to the audio…", systemImage: "text.line.first.and.arrowtriangle.forward")
+      resyncLine("Alinhando as frases ao áudio…", systemImage: "text.line.first.and.arrowtriangle.forward")
     case .synced(let report):
       resyncLine(Self.syncedSummary(report), systemImage: "checkmark.circle")
         .accessibilityIdentifier("chat-first-capture-resync-done")
@@ -158,10 +158,10 @@ struct ConversationCapturePlaybackSection: View {
     }
     let shift =
       abs(report.shiftAtStart - report.shiftAtEnd) < 1
-      ? "shifted \(signed(report.shiftAtStart))"
-      : "shifted \(signed(report.shiftAtStart)) to \(signed(report.shiftAtEnd))"
+      ? "deslocada \(signed(report.shiftAtStart))"
+      : "deslocada de \(signed(report.shiftAtStart)) a \(signed(report.shiftAtEnd))"
     return
-      "Transcript synced to the audio (\(shift), \(report.matchedSegments) of \(report.alignableSegments) sentences matched)"
+      "Transcrição sincronizada com o áudio (\(shift), \(report.matchedSegments) de \(report.alignableSegments) frases encontradas)"
   }
 
   static func wallPosition(
@@ -239,7 +239,7 @@ private struct CapturePlaybackScrubber: View {
     }
     .frame(height: Self.hitHeight)
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Capture playback position")
+    .accessibilityLabel("Posição da reprodução da captura")
     .accessibilityValue(
       Self.accessibilityTimestamp(ConversationCapturePlaybackSection.wallPosition(playback, resolution))
     )
@@ -257,6 +257,6 @@ private struct CapturePlaybackScrubber: View {
 
   private static func accessibilityTimestamp(_ offset: TimeInterval) -> String {
     let totalSeconds = max(0, Int(offset))
-    return "\(totalSeconds / 60) minutes \(totalSeconds % 60) seconds"
+    return "\(totalSeconds / 60) minutos e \(totalSeconds % 60) segundos"
   }
 }

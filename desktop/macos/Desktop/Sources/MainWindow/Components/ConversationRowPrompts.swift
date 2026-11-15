@@ -48,10 +48,10 @@ private struct ConversationRowPromptsHost: ViewModifier {
           get: { prompts.deleting != nil },
           set: { if !$0 { prompts.deleting = nil } }
         ),
-        title: "Delete Conversation?",
-        message: "This permanently deletes \u{201C}\(prompts.deleteTarget?.displayTitle ?? "this conversation")"
-          + "\u{201D}, its transcript and its summary.",
-        confirmTitle: "Delete"
+        title: "Apagar conversa?",
+        message: "Isto apaga definitivamente \u{201C}\(prompts.deleteTarget?.displayTitle ?? "esta conversa")"
+          + "\u{201D}, a transcrição e o resumo.",
+        confirmTitle: "Apagar"
       ) {
         guard let conversation = prompts.deleteTarget else { return }
         Task { _ = await appState.deleteConversation(conversation.id) }
@@ -63,8 +63,8 @@ private struct ConversationRowPromptsHost: ViewModifier {
         )
       ) {
         TextPromptSheet(
-          title: "Edit Title",
-          placeholder: "Title",
+          title: "Editar título",
+          placeholder: "Título",
           text: $prompts.renameText,
           onConfirm: {
             guard let conversation = prompts.renaming else { return }

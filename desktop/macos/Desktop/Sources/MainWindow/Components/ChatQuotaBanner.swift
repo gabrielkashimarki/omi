@@ -70,17 +70,17 @@ struct ChatQuotaBanner: Equatable {
   }
 
   private static func title(threshold: Int, isBillingOverage: Bool) -> String {
-    guard threshold >= 100 else { return "Almost at your monthly limit" }
-    return isBillingOverage ? "Now billing overage" : "Monthly limit reached"
+    guard threshold >= 100 else { return "Quase no seu limite mensal" }
+    return isBillingOverage ? "Cobrando o excedente" : "Limite mensal atingido"
   }
 
   private static func summary(quota: APIClient.ChatUsageQuota, used: Double, limit: Double)
     -> String
   {
     if quota.unit == "cost_usd" {
-      return String(format: "$%.0f of $%.0f used", used, limit)
+      return String(format: "$%.0f de $%.0f usados", used, limit)
     }
-    return "\(Int(used)) of \(Int(limit)) used"
+    return "\(Int(used)) de \(Int(limit)) usados"
   }
 
   private static func message(
@@ -94,17 +94,17 @@ struct ChatQuotaBanner: Equatable {
     let allowance: String
     if quota.unit == "cost_usd" {
       allowance = String(
-        format: "$%.2f of your $%.0f %@ monthly spend used.", used, limit, quota.plan)
+        format: "$%.2f do seu gasto mensal de $%.0f no plano %@ usados.", used, limit, quota.plan)
     } else {
-      allowance = "\(Int(used)) of \(Int(limit)) \(quota.plan) questions used."
+      allowance = "\(Int(used)) de \(Int(limit)) perguntas do plano \(quota.plan) usadas."
     }
     let tail: String
     if threshold < 100 {
       tail = ""
     } else if isBillingOverage {
-      tail = " Extra usage is billed at the end of your cycle."
+      tail = " O uso extra é cobrado no fim do seu ciclo."
     } else {
-      tail = " Upgrade to keep chatting."
+      tail = " Faça upgrade para continuar conversando."
     }
     return "\(allowance)\(tail) \(resetText(quota.resetAt, now: now))."
   }
@@ -112,12 +112,12 @@ struct ChatQuotaBanner: Equatable {
   /// Mirrors `SettingsContentView.chatUsageQuotaResetText` so the plan page and
   /// this banner never disagree about when the cycle turns over.
   static func resetText(_ resetAt: Int?, now: Date = Date()) -> String {
-    guard let resetAt else { return "Resets next month" }
+    guard let resetAt else { return "Renova no próximo mês" }
     let days = max(
       0, Int(Date(timeIntervalSince1970: TimeInterval(resetAt)).timeIntervalSince(now) / 86400))
-    if days <= 0 { return "Resets today" }
-    if days == 1 { return "Resets tomorrow" }
-    return "Resets in \(days) days"
+    if days <= 0 { return "Renova hoje" }
+    if days == 1 { return "Renova amanhã" }
+    return "Renova em \(days) dias"
   }
 }
 

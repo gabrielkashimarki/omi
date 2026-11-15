@@ -17,11 +17,11 @@ enum ActionItemTaskState: Equatable, Sendable {
   /// Title of the trailing task control and of its accessibility action.
   var actionTitle: String {
     switch self {
-    case .idle: return "Add to Tasks"
-    case .adding: return "Adding"
-    case .added: return "Added"
-    case .failed: return "Try Again"
-    case .linked: return "Open Task"
+    case .idle: return "Adicionar às Tarefas"
+    case .adding: return "Adicionando"
+    case .added: return "Adicionada"
+    case .failed: return "Tentar de novo"
+    case .linked: return "Abrir tarefa"
     }
   }
 
@@ -113,19 +113,19 @@ struct ConversationActionItemRow: View {
     .accessibilityAction(named: Text(taskState.actionTitle)) {
       if taskState.isActionable { onTaskAction() }
     }
-    .accessibilityAction(named: Text("Open \(transcriptTitle)"), onOpenTranscript)
+    .accessibilityAction(named: Text("Abrir \(transcriptTitle)"), onOpenTranscript)
     .accessibilityIdentifier("action-item-row-\(item.id)")
   }
 
   private var accessibilityStatus: String {
     var parts: [String] = []
-    if item.completed { parts.append("Completed") }
+    if item.completed { parts.append("Concluída") }
     switch taskState {
     case .idle: break
-    case .adding: parts.append("Adding to Tasks")
-    case .added: parts.append("Added to Tasks")
-    case .failed: parts.append("Could not add to Tasks")
-    case .linked: parts.append("In Tasks")
+    case .adding: parts.append("Adicionando às Tarefas")
+    case .added: parts.append("Adicionada às Tarefas")
+    case .failed: parts.append("Não foi possível adicionar às Tarefas")
+    case .linked: parts.append("Nas Tarefas")
     }
     return parts.joined(separator: ", ")
   }
@@ -150,11 +150,11 @@ struct ConversationActionItemRow: View {
 
   private var taskHelp: String {
     switch taskState {
-    case .idle: return "Add this to your tasks"
-    case .adding: return "Adding to your tasks"
-    case .added: return "Already in your tasks"
-    case .failed: return "Could not add this to your tasks. Try again"
-    case .linked: return "Open the task linked to this action item"
+    case .idle: return "Adicionar isto às suas tarefas"
+    case .adding: return "Adicionando às suas tarefas"
+    case .added: return "Já está nas suas tarefas"
+    case .failed: return "Não foi possível adicionar isto às suas tarefas. Tente de novo"
+    case .linked: return "Abrir a tarefa ligada a este item de ação"
     }
   }
 
@@ -183,6 +183,6 @@ struct ConversationActionItemRow: View {
       .foregroundColor(Ink.secondary)
     }
     .buttonStyle(.plain)
-    .help(transcriptTitle == "Source" ? "Show where this was said" : "Open the full transcript")
+    .help((transcriptTitle == "Source" || transcriptTitle == "Fonte") ? "Mostrar onde isto foi dito" : "Abrir a transcrição completa")
   }
 }

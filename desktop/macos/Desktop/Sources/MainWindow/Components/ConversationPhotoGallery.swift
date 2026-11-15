@@ -70,7 +70,7 @@ private struct ConversationPhotoImageView: View {
         VStack(spacing: OmiSpacing.xs) {
           Image(systemName: "photo.badge.exclamationmark")
             .scaledFont(size: OmiType.title)
-          Text("Photo unavailable")
+          Text("Foto indisponível")
             .scaledFont(size: OmiType.caption)
         }
         .foregroundColor(Ink.secondary)
@@ -93,7 +93,7 @@ private struct ConversationPhotoImageView: View {
         state = .failed
       }
     }
-    .accessibilityLabel(photo.description ?? "Conversation photo")
+    .accessibilityLabel(photo.description ?? "Foto da conversa")
   }
 }
 
@@ -108,7 +108,7 @@ struct ConversationPhotoGallery: View {
   var body: some View {
     if !visiblePhotos.isEmpty {
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
-        Text("Photos")
+        Text("Fotos")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         ScrollView(.horizontal) {

@@ -84,7 +84,7 @@ struct SpeakerBubbleView: View {
   }
 
   var speakerLabel: String {
-    if isUser { return "You" }
+    if isUser { return "Você" }
     if let name = personName, !name.isEmpty { return name }
     return SpeakerLabelFormatter.anonymousLabel(speakerId: speakerId)
   }
@@ -142,8 +142,8 @@ struct SpeakerBubbleView: View {
             .contentShape(RoundedRectangle(cornerRadius: OmiChrome.controlRadius))
           }
           .buttonStyle(.plain)
-          .help("Play from \(formatTime(start))")
-          .accessibilityLabel("Play transcript from \(formatTime(start)): \(text)")
+          .help("Reproduzir a partir de \(formatTime(start))")
+          .accessibilityLabel("Reproduzir a transcrição a partir de \(formatTime(start)): \(text)")
           .accessibilityIdentifier("transcript_bubble_button_\(segmentID)")
           .pointingHandOnHover { isBubbleHovered = $0 }
         } else {
@@ -195,9 +195,9 @@ struct SpeakerBubbleView: View {
         .foregroundColor(personName != nil ? Ink.primary : Ink.secondary)
       }
       .buttonStyle(.plain)
-      .help(personName == nil ? "Name this speaker…" : "Change speaker…")
+      .help(personName == nil ? "Nomear este falante…" : "Trocar falante…")
       .accessibilityIdentifier("transcript_speaker_button_\(segmentID)")
-      .accessibilityLabel("Transcript speaker \(speakerLabel)")
+      .accessibilityLabel("Falante da transcrição \(speakerLabel)")
       .pointingHandOnHover { isLabelHovered = $0 }
     } else {
       Text(speakerLabel)
@@ -222,8 +222,8 @@ struct SpeakerBubbleView: View {
       }
       .buttonStyle(.plain)
       .disabled(!isMomentPlayable)
-      .help(isMomentPlayable ? "Play from this moment" : "Timestamped playback is still preparing")
-      .accessibilityLabel("Play transcript from \(formatTime(start))")
+      .help(isMomentPlayable ? "Reproduzir a partir deste momento" : "A reprodução por horário ainda está sendo preparada")
+      .accessibilityLabel("Reproduzir a transcrição a partir de \(formatTime(start))")
     } else {
       Text(formatTime(start))
         .scaledFont(size: OmiType.caption)

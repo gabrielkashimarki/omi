@@ -32,8 +32,8 @@ struct ConversationSectionSources: View {
       // Present but recessive until the pointer is near; full contrast on hover.
       .opacity(hovering ? 1 : 0.55)
       .onHover { hovering = $0 }
-      .help("Show in transcript")
-      .accessibilityLabel("Show in transcript")
+      .help("Mostrar na transcrição")
+      .accessibilityLabel("Mostrar na transcrição")
       .accessibilityIdentifier("conversation-summary-section-sources")
     }
   }

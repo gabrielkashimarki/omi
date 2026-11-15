@@ -21,10 +21,10 @@ enum MemoryHubDestination: Int, CaseIterable, Identifiable {
 
   var title: String {
     switch self {
-    case .memories: return "Memories"
-    case .conversations: return "Conversations"
-    case .brainMap: return "Brain Map"
-    case .activity: return "Activity"
+    case .memories: return "Memórias"
+    case .conversations: return "Conversas"
+    case .brainMap: return "Mapa do cérebro"
+    case .activity: return "Atividade"
     case .rewind: return "Rewind"
     }
   }

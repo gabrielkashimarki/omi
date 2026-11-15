@@ -9,8 +9,8 @@ struct RewindEvidenceCardModel: Equatable, Identifiable, Sendable {
   let screenshotID: Int64
 
   var id: String { "rewind-evidence-\(screenshotID)" }
-  var title: String { "Screen evidence" }
-  var subtitle: String { "Open Rewind · frame \(screenshotID)" }
+  var title: String { "Evidência de tela" }
+  var subtitle: String { "Abrir o Rewind · quadro \(screenshotID)" }
 }
 
 struct RewindEvidenceCardLease: Equatable, Sendable {
@@ -37,11 +37,11 @@ enum RewindEvidenceCardPresentationPolicy {
     availability: RewindEvidenceCardAvailability,
     hasOpenHandler: Bool = true
   ) -> String {
-    guard hasOpenHandler else { return "Unavailable to open here · frame \(card.screenshotID)" }
+    guard hasOpenHandler else { return "Não dá para abrir aqui · quadro \(card.screenshotID)" }
     switch availability {
-    case .checking: return "Checking local Rewind · frame \(card.screenshotID)"
+    case .checking: return "Verificando o Rewind local · quadro \(card.screenshotID)"
     case .available: return card.subtitle
-    case .unavailable: return "Unavailable locally · frame \(card.screenshotID)"
+    case .unavailable: return "Indisponível localmente · quadro \(card.screenshotID)"
     }
   }
 
@@ -49,11 +49,11 @@ enum RewindEvidenceCardPresentationPolicy {
     availability: RewindEvidenceCardAvailability,
     hasOpenHandler: Bool
   ) -> String {
-    guard hasOpenHandler else { return "This evidence is not available to open here" }
+    guard hasOpenHandler else { return "Esta evidência não está disponível para abrir aqui" }
     switch availability {
-    case .checking: return "Checking whether this frame is still available locally"
-    case .available: return "Opens the matching frame in Rewind"
-    case .unavailable: return "This screenshot is no longer on this Mac. Older ones are removed to save space."
+    case .checking: return "Verificando se este quadro ainda está disponível localmente"
+    case .available: return "Abre o quadro correspondente no Rewind"
+    case .unavailable: return "Esta captura de tela não está mais neste Mac. As mais antigas são removidas para economizar espaço."
     }
   }
 }

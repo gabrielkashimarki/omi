@@ -46,12 +46,12 @@ enum ChatFirstRoute: Hashable, Codable, Sendable {
   var title: String {
     switch self {
     case .chat: return "Chat"
-    case .conversations: return "Conversations"
-    case .tasks: return "Tasks"
-    case .goals: return "Goals"
-    case .memories: return "Memories"
+    case .conversations: return "Conversas"
+    case .tasks: return "Tarefas"
+    case .goals: return "Metas"
+    case .memories: return "Memórias"
     case .more(let page): return page.title
-    case .dailyRecap: return "Daily recap"
+    case .dailyRecap: return "Resumo do dia"
     }
   }
 
@@ -132,11 +132,11 @@ enum ChatFirstMorePage: String, CaseIterable, Codable, Hashable, Sendable {
 
   var title: String {
     switch self {
-    case .dashboard: return "Dashboard"
+    case .dashboard: return "Painel"
     case .rewind: return "Rewind"
     case .apps: return "Apps"
-    case .permissions: return "Permissions"
-    case .settings: return "Settings"
+    case .permissions: return "Permissões"
+    case .settings: return "Ajustes"
     }
   }
 
@@ -197,11 +197,11 @@ enum ChatFirstDiscussionContext: Equatable, Sendable {
   var userMessage: String {
     switch self {
     case .tasks:
-      return "Help me review my current tasks."
+      return "Me ajude a revisar minhas tarefas atuais."
     case .goals:
-      return "Help me create a goal."
+      return "Me ajude a criar uma meta."
     case .goal(let id):
-      return "Help me continue working on goal \(id)."
+      return "Me ajude a continuar trabalhando na meta \(id)."
     }
   }
 }

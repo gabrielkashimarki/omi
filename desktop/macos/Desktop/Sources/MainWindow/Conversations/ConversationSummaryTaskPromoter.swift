@@ -50,7 +50,7 @@ final class ConversationSummaryTaskPromoter: ObservableObject {
     guard !adding.contains(index) else { return nil }
     guard let authorization = dependencies.capture() else {
       failed.insert(index)
-      error = "Your account is still syncing. Try adding this task again shortly."
+      error = "Sua conta ainda está sincronizando. Tente adicionar esta tarefa de novo em instantes."
       return nil
     }
     adding.insert(index)
@@ -76,9 +76,9 @@ final class ConversationSummaryTaskPromoter: ObservableObject {
       guard dependencies.isCurrent(authorization), !Task.isCancelled else { return nil }
       failed.insert(index)
       if case APIError.httpError(let status, _) = error, status == 409 || status == 404 {
-        self.error = "This action item changed. Reopen the conversation before trying again."
+        self.error = "Este item de ação mudou. Reabra a conversa antes de tentar de novo."
       } else {
-        self.error = "Could not add this task. Try again when you’re connected."
+        self.error = "Não foi possível adicionar esta tarefa. Tente de novo quando estiver conectado."
       }
       return nil
     }

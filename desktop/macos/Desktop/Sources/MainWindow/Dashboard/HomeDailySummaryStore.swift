@@ -131,7 +131,7 @@ final class HomeDailySummaryStore: ObservableObject {
             + " (\(self.byDate.count) dated, latest=\(self.latest?.date ?? "none"), summaryHour=\(resolvedHour))")
       } catch {
         // Bounded: the message is for the local log and an inline hint, never for analytics.
-        self.lastError = "Couldn't load your daily summary."
+        self.lastError = "Não foi possível carregar o seu resumo do dia."
         log("HomeDailySummaryStore: refresh failed: \(error)")
       }
     }

@@ -50,7 +50,7 @@ struct ChatDailyRecapRow: View {
         HStack(spacing: OmiSpacing.xs) {
           Text(nonEmpty(record.dayEmoji) ?? "📅")
             .scaledFont(size: OmiType.subheading)
-          Text(nonEmpty(record.headline) ?? "Your day in review")
+          Text(nonEmpty(record.headline) ?? "O resumo do seu dia")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundStyle(Ink.primary)
             .lineLimit(1)
@@ -76,8 +76,8 @@ struct ChatDailyRecapRow: View {
     }
     .buttonStyle(.plain)
     .accessibilityIdentifier("chat-daily-recap-row")
-    .accessibilityLabel(Text("Open the daily recap"))
-    .help("Open the full recap for \(dayLabel)")
+    .accessibilityLabel(Text("Abrir o resumo do dia"))
+    .help("Abrir o resumo completo de \(dayLabel)")
   }
 
   /// The day's numbers at bubble-row weight: one micro chip per stat, hugging
@@ -108,7 +108,7 @@ struct ChatDailyRecapRow: View {
           }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Day stats")
+        .accessibilityLabel("Números do dia")
       }
     }
   }
@@ -116,7 +116,7 @@ struct ChatDailyRecapRow: View {
   /// "Yesterday" — the day the recap is about, not the day it was written. The
   /// day's emoji sits beside the title above, the way the page's header does.
   private var dayLabel: String {
-    ChatDailySummaryPresentation.dateLabel(for: record.date, now: now()) ?? "Your day"
+    ChatDailySummaryPresentation.dateLabel(for: record.date, now: now()) ?? "Seu dia"
   }
 
   private func nonEmpty(_ value: String?) -> String? {

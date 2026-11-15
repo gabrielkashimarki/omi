@@ -27,7 +27,7 @@ struct SpeakerLabelFormatter {
 
   /// "You", the person's name, or "Speaker N" (1-based).
   func label(isUser: Bool, personId: String?, speakerId: Int) -> String {
-    if isUser { return "You" }
+    if isUser { return "Você" }
     if let personId, let name = names[personId], !name.isEmpty { return name }
     return Self.anonymousLabel(speakerId: speakerId)
   }
@@ -38,7 +38,7 @@ struct SpeakerLabelFormatter {
 
   /// "Speaker N" for a raw diarization index. 1-based, matching mobile.
   static func anonymousLabel(speakerId: Int) -> String {
-    "Speaker \(displayNumber(speakerId: speakerId))"
+    "Falante \(displayNumber(speakerId: speakerId))"
   }
 
   /// The number shown in avatars and labels for a raw diarization index.

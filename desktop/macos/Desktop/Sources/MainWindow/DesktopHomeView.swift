@@ -110,7 +110,7 @@ struct DesktopHomeView: View {
           ProgressView()
             .controlSize(.small)
             .tint(Ink.secondary)
-          Text("Restoring your session…")
+          Text("Restaurando sua sessão…")
             .inkStyle(.prose, color: Ink.secondary)
         }
       }
@@ -133,7 +133,7 @@ struct DesktopHomeView: View {
           ProgressView()
             .controlSize(.small)
             .tint(Ink.secondary)
-          Text("Finishing setup…")
+          Text("Concluindo a configuração…")
             .inkStyle(.prose, color: Ink.secondary)
         }
       }

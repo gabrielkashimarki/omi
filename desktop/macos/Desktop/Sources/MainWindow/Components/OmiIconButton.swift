@@ -149,7 +149,7 @@ struct CopyButton: View {
   @State private var confirmed = false
   @State private var resetTask: Task<Void, Never>?
 
-  init(help: String = "Copy", size: OmiIconButtonSize = .regular, text: @escaping () -> String?) {
+  init(help: String = "Copiar", size: OmiIconButtonSize = .regular, text: @escaping () -> String?) {
     self.help = help
     self.size = size
     self.text = text
@@ -171,7 +171,7 @@ struct CopyButton: View {
         .contentTransition(.symbolEffect(.replace))
     }
     .buttonStyle(GlassIconButtonStyle(diameter: size.diameter, restsFilled: true))
-    .help(confirmed ? "Copied" : help)
-    .accessibilityLabel(confirmed ? "Copied" : help)
+    .help(confirmed ? "Copiado" : help)
+    .accessibilityLabel(confirmed ? "Copiado" : help)
   }
 }

@@ -38,7 +38,7 @@ enum CaptureListeningLogic {
   }
 
   static func listeningModeTitle(appState: AppState, raw: String) -> String {
-    if appState.isWaitingForMicrophone { return "Waiting for Microphone" }
+    if appState.isWaitingForMicrophone { return "Aguardando o microfone" }
     // Surface the explicitly-chosen mic as the visible capture source. Meta
     // glasses advertise a Bluetooth codename (e.g. "EL AI 000F"), so product-
     // name matching alone can't identify them — an explicit user selection is
@@ -60,24 +60,24 @@ enum CaptureListeningLogic {
     }
     switch audioRecordingMode(raw: raw) {
     case .off:
-      return "Off"
+      return "Desligado"
     case .always:
-      return "Always On"
+      return "Sempre ligado"
     case .onlyMeetings:
-      return appState.isAwaitingMeeting ? "Only Meetings" : "In Meeting"
+      return appState.isAwaitingMeeting ? "Só reuniões" : "Em reunião"
     }
   }
 
   /// The name of a *mode*, for naming a state the session is not in yet.
   ///
   /// Distinct from `listeningModeTitle`, which describes the **running** session and may answer
-  /// with the live microphone's own name ("Ray-Ban Meta") or with "In Meeting". That is the right
+  /// with the live microphone's own name ("Ray-Ban Meta") or with "Em reunião". That is the right
   /// answer for "what is happening now" and the wrong one for "what does this choice select".
   nonisolated static func audioRecordingModeTitle(_ mode: AssistantSettings.AudioRecordingMode) -> String {
     switch mode {
-    case .off: return "Off"
-    case .always: return "Always On"
-    case .onlyMeetings: return "Only Meetings"
+    case .off: return "Desligado"
+    case .always: return "Sempre ligado"
+    case .onlyMeetings: return "Só reuniões"
     }
   }
 

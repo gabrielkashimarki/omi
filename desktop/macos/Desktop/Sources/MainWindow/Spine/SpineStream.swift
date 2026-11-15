@@ -429,34 +429,34 @@ struct SpineEmptyCopy: Equatable, Sendable {
     isPreparing: Bool, request: QueryShellRequest, kind: SpineKind, foot: SpineFoot
   ) -> SpineEmptyCopy {
     guard !isPreparing else {
-      return SpineEmptyCopy(headline: "Reading your day…", detail: nil)
+      return SpineEmptyCopy(headline: "Lendo o seu dia…", detail: nil)
     }
     // Still filling: the list being empty says nothing about the account yet.
     if case .note(let progress) = foot {
-      return SpineEmptyCopy(headline: "Nothing here yet — still loading.", detail: progress)
+      return SpineEmptyCopy(headline: "Nada aqui ainda. Ainda carregando.", detail: progress)
     }
     let headline =
       request.term.isEmpty
-      ? "Nothing captured in this window yet." : "Nothing captured matches “\(request.text)”."
+      ? "Nada captado neste período ainda." : "Nada captado corresponde a “\(request.text)”."
     // Pages remain and nothing is fetching them: an empty list is a partial answer, and the button
     // below is how it stops being one.
     if foot == .loadMore {
       return SpineEmptyCopy(
-        headline: headline, detail: "Some of your history isn’t loaded yet.")
+        headline: headline, detail: "Parte do seu histórico ainda não foi carregada.")
     }
     guard request.term.isEmpty else {
-      return SpineEmptyCopy(headline: headline, detail: "Press ⌘⏎ to ask Omi instead.")
+      return SpineEmptyCopy(headline: headline, detail: "Pressione ⌘⏎ para perguntar ao Omi.")
     }
     return SpineEmptyCopy(headline: headline, detail: emptyKindDetail(kind))
   }
 
   private static func emptyKindDetail(_ kind: SpineKind) -> String {
     switch kind {
-    case .everything: return "Conversations, memories, tasks and screen moments appear here as they happen."
-    case .conversations: return "Conversations appear here once Omi has heard one."
-    case .memories: return "Memories appear here as Omi learns about you from your conversations and screen."
-    case .tasks: return "Tasks you add, or that Omi finds in your conversations, appear here."
-    case .screen: return "Screen moments appear here while screen capture is on."
+    case .everything: return "Conversas, memórias, tarefas e momentos de tela aparecem aqui conforme acontecem."
+    case .conversations: return "As conversas aparecem aqui depois que o Omi ouvir uma."
+    case .memories: return "As memórias aparecem aqui conforme o Omi aprende sobre você pelas suas conversas e pela tela."
+    case .tasks: return "As tarefas que você adiciona, ou que o Omi encontra nas suas conversas, aparecem aqui."
+    case .screen: return "Os momentos de tela aparecem aqui enquanto a captura de tela está ligada."
     }
   }
 }
@@ -499,7 +499,7 @@ private struct SpineRailColumn: View {
     guard request.isFiltering, let title = day?.title, !title.isEmpty else {
       return day?.title ?? ""
     }
-    return "\(title) · full day"
+    return "\(title) · dia inteiro"
   }
 
   var body: some View {
@@ -572,9 +572,9 @@ struct SpineDayHeader: View {
     .accessibilityElement(children: .combine)
     .accessibilityAddTraits(.isButton)
     .accessibilityIdentifier("spine-day-header")
-    .accessibilityLabel(Text(isCollapsed ? "Expand \(day.title)" : "Collapse \(day.title)"))
+    .accessibilityLabel(Text(isCollapsed ? "Expandir \(day.title)" : "Recolher \(day.title)"))
     .accessibilityValue(Text(day.subtitle))
-    .help(isCollapsed ? "Show this day" : "Hide this day")
+    .help(isCollapsed ? "Mostrar este dia" : "Ocultar este dia")
     // Pinned headers have rows sliding under them, so the header has to occlude — and **a wash
     // cannot occlude.** The first attempt painted `Ink.surface` at 0.9, which on the light-pinned
     // panel is a hard white slab running edge to edge: it read as paint laid over the glass rather
@@ -667,14 +667,14 @@ struct SpineLoadMoreFooter: View {
       HStack(spacing: 8) {
         Image(systemName: "clock.arrow.circlepath")
           .accessibilityHidden(true)
-        Text("Load earlier days")
+        Text("Carregar dias anteriores")
       }
     }
     .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
     .frame(maxWidth: .infinity)
     .padding(.top, OmiSpacing.sm)
     .padding(.bottom, OmiSpacing.md)
-    .help("Retry loading the rest of your history")
+    .help("Tentar de novo carregar o resto do seu histórico")
     .accessibilityIdentifier("spine-load-more")
   }
 }

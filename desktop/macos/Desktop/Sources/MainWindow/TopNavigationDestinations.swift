@@ -92,14 +92,14 @@ enum ShellDestination: Int, CaseIterable, Identifiable {
   var title: String {
     switch self {
     case .home: return "Chat"
-    case .conversations: return "Conversations"
-    case .memories: return "Memories"
-    case .brainMap: return "Brain Map"
-    case .tasks: return "Tasks"
+    case .conversations: return "Conversas"
+    case .memories: return "Memórias"
+    case .brainMap: return "Mapa do cérebro"
+    case .tasks: return "Tarefas"
     case .rewind: return "Rewind"
     case .apps: return "Apps"
-    case .permissions: return "Permissions"
-    case .activity: return "Memories"
+    case .permissions: return "Permissões"
+    case .activity: return "Memórias"
     }
   }
 
@@ -214,7 +214,7 @@ enum TopNavigationRoutes {
   static let primaryItems = [
     TopNavigationItem(
       index: SidebarNavItem.dashboard.rawValue, title: "Chat", icon: "bubble.left.and.text.bubble.right",
-      tooltip: "Chat — talk to Omi about everything you've seen and heard"),
+      tooltip: "Chat: converse com o Omi sobre tudo o que você viu e ouviu"),
     // The hub's pill names the view it opens. It used to say `Memories` while opening whichever hub
     // view was last persisted, so the word on the bar and the page you landed on were only
     // sometimes the same thing. It opens `Brain` — the chronological spine over everything
@@ -222,14 +222,14 @@ enum TopNavigationRoutes {
     // page's own chip row, which is the mechanism `ShellDestination.reach` records for them.
     // The glyph is deliberately not `clock.arrow.circlepath`: that belongs to Rewind inside Brain.
     TopNavigationItem(
-      index: SidebarNavItem.conversations.rawValue, title: "Memories", icon: "brain",
-      tooltip: "Memories — everything Omi captured, newest first"),
+      index: SidebarNavItem.conversations.rawValue, title: "Memórias", icon: "brain",
+      tooltip: "Memórias: tudo o que o Omi captou, das mais recentes às mais antigas"),
     TopNavigationItem(
-      index: SidebarNavItem.tasks.rawValue, title: "Tasks", icon: "checklist",
-      tooltip: "Tasks: things you said you'd do"),
+      index: SidebarNavItem.tasks.rawValue, title: "Tarefas", icon: "checklist",
+      tooltip: "Tarefas: o que você disse que ia fazer"),
     TopNavigationItem(
       index: SidebarNavItem.apps.rawValue, title: "Apps", icon: "puzzlepiece.fill",
-      tooltip: "Apps — connectors, imports and exports"),
+      tooltip: "Apps: conectores, importações e exportações"),
   ]
 
   /// **The controls pinned to the lane's trailing edge that are navigation**, as opposed to the two
@@ -240,8 +240,8 @@ enum TopNavigationRoutes {
   /// all, and `ShellDestination.unreachable()` has to be able to ask.
   static let persistentItems = [
     TopNavigationItem(
-      index: SidebarNavItem.settings.rawValue, title: "Settings", icon: "gearshape",
-      tooltip: "Settings — permissions, capture, account (⌘,)")
+      index: SidebarNavItem.settings.rawValue, title: "Ajustes", icon: "gearshape",
+      tooltip: "Ajustes: permissões, captura, conta (⌘,)")
   ]
 
   static let memoryDestinations = MemoryHubDestination.allCases

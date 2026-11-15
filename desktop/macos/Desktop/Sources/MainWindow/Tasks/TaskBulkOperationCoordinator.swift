@@ -122,7 +122,7 @@ final class TaskBulkOperationCoordinator {
         action: action,
         targets: stableTargets,
         results: stableTargets.map {
-          TaskBulkTaskResult(taskID: $0.id, status: .failed(message: "Another task operation is already running."))
+          TaskBulkTaskResult(taskID: $0.id, status: .failed(message: "Outra operação de tarefas já está em andamento."))
         },
         confirmationRequested: false,
         confirmationRequired: false,
@@ -230,13 +230,13 @@ final class TaskBulkOperationCoordinator {
   private static func skipReason(for action: TaskBulkAction, target: TaskBulkTarget) -> String? {
     switch action {
     case .indent where target.indentLevel >= 3:
-      return "Already at the maximum indent level."
+      return "Já está no nível máximo de recuo."
     case .outdent where target.indentLevel <= 0:
-      return "Already at the root indent level."
+      return "Já está no nível raiz de recuo."
     case .markDone where target.task.completed:
-      return "Already marked done."
+      return "Já está marcada como concluída."
     case .reopen where !target.task.completed:
-      return "Already open."
+      return "Já está em aberto."
     default:
       return nil
     }
@@ -281,7 +281,7 @@ private enum TaskBulkOperationError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .notConfigured(let action):
-      return "No integration hook is configured for \(action)."
+      return "Nenhuma integração está configurada para \(action)."
     }
   }
 }

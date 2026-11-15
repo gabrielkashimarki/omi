@@ -31,26 +31,26 @@ enum UserFacingErrorPresentation {
 
     fileprivate var action: String {
       switch self {
-      case .dashboard: return "refresh the dashboard"
-      case .chatSessions: return "load chats"
-      case .conversations: return "load conversations"
-      case .conversationSearch: return "search conversations"
-      case .conversationMerge: return "merge conversations"
-      case .tasks: return "update tasks"
-      case .memories: return "load memories"
-      case .memoryVisibility: return "update memory visibility"
-      case .memoryDeletion: return "delete memories"
-      case .screenshots: return "load screenshots"
-      case .goals: return "load goals"
-      case .persona: return "load your persona"
-      case .signIn: return "sign in"
-      case .onboarding: return "save that step"
-      case .integration(let name): return "connect to \(name)"
-      case .browserExtension: return "connect the browser extension"
-      case .memoryExport: return "prepare that export"
-      case .storageSync: return "sync device storage"
-      case .transcription: return "start transcription"
-      case .accountDeletion: return "delete your account"
+      case .dashboard: return "atualizar o painel"
+      case .chatSessions: return "carregar os chats"
+      case .conversations: return "carregar as conversas"
+      case .conversationSearch: return "buscar conversas"
+      case .conversationMerge: return "mesclar conversas"
+      case .tasks: return "atualizar as tarefas"
+      case .memories: return "carregar as memórias"
+      case .memoryVisibility: return "atualizar a visibilidade da memória"
+      case .memoryDeletion: return "apagar as memórias"
+      case .screenshots: return "carregar as capturas de tela"
+      case .goals: return "carregar as metas"
+      case .persona: return "carregar a sua persona"
+      case .signIn: return "entrar"
+      case .onboarding: return "salvar essa etapa"
+      case .integration(let name): return "conectar ao \(name)"
+      case .browserExtension: return "conectar a extensão do navegador"
+      case .memoryExport: return "preparar essa exportação"
+      case .storageSync: return "sincronizar o armazenamento do dispositivo"
+      case .transcription: return "iniciar a transcrição"
+      case .accountDeletion: return "apagar a sua conta"
       }
     }
 
@@ -67,36 +67,36 @@ enum UserFacingErrorPresentation {
         switch statusCode {
         case 401:
           return context.isSignIn
-            ? "Couldn't sign in. Try again."
-            : "Please sign in again, then try once more."
+            ? "Não foi possível entrar. Tente de novo."
+            : "Entre de novo e tente mais uma vez."
         case 403:
-          return "You don't have permission to do that."
+          return "Você não tem permissão para fazer isso."
         case 409:
-          return "This changed while Omi was updating. Refresh and try again."
+          return "Isto mudou enquanto o Omi atualizava. Atualize e tente de novo."
         case 429:
-          return "Omi is busy right now. Try again in a moment."
+          return "O Omi está ocupado agora. Tente de novo em instantes."
         case 500...599:
-          return "Omi's service is unavailable right now. Try again."
+          return "O serviço do Omi está indisponível agora. Tente de novo."
         default:
           return fallback(for: context)
         }
       case .invalidResponse, .decodingError:
-        return "Omi received an unexpected response. Try again."
+        return "O Omi recebeu uma resposta inesperada. Tente de novo."
       case .memoryDeleteGateBusy:
         if case .memoryDeletion = context {
-          return "Deletion is delayed while Omi finishes another account task. It will retry automatically."
+          return "A exclusão está atrasada enquanto o Omi conclui outra tarefa da conta. Ela será tentada de novo automaticamente."
         }
-        return "Omi is busy right now. Try again in a moment."
+        return "O Omi está ocupado agora. Tente de novo em instantes."
       case .syncRateLimited:
-        return "Omi is busy right now. Try again in a moment."
+        return "O Omi está ocupado agora. Tente de novo em instantes."
       case .unsupportedTierScopedBulkMutation:
-        return "That option isn't available yet."
+        return "Essa opção ainda não está disponível."
       case .syncUploadRejected, .accountCutoverOfflineQueueBlocked:
         return fallback(for: context)
       case .unauthorized:
         return context.isSignIn
-          ? "Couldn't sign in. Try again."
-          : "Please sign in again, then try once more."
+          ? "Não foi possível entrar. Tente de novo."
+          : "Entre de novo e tente mais uma vez."
       }
     }
 
@@ -104,7 +104,7 @@ enum UserFacingErrorPresentation {
       switch urlError.code {
       case .cannotConnectToHost, .cannotFindHost, .dnsLookupFailed, .networkConnectionLost,
         .notConnectedToInternet, .timedOut:
-        return "Check your connection and try again."
+        return "Verifique sua conexão e tente de novo."
       default:
         return fallback(for: context)
       }
@@ -147,6 +147,6 @@ enum UserFacingErrorPresentation {
   }
 
   private static func fallback(for context: Context) -> String {
-    "Couldn't \(context.action). Try again."
+    "Não foi possível \(context.action). Tente de novo."
   }
 }

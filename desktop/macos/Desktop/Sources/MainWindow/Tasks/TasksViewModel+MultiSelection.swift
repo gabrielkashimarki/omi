@@ -130,7 +130,7 @@ extension TasksViewModel {
         currentSelectionScope == scope
       else { return }
       bulkTaskErrorMessage =
-        "Could not reach your complete task list. No additional tasks were selected. Please retry."
+        "Não foi possível acessar a lista completa de tarefas. Nenhuma tarefa adicional foi selecionada. Tente de novo."
       logError("TasksViewModel: Failed to select complete task scope", error: error)
     }
   }
@@ -205,11 +205,11 @@ extension TasksViewModel {
       recomputeDisplayCaches()
       if remoteDeletedIDs.isEmpty {
         bulkTaskErrorMessage =
-          "The tasks could not be deleted from this Mac. Nothing was deleted from your account. Please retry."
+          "Não foi possível apagar as tarefas deste Mac. Nada foi apagado da sua conta. Tente de novo."
       } else {
         bulkTaskErrorMessage =
-          "The tasks were deleted from your account, but this Mac could not finish updating its local cache. "
-          + "Refresh Tasks to reconcile it."
+          "As tarefas foram apagadas da sua conta, mas este Mac não conseguiu terminar de atualizar o cache local. "
+          + "Atualize as Tarefas para sincronizar."
       }
       return
     case .remoteFailure(let confirmedIDs):
@@ -229,12 +229,12 @@ extension TasksViewModel {
       recomputeDisplayCaches()
       if confirmedIDs.isEmpty {
         bulkTaskErrorMessage =
-          "The selected tasks could not be deleted from your account. Nothing was removed from this Mac. "
-          + "Locked tasks require a paid plan; otherwise, check your connection and retry."
+          "Não foi possível apagar as tarefas selecionadas da sua conta. Nada foi removido deste Mac. "
+          + "Tarefas bloqueadas exigem um plano pago. Caso contrário, verifique sua conexão e tente de novo."
       } else {
         bulkTaskErrorMessage =
-          "Some tasks were deleted, but the remaining selected tasks could not be deleted from your account. "
-          + "They remain selected so you can retry."
+          "Algumas tarefas foram apagadas, mas as demais tarefas selecionadas não puderam ser apagadas da sua conta. "
+          + "Elas continuam selecionadas para você tentar de novo."
       }
       return
     case .ownerChanged:

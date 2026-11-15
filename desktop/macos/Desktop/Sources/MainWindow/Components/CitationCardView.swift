@@ -58,7 +58,7 @@ struct CitationCardsView: View {
         Image(systemName: "quote.opening")
           .scaledFont(size: OmiType.micro)
           .foregroundColor(Ink.secondary)
-        Text("Sources")
+        Text("Fontes")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
       }

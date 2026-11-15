@@ -203,7 +203,7 @@ struct PageMoreMenu<Content: View>: View {
 
   var body: some View {
     Menu(content: content) {
-      PageQueryActionLabel(icon: "ellipsis", title: "More")
+      PageQueryActionLabel(icon: "ellipsis", title: "Mais")
     }
     .menuStyle(.borderlessButton)
     .menuIndicator(.hidden)
@@ -257,15 +257,15 @@ struct ActivePageFilterStrip: View {
 
       if !hidden.isEmpty {
         Menu {
-          Section("Active filters") {
+          Section("Filtros ativos") {
             ForEach(hidden) { filter in
-              Button("Remove \(filter.title)", action: filter.onRemove)
+              Button("Remover \(filter.title)", action: filter.onRemove)
             }
           }
 
           if filters.count > 1, let onClearAll {
             Divider()
-            Button("Clear all filters", action: onClearAll)
+            Button("Limpar todos os filtros", action: onClearAll)
           }
         } label: {
           Text("+\(hidden.count)")
@@ -278,8 +278,8 @@ struct ActivePageFilterStrip: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
-        .help("Show \(hidden.count) more active filters")
-        .accessibilityLabel("\(hidden.count) more active filters")
+        .help("Mostrar mais \(hidden.count) filtros ativos")
+        .accessibilityLabel("Mais \(hidden.count) filtros ativos")
       }
     }
     .fixedSize(horizontal: true, vertical: false)
@@ -308,7 +308,7 @@ struct ActivePageFilterChip: View {
       .glassChip(isActive: true)
     }
     .buttonStyle(.plain)
-    .help("Remove \(label) filter")
-    .accessibilityLabel("Remove \(label) filter")
+    .help("Remover o filtro \(label)")
+    .accessibilityLabel("Remover o filtro \(label)")
   }
 }

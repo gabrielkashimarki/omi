@@ -81,13 +81,13 @@ struct ConversationListView: View {
   }
 
   private var loadingView: some View {
-    GlassLoadingState(label: "Loading conversations…")
+    GlassLoadingState(label: "Carregando conversas…")
   }
 
   private func errorView(_: String) -> some View {
     GlassErrorState(
-      title: "Couldn't Load Conversations",
-      message: "Check your connection and try again.",
+      title: "Não foi possível carregar as conversas",
+      message: "Verifique sua conexão e tente de novo.",
       retry: onRefresh
     )
   }
@@ -95,8 +95,8 @@ struct ConversationListView: View {
   private var emptyView: some View {
     GlassEmptyState(
       systemImage: "bubble.left.and.bubble.right",
-      title: "No Conversations",
-      message: "Start recording to capture your first conversation"
+      title: "Nenhuma conversa",
+      message: "Comece a gravar para captar sua primeira conversa"
     )
   }
 

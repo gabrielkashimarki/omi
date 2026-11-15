@@ -10,7 +10,7 @@ struct ItemLinkListSheet: View {
 
   private var title: String {
     let count = state.references.count
-    return count == 1 ? "1 item" : "\(count) items"
+    return count == 1 ? "1 item" : "\(count) itens"
   }
 
   var body: some View {
@@ -52,7 +52,7 @@ struct ItemLinkListSheet: View {
         ProgressView()
           .controlSize(.small)
           .tint(Ink.secondary)
-        Text("Loading items…")
+        Text("Carregando itens…")
           .inkStyle(.prose, color: Ink.secondary)
       }
       .frame(maxWidth: .infinity, minHeight: 140)
@@ -68,9 +68,9 @@ private struct ItemLinkEmptyState: View {
       Image(systemName: "tray")
         .scaledFont(size: OmiType.heading, weight: .regular)
         .foregroundStyle(Ink.secondary)
-      Text("Nothing to show")
+      Text("Nada para mostrar")
         .inkStyle(.rowCopy, color: Ink.primary)
-      Text("This link doesn't name any conversations, tasks, or memories.")
+      Text("Este link não indica nenhuma conversa, tarefa ou memória.")
         .inkStyle(.statusLabel, color: Ink.secondary)
         .multilineTextAlignment(.center)
     }
@@ -101,7 +101,7 @@ struct ItemLinkRowView: View {
       rowBody
         .opacity(0.6)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text("\(presentation.subtitle), no longer available"))
+        .accessibilityLabel(Text("\(presentation.subtitle), não está mais disponível"))
         .accessibilityIdentifier("item-link-row-unavailable-\(row.reference.id)")
     }
   }
@@ -163,7 +163,7 @@ struct ItemLinkRowPresentation: Equatable {
   let emoji: String?
   let isCompletedTask: Bool
 
-  static let unavailableTitle = "No longer available"
+  static let unavailableTitle = "Não está mais disponível"
 
   init(row: ItemLinkRow) {
     let kindLabel = Self.kindLabel(row.reference.kind)
@@ -186,9 +186,9 @@ struct ItemLinkRowPresentation: Equatable {
     case .task(let task):
       title = task.description
       if task.completed {
-        subtitle = "\(kindLabel) · Completed"
+        subtitle = "\(kindLabel) · Concluída"
       } else if let due = task.dueAt {
-        subtitle = "\(kindLabel) · Due \(OmiDateFormat.timestamp(due))"
+        subtitle = "\(kindLabel) · Prazo \(OmiDateFormat.timestamp(due))"
       } else {
         subtitle = kindLabel
       }
@@ -206,9 +206,9 @@ struct ItemLinkRowPresentation: Equatable {
 
   static func kindLabel(_ kind: ItemLinkKind) -> String {
     switch kind {
-    case .conversation: return "Conversation"
-    case .task: return "Task"
-    case .memory: return "Memory"
+    case .conversation: return "Conversa"
+    case .task: return "Tarefa"
+    case .memory: return "Memória"
     }
   }
 

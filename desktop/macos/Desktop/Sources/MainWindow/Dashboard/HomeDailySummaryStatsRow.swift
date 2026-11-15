@@ -47,28 +47,28 @@ struct HomeDailySummaryStatsRow: View {
   nonisolated static func chips(for stats: DailySummaryRecord.Stats) -> [Chip] {
     var chips: [Chip] = []
     if let minutes = stats.watchingMinutes, minutes > 0 {
-      chips.append(Chip(id: "watching", symbol: "eye", value: duration(minutes), label: "watching"))
+      chips.append(Chip(id: "watching", symbol: "eye", value: duration(minutes), label: "assistindo"))
     }
     if let moments = stats.proactiveMoments, moments > 0 {
-      chips.append(Chip(id: "moments", symbol: "bell", value: "\(moments)", label: moments == 1 ? "moment" : "moments"))
+      chips.append(Chip(id: "moments", symbol: "bell", value: "\(moments)", label: moments == 1 ? "momento" : "momentos"))
     }
     if let conversations = stats.totalConversations, conversations > 0 {
       chips.append(
         Chip(
           id: "conversations", symbol: "bubble.left.and.bubble.right", value: "\(conversations)",
-          label: conversations == 1 ? "conversation" : "conversations"))
+          label: conversations == 1 ? "conversa" : "conversas"))
     }
     if let minutes = stats.totalDurationMinutes, minutes > 0 {
-      chips.append(Chip(id: "listening", symbol: "waveform", value: duration(minutes), label: "listening"))
+      chips.append(Chip(id: "listening", symbol: "waveform", value: duration(minutes), label: "ouvindo"))
     }
     if let memories = stats.memoriesCreated, memories > 0 {
       chips.append(
-        Chip(id: "memories", symbol: "sparkles", value: "\(memories)", label: memories == 1 ? "memory" : "memories"))
+        Chip(id: "memories", symbol: "sparkles", value: "\(memories)", label: memories == 1 ? "memória" : "memórias"))
     }
     let tasks = stats.actionItemsCreated ?? stats.actionItemsCount
     if let tasks, tasks > 0 {
       chips.append(
-        Chip(id: "tasks", symbol: "checkmark.circle", value: "\(tasks)", label: tasks == 1 ? "task" : "tasks"))
+        Chip(id: "tasks", symbol: "checkmark.circle", value: "\(tasks)", label: tasks == 1 ? "tarefa" : "tarefas"))
     }
     return chips
   }

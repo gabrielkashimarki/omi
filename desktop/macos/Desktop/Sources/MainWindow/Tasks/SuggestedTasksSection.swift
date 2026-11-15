@@ -63,9 +63,9 @@ struct SuggestedCandidateDismissChoice: Identifiable, Equatable {
 /// Optional dismiss attribution choices shared by Suggested reject and tests.
 enum SuggestedCandidateDismissReasons {
   static let choices: [SuggestedCandidateDismissChoice] = [
-    SuggestedCandidateDismissChoice(label: "Already handled", reason: .already_handled),
-    SuggestedCandidateDismissChoice(label: "Not mine", reason: .not_mine),
-    SuggestedCandidateDismissChoice(label: "Not useful", reason: .not_useful),
+    SuggestedCandidateDismissChoice(label: "Já resolvida", reason: .already_handled),
+    SuggestedCandidateDismissChoice(label: "Não é minha", reason: .not_mine),
+    SuggestedCandidateDismissChoice(label: "Não é útil", reason: .not_useful),
   ]
 }
 
@@ -73,7 +73,7 @@ struct SuggestedTasksLoadingIndicator: View {
   var body: some View {
     HStack(spacing: 8) {
       ProgressView().controlSize(.small)
-      Text("Checking Suggested")
+      Text("Verificando sugestões")
         .scaledFont(size: 12)
         .foregroundColor(Ink.secondary)
     }
@@ -134,8 +134,8 @@ private struct SuggestedTasksSectionHeader: View {
       headerLabel
     }
     .buttonStyle(.plain)
-    .accessibilityLabel("Suggested tasks")
-    .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+    .accessibilityLabel("Tarefas sugeridas")
+    .accessibilityValue(isExpanded ? "Expandido" : "Recolhido")
     .accessibilityAddTraits(.isButton)
     .accessibilityIdentifier("suggested-section-toggle")
   }
@@ -149,7 +149,7 @@ private struct SuggestedTasksSectionHeader: View {
       Image(systemName: "sparkles")
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
-      Text("Suggested")
+      Text("Sugeridas")
         .scaledFont(size: OmiType.subheading, weight: .semibold)
         .foregroundColor(Ink.primary)
       Text("\(candidateCount)")
@@ -350,7 +350,7 @@ private struct SuggestedCandidateRow: View {
         }
         .buttonStyle(.plain)
         .disabled(isBusy || isAcceptDisabled || isDismissing)
-        .accessibilityLabel("Complete suggested task")
+        .accessibilityLabel("Concluir tarefa sugerida")
         .accessibilityIdentifier("suggested-complete-\(candidate.id)")
 
         VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
@@ -472,7 +472,7 @@ private struct SuggestedCandidateTitle: View {
 
   var body: some View {
     if candidate.isEditableTask {
-      TextField("Suggested task", text: $title, axis: .vertical)
+      TextField("Tarefa sugerida", text: $title, axis: .vertical)
         .textFieldStyle(.plain)
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
@@ -497,7 +497,7 @@ struct AutoAcceptedTaskWhyButton: View {
 
   var body: some View {
     if shouldShow {
-      Button("Why") { isPresented = true }
+      Button("Por quê") { isPresented = true }
         .buttonStyle(.plain)
         .scaledFont(size: 10, weight: .medium)
         .foregroundColor(Ink.secondary)
@@ -513,16 +513,16 @@ struct AutoAcceptedTaskWhyButton: View {
 
   private var provenanceDescription: String {
     let source = task.source ?? ""
-    if source.contains("screen") { return "Omi spotted it on your screen." }
+    if source.contains("screen") { return "O Omi viu isso na sua tela." }
     if source.contains("transcription") || source.contains("conversation") {
-      return "It came from a conversation you captured."
+      return "Veio de uma conversa que você captou."
     }
-    return "It came from an authorized Omi source."
+    return "Veio de uma fonte autorizada do Omi."
   }
 
   private var linkedSourceSummary: String {
     let count = (task.provenance ?? []).count
-    return "\(count) linked source\(count == 1 ? "" : "s")"
+    return "\(count) \(count == 1 ? "fonte vinculada" : "fontes vinculadas")"
   }
 }
 
@@ -532,7 +532,7 @@ private struct AutoAcceptedTaskWhyPopover: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
-      Text("Why Omi added this")
+      Text("Por que o Omi adicionou isto")
         .scaledFont(size: 12, weight: .semibold)
         .foregroundColor(Ink.primary)
       Text(description)

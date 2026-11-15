@@ -85,7 +85,7 @@ struct RewindOnlyView: View {
       Button {
         openRewindSettings()
       } label: {
-        Label("Rewind Settings", systemImage: "slider.horizontal.3")
+        Label("Ajustes do Rewind", systemImage: "slider.horizontal.3")
       }
 
       Divider()
@@ -93,7 +93,7 @@ struct RewindOnlyView: View {
       Button {
         openFullApp()
       } label: {
-        Label("Open Full Omi App", systemImage: "square.grid.2x2")
+        Label("Abrir o app Omi completo", systemImage: "square.grid.2x2")
       }
 
       Divider()
@@ -101,7 +101,7 @@ struct RewindOnlyView: View {
       Button {
         NSApplication.shared.terminate(nil)
       } label: {
-        Label("Quit", systemImage: "xmark.circle")
+        Label("Sair", systemImage: "xmark.circle")
       }
     } label: {
       Image(systemName: "gearshape.fill")
@@ -115,7 +115,7 @@ struct RewindOnlyView: View {
     .menuStyle(.borderlessButton)
     .menuIndicator(.hidden)
     .fixedSize()
-    .help("Settings")
+    .help("Ajustes")
   }
 
   // MARK: - Actions
@@ -171,7 +171,7 @@ struct RewindOnlyView: View {
     let hostingController = NSHostingController(rootView: settingsView)
 
     let newWindow = NSWindow(contentViewController: hostingController)
-    newWindow.title = "Rewind Settings"
+    newWindow.title = "Ajustes do Rewind"
     newWindow.setContentSize(NSSize(width: 600, height: 500))
     newWindow.styleMask = [.titled, .closable, .resizable, .miniaturizable]
     newWindow.minSize = NSSize(width: 500, height: 400)
@@ -202,11 +202,11 @@ struct RewindSettingsView: View {
       VStack(alignment: .leading, spacing: OmiSpacing.xxl) {
         // Header
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Rewind Settings")
+          Text("Ajustes do Rewind")
             .scaledFont(size: 24, weight: .bold)
             .foregroundColor(Ink.primary)
 
-          Text("Configure screen capture and storage")
+          Text("Configure a captura de tela e o armazenamento")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
         }
@@ -215,8 +215,8 @@ struct RewindSettingsView: View {
 
         // Screen Capture Toggle
         settingsRow(
-          title: "Screen Capture",
-          subtitle: "Capture screenshots for Rewind timeline"
+          title: "Captura de tela",
+          subtitle: "Captura telas para a linha do tempo do Rewind"
         ) {
           Toggle("", isOn: $screenAnalysisEnabled)
             .toggleStyle(OmiToggleStyle())
@@ -224,18 +224,18 @@ struct RewindSettingsView: View {
 
         // Retention Period
         settingsRow(
-          title: "Keep Screenshots For",
+          title: "Manter capturas por",
           subtitle: RewindSettings.isUnlimited(retentionDays: retentionDays)
-            ? "Every screenshot is kept, so Rewind reaches back to your first capture"
-            : "Older screenshots will be automatically deleted"
+            ? "Todas as capturas são mantidas, então o Rewind volta até a sua primeira captura"
+            : "Capturas mais antigas serão apagadas automaticamente"
         ) {
           SettingsMenuPicker(selection: $retentionDays) {
-            Text("1 day").tag(1)
-            Text("3 days").tag(3)
-            Text("7 days").tag(7)
-            Text("14 days").tag(14)
-            Text("30 days").tag(30)
-            Text("Keep everything").tag(RewindSettings.unlimitedRetentionDays)
+            Text("1 dia").tag(1)
+            Text("3 dias").tag(3)
+            Text("7 dias").tag(7)
+            Text("14 dias").tag(14)
+            Text("30 dias").tag(30)
+            Text("Manter tudo").tag(RewindSettings.unlimitedRetentionDays)
           }
         }
 
@@ -280,13 +280,13 @@ struct RewindSettingsView: View {
 
   private var storageInfoSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
-      Text("Storage")
+      Text("Armazenamento")
         .scaledFont(size: OmiType.body, weight: .semibold)
         .foregroundColor(Ink.primary)
 
       HStack {
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Screenshots stored locally")
+          Text("Capturas armazenadas localmente")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.primary)
 
@@ -297,7 +297,7 @@ struct RewindSettingsView: View {
 
         Spacer()
 
-        Button("Show in Finder") {
+        Button("Mostrar no Finder") {
           let url = DesktopLocalProfile.applicationSupportURL()
           NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: url.path)
         }
@@ -313,7 +313,7 @@ struct RewindSettingsView: View {
 
   private var permissionsSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
-      Text("Permissions")
+      Text("Permissões")
         .scaledFont(size: OmiType.body, weight: .semibold)
         .foregroundColor(Ink.primary)
 
@@ -326,18 +326,18 @@ struct RewindSettingsView: View {
             .foregroundColor(Ink.primary)
 
           VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-            Text("Screen Recording")
+            Text("Gravação de Tela")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(Ink.primary)
 
-            Text("Required for Rewind to capture your screen")
+            Text("Necessária para o Rewind capturar a sua tela")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           }
 
           Spacer()
 
-          Text("Open Settings")
+          Text("Abrir Ajustes")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.accent)
         }
