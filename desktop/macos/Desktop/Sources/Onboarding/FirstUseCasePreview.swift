@@ -36,7 +36,7 @@ struct FirstUseCasePreview: View {
     )
     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("\(useCase.siteName) with the Omi bar asking: \(useCase.question)")
+    .accessibilityLabel("\(useCase.siteName) com a barra do Omi perguntando: \(useCase.question)")
   }
 
   // MARK: - Browser chrome
@@ -291,7 +291,7 @@ struct FirstUseCasePreview: View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
       HStack(alignment: .top, spacing: OmiSpacing.sm) {
         Circle().fill(blockStrong).frame(width: 26, height: 26)
-        Text("What's happening?")
+        Text("O que está acontecendo?")
           .font(.system(size: 15))
           .foregroundColor(Ink.secondary)
           .padding(.top, 3)
@@ -306,7 +306,7 @@ struct FirstUseCasePreview: View {
             .foregroundColor(Ink.accent)
         }
         Spacer(minLength: 0)
-        Text("Post")
+        Text("Postar")
           .font(.system(size: 11, weight: .bold))
           .foregroundColor(Ink.surface)
           .padding(.horizontal, OmiSpacing.md)

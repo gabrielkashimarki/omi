@@ -118,7 +118,7 @@ class GoalGenerationService {
 
       NotificationService.shared.sendNotification(
         ownerID: ownerID,
-        title: "New Goal",
+        title: "Nova meta",
         message: goal.title,
         assistantId: "goals"
       )

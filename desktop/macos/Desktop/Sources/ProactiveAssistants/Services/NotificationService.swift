@@ -78,14 +78,14 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
   private static let resetNowActionId = "RESET_SCREEN_CAPTURE_NOW"
 
   /// Title that identifies screen capture reset notifications
-  static let screenCaptureResetTitle = "Screen Recording Needs Reset"
+  static let screenCaptureResetTitle = "A Gravação de Tela precisa ser redefinida"
 
   /// Title that identifies the consent-decline notice: macOS re-confirmed consent for
   /// app-built capture filters and the capture loop went terminal instead of retrying
   /// (see ScreenCaptureConsentPolicy). Distinct from the reset title on purpose — the
   /// grant is intact, so the repair is "start capturing again", NOT the tccutil wipe
   /// the reset flow performs.
-  static let screenCaptureConsentTitle = "Screen Recording Paused"
+  static let screenCaptureConsentTitle = "Gravação de Tela pausada"
 
   /// UserDefaults key that records whether the screen capture reset notification
   /// has already been shown in the current broken-capture episode. Cleared by
@@ -219,7 +219,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     // Create "Reset Now" action for screen capture reset notifications
     let resetNowAction = UNNotificationAction(
       identifier: Self.resetNowActionId,
-      title: "Reset Now",
+      title: "Redefinir agora",
       options: [.foreground]  // Bring app to foreground when tapped
     )
 
@@ -420,9 +420,9 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
 
   /// Standard silence durations offered to the user.
   nonisolated static let snoozeDurations: [(label: String, seconds: TimeInterval)] = [
-    ("For 1 hour", 60 * 60),
-    ("For 4 hours", 4 * 60 * 60),
-    ("For 8 hours", 8 * 60 * 60),
+    ("Por 1 hora", 60 * 60),
+    ("Por 4 horas", 4 * 60 * 60),
+    ("Por 8 horas", 8 * 60 * 60),
   ]
 
   nonisolated static func currentSnoozeExpiry(

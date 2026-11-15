@@ -42,7 +42,7 @@ struct ContextReminderCard: View {
             if !succeeded { didAct = false }
           }
         } label: {
-          Text("Done")
+          Text("OK")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Color.black.opacity(0.85))
             .padding(.horizontal, OmiSpacing.md)
@@ -60,7 +60,7 @@ struct ContextReminderCard: View {
             if !succeeded { didAct = false }
           }
         } label: {
-          Text("Remind me tomorrow")
+          Text("Me lembre amanhã")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(.white)
             .padding(.horizontal, OmiSpacing.md)
@@ -76,7 +76,7 @@ struct ContextReminderCard: View {
     .padding(.horizontal, OmiSpacing.lg)
     .padding(.vertical, OmiSpacing.md + 2)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .notchDismissOverlay(accessibilityLabel: "Dismiss reminder")
+    .notchDismissOverlay(accessibilityLabel: "Dispensar lembrete")
     .accessibilityElement(children: .contain)
     .accessibilityIdentifier("context-reminder-card")
     .onChange(of: reminderID) { _, _ in

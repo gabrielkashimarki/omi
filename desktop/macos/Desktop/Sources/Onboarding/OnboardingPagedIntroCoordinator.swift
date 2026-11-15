@@ -83,7 +83,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
     ("it", "Italian"), ("nl", "Dutch"),
   ]
   @Published var scanState: ScanState = .idle
-  @Published var scanStatusText: String = "Ready to scan your files."
+  @Published var scanStatusText: String = "Pronto para examinar seus arquivos."
   @Published var scanSnapshot: ScanSnapshot?
   @Published var localFileMemoriesSaved: Int = 0
   @Published var emailSummary: String = ""
@@ -294,21 +294,21 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
     }
 
     if let snapshot = scanSnapshot, snapshot.fileCount > 0 {
-      let name = preferredName == "there" ? "This person" : preferredName
+      let name = preferredName == "there" ? "Esta pessoa" : preferredName
       let projects = snapshot.projectNames.prefix(2)
       let technologies = snapshot.technologies.prefix(2)
 
       if !projects.isEmpty && !technologies.isEmpty {
         return
-          "\(name) appears to be building around \(projects.joined(separator: " and ")), with daily work in \(technologies.joined(separator: " and "))."
+          "\(name) parece estar construindo em torno de \(projects.joined(separator: " e ")), com trabalho diário em \(technologies.joined(separator: " e "))."
       }
 
       if !projects.isEmpty {
-        return "\(name) appears focused on \(projects.joined(separator: " and "))."
+        return "\(name) parece focado em \(projects.joined(separator: " e "))."
       }
     }
 
-    return "Omi is still reading the sources you connected."
+    return "O Omi ainda está lendo as fontes que você conectou."
   }
 
   func importedMemoryCount(for source: OnboardingMemoryLogSource) -> Int {
@@ -402,9 +402,9 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
     lastActionError = nil
 
     let panel = NSOpenPanel()
-    panel.title = "Select your Apple Notes data folder"
-    panel.message = "Choose the Apple Notes group container so Omi can sync your notes."
-    panel.prompt = "Select Folder"
+    panel.title = "Selecione a pasta de dados do Apple Notes"
+    panel.message = "Escolha o contêiner de grupo do Apple Notes para o Omi sincronizar suas notas."
+    panel.prompt = "Selecionar pasta"
     panel.canChooseFiles = false
     panel.canChooseDirectories = true
     panel.allowsMultipleSelection = false
@@ -448,7 +448,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
       appleNotesMemoriesSaved = rawImport.saved + result.memories
       appleNotesSummary =
         result.profileSummary.isEmpty
-        ? "Your notes already reflect active ideas, plans, and recurring interests."
+        ? "Suas notas já refletem ideias ativas, planos e interesses recorrentes."
         : result.profileSummary
 
       if appleNotesMemoriesSaved > 0 {
@@ -474,7 +474,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
     lastActionError = nil
     let trimmed = draftName.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else {
-      lastActionError = "Pick a name first."
+      lastActionError = "Escolha um nome primeiro."
       return
     }
 
@@ -514,12 +514,12 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
   func addCustomLanguage() {
     let trimmed = customLanguage.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else {
-      lastActionError = "Add a language first."
+      lastActionError = "Adicione um idioma primeiro."
       return
     }
     let code = AssistantSettings.normalizeTranscriptionLanguageCode(trimmed)
     guard AssistantSettings.supportedLanguages.contains(where: { $0.code == code }) else {
-      lastActionError = "Couldn't recognize \"\(trimmed)\" — try its English name (Spanish, Japanese…)."
+      lastActionError = "Não reconheci \"\(trimmed)\". Tente o nome em inglês (Spanish, Japanese…)."
       return
     }
     lastActionError = nil
@@ -537,7 +537,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
   /// to cause via set_user_preferences).
   func confirmLanguages() async {
     guard !selectedLanguageCodes.isEmpty else {
-      lastActionError = "Pick at least one language."
+      lastActionError = "Escolha pelo menos um idioma."
       return
     }
     lastActionError = nil
@@ -559,7 +559,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
         _ = try await APIClient.shared.updateUserLanguage(primary)
       } catch {
         logError("Onboarding: saving primary language '\(primary)' to backend failed", error: error)
-        lastActionError = "Couldn't save your language to your account — check your connection and tap Continue again."
+        lastActionError = "Não foi possível salvar seu idioma na conta. Confira sua conexão e toque em Continuar de novo."
         return
       }
     }
@@ -645,7 +645,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
     lastActionError = nil
     ChatToolExecutor.onboardingAppState = appState
     scanState = .scanning
-    scanStatusText = "Scanning your projects and apps…"
+    scanStatusText = "Examinando seus projetos e apps…"
 
     // Start local/web enrichment in parallel with the file scan. Connected
     // account imports stay behind an explicit Apps/Settings action.
@@ -656,13 +656,13 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
     if result.lowercased().hasPrefix("error") {
       scanState = .failed(result)
       lastActionError = result
-      scanStatusText = "We couldn't finish scanning your workspace."
+      scanStatusText = "Não conseguimos terminar de examinar seu espaço de trabalho."
       return
     }
 
     await refreshSnapshotIfAvailable()
     scanState = .complete
-    scanStatusText = "Your workspace is mapped."
+    scanStatusText = "Seu espaço de trabalho está mapeado."
   }
 
   func refreshSnapshotIfAvailable(
@@ -936,7 +936,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
   /// background task: fall back to the automatic (first readable) account.
   func cancelGmailAccountSelection() {
     showingGmailAccountPicker = false
-    GmailSelectionStore.persist(cookiePath: nil, label: "Automatic")
+    GmailSelectionStore.persist(cookiePath: nil, label: "Automático")
     DesktopDiagnosticsManager.shared.recordFallback(
       area: "gmail_account_selection",
       from: "manual_selection",
@@ -953,8 +953,8 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
     isResearchComplete = false
     insightStatusText =
       userInitiated
-      ? "Reading the selected data sources…"
-      : "Preparing your local profile…"
+      ? "Lendo as fontes de dados selecionadas…"
+      : "Preparando seu perfil local…"
     gmailInsightsFinished = false
     calendarInsightsFinished = false
     appleNotesInsightsFinished = false
@@ -976,7 +976,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
       gmailInsightsFinished = true
       calendarInsightsFinished = true
       appleNotesInsightsFinished = true
-      insightStatusText = "Connect data sources from Apps when you are ready."
+      insightStatusText = "Conecte fontes de dados em Apps quando estiver pronto."
       await maybeStartWebResearch()
       return
     }
@@ -1023,7 +1023,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
 
         let summary =
           result.profileSummary.isEmpty
-          ? "Your email suggests active follow-ups and recurring projects."
+          ? "Seu e-mail indica retornos ativos e projetos recorrentes."
           : result.profileSummary
 
         await self.saveGraph(
@@ -1088,7 +1088,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
 
         let summary =
           result.profileSummary.isEmpty
-          ? "Your calendar is busy enough that Omi can start surfacing deadlines and prep work."
+          ? "Sua agenda está cheia o bastante para o Omi começar a mostrar prazos e preparos."
           : result.profileSummary
 
         await self.saveGraph(
@@ -1174,7 +1174,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
 
         let summary =
           result.profileSummary.isEmpty
-          ? "Your notes already reflect active ideas, plans, and recurring interests."
+          ? "Suas notas já refletem ideias ativas, planos e interesses recorrentes."
           : result.profileSummary
 
         await MainActor.run {
@@ -1223,7 +1223,7 @@ final class OnboardingPagedIntroCoordinator: ObservableObject {
     }
     guard webResearchTask == nil && !isResearchComplete else { return }
 
-    insightStatusText = "Searching the web…"
+    insightStatusText = "Buscando na web…"
 
     webResearchTask = Task {
       let results = await OnboardingWebResearchService.shared.search(queries: buildWebQueries())

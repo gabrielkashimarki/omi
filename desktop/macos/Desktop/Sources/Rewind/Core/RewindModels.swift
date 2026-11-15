@@ -340,21 +340,21 @@ enum RewindError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .databaseNotInitialized:
-      return "Rewind database is not initialized"
+      return "O banco de dados do Rewind não foi inicializado"
     case .databaseCorrupted(let message):
-      return "Database corrupted: \(message)"
+      return "Banco de dados corrompido: \(message)"
     case .invalidImage:
-      return "Invalid image data"
+      return "Dados de imagem inválidos"
     case .storageError(let message):
-      return "Storage error: \(message)"
+      return "Erro de armazenamento: \(message)"
     case .storageWriteFailed(let message, let underlying):
-      return "Storage error: \(message): \(underlying.localizedDescription)"
+      return "Erro de armazenamento: \(message): \(underlying.localizedDescription)"
     case .ocrFailed(let message):
-      return "OCR failed: \(message)"
+      return "Falha no OCR: \(message)"
     case .screenshotNotFound:
-      return "Screenshot not found"
+      return "Captura de tela não encontrada"
     case .corruptedVideoChunk(let path):
-      return "Video chunk corrupted: \(path)"
+      return "Trecho de vídeo corrompido: \(path)"
     }
   }
 }

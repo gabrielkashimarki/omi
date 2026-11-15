@@ -42,7 +42,7 @@ enum OnboardingMemoryLogSource: String, CaseIterable, Sendable {
   }
 
   var headline: String {
-    "\(displayName) Memory Import"
+    "Importação de memória do \(displayName)"
   }
 
   var prompt: String {

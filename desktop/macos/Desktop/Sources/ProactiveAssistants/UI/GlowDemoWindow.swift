@@ -61,7 +61,7 @@ class GlowDemoWindow: NSWindow {
       defer: false
     )
 
-    self.title = "Glow Preview"
+    self.title = "Prévia do brilho"
     self.titlebarAppearsTransparent = true
     self.isMovableByWindowBackground = true
     self.isReleasedWhenClosed = false
@@ -91,8 +91,8 @@ struct GlowDemoContentView: View {
       HStack(spacing: OmiSpacing.xl) {
         // Focused state
         glowStatePreview(
-          title: "Focused",
-          description: "You're on track",
+          title: "Focado",
+          description: "Você está no caminho certo",
           color: Color(red: 0.16, green: 0.79, blue: 0.26),
           isActive: state.phase == .focused
         )
@@ -104,8 +104,8 @@ struct GlowDemoContentView: View {
 
         // Distracted state
         glowStatePreview(
-          title: "Distracted",
-          description: "Time to refocus",
+          title: "Distraído",
+          description: "Hora de retomar o foco",
           color: Color(red: 0.95, green: 0.3, blue: 0.3),
           isActive: state.phase == .distracted
         )
@@ -117,11 +117,11 @@ struct GlowDemoContentView: View {
         if state.phase != .none {
           ProgressView()
             .scaleEffect(0.6)
-          Text(state.phase == .focused ? "Showing focused glow…" : "Showing distracted glow…")
+          Text(state.phase == .focused ? "Mostrando o brilho de foco…" : "Mostrando o brilho de distração…")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(.secondary)
         } else {
-          Text("Watch the border effect")
+          Text("Veja o efeito da borda")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(.secondary.opacity(0.6))
         }

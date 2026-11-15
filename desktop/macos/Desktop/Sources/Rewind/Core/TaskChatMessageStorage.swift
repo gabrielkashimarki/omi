@@ -201,7 +201,7 @@ enum TaskChatMessageStorageError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .databaseNotInitialized:
-      return "Task chat message storage database is not initialized"
+      return "O banco de dados do chat da tarefa não foi inicializado"
     }
   }
 }

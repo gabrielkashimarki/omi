@@ -25,35 +25,35 @@ struct FirstUseCase: Identifiable, Equatable, Sendable {
   /// which is exactly the input Omi grounds an answer in.
   static let game = FirstUseCase(
     id: "game",
-    label: "Play a game",
+    label: "Jogar um jogo",
     symbol: "gamecontroller",
     siteName: "Minecraft",
     url: URL(string: "https://eaglercraft.com/play?version=1.8.8")!,
-    question: "How do I craft a pickaxe?")
+    question: "Como eu faço uma picareta?")
 
   static let design = FirstUseCase(
     id: "design",
-    label: "Get design feedback",
+    label: "Receber feedback de design",
     symbol: "paintbrush.pointed",
     siteName: "Figma",
     url: URL(string: "https://www.figma.com/")!,
-    question: "Give me honest feedback on this design.")
+    question: "Me dê um feedback sincero sobre este design.")
 
   static let post = FirstUseCase(
     id: "post",
-    label: "Write a post",
+    label: "Escrever um post",
     symbol: "text.bubble",
     siteName: "X",
     url: URL(string: "https://x.com/compose/post")!,
-    question: "Help me write a post about what I'm working on.")
+    question: "Me ajude a escrever um post sobre o que estou fazendo.")
 
   static let shop = FirstUseCase(
     id: "shop",
-    label: "Shop",
+    label: "Fazer compras",
     symbol: "cart",
     siteName: "Amazon",
     url: URL(string: "https://www.amazon.com/")!,
-    question: "Which of these should I buy, and why?")
+    question: "Qual destes eu devo comprar, e por quê?")
 
   /// In the order the chips render.
   static let all: [FirstUseCase] = [game, design, post, shop]

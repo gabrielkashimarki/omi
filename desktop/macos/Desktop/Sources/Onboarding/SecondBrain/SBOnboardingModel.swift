@@ -3,12 +3,12 @@ import Combine
 import Foundation
 
 enum SBOnboardingLanguageCopy {
-  static let question = "What language should Omi listen and reply in?"
-  static let detectedLanguageDetail = "· detected from your Mac"
-  static let changeSpokenLanguageAction = "Change spoken language"
+  static let question = "Em que idioma o Omi deve ouvir e responder?"
+  static let detectedLanguageDetail = "· detectado no seu Mac"
+  static let changeSpokenLanguageAction = "Mudar o idioma falado"
 
   static func continueAction(for language: String) -> String {
-    "Continue in \(language)"
+    "Continuar em \(language)"
   }
 }
 
@@ -301,18 +301,18 @@ final class SBOnboardingModel: ObservableObject {
     switch step {
     case .promise:
       return
-        "Hey, I'm Omi, your second brain. I listen to your conversations, remember the important parts, and help with follow-ups. Three quick things:"
-    case .name: return "What should I call you?"
-    case .howHeard: return "Quick one. How did you hear about Omi?"
+        "Oi, eu sou o Omi, seu segundo cérebro. Eu ouço suas conversas, lembro das partes importantes e ajudo nos acompanhamentos. Três coisas rápidas:"
+    case .name: return "Como devo te chamar?"
+    case .howHeard: return "Rapidinho: como você conheceu o Omi?"
     case .language:
       return SBOnboardingLanguageCopy.question
     case .role:
       return
-        "Nice to meet you, \(name). What do your days look like? Pick the closest, or tell me. It shapes what I make for you."
+        "Prazer, \(name). Como são os seus dias? Escolha o mais próximo ou me conte. Isso molda o que eu faço por você."
     case .mic:
-      return "Let's give me senses. First, your microphone, so I hear your side of a conversation."
+      return "Vamos me dar sentidos. Primeiro, seu microfone, para eu ouvir o seu lado de uma conversa."
     case .systemAudio:
-      return "Now system audio, so I hear the other side too: Zoom, Meet, calls."
+      return "Agora o áudio do sistema, para eu ouvir o outro lado também: Zoom, Meet, chamadas."
     case .screen:
       // Says what granting this actually starts. `complete()` preserves this
       // explicit intent, and Rewind then captures every few seconds for as long
@@ -322,34 +322,34 @@ final class SBOnboardingModel: ObservableObject {
       // than "it": the images do stay on this Mac, but `ScreenActivitySyncService` syncs their OCR
       // text and embeddings to the backend, so an unqualified "it stays on this Mac" would be false.
       return
-        "Let me see your screen. I'll take a picture every few seconds so you can scrub back to anything you saw — that's Rewind. The pictures stay on this Mac, and you can turn it off anytime in the top bar."
+        "Me deixe ver sua tela. Vou tirar uma foto a cada poucos segundos para você voltar a qualquer coisa que viu, isso é o Rewind. As fotos ficam neste Mac e você pode desligar quando quiser na barra do topo."
     case .files:
       return
-        "Let me read your files, so I can point to your real documents. Read-only, it stays on this Mac, and you can turn it off anytime."
+        "Me deixe ler seus arquivos, para eu apontar seus documentos de verdade. Somente leitura, fica neste Mac e você pode desligar quando quiser."
     case .accessibility:
-      return "Turn on Accessibility, so I can use your shortcut and click and type for you."
+      return "Ative a Acessibilidade, para eu usar seu atalho e clicar e digitar por você."
     case .automation:
-      return "Turn on Automation, so I can help with tasks in the apps you choose."
+      return "Ative a Automação, para eu ajudar com tarefas nos apps que você escolher."
     case .notifications:
       return
-        "On days you record a conversation, I can let you know when your evening recap is ready. Turn on Notifications to get that heads-up."
+        "Nos dias em que você gravar uma conversa, posso avisar quando o resumo do dia estiver pronto. Ative as Notificações para receber esse aviso."
     // Both steps used to invite "press any key", and `acceptsRecordedChord` then refused a bare key
     // in silence — correct (a global bare `L` is unrecoverable) but unexplained. Name the rule.
     case .shortcutOpen:
-      return "How do you want to open me? Choose one, or pick Custom to set your own — it needs ⌘, ⌃ or ⌥."
+      return "Como você quer me abrir? Escolha uma opção ou use Personalizado para definir o seu, que precisa de ⌘, ⌃ ou ⌥."
     case .shortcutTalk:
-      return "And to talk to me hands-free? Choose one, or pick Custom to hold your own modifier key."
+      return "E para falar comigo sem usar as mãos? Escolha uma opção ou use Personalizado para segurar sua própria tecla modificadora."
     case .screenDemo:
-      return "Here's the fun part."
+      return "Agora vem a parte divertida."
     case .agents:
-      return "Want me to do things for you? Connect an agent and I'll put it to work."
+      return "Quer que eu faça coisas por você? Conecte um agente e eu o coloco para trabalhar."
     case .context:
-      return "The more I can see, the more I can help. Connect anything you want me to know:"
+      return "Quanto mais eu enxergo, mais posso ajudar. Conecte o que você quiser que eu saiba:"
     case .capture:
       return
-        "You're all set, \(name). Should I listen all the time, or only during your meetings?"
+        "Tudo pronto, \(name). Devo ouvir o tempo todo ou só durante suas reuniões?"
     case .referral:
-      return "Want to invite a friend? They'll get one free month."
+      return "Quer convidar um amigo? Ele ganha um mês grátis."
     }
   }
 
@@ -379,7 +379,7 @@ final class SBOnboardingModel: ObservableObject {
     let stored = AuthService.shared.givenName.trimmingCharacters(in: .whitespaces)
     if !n.isEmpty { return n.components(separatedBy: " ").first ?? n }
     if !stored.isEmpty { return stored }
-    return "friend"
+    return "amigo"
   }
 
   var selectedResponseLanguageName: String {
@@ -688,7 +688,7 @@ final class SBOnboardingModel: ObservableObject {
 
   // MARK: promise / name / language / role
 
-  func answerPromise() { advance(userAnswer: "Set me up", to: .name) }
+  func answerPromise() { advance(userAnswer: "Pode configurar", to: .name) }
 
   func answerName() {
     let trimmed = nameDraft.trimmingCharacters(in: .whitespaces)

@@ -267,7 +267,7 @@ final class ContextReminderCoordinator {
     NotificationService.shared.sendNotification(
       ownerID: ownerID,
       title: reminder.contextKey.normalizedTitle,
-      message: "You're back. You asked me to remind you: \(reminder.text)",
+      message: "Você voltou. Você pediu para eu te lembrar: \(reminder.text)",
       assistantId: assistantID,
       action: .contextReminder(reminderID: reminder.id),
       respectFrequency: false,

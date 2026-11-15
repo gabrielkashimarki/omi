@@ -727,7 +727,7 @@ class TaskChatState: ObservableObject {
       OmiToastCenter.shared.confirm("Thread now uses Omi AI")
     } catch {
       guard isCurrent(lease) else { return }
-      errorMessage = "Could not switch this thread to Omi AI. Reopen the task and try again."
+      errorMessage = "Não foi possível mudar esta conversa para a Omi AI. Reabra a tarefa e tente de novo."
       logError("TaskChatState: explicit provider change failed", error: error)
     }
   }
@@ -802,7 +802,7 @@ class TaskChatState: ObservableObject {
       applyAcceptedExchange(receipt, lease: lease)
     } catch {
       if isCurrent(lease) {
-        errorMessage = "Could not save this message. Try again."
+        errorMessage = "Não foi possível salvar esta mensagem. Tente de novo."
         isSending = false
       }
       return

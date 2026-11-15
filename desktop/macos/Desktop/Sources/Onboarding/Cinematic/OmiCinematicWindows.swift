@@ -247,10 +247,10 @@ struct OmiCinematicView: View {
         }
         .buttonStyle(.plain)
         .foregroundStyle(OmiCinematicPalette.inkSecondary)
-        .accessibilityLabel(Text(director.musicEnabled ? "Mute music" : "Unmute music"))
+        .accessibilityLabel(Text(director.musicEnabled ? "Silenciar a música" : "Ativar a música"))
 
         Button(action: director.skip) {
-          Text(verbatim: "Skip intro")
+          Text(verbatim: "Pular introdução")
             .geist(size: 12, weight: .medium)
             .foregroundStyle(OmiCinematicPalette.inkSecondary)
             .padding(.horizontal, 14)

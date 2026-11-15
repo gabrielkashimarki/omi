@@ -832,7 +832,7 @@ final class TaskChatCoordinator: ObservableObject {
       await refreshActiveThread()
     } catch {
       if isCurrent(lease) {
-        errorMessage = "Reply complete, but thread continuity could not be saved. \(error.localizedDescription)"
+        errorMessage = "Resposta concluída, mas não foi possível salvar a continuidade da conversa. \(error.localizedDescription)"
         logError("TaskChatCoordinator: Failed to persist workstream continuity", error: error)
       }
     }
@@ -1075,13 +1075,13 @@ enum TaskThreadError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .taskIsUnlinked:
-      "Choose Work on this with Omi to start ongoing work for this task."
+      "Escolha Trabalhar nisso com o Omi para iniciar um trabalho contínuo nesta tarefa."
     case .unresolvedWorkflowControl:
-      "Omi could not safely resolve task continuity yet. Try again."
+      "O Omi ainda não conseguiu resolver com segurança a continuidade da tarefa. Tente de novo."
     case .requestedTaskUnavailable:
-      "The requested task is no longer part of this thread."
+      "A tarefa solicitada não faz mais parte desta conversa."
     case .threadHasNoTasks:
-      "This thread has no task to open."
+      "Esta conversa não tem tarefa para abrir."
     }
   }
 }

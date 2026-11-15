@@ -71,7 +71,7 @@ struct QuickLookFrame: Identifiable, Equatable {
   init(id: String, source: Source, title: String) {
     self.id = id
     self.source = source
-    self.title = title.isEmpty ? "Screenshot" : title
+    self.title = title.isEmpty ? "Captura de tela" : title
   }
 
   /// A Rewind moment. The window title is the specific thing; the app is the true fallback.
@@ -97,7 +97,7 @@ struct QuickLookFrame: Identifiable, Equatable {
   init?(frame: ConversationScreenFrame) {
     guard let url = URL(string: frame.contentURL) else { return nil }
     let time = frame.capturedAt.formatted(date: .abbreviated, time: .shortened)
-    let subject = frame.caption.isEmpty ? "Screenshot" : frame.caption
+    let subject = frame.caption.isEmpty ? "Captura de tela" : frame.caption
     self.init(id: frame.id, source: .remote(url), title: "\(subject) — \(time)")
   }
 }

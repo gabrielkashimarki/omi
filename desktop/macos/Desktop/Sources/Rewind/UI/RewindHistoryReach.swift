@@ -29,8 +29,8 @@ enum RewindHistoryReach {
   static func spanLabel(
     days: [Date], surveyed: Bool, calendar: Calendar = .current, locale: Locale = .current
   ) -> String {
-    guard surveyed else { return "Checking how far back your capture goes…" }
-    guard let newest = days.first, let oldest = days.last else { return "No screen capture yet" }
+    guard surveyed else { return "Verificando até onde vai sua captura…" }
+    guard let newest = days.first, let oldest = days.last else { return "Nenhuma captura de tela ainda" }
 
     let formatter = DateFormatter()
     formatter.calendar = calendar
@@ -46,9 +46,9 @@ enum RewindHistoryReach {
     formatter.timeStyle = .none
 
     if days.count == 1 {
-      return "1 day of capture · \(formatter.string(from: newest))"
+      return "1 dia de captura · \(formatter.string(from: newest))"
     }
-    return "\(days.count) days of capture · \(formatter.string(from: oldest)) – \(formatter.string(from: newest))"
+    return "\(days.count) dias de captura · \(formatter.string(from: oldest)) – \(formatter.string(from: newest))"
   }
 
   /// Why the span stops where it does — the deletion window, or the absence of one.
@@ -58,9 +58,9 @@ enum RewindHistoryReach {
   /// difference between a limit and a mystery.
   static func retentionNote(retentionDays: Int) -> String {
     if RewindSettings.isUnlimited(retentionDays: retentionDays) {
-      return "Keeping everything — nothing is deleted"
+      return "Mantendo tudo, nada é apagado"
     }
-    let unit = retentionDays == 1 ? "day" : "days"
-    return "Capture older than \(retentionDays) \(unit) is deleted"
+    let unit = retentionDays == 1 ? "dia" : "dias"
+    return "Capturas com mais de \(retentionDays) \(unit) são apagadas"
   }
 }

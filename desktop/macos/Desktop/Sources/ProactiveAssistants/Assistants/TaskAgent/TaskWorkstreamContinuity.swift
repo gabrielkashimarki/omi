@@ -436,11 +436,11 @@ enum TaskWorkstreamContinuityError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .invalidRuntimeResponse:
-      "The task thread runtime returned an invalid continuity receipt."
+      "O runtime da conversa da tarefa retornou um recibo de continuidade inválido."
     case .missingRevisionEvidence:
-      "Artifact revisions wait until the material workstream evidence is canonical."
+      "As revisões do artefato aguardam até que a evidência do fluxo de trabalho seja canônica."
     case .missingRestartProjection:
-      "The prior task thread is not present in the restarted kernel."
+      "A conversa anterior da tarefa não está presente no kernel reiniciado."
     }
   }
 }

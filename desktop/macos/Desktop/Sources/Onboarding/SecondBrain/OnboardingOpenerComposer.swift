@@ -29,9 +29,9 @@ enum OnboardingOpenerComposer {
 
   static func timeOfDay(_ date: Date, calendar: Calendar = .current) -> String {
     switch calendar.component(.hour, from: date) {
-    case 5..<12: return "Morning"
-    case 12..<17: return "Afternoon"
-    default: return "Evening"
+    case 5..<12: return "Bom dia"
+    case 12..<17: return "Boa tarde"
+    default: return "Boa noite"
     }
   }
 
@@ -59,20 +59,20 @@ enum OnboardingOpenerComposer {
   }
 
   static func subline(mode: ListeningMode, meetings: [OnboardingMeetingBrief]) -> String {
-    let listen = mode == .always ? "I'll be listening." : "I'll listen during your meetings."
+    let listen = mode == .always ? "Vou estar ouvindo." : "Vou ouvir durante suas reuniões."
 
     if let first = meetings.first {
       let meetingPart: String
       if meetings.count == 1 {
-        meetingPart = "'\(first.title)' at \(first.time) today"
+        meetingPart = "'\(first.title)' hoje às \(first.time)"
       } else {
-        meetingPart = "\(meetings.count) meetings today — first is '\(first.title)' at \(first.time)"
+        meetingPart = "\(meetings.count) reuniões hoje, a primeira é '\(first.title)' às \(first.time)"
       }
       return "\(meetingPart). \(listen)"
     }
 
-    let setup = mode == .always ? "I'm set up and listening." : "I'm set up and I'll listen during your meetings."
-    return "\(setup) Ask me anything to start."
+    let setup = mode == .always ? "Tudo pronto, estou ouvindo." : "Tudo pronto, vou ouvir durante suas reuniões."
+    return "\(setup) Pergunte qualquer coisa para começar."
   }
 
   /// A calendar-aware "prep" starter (when a meeting exists) followed by the
@@ -80,7 +80,7 @@ enum OnboardingOpenerComposer {
   static func starters(meetings: [OnboardingMeetingBrief], baseStarters: [String]) -> [String] {
     var out: [String] = []
     if let first = meetings.first {
-      out.append("Prep me for '\(first.title)'")
+      out.append("Me prepare para '\(first.title)'")
     }
     for candidate in baseStarters {
       let q = candidate.trimmingCharacters(in: .whitespacesAndNewlines)

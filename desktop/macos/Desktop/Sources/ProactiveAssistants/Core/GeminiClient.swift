@@ -302,15 +302,15 @@ actor GeminiClient {
     var errorDescription: String? {
       switch self {
       case .missingAPIKey:
-        return "AI features are not configured. Please update the app."
+        return "Os recursos de IA não estão configurados. Atualize o app."
       case .networkError:
-        return "Could not reach AI service. Check your internet connection and try again."
+        return "Não foi possível acessar o serviço de IA. Confira sua conexão com a internet e tente de novo."
       case .invalidResponse:
-        return "AI service returned an unexpected response. Please try again."
+        return "O serviço de IA retornou uma resposta inesperada. Tente de novo."
       case .apiError(let message, _):
         return Self.userFacingMessage(for: message)
       case .planGated:
-        return "AI features require an active plan or BYOK keys."
+        return "Os recursos de IA exigem um plano ativo ou chaves próprias (BYOK)."
       }
     }
 
@@ -324,34 +324,34 @@ actor GeminiClient {
         || lower.contains("bring your own key") || lower.contains("usage limit")
         || lower.contains("http 402") || lower.contains("quota exceeded")
       {
-        return "AI features require an active plan or BYOK keys."
+        return "Os recursos de IA exigem um plano ativo ou chaves próprias (BYOK)."
       }
       if lower.contains("leaked") || lower.contains("api key") || lower.contains("api_key")
         || lower.contains("unauthorized") || lower.contains("permission denied")
         || lower.contains("invalid key") || lower.contains("forbidden")
       {
-        return "AI service authentication error. Please update the app to the latest version."
+        return "Erro de autenticação do serviço de IA. Atualize o app para a versão mais recente."
       }
       if lower.contains("quota") || lower.contains("rate limit")
         || lower.contains("resource exhausted")
         || lower.contains("429")
       {
-        return "AI service is busy. Please try again in a moment."
+        return "O serviço de IA está ocupado. Tente de novo em instantes."
       }
       if Self.isTimeoutLike(lower) {
-        return "AI request took too long. Please try again or shorten the request."
+        return "A solicitação de IA demorou demais. Tente de novo ou encurte o pedido."
       }
       if lower.contains("overloaded") || lower.contains("service unavailable")
         || lower.contains("503")
         || lower.contains("502") || lower.contains("internal error") || lower.contains("500")
       {
-        return "AI service is temporarily unavailable. Please try again later."
+        return "O serviço de IA está temporariamente indisponível. Tente de novo mais tarde."
       }
       if lower.contains("blocked") || lower.contains("safety") {
-        return "Content was filtered by the AI safety system."
+        return "O conteúdo foi filtrado pelo sistema de segurança da IA."
       }
       // Fallback: generic message that doesn't leak internals
-      return "AI service error. Please try again."
+      return "Erro no serviço de IA. Tente de novo."
     }
 
     private static func isTimeoutLike(_ lowercasedMessage: String) -> Bool {

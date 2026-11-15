@@ -337,12 +337,12 @@ extension SBOnboardingModel {
     } else {
       AssistantSettings.shared.audioRecordingMode = .off
     }
-    advance(userAnswer: allowed ? "Allowed" : "Skip", to: .systemAudio)
+    advance(userAnswer: allowed ? "Permitido" : "Pular", to: .systemAudio)
   }
 
   func answerSystemAudio() {
     UserDefaults.standard.set(sysState != .on, forKey: .onboardingSystemAudioSkipped)
-    advance(userAnswer: sysState == .on ? "Allowed" : "Skip", to: .screen)
+    advance(userAnswer: sysState == .on ? "Permitido" : "Pular", to: .screen)
   }
 
   /// Skip on the screen step is a durable off for screen analysis — completion and
@@ -350,19 +350,19 @@ extension SBOnboardingModel {
   /// of force-enabling Rewind for someone who just declined it.
   func answerScreen() {
     AssistantSettings.shared.screenAnalysisEnabled = scrState == .on
-    advance(userAnswer: scrState == .on ? "Allowed" : "Skip", to: .files)
+    advance(userAnswer: scrState == .on ? "Permitido" : "Pular", to: .files)
   }
   /// A granted Files step builds the local-file profile. A skipped step must
   /// not enumerate Desktop/Documents/Downloads: touching those folders can
   /// itself raise Files & Folders consent when Full Disk Access is absent.
   func answerFiles() {
     guard fdaState == .on else {
-      advance(userAnswer: "Skip", to: .accessibility)
+      advance(userAnswer: "Pular", to: .accessibility)
       return
     }
     switch localFileProfileState {
     case .idle:
-      thread.append(Msg(isOmi: false, text: "Allowed"))
+      thread.append(Msg(isOmi: false, text: "Permitido"))
       startLocalFileScan()
     case .scanning:
       break
@@ -413,10 +413,10 @@ extension SBOnboardingModel {
   /// only honest signal — an Allow clears it, a Skip sets it.
   func answerAccessibility() {
     UserDefaults.standard.set(accState != .on, forKey: .onboardingAccessibilitySkipped)
-    advance(userAnswer: accState == .on ? "Allowed" : "Skip", to: .automation)
+    advance(userAnswer: accState == .on ? "Permitido" : "Pular", to: .automation)
   }
-  func answerAutomation() { advance(userAnswer: autoState == .on ? "Allowed" : "Skip", to: .notifications) }
-  func answerNotifications() { advance(userAnswer: notifState == .on ? "Allowed" : "Skip", to: .shortcutOpen) }
+  func answerAutomation() { advance(userAnswer: autoState == .on ? "Permitido" : "Pular", to: .notifications) }
+  func answerNotifications() { advance(userAnswer: notifState == .on ? "Permitido" : "Pular", to: .shortcutOpen) }
 
   /// Advance past a permission step automatically once its grant lands — but only
   /// when the user is still ON that step, so a late poll never skips a step they've
@@ -529,9 +529,9 @@ extension SBOnboardingModel {
     // app on the Mac for as long as Omi runs. ⌃⌘O collides with nothing, and is already the app's
     // own always-on summon chord (`registerSummonHotkey`). ⌘O stays offered, with its price named.
     [
-      ("ctrlCmdO", ShortcutSettings.askOmiControlCommandOShortcut, "recommended"),
-      ("cmdO", ShortcutSettings.askOmiCommandOShortcut, "replaces File ▸ Open"),
-      ("cmdReturn", ShortcutSettings.askOmiCommandReturnShortcut, "press to set"),
+      ("ctrlCmdO", ShortcutSettings.askOmiControlCommandOShortcut, "recomendado"),
+      ("cmdO", ShortcutSettings.askOmiCommandOShortcut, "substitui Arquivo ▸ Abrir"),
+      ("cmdReturn", ShortcutSettings.askOmiCommandReturnShortcut, "aperte para definir"),
     ]
   }
 
@@ -540,9 +540,9 @@ extension SBOnboardingModel {
     // Settings' order (`ShortcutSettings.pttPresets`, whose first entry is the default), so the two
     // surfaces recommend the same key.
     [
-      ("opt", ShortcutSettings.KeyboardShortcut(modifierOnly: .option), "recommended"),
-      ("fn", ShortcutSettings.KeyboardShortcut(modifierOnly: .function), "press to set"),
-      ("ctrl", ShortcutSettings.KeyboardShortcut(modifierOnly: .control), "press to set"),
+      ("opt", ShortcutSettings.KeyboardShortcut(modifierOnly: .option), "recomendado"),
+      ("fn", ShortcutSettings.KeyboardShortcut(modifierOnly: .function), "aperte para definir"),
+      ("ctrl", ShortcutSettings.KeyboardShortcut(modifierOnly: .control), "aperte para definir"),
     ]
   }
 
@@ -778,16 +778,16 @@ extension SBOnboardingModel {
     guard canContinueShortcut else { return }
     guard validateRegistration() == .registered else {
       shortcutRegistrationError =
-        "That shortcut is already in use. Choose a different Open Omi shortcut."
+        "Esse atalho já está em uso. Escolha outro atalho para abrir o Omi."
       shortcutPressed = false
       return
     }
-    advance(userAnswer: "Works", to: .shortcutTalk)
+    advance(userAnswer: "Funciona", to: .shortcutTalk)
   }
   func answerShortcutTalk() {
     guard canContinueShortcut else { return }
     UserDefaults.standard.set(true, forKey: Self.shortcutsCompletedKey)
-    advance(userAnswer: "Works", to: .screenDemo)
+    advance(userAnswer: "Funciona", to: .screenDemo)
   }
 }
 
@@ -942,7 +942,7 @@ extension SBOnboardingModel {
     return tokens.isEmpty ? ["fn"] : tokens
   }
 
-  func answerScreenDemo() { advance(userAnswer: "Continue", to: .agents) }
+  func answerScreenDemo() { advance(userAnswer: "Continuar", to: .agents) }
 }
 
 // MARK: - Agents (do things for you)
@@ -950,10 +950,10 @@ extension SBOnboardingModel {
 extension SBOnboardingModel {
   var agentRows: [(id: String, name: String, detail: String)] {
     [
-      ("openclaw", "OpenClaw", "runs tasks on your Mac"),
-      ("hermes", "Hermes", "autonomous background agent"),
-      ("claudeCode", "Claude Code", "codes in your repos"),
-      ("codex", "Codex", "OpenAI's coding agent"),
+      ("openclaw", "OpenClaw", "executa tarefas no seu Mac"),
+      ("hermes", "Hermes", "agente autônomo em segundo plano"),
+      ("claudeCode", "Claude Code", "programa nos seus repositórios"),
+      ("codex", "Codex", "agente de programação da OpenAI"),
     ]
   }
 
@@ -1034,7 +1034,7 @@ extension SBOnboardingModel {
     }
   }
 
-  func answerAgents() { advance(userAnswer: "Continue", to: .context) }
+  func answerAgents() { advance(userAnswer: "Continuar", to: .context) }
 }
 
 // MARK: - Context (connect what I can see)
@@ -1053,12 +1053,12 @@ extension SBOnboardingModel {
 
   var contextRows: [(id: String, name: String, detail: String)] {
     [
-      ("calendar", "Calendar", "meetings + prep"),
-      ("gmail", "Gmail", "email follow-ups"),
-      ("applenotes", "Apple Notes", "your notes"),
-      ("files", "Files", "docs on this Mac"),
-      ("chatgpt", "ChatGPT", "carry memory across"),
-      ("claude", "Claude", "carry memory across"),
+      ("calendar", "Calendário", "reuniões + preparo"),
+      ("gmail", "Gmail", "retornos de e-mail"),
+      ("applenotes", "Apple Notes", "suas notas"),
+      ("files", "Arquivos", "documentos neste Mac"),
+      ("chatgpt", "ChatGPT", "leva a memória junto"),
+      ("claude", "Claude", "leva a memória junto"),
     ]
   }
 
@@ -1151,8 +1151,8 @@ extension SBOnboardingModel {
     let name = connectorID == "gmail" ? "Gmail" : "Google Calendar"
     let detail =
       needsSignIn
-      ? "Open \(name) in Chrome, Arc, Brave, or Edge, sign in, then retry."
-      : "Couldn't verify \(name). Check your browser session and connection, then retry."
+      ? "Abra o \(name) no Chrome, Arc, Brave ou Edge, entre na conta e tente de novo."
+      : "Não foi possível verificar o \(name). Confira a sessão do navegador e a conexão, e tente de novo."
     return GoogleContextResolution(
       state: needsSignIn ? "needsSignIn" : "error",
       detail: detail,
@@ -1202,8 +1202,8 @@ extension SBOnboardingModel {
           panel.canChooseDirectories = true
           panel.canChooseFiles = false
           panel.allowsMultipleSelection = false
-          panel.prompt = "Grant access"
-          panel.message = "Pick your Notes data folder so I can read it."
+          panel.prompt = "Conceder acesso"
+          panel.message = "Escolha a pasta de dados do Notas para eu poder lê-la."
           panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Group Containers/group.com.apple.notes")
           return panel.runModal() == .OK ? panel.url?.path : nil
@@ -1259,8 +1259,8 @@ extension SBOnboardingModel {
     contextDetails[contextID] = nil
     let task = ConnectorImportRunner.shared.start(
       connectorID: connectorID,
-      progressTitle: "Connecting to \(connector.title)",
-      progressDetail: "Reading data and saving it to your Omi memory.",
+      progressTitle: "Conectando a \(connector.title)",
+      progressDetail: "Lendo os dados e salvando na sua memória do Omi.",
       surface: .onboarding
     ) { [self] progress in
       let outcome = await operation(progress)
@@ -1285,7 +1285,7 @@ extension SBOnboardingModel {
       // row spinning indefinitely; the persisted status is updated by that
       // authoritative run and the user can retry once it settles.
       contextStates[contextID] = "error"
-      contextDetails[contextID] = "This connection is already syncing. Wait a moment, then retry."
+      contextDetails[contextID] = "Esta conexão já está sincronizando. Espere um instante e tente de novo."
     }
   }
 
@@ -1356,5 +1356,5 @@ extension SBOnboardingModel {
     }
   }
 
-  func answerContext() { advance(userAnswer: "Continue", to: .capture) }
+  func answerContext() { advance(userAnswer: "Continuar", to: .capture) }
 }

@@ -678,11 +678,11 @@ enum MemoryStorageError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .databaseNotInitialized:
-      return "Memory storage database is not initialized"
+      return "O banco de dados de memórias não foi inicializado"
     case .recordNotFound:
-      return "Memory record not found"
+      return "Registro de memória não encontrado"
     case .syncFailed(let message):
-      return "Sync failed: \(message)"
+      return "Falha ao sincronizar: \(message)"
     }
   }
 }

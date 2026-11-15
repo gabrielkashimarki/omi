@@ -19,9 +19,9 @@ struct AssistantPromptStore {
 
   static var task: AssistantPromptStore {
     AssistantPromptStore(
-      title: "Task Extraction Prompt",
-      subtitle: "Customize the AI instructions for task extraction",
-      noun: "task extraction",
+      title: "Prompt de extração de tarefas",
+      subtitle: "Personalize as instruções da IA para extrair tarefas",
+      noun: "extração de tarefas",
       defaultPrompt: TaskAssistantSettings.defaultAnalysisPrompt,
       load: { TaskAssistantSettings.shared.analysisPrompt },
       save: { TaskAssistantSettings.shared.analysisPrompt = $0 },
@@ -30,9 +30,9 @@ struct AssistantPromptStore {
 
   static var memory: AssistantPromptStore {
     AssistantPromptStore(
-      title: "Memory Extraction Prompt",
-      subtitle: "Customize how the AI extracts memories from screenshots",
-      noun: "memory extraction",
+      title: "Prompt de extração de memórias",
+      subtitle: "Personalize como a IA extrai memórias das capturas de tela",
+      noun: "extração de memórias",
       defaultPrompt: MemoryAssistantSettings.defaultAnalysisPrompt,
       load: { MemoryAssistantSettings.shared.analysisPrompt },
       save: { MemoryAssistantSettings.shared.analysisPrompt = $0 },
@@ -81,8 +81,8 @@ final class AssistantPromptEditorModel: ObservableObject {
   }
 
   var resetMessage: String {
-    "This replaces the \(store.noun) prompt with its default, including any unsaved edits. "
-      + "This cannot be undone."
+    "Isso substitui o prompt de \(store.noun) pelo padrão, incluindo edições não salvas. "
+      + "Não é possível desfazer."
   }
 }
 
@@ -113,9 +113,9 @@ struct AssistantPromptEditorView: View {
     .frame(minWidth: 500, minHeight: 400)
     .shellConfirmation(
       isPresented: $model.isConfirmingReset,
-      title: "Reset Prompt?",
+      title: "Redefinir o prompt?",
       message: model.resetMessage,
-      confirmTitle: "Reset"
+      confirmTitle: "Redefinir"
     ) {
       model.resetToDefault()
     }
@@ -139,7 +139,7 @@ struct AssistantPromptEditorView: View {
       Spacer()
 
       if model.hasChanges {
-        Text("Unsaved changes")
+        Text("Alterações não salvas")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.primary)
           .padding(.horizontal, OmiSpacing.sm)
@@ -154,25 +154,25 @@ struct AssistantPromptEditorView: View {
     // so one key press cannot both answer the dialog and close the window.
     let shortcutsLive = !model.isConfirmingReset
     return HStack(spacing: OmiSpacing.sm) {
-      Button("Reset to Default") {
+      Button("Restaurar padrão") {
         model.isConfirmingReset = true
       }
       .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
       .disabled(model.draft == model.store.defaultPrompt && !model.hasChanges)
 
-      Text("\(model.draft.count) characters")
+      Text("\(model.draft.count) caracteres")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
 
       Spacer()
 
-      Button("Cancel") {
+      Button("Cancelar") {
         onClose?()
       }
       .buttonStyle(OmiButtonStyle(.secondary))
       .keyboardShortcut(shortcutsLive ? KeyboardShortcut(.escape, modifiers: []) : nil)
 
-      Button("Save") {
+      Button("Salvar") {
         model.save()
         onClose?()
       }

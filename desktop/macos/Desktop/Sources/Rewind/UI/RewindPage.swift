@@ -64,11 +64,11 @@ struct RewindPage: View {
   }
 
   private var finishButtonText: String {
-    if isFinishing { return "Saving…" }
-    if showSavedSuccess { return "Saved!" }
-    if showDiscarded { return "Too Short" }
-    if showError { return "Failed" }
-    return "Finish Conversation"
+    if isFinishing { return "Salvando…" }
+    if showSavedSuccess { return "Salvo!" }
+    if showDiscarded { return "Curta demais" }
+    if showError { return "Falhou" }
+    return "Finalizar conversa"
   }
 
   private var finishButtonForeground: Color {
@@ -425,7 +425,7 @@ struct RewindPage: View {
 
       Spacer(minLength: OmiSpacing.xs)
 
-      Button("Dismiss") {
+      Button("Dispensar") {
         unavailableCitationScreenshotID = nil
       }
       .buttonStyle(.plain)
@@ -460,15 +460,15 @@ struct RewindPage: View {
         .foregroundColor(Ink.secondary)
 
       if viewModel.isSearching {
-        Text("Searching…")
+        Text("Buscando…")
           .scaledFont(size: OmiType.subheading, weight: .medium)
           .foregroundColor(Ink.secondary)
       } else {
-        Text("No results found")
+        Text("Nenhum resultado encontrado")
           .scaledFont(size: OmiType.subheading, weight: .medium)
           .foregroundColor(Ink.secondary)
 
-        Text("Try a different search term")
+        Text("Tente outro termo de busca")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
@@ -485,7 +485,7 @@ struct RewindPage: View {
         QuerySearchBar(
           text: $viewModel.searchQuery,
           accessibilityID: "rewind-search-field",
-          placeholder: "Search Rewind",
+          placeholder: "Buscar no Rewind",
           focus: $isSearchFocused, searchSurface: .rewind
         )
         .onChange(of: viewModel.searchQuery) { _, query in
@@ -536,9 +536,9 @@ struct RewindPage: View {
     HStack(spacing: OmiSpacing.sm) {
       if isInSearchMode {
         searchViewModeButton(
-          title: "Results", icon: "list.bullet", mode: .results)
+          title: "Resultados", icon: "list.bullet", mode: .results)
         searchViewModeButton(
-          title: "Timeline", icon: "timeline.selection", mode: .timeline)
+          title: "Linha do tempo", icon: "timeline.selection", mode: .timeline)
       }
 
       if isInSearchMode {
@@ -568,17 +568,17 @@ struct RewindPage: View {
       PageQueryActionLabel(icon: icon, title: title, isPrimary: isActive)
     }
     .buttonStyle(.plain)
-    .help("Show search \(title.lowercased())")
-    .accessibilityLabel("Search \(title.lowercased())")
+    .help("Mostrar \(title.lowercased())")
+    .accessibilityLabel("Mostrar \(title.lowercased())")
     .accessibilityAddTraits(isActive ? .isSelected : [])
   }
 
   private var rewindMoreMenu: some View {
-    PageMoreMenu(help: "More Rewind actions", accessibilityIdentifier: "rewind-more-actions") {
+    PageMoreMenu(help: "Mais ações do Rewind", accessibilityIdentifier: "rewind-more-actions") {
       Button {
         NotificationCenter.default.post(name: .navigateToRewindSettings, object: nil)
       } label: {
-        Label("Rewind settings…", systemImage: "gearshape")
+        Label("Ajustes do Rewind…", systemImage: "gearshape")
       }
     }
   }
@@ -612,22 +612,22 @@ struct RewindPage: View {
   /// control reads as contradicting itself (red pill, knob right, "Capture Off").
   private var captureStateLabel: String {
     switch screenCaptureHealth {
-    case .active: return "Capture On"
-    case .temporarilyUnavailable: return "Capture Paused"
-    case .recovering: return "Capture Recovering"
-    case .stopped: return isMonitoring ? "Capture Stopped" : "Capture Off"
+    case .active: return "Captura ligada"
+    case .temporarilyUnavailable: return "Captura pausada"
+    case .recovering: return "Captura se recuperando"
+    case .stopped: return isMonitoring ? "Captura parada" : "Captura desligada"
     }
   }
 
   private var captureStateHelp: String {
-    "\(screenCaptureHealth.statusText). Click to turn screen capture \(isMonitoring ? "off" : "on")."
+    "\(screenCaptureHealth.statusText). Clique para \(isMonitoring ? "desligar" : "ligar") a captura de tela."
   }
 
   private var unifiedTopBarControls: some View {
     HStack(spacing: OmiSpacing.md) {
       // Left side: Back button (search timeline mode) or Rewind logo (other modes)
       if isInSearchMode && searchViewMode == .timeline {
-        BackChip("Results") {
+        BackChip("Resultados") {
           searchViewMode = .results
         }
       } else {
@@ -649,7 +649,7 @@ struct RewindPage: View {
           .padding(.vertical, OmiSpacing.hairline)
           .background(Ink.rowFill)
           .cornerRadius(OmiChrome.stripRadius)
-          .help("Press ⌘⌥R from anywhere to open Rewind")
+          .help("Aperte ⌘⌥R de qualquer lugar para abrir o Rewind")
         }
       }
 
@@ -676,7 +676,7 @@ struct RewindPage: View {
               .cornerRadius(OmiChrome.stripRadius)
           }
           .buttonStyle(.plain)
-          .help("List view")
+          .help("Visualização em lista")
 
           Button {
             if searchViewMode != .timeline && !viewModel.screenshots.isEmpty {
@@ -693,7 +693,7 @@ struct RewindPage: View {
               .cornerRadius(OmiChrome.stripRadius)
           }
           .buttonStyle(.plain)
-          .help("Timeline view")
+          .help("Visualização em linha do tempo")
         }
         .padding(OmiSpacing.hairline)
         .background(Ink.rowFill)
@@ -856,7 +856,7 @@ struct RewindPage: View {
   private func searchField(showResultsCount: Bool = false) -> some View {
     RewindSearchBar(
       query: $viewModel.searchQuery,
-      placeholder: "Search Rewind",
+      placeholder: "Buscar no Rewind",
       isSearching: viewModel.isSearching,
       countLabel: showResultsCount && viewModel.activeSearchQuery != nil
         ? RewindSearchResultsPanel.countLabel(
@@ -942,7 +942,7 @@ struct RewindPage: View {
         Button {
           if let older { seekToCapturedDay(older) }
         } label: {
-          Label("Older", systemImage: "chevron.left")
+          Label("Mais antigas", systemImage: "chevron.left")
             .scaledFont(size: OmiType.caption)
         }
         .buttonStyle(.plain)
@@ -952,7 +952,7 @@ struct RewindPage: View {
         Button {
           if let newer { seekToCapturedDay(newer) }
         } label: {
-          Label("Newer", systemImage: "chevron.right")
+          Label("Mais recentes", systemImage: "chevron.right")
             .scaledFont(size: OmiType.caption)
         }
         .buttonStyle(.plain)
@@ -964,7 +964,7 @@ struct RewindPage: View {
         Button {
           if let oldest { seekToCapturedDay(oldest) }
         } label: {
-          Text("Oldest capture")
+          Text("Captura mais antiga")
             .scaledFont(size: OmiType.caption)
         }
         .buttonStyle(.plain)
@@ -1021,7 +1021,7 @@ struct RewindPage: View {
             // resolution, with the rest of the day's frames behind the arrow keys.
             .contentShape(frameShape)
             .onTapGesture { openCurrentFrameFullSize() }
-            .help("Open this frame in Quick Look")
+            .help("Abrir este quadro no Quick Look")
             .contextMenu { Button("Quick Look", action: openCurrentFrameFullSize) }
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
@@ -1038,7 +1038,7 @@ struct RewindPage: View {
           Image(systemName: "photo")
             .scaledFont(size: 24)
             .foregroundColor(Ink.secondary)
-          Text("No frame")
+          Text("Sem quadro")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
@@ -1256,7 +1256,7 @@ struct RewindPage: View {
             .foregroundColor(Ink.errorRed)
         }
 
-        Text("Screen Recording Needs Reset")
+        Text("A Gravação de Tela precisa ser redefinida")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -1274,7 +1274,7 @@ struct RewindPage: View {
           AssistantSettings.shared.screenAnalysisEnabled = true
           ScreenCaptureService.resetScreenCapturePermissionAndRestart()
         } label: {
-          Text("Reset & Restart")
+          Text("Redefinir e reiniciar")
             .scaledFont(size: OmiType.body, weight: .semibold)
             .foregroundColor(Ink.surface)
             .padding(.horizontal, OmiSpacing.xl)
@@ -1295,11 +1295,11 @@ struct RewindPage: View {
             .foregroundColor(PageGlass.warning)
         }
 
-        Text("Screen Recording Permission Required")
+        Text("Permissão de Gravação de Tela necessária")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
-        Text("Rewind needs Screen Recording permission to capture your screen.")
+        Text("O Rewind precisa da permissão de Gravação de Tela para capturar sua tela.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
           .multilineTextAlignment(.center)
@@ -1310,7 +1310,7 @@ struct RewindPage: View {
           AssistantSettings.shared.screenAnalysisEnabled = true
           ScreenCaptureService.requestScreenRecordingAccessAndOpenSettings()
         } label: {
-          Text("Grant Permission")
+          Text("Conceder permissão")
             .scaledFont(size: OmiType.body, weight: .semibold)
             .foregroundColor(Ink.surface)
             .padding(.horizontal, OmiSpacing.xl)
@@ -1331,7 +1331,7 @@ struct RewindPage: View {
             .foregroundColor(Ink.secondary)
         }
 
-        Text("No Screenshots Yet")
+        Text("Nenhuma captura de tela ainda")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -1339,7 +1339,7 @@ struct RewindPage: View {
         // `effectiveCaptureInterval` triples it on battery. Both this line and the onboarding
         // disclosure now say the same true thing.
         Text(
-          "Screenshots will appear here as you use your Mac.\nRewind captures your screen every few seconds."
+          "As capturas de tela vão aparecer aqui conforme você usa o Mac.\nO Rewind captura sua tela a cada poucos segundos."
         )
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
@@ -1348,7 +1348,7 @@ struct RewindPage: View {
         HStack(spacing: OmiSpacing.sm) {
           Image(systemName: "lightbulb.fill")
             .foregroundColor(PageGlass.warning)
-          Text("Tip: Use search to find anything you've seen on screen")
+          Text("Dica: use a busca para encontrar qualquer coisa que você viu na tela")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
@@ -1370,16 +1370,16 @@ struct RewindPage: View {
         .scaledFont(size: OmiType.subheading)
 
       VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-        Text("Database Recovered")
+        Text("Banco de dados recuperado")
           .scaledFont(size: OmiType.body, weight: .semibold)
           .foregroundColor(Ink.primary)
 
         if viewModel.recoveredRecordCount > 0 {
-          Text("\(viewModel.recoveredRecordCount) screenshots recovered from corrupted database")
+          Text("\(viewModel.recoveredRecordCount) capturas de tela recuperadas de um banco de dados corrompido")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         } else {
-          Text("Database was corrupted and has been reset. Your video files are intact.")
+          Text("O banco de dados estava corrompido e foi redefinido. Seus arquivos de vídeo estão intactos.")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
@@ -1391,7 +1391,7 @@ struct RewindPage: View {
         Button {
           Task { await rebuildDatabase() }
         } label: {
-          Text("Rebuild Index")
+          Text("Reconstruir índice")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(PageGlass.primaryActionLabel)
             .padding(.horizontal, OmiSpacing.sm)
@@ -1404,7 +1404,7 @@ struct RewindPage: View {
       }
 
       DismissButton(
-        action: { viewModel.dismissRecoveryBanner() }, showBackground: false, accessibilityLabel: "Dismiss",
+        action: { viewModel.dismissRecoveryBanner() }, showBackground: false, accessibilityLabel: "Dispensar",
         size: .compact)
     }
     .padding(.horizontal, OmiSpacing.lg)
@@ -1440,15 +1440,15 @@ struct RewindPage: View {
 
   private var loadingView: some View {
     TransparentWindowStatusPanel {
-      GlassLoadingState(label: "Loading screenshots…", placement: .panel)
+      GlassLoadingState(label: "Carregando capturas de tela…", placement: .panel)
     }
   }
 
   private func errorView(_: String) -> some View {
     TransparentWindowStatusPanel {
       GlassErrorState(
-        title: "Couldn't Load Screenshots",
-        message: "Try again. If this continues, restart Omi.",
+        title: "Não foi possível carregar as capturas de tela",
+        message: "Tente de novo. Se continuar, reinicie o Omi.",
         placement: .panel,
         retry: { Task { await viewModel.loadInitialData() } }
       )
@@ -1589,7 +1589,7 @@ struct RewindPage: View {
         .onAppear { isSavingPulsing = true }
         .onDisappear { isSavingPulsing = false }
 
-        Text("Saving conversation…")
+        Text("Salvando conversa…")
           .scaledFont(size: OmiType.body, weight: .medium)
           .foregroundColor(Ink.primary)
 
@@ -1629,7 +1629,7 @@ struct RewindPage: View {
         }
         .buttonStyle(.plain)
         .disabled(isFinishing || showSavedSuccess || showDiscarded || showError)
-        .help("Saves current conversation and starts a new one")
+        .help("Salva a conversa atual e começa uma nova")
       }
 
     }
@@ -1656,7 +1656,7 @@ struct RewindPage: View {
     .onTapGesture {
       appState.toggleTranscription()
     }
-    .help(appState.isTranscribing ? "Audio is on - click to stop" : "Audio is off - click to start")
+    .help(appState.isTranscribing ? "Áudio ligado, clique para parar" : "Áudio desligado, clique para começar")
   }
 
   // MARK: - Finish Conversation

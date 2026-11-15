@@ -26,7 +26,7 @@ class MemoryPromptEditorWindow: NSWindow {
       defer: false
     )
 
-    title = "Memory Extraction Prompt"
+    title = "Prompt de extração de memórias"
     minSize = NSSize(width: 500, height: 400)
     isReleasedWhenClosed = false
     // The inside of a titled window is glass: transparent, light-pinned, and shadowed by its own

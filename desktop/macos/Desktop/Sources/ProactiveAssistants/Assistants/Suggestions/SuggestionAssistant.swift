@@ -675,7 +675,7 @@ actor SuggestionAssistant: ProactiveAssistant {
       detail = "task_id=\(taskId)\n\(suggestion.suggestion)"
     }
     let context = FloatingBarNotificationContext(
-      sourceTitle: "Focus",
+      sourceTitle: "Foco",
       assistantId: identifier,
       sourceApp: nil,
       windowTitle: nil,
@@ -695,7 +695,7 @@ actor SuggestionAssistant: ProactiveAssistant {
     await MainActor.run {
       NotificationService.shared.sendNotification(
         ownerID: ownerID,
-        title: "Focus",
+        title: "Foco",
         message: suggestion.suggestion,
         assistantId: identifier,
         context: context,

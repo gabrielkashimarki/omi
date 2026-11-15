@@ -327,11 +327,11 @@ enum ProactiveStorageError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .databaseNotInitialized:
-      return "Proactive storage database is not initialized"
+      return "O banco de dados do armazenamento proativo não foi inicializado"
     case .recordNotFound:
-      return "Record not found"
+      return "Registro não encontrado"
     case .syncFailed(let message):
-      return "Sync failed: \(message)"
+      return "Falha ao sincronizar: \(message)"
     }
   }
 }

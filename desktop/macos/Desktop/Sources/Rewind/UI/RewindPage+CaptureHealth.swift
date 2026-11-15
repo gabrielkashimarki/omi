@@ -33,9 +33,9 @@ extension RewindPage {
     .disabled(isTogglingMonitoring)
     .opacity(isTogglingMonitoring ? 0.5 : 1.0)
     .help(screenCaptureHealth.rewindToggleHelp)
-    .accessibilityLabel("Screen capture")
+    .accessibilityLabel("Captura de tela")
     .accessibilityValue(screenCaptureHealth.statusText)
-    .accessibilityHint(isMonitoring ? "Turn screen capture off" : "Turn screen capture on")
+    .accessibilityHint(isMonitoring ? "Desligar a captura de tela" : "Ligar a captura de tela")
   }
 
   private func toggleMonitoring(enabled: Bool) {

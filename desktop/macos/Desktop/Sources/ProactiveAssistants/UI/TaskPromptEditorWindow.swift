@@ -36,7 +36,7 @@ class TaskPromptEditorWindow: NSWindow {
       defer: false
     )
 
-    self.title = "Edit Task Extraction Prompt"
+    self.title = "Editar prompt de extração de tarefas"
     self.isReleasedWhenClosed = false
     // The inside of a titled window is glass: transparent, light-pinned, and shadowed by its own
     // frame (`WindowGlass.Kind.titled`). Without the pin the title bar and the traffic lights stay in

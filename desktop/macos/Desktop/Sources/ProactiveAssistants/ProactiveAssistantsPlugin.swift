@@ -727,7 +727,7 @@ public class ProactiveAssistantsPlugin: NSObject {
         ownerID: ownerID,
         title: NotificationService.screenCaptureConsentTitle,
         message:
-          "macOS asked to re-confirm screen recording for Omi. Click to resume capture.",
+          "O macOS pediu para confirmar de novo a gravação de tela do Omi. Clique para retomar a captura.",
         deliverSystemBanner: true,
         respectFrequency: false
       )
@@ -1612,9 +1612,9 @@ public class ProactiveAssistantsPlugin: NSObject {
       if let ownerID {
         NotificationService.shared.sendNotification(
           ownerID: ownerID,
-          title: "Screen Recording Permission Required",
+          title: "Permissão de Gravação de Tela necessária",
           message:
-            "omi needs screen recording permission to continue monitoring. Please re-enable it in System Settings.",
+            "O Omi precisa da permissão de gravação de tela para continuar monitorando. Ative-a de novo nos Ajustes do Sistema.",
           deliverSystemBanner: true,
           respectFrequency: false
         )
@@ -1916,7 +1916,7 @@ public class ProactiveAssistantsPlugin: NSObject {
       NotificationService.shared.sendNotification(
         ownerID: ownerID,
         title: NotificationService.screenCaptureResetTitle,
-        message: "Screen recording permission needs to be re-enabled. Click to open Settings.",
+        message: "A permissão de gravação de tela precisa ser ativada de novo. Clique para abrir os Ajustes.",
         deliverSystemBanner: true,
         respectFrequency: false
       )
@@ -1933,7 +1933,7 @@ public class ProactiveAssistantsPlugin: NSObject {
     NotificationService.shared.sendNotification(
       ownerID: ownerID,
       title: NotificationService.screenCaptureResetTitle,
-      message: "Screen recording permission needs to be re-enabled. Click to open Settings.",
+      message: "A permissão de gravação de tela precisa ser ativada de novo. Clique para abrir os Ajustes.",
       deliverSystemBanner: true,
       respectFrequency: false
     )

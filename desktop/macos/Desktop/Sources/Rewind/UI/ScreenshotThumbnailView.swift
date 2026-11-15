@@ -208,14 +208,14 @@ struct RewindSearchResultCard: View {
         ScreenFrameQuickLook.shared.present(frames, startingAt: first.id)
       }
       Divider()
-      Button("Open on Timeline", action: onOpen)
+      Button("Abrir na linha do tempo", action: onOpen)
     }
     .accessibilityLabel(Text(readAloud))
     .accessibilityHint(Text(Self.activationHint))
     .accessibilityAddTraits(isSelected ? [.isSelected] : [])
   }
 
-  static let activationHint = "Opens the timeline at this moment"
+  static let activationHint = "Abre a linha do tempo neste momento"
 
   private var content: some View {
     VStack(alignment: .leading, spacing: 7) {
@@ -305,18 +305,18 @@ private struct RewindSearchCardStyle: ButtonStyle {
 enum RewindSearchTime {
   static func describe(_ date: Date, now: Date = Date()) -> String {
     let seconds = now.timeIntervalSince(date)
-    if seconds < 60 { return "just now" }
-    if seconds < 3600 { return "\(Int(seconds / 60))m ago" }
-    if seconds < 86_400 { return "\(Int(seconds / 3600))h ago" }
+    if seconds < 60 { return "agora há pouco" }
+    if seconds < 3600 { return "há \(Int(seconds / 60)) min" }
+    if seconds < 86_400 { return "há \(Int(seconds / 3600)) h" }
 
     let calendar = Calendar.current
     let formatter = DateFormatter()
     if calendar.isDateInYesterday(date) {
-      formatter.dateFormat = "'yesterday' h:mm a"
+      formatter.dateFormat = "'ontem' HH:mm"
     } else if calendar.isDate(date, equalTo: now, toGranularity: .year) {
-      formatter.dateFormat = "MMM d, h:mm a"
+      formatter.dateFormat = "d MMM, HH:mm"
     } else {
-      formatter.dateFormat = "MMM d, yyyy"
+      formatter.dateFormat = "d MMM yyyy"
     }
     return formatter.string(from: date)
   }

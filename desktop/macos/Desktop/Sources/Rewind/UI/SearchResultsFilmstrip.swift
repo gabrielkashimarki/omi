@@ -136,7 +136,7 @@ struct RewindSearchResultsPanel: View {
           Image(systemName: "line.3.horizontal.decrease")
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(Ink.secondary)
-          Text("Filter").inkStyle(.rowCopy, color: Ink.primary)
+          Text("Filtrar").inkStyle(.rowCopy, color: Ink.primary)
           // What the closed block is doing to the answer — without it a narrowed count has no
           // visible cause.
           if let selectedApp, !isShowingFilters {
@@ -174,17 +174,17 @@ struct RewindSearchResultsPanel: View {
   /// What the disclosure is called to VoiceOver. The chevron says "open me" to the eye and nothing at
   /// all to a reader, so the label carries both the action and the narrowing the closed block holds.
   static func filterDisclosureLabel(app: String?) -> String {
-    guard let app else { return "Filter" }
-    return "Filter — \(app)"
+    guard let app else { return "Filtrar" }
+    return "Filtrar: \(app)"
   }
 
   /// The verdict, phrased. `nil` when nothing has been asked: "No results" over an untouched surface
   /// answers a search nobody ran.
   static func countLabel(groups: Int, screenshots: Int) -> String? {
     guard screenshots > 0 || groups > 0 else { return nil }
-    if groups == 0 { return "No results" }
-    if groups == 1 { return "1 result" }
-    return "\(groups) results"
+    if groups == 0 { return "Nenhum resultado" }
+    if groups == 1 { return "1 resultado" }
+    return "\(groups) resultados"
   }
 
   // MARK: Sections
@@ -192,9 +192,9 @@ struct RewindSearchResultsPanel: View {
   private var content: some View {
     VStack(alignment: .leading, spacing: InkLayout.rhythm[3]) {
       if isShowingFilters {
-        RewindSearchSection(title: "Filter by app") {
+        RewindSearchSection(title: "Filtrar por app") {
           if apps.isEmpty {
-            RewindSearchEmptyNote("Nothing captured yet.")
+            RewindSearchEmptyNote("Nada capturado ainda.")
           } else {
             ScrollView(.horizontal) {
               HStack(alignment: .top, spacing: InkLayout.rhythm[6]) {
@@ -227,7 +227,7 @@ struct RewindSearchResultsPanel: View {
   @ViewBuilder
   private var results: some View {
     if isShowingFilters {
-      RewindSearchSection(title: "Results") { grid }
+      RewindSearchSection(title: "Resultados") { grid }
     } else {
       grid.frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -237,7 +237,7 @@ struct RewindSearchResultsPanel: View {
   private var grid: some View {
     if visibleGroups.isEmpty {
       RewindSearchEmptyNote(
-        query.isEmpty ? "Nothing captured matches that yet." : "No screens match “\(query)”.")
+        query.isEmpty ? "Nada capturado corresponde a isso ainda." : "Nenhuma tela corresponde a “\(query)”.")
     } else {
       LazyVGrid(
         columns: Self.columns(panelWidth: panelWidth), alignment: .leading,

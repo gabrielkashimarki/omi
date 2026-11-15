@@ -77,7 +77,7 @@ final class OmiCinematicDirector: ObservableObject {
   }
 
   /// The question that types itself in beat 4.
-  static let question = "what was I working on today?"
+  static let question = "no que eu estava trabalhando hoje?"
 
   /// How the bed leaves. Longer than `OmiOnboardingMusic.defaultFadeOut` when the run completed,
   /// because then it is dissolving into onboarding rather than being cut short.

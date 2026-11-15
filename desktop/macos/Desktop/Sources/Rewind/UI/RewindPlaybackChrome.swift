@@ -319,7 +319,7 @@ struct RewindStageControlBar: View {
     // Opens upward, over the picture: the track under the row is what the user is about to scrub,
     // and a popover that lands on it hides the thing the date it picks will move.
     .popover(isPresented: $showsDatePicker, arrowEdge: .top) { datePicker }
-    .help("Jump to a day")
+    .help("Ir para um dia")
   }
 
   private var timestampLabel: String {
@@ -340,7 +340,7 @@ struct RewindStageControlBar: View {
     let target = RewindAppStep.adjacentSegmentIndex(in: screenshots, from: currentIndex, forward: forward)
     return circleButton(
       systemName: forward ? "chevron.right" : "chevron.left",
-      help: forward ? "Next app" : "Previous app",
+      help: forward ? "Próximo app" : "App anterior",
       enabled: target != nil
     ) {
       if let target { onSelect(target) }
@@ -354,12 +354,12 @@ struct RewindStageControlBar: View {
     HStack(spacing: RewindStageControlBarLayout.pairSpacing) {
       circleButton(
         systemName: "minus.magnifyingglass",
-        help: "Zoom the timeline out — or pinch in on the track",
+        help: "Diminuir o zoom da linha do tempo, ou faça pinça para dentro na trilha",
         enabled: window.canZoomOut
       ) { window.zoom(in: false) }
       circleButton(
         systemName: "plus.magnifyingglass",
-        help: "Zoom the timeline in — or pinch out on the track",
+        help: "Aumentar o zoom da linha do tempo, ou faça pinça para fora na trilha",
         enabled: window.canZoomIn
       ) { window.zoom(in: true) }
     }
@@ -409,7 +409,7 @@ struct RewindTrackFooter: View {
           RoundedRectangle(cornerRadius: 1)
             .fill(Color(nsColor: .systemOrange))
             .frame(width: 8, height: 8)
-          Text("match")
+          Text("correspondência")
             .font(.system(size: 10))
             .foregroundStyle(Ink.secondary)
         }
@@ -423,7 +423,7 @@ struct RewindTrackFooter: View {
           .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(Ink.secondary)
       }
-      Text("scroll or drag to navigate")
+      Text("role ou arraste para navegar")
         .font(.system(size: 10))
         .foregroundStyle(Ink.secondary)
     }

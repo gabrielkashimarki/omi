@@ -124,16 +124,16 @@ enum SBPostOnboardingGuidance {
       candidates.append(DayZeroChips.lastHour)
     }
     if setup.connectedContextIDs.contains("gmail") {
-      candidates.append("What email follow-ups matter most today?")
+      candidates.append("Quais retornos de e-mail mais importam hoje?")
     }
     if setup.connectedContextIDs.contains("files") {
-      candidates.append("What am I working on, based on my files?")
+      candidates.append("No que estou trabalhando, com base nos meus arquivos?")
     }
     if setup.connectedContextIDs.contains("applenotes") {
-      candidates.append("Summarize my recent notes.")
+      candidates.append("Resuma minhas notas recentes.")
     }
     if let agent = setup.connectedAgentNames.first(where: { !$0.trimmed.isEmpty }) {
-      candidates.append("What can \(agent.trimmed) do for me?")
+      candidates.append("O que o \(agent.trimmed) pode fazer por mim?")
     }
     candidates.append(teachMeDraft)
 
@@ -154,19 +154,19 @@ enum SBPostOnboardingGuidance {
 
     switch setup.role.trimmed.lowercased() {
     case "founder":
-      return "What did I commit to this week?"
+      return "O que eu me comprometi a fazer nesta semana?"
     case "sales", "consultant":
       // Naming people is only possible with a people-bearing connector.
-      return hasPeopleContext ? "Who should I follow up with today?" : nil
+      return hasPeopleContext ? "Com quem devo retomar contato hoje?" : nil
     case "engineer":
       // "What was I working on" needs either indexed files or the screen.
-      return hasWorkContext ? "What was I working on last?" : nil
+      return hasWorkContext ? "No que eu estava trabalhando por último?" : nil
     case "student":
-      return "What should I study today?"
+      return "O que devo estudar hoje?"
     case "analyst":
-      return "What should I dig into today?"
+      return "No que devo me aprofundar hoje?"
     case "creator":
-      return "What should I make today?"
+      return "O que devo criar hoje?"
     default:
       // "Other" and free text: no honest tailored question exists.
       return nil
@@ -188,7 +188,7 @@ enum SBPostOnboardingGuidance {
       SBOrientationCue(
         id: "menubar",
         symbol: "menubar.arrow.up.rectangle",
-        title: "I stay open while you work — switch back any time. My menu bar icon brings me back too.",
+        title: "Fico aberto enquanto você trabalha, volte quando quiser. O ícone na barra de menus também me traz de volta.",
         keys: [])
     ]
 
@@ -198,7 +198,7 @@ enum SBPostOnboardingGuidance {
         SBOrientationCue(
           id: "open",
           symbol: "keyboard",
-          title: "Or bring me back from any app.",
+          title: "Ou me chame de qualquer app.",
           keys: openKeys))
     }
 
@@ -209,7 +209,7 @@ enum SBPostOnboardingGuidance {
         SBOrientationCue(
           id: "talk",
           symbol: "waveform",
-          title: "Hold to talk to me, hands-free.",
+          title: "Segure para falar comigo, sem usar as mãos.",
           keys: talkKeys))
     }
 
@@ -222,7 +222,7 @@ enum SBPostOnboardingGuidance {
       return SBOrientationCue(
         id: "listening",
         symbol: "mic.slash",
-        title: "I can't hear yet. Turn on the microphone in Settings whenever you want me to.",
+        title: "Ainda não consigo ouvir. Ative o microfone nos Ajustes quando quiser que eu ouça.",
         keys: [])
     }
     switch setup.listening {
@@ -230,19 +230,19 @@ enum SBPostOnboardingGuidance {
       return SBOrientationCue(
         id: "listening",
         symbol: "mic.slash",
-        title: "I can't hear yet. Turn on the microphone in Settings whenever you want me to.",
+        title: "Ainda não consigo ouvir. Ative o microfone nos Ajustes quando quiser que eu ouça.",
         keys: [])
     case .always:
       return SBOrientationCue(
         id: "listening",
         symbol: "ear",
-        title: "I'm listening now. Your conversations will show up here as you have them.",
+        title: "Estou ouvindo agora. Suas conversas vão aparecer aqui conforme acontecem.",
         keys: [])
     case .meetingsOnly:
       return SBOrientationCue(
         id: "listening",
         symbol: "person.2",
-        title: "I'll start listening when a call starts.",
+        title: "Começo a ouvir quando uma chamada começar.",
         keys: [])
     }
   }

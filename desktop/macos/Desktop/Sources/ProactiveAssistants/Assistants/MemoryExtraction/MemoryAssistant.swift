@@ -317,7 +317,7 @@ actor MemoryAssistant: ProactiveAssistant {
     // "Wisdom Captured" variant read as an unclassifiable notification type.
     // The category lives on the badge / system-banner title; the body is the
     // memory itself. Prefixing "New memory:" stacked a third copy of the same word.
-    let title = "Memory Saved"
+    let title = "Memória salva"
     let message = memory.content
     let context = FloatingBarNotificationContext(
       sourceTitle: title,

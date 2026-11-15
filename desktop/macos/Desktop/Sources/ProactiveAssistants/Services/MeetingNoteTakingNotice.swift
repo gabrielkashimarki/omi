@@ -10,8 +10,8 @@ import Foundation
 /// other ambient proactive cards and clears itself.
 @MainActor
 enum MeetingNoteTakingNotice {
-  static let title = "Meeting detected"
-  static let message = "Omi is taking notes"
+  static let title = "Reunião detectada"
+  static let message = "O Omi está anotando"
 
   /// Overridable so a test can observe the decision without a notification
   /// centre or a signed-in owner.

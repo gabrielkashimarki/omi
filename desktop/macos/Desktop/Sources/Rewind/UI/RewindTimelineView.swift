@@ -445,7 +445,7 @@ struct ScreenshotPreviewView: View {
             HStack(spacing: OmiSpacing.xxs) {
               Image(systemName: "text.magnifyingglass")
                 .scaledFont(size: OmiType.caption)
-              Text("\(matchCount) match\(matchCount == 1 ? "" : "es")")
+              Text("\(matchCount) \(matchCount == 1 ? "correspondência" : "correspondências")")
                 .scaledFont(size: OmiType.caption)
             }
             .foregroundColor(Ink.secondary)
@@ -463,9 +463,9 @@ struct ScreenshotPreviewView: View {
 
         // Keyboard hints
         HStack(spacing: OmiSpacing.md) {
-          keyboardHint("←", label: "Prev")
-          keyboardHint("→", label: "Next")
-          keyboardHint("esc", label: "Close")
+          keyboardHint("←", label: "Anterior")
+          keyboardHint("→", label: "Próximo")
+          keyboardHint("esc", label: "Fechar")
         }
         .padding(.leading, OmiSpacing.lg)
 
@@ -579,18 +579,18 @@ struct ScreenshotPreviewView: View {
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
 
-        Text("Extracted Text")
+        Text("Texto extraído")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
 
         Spacer()
 
         Button {
-          OmiToastCenter.shared.copy(text, confirming: "Text copied")
+          OmiToastCenter.shared.copy(text, confirming: "Texto copiado")
         } label: {
           HStack(spacing: OmiSpacing.xxs) {
             Image(systemName: "doc.on.doc")
-            Text("Copy")
+            Text("Copiar")
           }
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)

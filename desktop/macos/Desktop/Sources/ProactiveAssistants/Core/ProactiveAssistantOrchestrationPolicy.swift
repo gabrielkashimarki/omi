@@ -9,13 +9,13 @@ enum ScreenCaptureHealth: String, Equatable {
   var statusText: String {
     switch self {
     case .active:
-      return "Capturing screen content"
+      return "Capturando o conteúdo da tela"
     case .temporarilyUnavailable:
-      return "Capture paused: current window can’t be captured"
+      return "Captura pausada: a janela atual não pode ser capturada"
     case .recovering:
-      return "Capture paused: recovering screen capture"
+      return "Captura pausada: recuperando a captura de tela"
     case .stopped:
-      return "Screen capture is paused"
+      return "A captura de tela está pausada"
     }
   }
 
@@ -24,22 +24,22 @@ enum ScreenCaptureHealth: String, Equatable {
     case .active, .stopped:
       return nil
     case .temporarilyUnavailable:
-      return "Capture paused"
+      return "Captura pausada"
     case .recovering:
-      return "Recovering"
+      return "Recuperando"
     }
   }
 
   var rewindToggleHelp: String {
     switch self {
     case .active:
-      return "Rewind is capturing - click to stop"
+      return "O Rewind está capturando, clique para parar"
     case .temporarilyUnavailable:
-      return "Rewind is on, but the current window cannot be captured"
+      return "O Rewind está ligado, mas a janela atual não pode ser capturada"
     case .recovering:
-      return "Rewind is recovering screen capture"
+      return "O Rewind está recuperando a captura de tela"
     case .stopped:
-      return "Rewind is off - click to start capturing"
+      return "O Rewind está desligado, clique para começar a capturar"
     }
   }
 }

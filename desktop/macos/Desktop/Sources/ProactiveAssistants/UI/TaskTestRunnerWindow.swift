@@ -25,7 +25,7 @@ struct TaskTestRunnerView: View {
   @State private var results: [TaskTestResult] = []
   @State private var progress: Double = 0
   @State private var elapsedTime: TimeInterval = 0
-  @State private var statusMessage = "Ready"
+  @State private var statusMessage = "Pronto"
   @State private var cancellationRequested = false
   @State private var totalContextSwitches = 0
 
@@ -95,11 +95,11 @@ struct TaskTestRunnerView: View {
     VStack(spacing: OmiSpacing.lg) {
       HStack {
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Task Extraction Test Runner")
+          Text("Teste de extração de tarefas")
             .scaledFont(size: OmiType.subheading, weight: .semibold)
             .foregroundColor(.primary)
 
-          Text("Replay departing frames from context switches through the extraction pipeline")
+          Text("Reprocesse os quadros de saída das trocas de contexto pelo pipeline de extração")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(.secondary)
         }
@@ -117,7 +117,7 @@ struct TaskTestRunnerView: View {
       HStack(spacing: OmiSpacing.lg) {
         // Time range pickers
         HStack(spacing: OmiSpacing.sm) {
-          Text("From:")
+          Text("De:")
             .scaledFont(size: OmiType.body)
             .foregroundColor(.secondary)
 
@@ -127,7 +127,7 @@ struct TaskTestRunnerView: View {
             .frame(width: 180)
             .disabled(isRunning)
 
-          Text("To:")
+          Text("Até:")
             .scaledFont(size: OmiType.body)
             .foregroundColor(.secondary)
 
@@ -146,7 +146,7 @@ struct TaskTestRunnerView: View {
             HStack(spacing: OmiSpacing.xxs) {
               Image(systemName: "stop.fill")
                 .scaledFont(size: OmiType.micro)
-              Text("Stop")
+              Text("Parar")
                 .scaledFont(size: OmiType.caption)
             }
           }
@@ -158,7 +158,7 @@ struct TaskTestRunnerView: View {
             HStack(spacing: OmiSpacing.xxs) {
               Image(systemName: "play.fill")
                 .scaledFont(size: OmiType.micro)
-              Text("Run Test")
+              Text("Executar teste")
                 .scaledFont(size: OmiType.caption)
             }
           }
@@ -187,21 +187,21 @@ struct TaskTestRunnerView: View {
     HStack(spacing: OmiSpacing.lg) {
       Text("#")
         .frame(width: 28, alignment: .trailing)
-      Text("Time")
+      Text("Hora")
         .frame(width: 90, alignment: .leading)
       Text("App")
         .frame(width: 100, alignment: .leading)
-      Text("Window")
+      Text("Janela")
         .frame(width: 250, alignment: .leading)
-      Text("Decision")
+      Text("Decisão")
         .frame(width: 100, alignment: .leading)
-      Text("Search")
+      Text("Busca")
         .frame(width: 40, alignment: .leading)
-      Text("Details")
+      Text("Detalhes")
       Spacer()
-      Text("Conf")
+      Text("Conf.")
         .frame(width: 40, alignment: .trailing)
-      Text("Time")
+      Text("Tempo")
         .frame(width: 50, alignment: .trailing)
     }
     .scaledFont(size: OmiType.caption, weight: .medium)
@@ -328,7 +328,7 @@ struct TaskTestRunnerView: View {
         HStack(spacing: OmiSpacing.xxs) {
           Image(systemName: "exclamationmark.triangle.fill")
             .scaledFont(size: OmiType.micro)
-          Text("Error")
+          Text("Erro")
             .scaledFont(size: OmiType.caption, weight: .medium)
         }
         .foregroundColor(.orange)
@@ -337,7 +337,7 @@ struct TaskTestRunnerView: View {
           HStack(spacing: OmiSpacing.xxs) {
             Image(systemName: "plus.circle.fill")
               .scaledFont(size: OmiType.micro)
-            Text("New Task")
+            Text("Nova tarefa")
               .scaledFont(size: OmiType.caption, weight: .medium)
           }
           .foregroundColor(.green)
@@ -345,7 +345,7 @@ struct TaskTestRunnerView: View {
           HStack(spacing: OmiSpacing.xxs) {
             Image(systemName: "minus.circle")
               .scaledFont(size: OmiType.micro)
-            Text("No Task")
+            Text("Sem tarefa")
               .scaledFont(size: OmiType.caption, weight: .medium)
           }
           .foregroundColor(.secondary)
@@ -372,35 +372,35 @@ struct TaskTestRunnerView: View {
             .scaledFont(size: OmiType.caption)
             .foregroundColor(.secondary)
 
-          Label("\(tasksFound) tasks", systemImage: "checkmark.circle")
+          Label("\(tasksFound) tarefas", systemImage: "checkmark.circle")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(tasksFound > 0 ? .green : .secondary)
 
-          Label("\(totalSearches) searches", systemImage: "magnifyingglass")
+          Label("\(totalSearches) buscas", systemImage: "magnifyingglass")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(totalSearches > 0 ? .blue : .secondary)
 
           if errorsCount > 0 {
-            Label("\(errorsCount) errors", systemImage: "exclamationmark.triangle")
+            Label("\(errorsCount) erros", systemImage: "exclamationmark.triangle")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(.orange)
           }
 
           if elapsedTime > 0 {
-            Label(String(format: "%.1fs total", elapsedTime), systemImage: "clock")
+            Label(String(format: "%.1fs no total", elapsedTime), systemImage: "clock")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(.secondary)
           }
         }
       } else {
-        Text("Select a time range and click Run Test")
+        Text("Selecione um período e clique em Executar teste")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(.secondary.opacity(0.7))
       }
 
       Spacer()
 
-      Button("Done") {
+      Button("OK") {
         onClose?()
       }
       .keyboardShortcut(.return, modifiers: .command)
@@ -419,10 +419,10 @@ struct TaskTestRunnerView: View {
     elapsedTime = 0
     totalContextSwitches = 0
     cancellationRequested = false
-    statusMessage = "Finding context switches…"
+    statusMessage = "Procurando trocas de contexto…"
 
     guard let authorization = RuntimeOwnerIdentity.captureAuthorizationSnapshot() else {
-      statusMessage = "Sign in to run a screenshot test"
+      statusMessage = "Entre na conta para executar um teste de captura de tela"
       isRunning = false
       return
     }
@@ -442,7 +442,7 @@ struct TaskTestRunnerView: View {
       guard let taskAssistant = assistant as? TaskAssistant else {
         log("TaskTestRunner: ERROR - Task Assistant not available or wrong type")
         await MainActor.run {
-          statusMessage = "Task Assistant not available"
+          statusMessage = "Assistente de tarefas indisponível"
           isRunning = false
         }
         return
@@ -474,7 +474,7 @@ struct TaskTestRunnerView: View {
       } catch {
         log("TaskTestRunner: ERROR - Failed to load screenshots: \(error)")
         await MainActor.run {
-          statusMessage = "Failed to load screenshots: \(error.localizedDescription)"
+          statusMessage = "Falha ao carregar as capturas de tela: \(error.localizedDescription)"
           isRunning = false
         }
         return
@@ -489,7 +489,7 @@ struct TaskTestRunnerView: View {
       guard filteredScreenshots.count >= 2 else {
         log("TaskTestRunner: ERROR - Not enough screenshots (\(filteredScreenshots.count) < 2)")
         await MainActor.run {
-          statusMessage = "Not enough screenshots in selected range to detect context switches"
+          statusMessage = "Capturas de tela insuficientes no período para detectar trocas de contexto"
           isRunning = false
         }
         return
@@ -513,7 +513,7 @@ struct TaskTestRunnerView: View {
 
       guard !departingFrames.isEmpty else {
         await MainActor.run {
-          statusMessage = "No context switches found in \(filteredScreenshots.count) screenshots from selected range"
+          statusMessage = "Nenhuma troca de contexto encontrada em \(filteredScreenshots.count) capturas de tela do período"
           isRunning = false
         }
         return
@@ -523,7 +523,7 @@ struct TaskTestRunnerView: View {
 
       await MainActor.run {
         totalContextSwitches = sampled.count
-        statusMessage = "Found \(sampled.count) context switches, testing all…"
+        statusMessage = "\(sampled.count) trocas de contexto encontradas, testando todas…"
       }
 
       // Process each departing frame
@@ -531,7 +531,7 @@ struct TaskTestRunnerView: View {
         if cancellationRequested || !RuntimeOwnerIdentity.isAuthorizationCurrent(authorization) { break }
 
         await MainActor.run {
-          statusMessage = "Processing \(i + 1)/\(sampled.count)…"
+          statusMessage = "Processando \(i + 1)/\(sampled.count)…"
         }
 
         guard let binding = ScreenTaskFrameBinding.capture(app: screenshot.appName, title: screenshot.windowTitle),
@@ -594,7 +594,7 @@ struct TaskTestRunnerView: View {
       let totalElapsed = Date().timeIntervalSince(startTime)
       await MainActor.run {
         elapsedTime = totalElapsed
-        statusMessage = cancellationRequested ? "Stopped" : "Complete"
+        statusMessage = cancellationRequested ? "Interrompido" : "Concluído"
         isRunning = false
       }
     }
@@ -634,7 +634,7 @@ class TaskTestRunnerWindow: NSWindow {
       defer: false
     )
 
-    self.title = "Task Extraction Test Runner"
+    self.title = "Teste de extração de tarefas"
     self.isReleasedWhenClosed = false
     // The inside of a titled window is glass: transparent, light-pinned, and shadowed by its own
     // frame (`WindowGlass.Kind.titled`). Without the pin the title bar and the traffic lights stay in

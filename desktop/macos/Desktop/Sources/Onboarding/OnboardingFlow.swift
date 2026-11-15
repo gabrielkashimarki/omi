@@ -47,10 +47,10 @@ enum OnboardingFlow {
   }
 
   static let phases: [Phase] = [
-    Phase(title: "Profile", steps: 0..<3),
-    Phase(title: "Permissions", steps: 3..<10),
-    Phase(title: "Shortcuts", steps: 10..<14),
-    Phase(title: "Your memory", steps: 14..<18),
+    Phase(title: "Perfil", steps: 0..<3),
+    Phase(title: "Permissões", steps: 3..<10),
+    Phase(title: "Atalhos", steps: 10..<14),
+    Phase(title: "Sua memória", steps: 14..<18),
   ]
 
   /// Whether the user may navigate directly to `target` (progress dots, forward

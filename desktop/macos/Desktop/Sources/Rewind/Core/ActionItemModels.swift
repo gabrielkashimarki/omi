@@ -811,11 +811,11 @@ enum ActionItemStorageError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .databaseNotInitialized:
-      return "Action item storage database is not initialized"
+      return "O banco de dados de tarefas não foi inicializado"
     case .recordNotFound:
-      return "Action item record not found"
+      return "Registro de tarefa não encontrado"
     case .syncFailed(let message):
-      return "Sync failed: \(message)"
+      return "Falha ao sincronizar: \(message)"
     }
   }
 }

@@ -182,7 +182,7 @@ enum RewindSearchMetrics {
 
   /// What the empty bar says it is for. It names what is actually searched rather than an app, and it
   /// is the only thing on an untouched surface that says what typing will do.
-  static let placeholder = "Search what you've seen and heard…"
+  static let placeholder = "Busque o que você viu e ouviu…"
 
   /// The size the query is set at.
   ///

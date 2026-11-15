@@ -480,19 +480,19 @@ actor EmbeddingService {
     var errorDescription: String? {
       switch self {
       case .missingAPIKey:
-        return "AI features are not configured. Please update the app."
+        return "Os recursos de IA não estão configurados. Atualize o app."
       case .invalidResponse:
-        return "Embedding API returned an unexpected response."
+        return "A API de embeddings retornou uma resposta inesperada."
       case .serverError:
         switch reasonCode {
         case "product_gate":
-          return "Embedding API unavailable: active plan or BYOK keys required."
+          return "API de embeddings indisponível: é preciso um plano ativo ou chaves próprias (BYOK)."
         case "rate_limited":
-          return "Embedding API rate limited. Will retry later."
+          return "API de embeddings com limite de uso atingido. Vou tentar de novo mais tarde."
         case "temporarily_unavailable":
-          return "Embedding API temporarily unavailable. Will retry later."
+          return "API de embeddings temporariamente indisponível. Vou tentar de novo mais tarde."
         default:
-          return "Embedding API error (\(reasonCode))."
+          return "Erro na API de embeddings (\(reasonCode))."
         }
       }
     }

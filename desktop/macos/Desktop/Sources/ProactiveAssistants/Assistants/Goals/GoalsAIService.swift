@@ -483,11 +483,11 @@ enum GoalsAIError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .clientNotInitialized:
-      return "AI features are not configured. Please update the app."
+      return "Os recursos de IA não estão configurados. Atualize o app."
     case .invalidResponse:
-      return "AI service returned an unexpected response. Please try again."
+      return "O serviço de IA retornou uma resposta inesperada. Tente de novo."
     case .insufficientContext:
-      return "Not enough user context to generate a meaningful goal"
+      return "Contexto do usuário insuficiente para gerar uma meta relevante"
     }
   }
 }

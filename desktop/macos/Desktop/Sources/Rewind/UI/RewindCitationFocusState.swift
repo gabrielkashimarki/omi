@@ -84,10 +84,10 @@ extension Notification.Name {
 }
 
 enum RewindCitationUnavailablePresentationPolicy {
-  static let title = "Rewind frame unavailable"
-  static let hint = "No frame was opened because it is no longer available on this Mac."
+  static let title = "Quadro do Rewind indisponível"
+  static let hint = "Nenhum quadro foi aberto porque ele não está mais disponível neste Mac."
 
   static func message(for screenshotID: Int64) -> String {
-    "Frame \(screenshotID) is no longer available locally. It may have been pruned."
+    "O quadro \(screenshotID) não está mais disponível localmente. Ele pode ter sido removido."
   }
 }

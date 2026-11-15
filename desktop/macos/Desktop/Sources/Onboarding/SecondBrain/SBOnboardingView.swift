@@ -137,7 +137,7 @@ struct SBOnboardingView: View {
             if model.typing {
               HStack(spacing: 10) {
                 SBLogo(size: 16, spinning: true)
-                Text("Omi is typing…").inkStyle(InkType.statusLabel, color: Ink.secondary)
+                Text("Omi está digitando…").inkStyle(InkType.statusLabel, color: Ink.secondary)
               }
             }
             if model.showWidget {
@@ -181,7 +181,7 @@ struct SBOnboardingView: View {
       // Context imports can send the user to a browser and grow row details. Keep the exit
       // outside the scrolling thread so neither a pending import nor long failure copy hides it.
       if model.step == .context {
-        SBInkButton(title: "Continue", isDefaultAction: true) { model.answerContext() }
+        SBInkButton(title: "Continuar", isDefaultAction: true) { model.answerContext() }
           .padding(.horizontal, 28)
           .padding(.vertical, 12)
       }
@@ -220,13 +220,13 @@ struct SBOnboardingView: View {
   @ViewBuilder private var backButton: some View {
     if model.canGoBack {
       Button(action: { model.goBack() }) {
-        Text("‹ Back")
+        Text("‹ Voltar")
           .inkStyle(InkType.statusLabel, color: Ink.secondary)
           .padding(.horizontal, 14).padding(.vertical, 7)
           .glassFloatingBar(cornerRadius: Self.chipRadius)
       }
       .buttonStyle(.plain)
-      .help("Go back and change an earlier answer")
+      .help("Voltar e mudar uma resposta anterior")
     }
   }
 
@@ -234,13 +234,13 @@ struct SBOnboardingView: View {
     Button(action: { model.skip() }) {
       // "Skip Setup", not "Skip": the per-step links say "Skip for now", and the two look alike while
       // meaning very different amounts.
-      Text("Skip Setup")
+      Text("Pular configuração")
         .inkStyle(InkType.statusLabel, color: Ink.secondary)
         .padding(.horizontal, 14).padding(.vertical, 7)
         .glassFloatingBar(cornerRadius: Self.chipRadius)
     }
     .buttonStyle(.plain)
-    .help("Skip onboarding and go to your second brain")
+    .help("Pular a introdução e ir para o seu segundo cérebro")
   }
 
   private func scrollDown(_ proxy: ScrollViewProxy) {
@@ -285,26 +285,26 @@ struct SBOnboardingView: View {
     case .language: languageWidget
     case .role: roleWidget
     case .mic:
-      permStepWidget("microphone", "Microphone", "so I can hear your side of conversations") { model.answerMic() }
+      permStepWidget("microphone", "Microfone", "para eu ouvir o seu lado das conversas") { model.answerMic() }
     case .systemAudio:
-      permStepWidget("system_audio", "System Audio", "so I can hear the other side of calls — Zoom, Meet") {
+      permStepWidget("system_audio", "Áudio do sistema", "para eu ouvir o outro lado das chamadas, como Zoom e Meet") {
         model.answerSystemAudio()
       }
     case .screen:
-      permStepWidget("screen_recording", "Screen Recording", "so I can see what you're looking at") {
+      permStepWidget("screen_recording", "Gravação de Tela", "para eu ver o que você está olhando") {
         model.answerScreen()
       }
     case .files: filesWidget
     case .accessibility:
-      permStepWidget("accessibility", "Accessibility", "so I can catch your shortcut and click or type for you") {
+      permStepWidget("accessibility", "Acessibilidade", "para eu captar seu atalho e clicar ou digitar por você") {
         model.answerAccessibility()
       }
     case .automation:
-      permStepWidget("automation", "Automation", "so I can help with tasks in the apps you choose") {
+      permStepWidget("automation", "Automação", "para eu ajudar com tarefas nos apps que você escolher") {
         model.answerAutomation()
       }
     case .notifications:
-      permStepWidget("notifications", "Notifications", "an evening recap on days you record a conversation") {
+      permStepWidget("notifications", "Notificações", "um resumo no fim do dia, nos dias em que você gravar uma conversa") {
         model.answerNotifications()
       }
     case .shortcutOpen: shortcutWidget(isTalk: false)
@@ -320,9 +320,9 @@ struct SBOnboardingView: View {
   private var promiseWidget: some View {
     VStack(alignment: .leading, spacing: 12) {
       VStack(spacing: 0) {
-        trustRow("OPEN") {
+        trustRow("ABERTO") {
           HStack(spacing: 0) {
-            Text("Every line of me is on ")
+            Text("Cada linha minha está no ")
             Link("GitHub", destination: SBOnboardingRepository.url)
               .underline()
             Text(".")
@@ -331,12 +331,12 @@ struct SBOnboardingView: View {
         // `GlassSeparator`, not `Divider()`: a `Divider` inherits the host window's appearance rather
         // than the panel's pinned one, so on a Dark machine it draws a light rule on a light card.
         GlassSeparator()
-        trustRow("PRIVATE") { Text("Your data is encrypted, and only yours.") }
+        trustRow("PRIVADO") { Text("Seus dados são criptografados e só seus.") }
         GlassSeparator()
-        trustRow("YOURS") { Text("Pause me anytime. Delete anything, forever.") }
+        trustRow("SEU") { Text("Me pause quando quiser. Apague qualquer coisa, para sempre.") }
       }
       .glassCard(cornerRadius: PageGlass.rowRadius)
-      SBInkButton(title: "Set up Omi →", isDefaultAction: true) { model.answerPromise() }
+      SBInkButton(title: "Configurar o Omi →", isDefaultAction: true) { model.answerPromise() }
     }
   }
 
@@ -355,13 +355,13 @@ struct SBOnboardingView: View {
 
   private var nameWidget: some View {
     HStack(spacing: 8) {
-      TextField("your name", text: $model.nameDraft)
+      TextField("seu nome", text: $model.nameDraft)
         .textFieldStyle(.plain).inkStyle(InkType.rowCopy, color: Ink.primary)
         .padding(.horizontal, 13).padding(.vertical, 9)
         .glassField()
         .onSubmit { model.answerName() }
       SBInkButton(title: "→", horizontalPadding: 15, verticalPadding: 9) { model.answerName() }
-        .accessibilityLabel("Continue")
+        .accessibilityLabel("Continuar")
     }
     .frame(maxWidth: 360, alignment: .leading)
   }
@@ -407,7 +407,7 @@ struct SBOnboardingView: View {
           ? Array(all.prefix(6))
           : Array(
             all.filter { $0.name.lowercased().contains(filter) || $0.code.lowercased().hasPrefix(filter) }.prefix(6))
-        TextField("Type a language…", text: $model.languageDraft)
+        TextField("Digite um idioma…", text: $model.languageDraft)
           .textFieldStyle(.plain).inkStyle(InkType.rowCopy, color: Ink.primary)
           .padding(.horizontal, 13).padding(.vertical, 10)
           .glassField()
@@ -447,13 +447,13 @@ struct SBOnboardingView: View {
         model.pickRole(r)
       }
       HStack(spacing: 8) {
-        TextField("or just say it in your own words…", text: $model.roleDraft)
+        TextField("ou diga com suas próprias palavras…", text: $model.roleDraft)
           .textFieldStyle(.plain).inkStyle(InkType.rowCopy, color: Ink.primary)
           .padding(.horizontal, 13).padding(.vertical, 9)
           .glassField()
           .onSubmit { model.answerRoleText() }
         SBInkButton(title: "→", horizontalPadding: 15, verticalPadding: 9) { model.answerRoleText() }
-          .accessibilityLabel("Continue")
+          .accessibilityLabel("Continuar")
       }
       .frame(maxWidth: 360)
     }
@@ -478,27 +478,27 @@ struct SBOnboardingView: View {
           .fixedSize(horizontal: false, vertical: true)
       }
       if action == .reopen {
-        Text("\(name) is on, but macOS only hands it to a fresh launch. Reopen me and I'll pick up right here.")
+        Text("\(name) está ativo, mas o macOS só o entrega a uma abertura nova. Me reabra e eu continuo daqui.")
           .inkStyle(InkType.statusLabel, color: Ink.secondary)
           .fixedSize(horizontal: false, vertical: true)
         Button {
           model.acceptPermissionRelaunch(key)
         } label: {
-          Text("Reopen Omi").frame(maxWidth: .infinity)
+          Text("Reabrir o Omi").frame(maxWidth: .infinity)
         }
         .buttonStyle(InkButtonStyle(kind: .primary))
         // The escape, with the consequence spelled out — never gate a step on something macOS cannot
         // grant from a dialog. Same object as every other escape on this card: `skipLink`, so the way
         // past a permission always looks the same and never outranks the way through it.
-        skipLink("Later — \(name) stays off until you reopen", action: onContinue)
+        skipLink("Depois, \(name) fica desligado até você reabrir", action: onContinue)
       } else if action == .proceed {
         Button {
           onContinue()
         } label: {
           HStack(spacing: 6) {
-            Text("✓  \(name) on")
+            Text("✓  \(name) ligado")
             Spacer()
-            Text("Continue →")
+            Text("Continuar →")
           }
           .frame(maxWidth: .infinity)
         }
@@ -514,7 +514,7 @@ struct SBOnboardingView: View {
         Button {
           if action == .recheck { model.recheckPermission(key) } else { model.requestPerm(key) }
         } label: {
-          Text(action == .recheck ? "Waiting for macOS… check again" : "Allow \(name)")
+          Text(action == .recheck ? "Aguardando o macOS… verificar de novo" : "Permitir \(name)")
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(InkButtonStyle(kind: action == .recheck ? .secondary : .primary))
@@ -525,7 +525,7 @@ struct SBOnboardingView: View {
         // missed — so the link keeps what that correction was actually buying: an underline and a
         // pointing-hand cursor, so it still reads as pressable, and `skipLinkMinHeight` of target so
         // it is still comfortably hittable. Faint but unmistakable, which is the whole ask.
-        skipLink("Skip for now", action: onContinue)
+        skipLink("Pular por enquanto", action: onContinue)
       }
     }
     .frame(maxWidth: 380, alignment: .leading)
@@ -539,16 +539,16 @@ struct SBOnboardingView: View {
     switch model.localFileProfileState {
     case .idle:
       permStepWidget(
-        "full_disk_access", "Full Disk Access", "so I can cite your files — read-only, and it stays on this Mac"
+        "full_disk_access", "Acesso Total ao Disco", "para eu citar seus arquivos, somente leitura, e tudo fica neste Mac"
       ) {
         model.answerFiles()
       }
     case .scanning:
       VStack(alignment: .leading, spacing: 10) {
-        Text("Building your local profile").inkStyle(InkType.rowCopy, color: Ink.primary)
+        Text("Montando seu perfil local").inkStyle(InkType.rowCopy, color: Ink.primary)
         HStack(spacing: 8) {
           ProgressView().controlSize(.small)
-          Text("Scanning your projects and recent files…")
+          Text("Examinando seus projetos e arquivos recentes…")
             .inkStyle(InkType.statusLabel, color: Ink.secondary)
             .fixedSize(horizontal: false, vertical: true)
         }
@@ -556,12 +556,12 @@ struct SBOnboardingView: View {
       .frame(maxWidth: 380, alignment: .leading)
     case .complete(let fileCount, let memoryCount, let deniedFolders):
       VStack(alignment: .leading, spacing: 10) {
-        Text("Your local profile is ready").inkStyle(InkType.rowCopy, color: Ink.primary)
-        Text("\(fileCount.formatted()) files indexed · \(memoryCount) profile memories saved")
+        Text("Seu perfil local está pronto").inkStyle(InkType.rowCopy, color: Ink.primary)
+        Text("\(fileCount.formatted()) arquivos indexados · \(memoryCount) memórias de perfil salvas")
           .inkStyle(InkType.statusLabel, color: Ink.secondary)
           .fixedSize(horizontal: false, vertical: true)
         if !deniedFolders.isEmpty {
-          Text("Some folders need access later: \(deniedFolders.joined(separator: ", "))")
+          Text("Algumas pastas precisam de acesso depois: \(deniedFolders.joined(separator: ", "))")
             .inkStyle(InkType.statusLabel, color: Ink.secondary)
             .fixedSize(horizontal: false, vertical: true)
         }
@@ -572,7 +572,7 @@ struct SBOnboardingView: View {
           let fdaAction = model.permissionPrimaryAction("full_disk_access")
           Button(
             fdaAction == .recheck
-              ? "Waiting for Full Disk Access… check again" : "Allow Full Disk Access"
+              ? "Aguardando o Acesso Total ao Disco… verificar de novo" : "Permitir Acesso Total ao Disco"
           ) {
             if fdaAction == .recheck {
               model.recheckPermission("full_disk_access")
@@ -584,19 +584,19 @@ struct SBOnboardingView: View {
           // heaviest thing on this card after Continue. `.secondary` keeps Continue the one primary.
           .buttonStyle(InkButtonStyle(kind: .secondary))
         }
-        SBInkButton(title: "Continue", isDefaultAction: true) { model.finishFilesStep() }
+        SBInkButton(title: "Continuar", isDefaultAction: true) { model.finishFilesStep() }
       }
       .frame(maxWidth: 380, alignment: .leading)
     case .failed(let message):
       VStack(alignment: .leading, spacing: 10) {
-        Text("I couldn't finish scanning your files").inkStyle(InkType.rowCopy, color: Ink.primary)
+        Text("Não consegui terminar de examinar seus arquivos").inkStyle(InkType.rowCopy, color: Ink.primary)
         Text(message).inkStyle(InkType.statusLabel, color: Ink.secondary)
           .fixedSize(horizontal: false, vertical: true)
         HStack(spacing: 10) {
-          SBInkButton(title: "Retry") { model.retryLocalFileScan() }
+          SBInkButton(title: "Tentar de novo") { model.retryLocalFileScan() }
           // The way past a failed scan is the only thing on this card the user may actually want,
           // so it is a capsule beside Retry rather than caption type trailing it.
-          Button("Continue without a scan") { model.finishFilesStep() }
+          Button("Continuar sem examinar") { model.finishFilesStep() }
             .buttonStyle(InkButtonStyle(kind: .secondary))
         }
       }
@@ -682,9 +682,9 @@ struct SBOnboardingView: View {
         HStack(spacing: 8) {
           Image(systemName: "keyboard")
             .font(.system(size: 13, weight: .medium))
-          Text("Custom shortcut").inkStyle(InkType.rowCopy, color: Ink.primary)
+          Text("Atalho personalizado").inkStyle(InkType.rowCopy, color: Ink.primary)
           Spacer()
-          Text(model.shortcutRecording ? "Press it now" : "Set your own")
+          Text(model.shortcutRecording ? "Aperte agora" : "Defina o seu")
             .inkStyle(InkType.statusLabel, color: Ink.secondary)
         }
         .padding(.horizontal, 14).padding(.vertical, 11)
@@ -701,8 +701,8 @@ struct SBOnboardingView: View {
         // has just answered.
         Text(
           model.shortcutNeedsModifier
-            ? "That one's on its own — add ⌘, ⌃ or ⌥ to it."
-            : "Press the shortcut you want to use."
+            ? "Essa tecla sozinha não serve, adicione ⌘, ⌃ ou ⌥."
+            : "Aperte o atalho que você quer usar."
         )
         .inkStyle(InkType.rowCopy, color: Ink.primary)
         .fixedSize(horizontal: false, vertical: true)
@@ -721,8 +721,8 @@ struct SBOnboardingView: View {
           // pressed the key to find out, and it has to outrank the instruction it replaces.
           Text(
             model.shortcutPressed
-              ? "Perfect, that works."
-              : "Try it now, or continue."
+              ? "Perfeito, funcionou."
+              : "Teste agora, ou continue."
           )
           .inkStyle(InkType.rowCopy, color: model.shortcutPressed ? Ink.primary : Ink.secondary)
           .fixedSize(horizontal: false, vertical: true)
@@ -732,7 +732,7 @@ struct SBOnboardingView: View {
       // Accepting a choice is required; the test press is optional encouragement.
       Group {
         if model.canContinueShortcut {
-          SBInkButton(title: "Continue", isDefaultAction: true) {
+          SBInkButton(title: "Continuar", isDefaultAction: true) {
             isTalk ? model.answerShortcutTalk() : model.answerShortcutOpen()
           }
         }
@@ -748,30 +748,30 @@ struct SBOnboardingView: View {
     VStack(alignment: .leading, spacing: 12) {
       if model.screenDemoPTTReady {
         VStack(alignment: .leading, spacing: 8) {
-          Text("Three doors. Three riddles. They open in your browser.")
+          Text("Três portas. Três enigmas. Elas abrem no seu navegador.")
             .inkStyle(InkType.rowCopy, color: Ink.primary)
             .fixedSize(horizontal: false, vertical: true)
           HStack(spacing: 5) {
-            Text("Get stuck, then hold").inkStyle(InkType.rowCopy, color: Ink.primary)
+            Text("Se travar, segure").inkStyle(InkType.rowCopy, color: Ink.primary)
             ForEach(model.voiceChordTokens, id: \.self) { tok in keycap(tok) }
-            Text("and say what the page tells you.").inkStyle(InkType.rowCopy, color: Ink.primary)
+            Text("e diga o que a página pede.").inkStyle(InkType.rowCopy, color: Ink.primary)
           }
-          Text("I can see the page, and I answer at the top of your screen.")
+          Text("Eu vejo a página e respondo no topo da tela.")
             .inkStyle(InkType.statusLabel, color: Ink.secondary)
             .fixedSize(horizontal: false, vertical: true)
           if model.threeDoorsOpened {
-            Button("Open the doors again") { model.openThreeDoorsPage() }
+            Button("Abrir as portas de novo") { model.openThreeDoorsPage() }
               .buttonStyle(InkButtonStyle(kind: .secondary))
           } else {
-            SBInkButton(title: "Open the doors", isDefaultAction: true) { model.openThreeDoorsPage() }
+            SBInkButton(title: "Abrir as portas", isDefaultAction: true) { model.openThreeDoorsPage() }
           }
         }
       } else if model.screenDemoPTTUnavailable {
         VStack(alignment: .leading, spacing: 8) {
-          Text("Voice setup isn't available yet. You can retry, or skip for now.")
+          Text("A configuração de voz ainda não está disponível. Você pode tentar de novo ou pular por enquanto.")
             .inkStyle(InkType.rowCopy, color: Ink.primary)
             .fixedSize(horizontal: false, vertical: true)
-          Button("Try Again") {
+          Button("Tentar de novo") {
             model.startScreenDemo()
           }
           .buttonStyle(InkButtonStyle(kind: .secondary))
@@ -779,7 +779,7 @@ struct SBOnboardingView: View {
       } else {
         HStack(spacing: 8) {
           ProgressView().controlSize(.small)
-          Text("Preparing voice…").inkStyle(InkType.rowCopy, color: Ink.secondary)
+          Text("Preparando a voz…").inkStyle(InkType.rowCopy, color: Ink.secondary)
         }
       }
       // Skip for now is always offered, so the step never traps someone whose demo did not fire;
@@ -787,12 +787,12 @@ struct SBOnboardingView: View {
       Group {
         switch model.screenDemoFooter {
         case .continue:
-          SBInkButton(title: "Continue", isDefaultAction: true) { model.answerScreenDemo() }
+          SBInkButton(title: "Continuar", isDefaultAction: true) { model.answerScreenDemo() }
         case .skip:
           Button {
             model.answerScreenDemo()
           } label: {
-            Text("Skip for now").frame(maxWidth: .infinity)
+            Text("Pular por enquanto").frame(maxWidth: .infinity)
           }
           .buttonStyle(InkButtonStyle(kind: .secondary))
         }
@@ -811,7 +811,7 @@ struct SBOnboardingView: View {
           showAIAssistants.toggle()
         } label: {
           HStack {
-            Text("AI assistants").inkStyle(InkType.rowCopy, color: Ink.primary)
+            Text("Assistentes de IA").inkStyle(InkType.rowCopy, color: Ink.primary)
             Spacer()
             Image(systemName: showAIAssistants ? "chevron.up" : "chevron.down")
               .font(.system(size: 11, weight: .semibold))
@@ -837,7 +837,7 @@ struct SBOnboardingView: View {
       }
       .padding(.horizontal, 14)
       .glassCard(cornerRadius: PageGlass.rowRadius)
-      SBInkButton(title: "Continue", isDefaultAction: true) { model.answerAgents() }
+      SBInkButton(title: "Continuar", isDefaultAction: true) { model.answerAgents() }
     }
     .frame(maxWidth: 380, alignment: .leading)
   }
@@ -913,12 +913,12 @@ struct SBOnboardingView: View {
     // cannot sit a step below "✓ on"; they all read as subordinate to the connector's name, which is
     // `primary`. The actions are stadium capsules from the one button style, not 7 pt rounded rects.
     switch state {
-    case "on": Text("✓ on").inkStyle(InkType.statusLabel, color: Ink.secondary).fixedSize()
+    case "on": Text("✓ ligado").inkStyle(InkType.statusLabel, color: Ink.secondary).fixedSize()
     case "connecting": Text("…").inkStyle(InkType.statusLabel, color: Ink.secondary).fixedSize()
-    case "checking": Text("checking…").inkStyle(InkType.statusLabel, color: Ink.secondary).fixedSize()
-    case "unavailable": Text("not installed").inkStyle(InkType.statusLabel, color: Ink.secondary).fixedSize()
+    case "checking": Text("verificando…").inkStyle(InkType.statusLabel, color: Ink.secondary).fixedSize()
+    case "unavailable": Text("não instalado").inkStyle(InkType.statusLabel, color: Ink.secondary).fixedSize()
     case "error":
-      Button("Try Again", action: action)
+      Button("Tentar de novo", action: action)
         .buttonStyle(InkButtonStyle(kind: .secondary))
     default:
       // `.secondary`, and this is a hierarchy decision rather than a taste one. There are six
@@ -926,7 +926,7 @@ struct SBOnboardingView: View {
       // primary actions and the step's actual proceed action is the seventh identical black pill —
       // a wall of ink on a card whose whole job is to feel optional. Outlined, "Connect" is still
       // plainly a button and Continue is the only filled thing on the card.
-      Button(state == "needsSignIn" ? "Retry" : "Connect", action: action)
+      Button(state == "needsSignIn" ? "Tentar de novo" : "Conectar", action: action)
         .buttonStyle(InkButtonStyle(kind: .secondary))
     }
   }
@@ -938,14 +938,14 @@ struct SBOnboardingView: View {
       Button {
         model.capture(SBOnboardingModel.defaultCaptureSelection)
       } label: {
-        Text("Only Meetings").frame(maxWidth: .infinity)
+        Text("Só reuniões").frame(maxWidth: .infinity)
       }
       .buttonStyle(InkButtonStyle(kind: .primary))
       .keyboardShortcut(.defaultAction)
       Button {
         model.capture(.always)
       } label: {
-        Text("Always On").frame(maxWidth: .infinity)
+        Text("Sempre ligado").frame(maxWidth: .infinity)
       }
       .buttonStyle(InkButtonStyle(kind: .secondary))
     }
@@ -956,7 +956,7 @@ struct SBOnboardingView: View {
     VStack(alignment: .leading, spacing: 14) {
       ReferralProgramView(showsIntroduction: false)
 
-      SBInkButton(title: "Take me to Omi", isDefaultAction: true) {
+      SBInkButton(title: "Me leve ao Omi", isDefaultAction: true) {
         model.finishReferral()
       }
     }

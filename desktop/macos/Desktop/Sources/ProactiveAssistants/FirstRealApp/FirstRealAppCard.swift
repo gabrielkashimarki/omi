@@ -51,7 +51,7 @@ struct FirstRealAppCard: View {
         action: {
           FirstRealAppCardCoordinator.shared.handleCardDismissed()
           FloatingControlBarManager.shared.dismissCurrentNotification()
-        }, accessibilityLabel: "Dismiss", size: .compact
+        }, accessibilityLabel: "Dispensar", size: .compact
       )
       .padding(.horizontal, OmiSpacing.md)
       .padding(.vertical, OmiSpacing.md)

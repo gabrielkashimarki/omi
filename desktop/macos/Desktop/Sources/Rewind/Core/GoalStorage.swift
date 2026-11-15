@@ -11,11 +11,11 @@ enum GoalStorageError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .databaseNotInitialized:
-      return "Goal storage database is not initialized"
+      return "O banco de dados de metas não foi inicializado"
     case .recordNotFound:
-      return "Goal record not found"
+      return "Registro de meta não encontrado"
     case .syncFailed(let message):
-      return "Sync failed: \(message)"
+      return "Falha ao sincronizar: \(message)"
     }
   }
 }

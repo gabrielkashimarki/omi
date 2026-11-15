@@ -397,11 +397,11 @@ actor AIUserProfileService {
     var errorDescription: String? {
       switch self {
       case .alreadyGenerating:
-        return "Profile generation is already in progress"
+        return "A geração do perfil já está em andamento"
       case .insufficientData:
-        return "Not enough data to generate a profile"
+        return "Dados insuficientes para gerar um perfil"
       case .databaseNotAvailable:
-        return "Database is not available"
+        return "O banco de dados não está disponível"
       }
     }
   }

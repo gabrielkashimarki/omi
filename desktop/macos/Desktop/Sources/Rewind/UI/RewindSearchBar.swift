@@ -71,12 +71,12 @@ struct RewindSearchBar: View {
   }
 
   /// What clearing is called wherever it is named in words rather than in a glyph.
-  static let clearActionName = "Clear the search"
+  static let clearActionName = "Limpar a busca"
 
   /// What the action is called wherever it is named in words. It names **both** halves on purpose:
   /// a user who has only ever searched screenshots has no reason to expect this to know what was on
   /// screen *and* what a window was called.
-  static let searchActionName = "Search this Mac's screen history"
+  static let searchActionName = "Buscar no histórico de tela deste Mac"
 
   // MARK: - The field
 

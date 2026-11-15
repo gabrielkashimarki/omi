@@ -431,13 +431,13 @@ enum TranscriptionStorageError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .databaseNotInitialized:
-      return "Transcription storage database is not initialized"
+      return "O banco de dados de transcrição não foi inicializado"
     case .sessionNotFound:
-      return "Transcription session not found"
+      return "Sessão de transcrição não encontrada"
     case .invalidState(let message):
-      return "Invalid session state: \(message)"
+      return "Estado de sessão inválido: \(message)"
     case .uploadFailed(let message):
-      return "Upload failed: \(message)"
+      return "Falha no envio: \(message)"
     }
   }
 }

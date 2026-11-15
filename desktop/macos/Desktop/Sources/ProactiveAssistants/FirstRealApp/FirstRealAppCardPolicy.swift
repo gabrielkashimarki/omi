@@ -38,7 +38,7 @@ enum FirstRealAppCardPolicy {
 
   /// The exact draft the tap puts in the composer. Not sent — the user presses
   /// return. Seeing the question before asking it is the point.
-  static let prompt = "Summarize what's on my screen"
+  static let prompt = "Resuma o que está na minha tela"
 
   /// Foreground bundles that are system UI rather than "an app the user opened".
   /// `loginwindow` and the screen saver own the front during login and lock;
@@ -167,7 +167,7 @@ enum FirstRealAppCardPolicy {
   // MARK: - Copy
 
   static func title(appName: String) -> String {
-    "I can see \(appName)"
+    "Estou vendo o \(appName)"
   }
 
   /// The body names the user's *real* push-to-talk chord, because the whole
@@ -180,7 +180,7 @@ enum FirstRealAppCardPolicy {
       .map { $0.trimmingCharacters(in: .whitespaces) }
       .filter { !$0.isEmpty }
       .joined(separator: " ")
-    guard !chord.isEmpty else { return "Tap to ask me anything about it." }
-    return "Hold \(chord) and ask me anything about it — or tap to type."
+    guard !chord.isEmpty else { return "Toque para me perguntar qualquer coisa sobre isso." }
+    return "Segure \(chord) e me pergunte qualquer coisa sobre isso, ou toque para digitar."
   }
 }

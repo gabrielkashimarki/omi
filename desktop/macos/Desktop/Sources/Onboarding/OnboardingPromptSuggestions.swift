@@ -71,19 +71,19 @@ enum OnboardingPromptSuggestionBuilder {
     suggestions.append(HomeSuggestionComposer.universalFirstQuestion)
 
     if !coordinator.emailSummary.isEmpty {
-      suggestions.append("What email follow-ups matter most today?")
+      suggestions.append("Quais retornos de e-mail mais importam hoje?")
     }
 
     if !coordinator.calendarSummary.isEmpty {
-      suggestions.append("Where can I find focus time this week?")
+      suggestions.append("Onde consigo achar tempo de foco nesta semana?")
     }
 
     if !coordinator.goalDraft.isEmpty {
-      suggestions.append("Break my goal into the next 3 steps.")
+      suggestions.append("Divida minha meta nos próximos 3 passos.")
     }
 
-    suggestions.append("What on my screen matters most right now?")
-    suggestions.append("What's the highest-leverage thing I can do next?")
+    suggestions.append("O que na minha tela é mais importante agora?")
+    suggestions.append("Qual é a coisa de maior impacto que posso fazer agora?")
 
     let deduped = Array(NSOrderedSet(array: suggestions).array as? [String] ?? suggestions)
     return Array(deduped.prefix(6))
