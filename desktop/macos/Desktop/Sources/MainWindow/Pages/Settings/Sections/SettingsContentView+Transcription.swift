@@ -20,7 +20,7 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("Language Mode")
+            Text("Modo de Idioma")
               .scaledFont(size: OmiType.subheading, weight: .medium)
               .foregroundColor(Ink.primary)
 
@@ -42,17 +42,17 @@ extension SettingsContentView {
                   SettingsSelection.optionMark(isSelected: autoDetectIsActive))
 
               VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-                Text("Auto-Detect (Multi-Language)")
+                Text("Detecção Automática (Vários Idiomas)")
                   .scaledFont(size: OmiType.body, weight: .medium)
                   .foregroundColor(Ink.primary)
 
-                Text("Automatically detects and transcribes:")
+                Text("Detecta e transcreve automaticamente:")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
 
                 // List of supported languages
                 Text(
-                  "English, Spanish, French, German, Hindi, Russian, Portuguese, Japanese, Italian, Dutch"
+                  "Inglês, espanhol, francês, alemão, hindi, russo, português, japonês, italiano, holandês"
                 )
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.secondary)
@@ -66,7 +66,7 @@ extension SettingsContentView {
                       .scaledFont(size: OmiType.micro)
                       .foregroundColor(SettingsInk.notice)
 
-                    Text("\(autoDetectSubtitle) — pick one of the ten above to use it.")
+                    Text("\(autoDetectSubtitle), escolha um dos dez acima para usá-lo.")
                       .scaledFont(size: OmiType.caption)
                       .foregroundColor(SettingsInk.notice)
                       .fixedSize(horizontal: false, vertical: true)
@@ -105,23 +105,23 @@ extension SettingsContentView {
                   SettingsSelection.optionMark(isSelected: !autoDetectIsActive))
 
               VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-                Text("Single Language (Better Accuracy)")
+                Text("Um Só Idioma (Mais Precisão)")
                   .scaledFont(size: OmiType.body, weight: .medium)
                   .foregroundColor(Ink.primary)
 
-                Text("Best for speaking in one specific language")
+                Text("Ideal para falar em um idioma específico")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
 
                 // Language picker (only shown when single language is selected)
                 if !autoDetectIsActive {
                   HStack {
-                    Text("Language:")
+                    Text("Idioma:")
                       .scaledFont(size: OmiType.caption)
                       .foregroundColor(Ink.secondary)
 
                     SearchableDropdown(
-                      title: "Language",
+                      title: "Idioma",
                       options: languageOptions.map { option in
                         SearchableDropdownOption(id: option.0, title: option.1)
                       },
@@ -160,7 +160,7 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
 
             Text(
-              "Single language mode supports \(AssistantSettings.supportedLanguages.count) languages including Chinese, Ukrainian, Russian, and more."
+              "O modo de um só idioma suporta \(AssistantSettings.supportedLanguages.count) idiomas, incluindo chinês, ucraniano, russo e mais."
             )
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
@@ -186,11 +186,11 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Custom Vocabulary")
+              Text("Vocabulário Personalizado")
                 .scaledFont(size: OmiType.subheading, weight: .medium)
                 .foregroundColor(Ink.primary)
 
-              Text("Improve recognition of names, brands, and technical terms")
+              Text("Melhora o reconhecimento de nomes, marcas e termos técnicos")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
             }
@@ -198,7 +198,7 @@ extension SettingsContentView {
             Spacer()
 
             if !vocabularyList.isEmpty {
-              Text("\(vocabularyList.count) terms")
+              Text("\(vocabularyList.count) termos")
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.secondary)
             }
@@ -236,7 +236,7 @@ extension SettingsContentView {
 
           // Add new word input
           HStack(spacing: OmiSpacing.sm) {
-            TextField("Add a word…", text: $newVocabularyWord)
+            TextField("Adicionar uma palavra…", text: $newVocabularyWord)
               .settingsTextInputStyle()
               .onSubmit {
                 addVocabularyWord()
@@ -255,7 +255,7 @@ extension SettingsContentView {
             .disabled(newVocabularyWord.trimmingCharacters(in: .whitespaces).isEmpty)
           }
 
-          Text("Press Enter or click + to add • Click × to remove")
+          Text("Aperte Enter ou clique em + para adicionar • Clique em × para remover")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
 
@@ -277,12 +277,12 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Local VAD Gate")
+              Text("Filtro VAD Local")
                 .scaledFont(size: OmiType.subheading, weight: .medium)
                 .foregroundColor(Ink.primary)
 
               Text(
-                "Skips silent audio before sending it for transcription. Can cut transcription usage by about 40%."
+                "Ignora áudio silencioso antes de enviá-lo para transcrição. Pode reduzir o uso de transcrição em cerca de 40%."
               )
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
@@ -310,11 +310,11 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Silent Type")
+              Text("Omi Type Silencioso")
                 .scaledFont(size: OmiType.subheading, weight: .medium)
                 .foregroundColor(Ink.primary)
 
-              Text("Keeps what you dictate with Omi Type out of the chat.")
+              Text("Mantém o que você dita com o Omi Type fora do chat.")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -337,12 +337,12 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Ignore Dictation Apps")
+              Text("Ignorar Apps de Ditado")
                 .scaledFont(size: OmiType.subheading, weight: .medium)
                 .foregroundColor(Ink.primary)
 
               Text(
-                "While Wispr Flow, superwhisper, or macOS Dictation is using the microphone, Omi stops listening so dictations don't become conversations. Calls are never muted."
+                "Enquanto o Wispr Flow, o superwhisper ou o Ditado do macOS estiver usando o microfone, o Omi para de escutar para que os ditados não virem conversas. Chamadas nunca são silenciadas."
               )
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
@@ -620,12 +620,12 @@ private struct VoiceAssistantLanguagesCard: View {
           .foregroundColor(Ink.secondary)
 
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Voice Assistant Languages")
+          Text("Idiomas do Assistente de Voz")
             .scaledFont(size: OmiType.subheading, weight: .medium)
             .foregroundColor(Ink.primary)
 
           Text(
-            "Languages you speak to Omi over push-to-talk — the first is your primary. Omi identifies which one you're speaking each turn."
+            "Idiomas que você fala com o Omi ao apertar para falar (o primeiro é o principal). O Omi identifica qual deles você está falando a cada vez."
           )
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
@@ -641,8 +641,8 @@ private struct VoiceAssistantLanguagesCard: View {
         }
         if !addableLanguages.isEmpty {
           SearchableDropdown(
-            title: "Add language",
-            label: "More…",
+            title: "Adicionar idioma",
+            label: "Mais…",
             options: addableLanguages.map { option in
               SearchableDropdownOption(id: option.code, title: option.name)
             },
@@ -710,7 +710,7 @@ struct CloudTranscriptionLanguageHint: View {
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
 
-      Text("This language isn't available on-device, so Omi transcribes meetings in the cloud.")
+      Text("Este idioma não está disponível no dispositivo, então o Omi transcreve as reuniões na nuvem.")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
     }

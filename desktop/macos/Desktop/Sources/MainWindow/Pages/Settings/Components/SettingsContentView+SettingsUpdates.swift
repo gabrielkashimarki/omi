@@ -49,7 +49,7 @@ extension SettingsContentView {
       case .failed(let restore):
         if let restore {
           dailySummaryEnabled = restore
-          dailySummaryEnabledError = "Couldn't save. Try again."
+          dailySummaryEnabledError = "Não foi possível salvar. Tente de novo."
         }
       }
     }
@@ -67,7 +67,7 @@ extension SettingsContentView {
       } catch {
         logError("Failed to update daily summary depth", error: error)
         dailySummaryDepth = savedDailySummaryDepth
-        dailySummaryDepthError = "Couldn't save recap depth. Choose a depth again."
+        dailySummaryDepthError = "Não foi possível salvar a profundidade do resumo. Escolha de novo."
       }
       dailySummaryDepthSaving = false
     }
@@ -121,7 +121,7 @@ extension SettingsContentView {
       case .failed(let restore):
         if let restore {
           recordingPermissionEnabled = restore
-          recordingPermissionError = "Couldn't save. Try again."
+          recordingPermissionError = "Não foi possível salvar. Tente de novo."
         }
       }
     }
@@ -142,7 +142,7 @@ extension SettingsContentView {
       case .failed(let restore):
         if let restore {
           privateCloudSyncEnabled = restore
-          privateCloudSyncError = "Couldn't save. Try again."
+          privateCloudSyncError = "Não foi possível salvar. Tente de novo."
         }
       }
     }
@@ -220,7 +220,7 @@ extension SettingsContentView {
           try await AuthService.shared.signOut(acceptedAccountDeletion: true)
           isDeletingAccount = false
         } catch {
-          deleteAccountError = "Your account was deleted, but Omi couldn't sign you out. Quit and reopen Omi."
+          deleteAccountError = "Sua conta foi apagada, mas o Omi não conseguiu desconectar você. Saia do Omi e abra de novo."
           isDeletingAccount = false
         }
       } catch {
@@ -245,7 +245,7 @@ extension SettingsContentView {
 /// So a failed save puts back the list the account last confirmed and says the change was not saved.
 @MainActor
 enum TranscriptionVocabularySaver {
-  static let failureMessage = "Couldn't save your vocabulary change. Try again."
+  static let failureMessage = "Não foi possível salvar a mudança no vocabulário. Tente de novo."
 
   enum Outcome: Equatable {
     /// The account stored the list; `stored` is the list it now holds.

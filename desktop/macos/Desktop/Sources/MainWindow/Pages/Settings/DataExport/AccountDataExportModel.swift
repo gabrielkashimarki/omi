@@ -49,7 +49,7 @@ final class AccountDataExportModel: ObservableObject {
   private func beginExport(destinationOverride: URL? = nil) {
     guard !isExporting else { return }
     guard let snapshot = ownerSnapshot() else {
-      errorMessage = "You need to be signed in to export your data."
+      errorMessage = "Você precisa estar logado para exportar seus dados."
       return
     }
 
@@ -86,7 +86,7 @@ final class AccountDataExportModel: ObservableObject {
         }
         try Task.checkCancellation()
         guard self.activeRunID == runID else { return }
-        self.confirm("Export Saved")
+        self.confirm("Exportação salva")
       } catch is CancellationError {
       } catch {
         guard self.activeRunID == runID else { return }

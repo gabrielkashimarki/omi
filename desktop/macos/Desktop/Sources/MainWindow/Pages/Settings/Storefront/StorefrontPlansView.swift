@@ -64,14 +64,14 @@ struct StorefrontPlansView: View {
         }
         .padding(.vertical, OmiSpacing.xxl)
       } else if failed {
-        notice("Couldn't load plans. Check your connection and try again.") {
-          Button("Try again", action: onRetry)
+        notice("Não foi possível carregar os planos. Verifique sua conexão e tente de novo.") {
+          Button("Tentar de novo", action: onRetry)
             .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         }
       } else if let data, !(data.tiers.isEmpty && !legacy) {
         if !legacy { tierList(data) }
       } else {
-        notice("Plans aren't available right now. Try again in a minute.") { EmptyView() }
+        notice("Os planos não estão disponíveis agora. Tente de novo em um minuto.") { EmptyView() }
       }
 
       if let error {
@@ -82,7 +82,7 @@ struct StorefrontPlansView: View {
 
       if data == nil || failed || legacy || data?.current?.priceId != nil {
         Button(action: onManage) {
-          Text("Manage billing")
+          Text("Gerenciar cobrança")
             .scaledFont(size: OmiType.body, weight: .semibold)
             .frame(maxWidth: .infinity)
         }
@@ -120,7 +120,7 @@ struct StorefrontPlansView: View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
       if !data.cancelScheduled, let yearly = data.yearlyToggleLabel {
         HStack(spacing: OmiSpacing.hairline) {
-          intervalChip("Monthly", selected: selected == .month) { chosen = .month }
+          intervalChip("Mensal", selected: selected == .month) { chosen = .month }
           intervalChip(yearly, selected: selected == .year) { chosen = .year }
         }
         .padding(OmiSpacing.hairline)
@@ -131,14 +131,14 @@ struct StorefrontPlansView: View {
         Button {
           expanded = !isExpanded
         } label: {
-          Text("See all plans")
+          Text("Ver todos os planos")
             .scaledFont(size: OmiType.body, weight: .semibold)
             .foregroundColor(Ink.secondary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, OmiSpacing.xs)
         }
         .buttonStyle(.plain)
-        .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+        .accessibilityValue(isExpanded ? "Expandido" : "Recolhido")
         if isExpanded {
           ForEach(parts.rest) { tierCard($0, data: data, interval: selected) }
         }
@@ -172,8 +172,8 @@ struct StorefrontPlansView: View {
           .scaledFont(size: OmiType.subheading, weight: .bold)
           .foregroundColor(Ink.primary)
         Spacer(minLength: OmiSpacing.sm)
-        if highlight { badge("Recommended") }
-        if tier.isCurrent { badge("Your plan") }
+        if highlight { badge("Recomendado") }
+        if tier.isCurrent { badge("Seu plano") }
       }
 
       if let price {
@@ -281,7 +281,7 @@ struct StorefrontUsageMeter: View {
           }
           .frame(height: 6)
           .accessibilityElement()
-          .accessibilityValue("\(min(percent, 100)) percent")
+          .accessibilityValue("\(min(percent, 100)) por cento")
         }
       }
       .padding(OmiSpacing.lg)
@@ -313,10 +313,10 @@ struct StorefrontBudgetBanner: View {
           .foregroundColor(Ink.primary)
           .fixedSize(horizontal: false, vertical: true)
         Spacer(minLength: OmiSpacing.sm)
-        Button("See plans", action: onOpen)
+        Button("Ver planos", action: onOpen)
           .buttonStyle(OmiButtonStyle(.primary, size: .compact))
         if data.showsBudgetNudge {
-          Button("Not now", action: onDismiss)
+          Button("Agora não", action: onDismiss)
             .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         }
       }

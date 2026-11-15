@@ -99,7 +99,7 @@ struct MicrophonePickerCard: View {
           .scaledFont(size: 16)
           .foregroundColor(Ink.primary)
 
-        Text("Microphone")
+        Text("Microfone")
           .scaledFont(size: 15, weight: .medium)
           .foregroundColor(Ink.primary)
 
@@ -108,8 +108,8 @@ struct MicrophonePickerCard: View {
 
       row(
         selected: preferredUID.isEmpty,
-        title: "System Default",
-        subtitle: "Follow the Mac's input device"
+        title: "Padrão do Sistema",
+        subtitle: "Segue o dispositivo de entrada do Mac"
       ) {
         preferredUID = ""
         onChanged()
@@ -120,9 +120,9 @@ struct MicrophonePickerCard: View {
           selected: preferredUID == device.uid,
           title: device.name,
           subtitle: AudioCaptureService.isMetaGlassesName(device.name)
-            ? "Ray-Ban Meta glasses — voice-quality Bluetooth audio while capturing"
-            : (device.isBluetooth ? "Bluetooth microphone" : nil),
-          badge: AudioCaptureService.isMetaGlassesName(device.name) ? "Glasses" : nil
+            ? "Óculos Ray-Ban Meta (áudio Bluetooth com qualidade de voz durante a captura)"
+            : (device.isBluetooth ? "Microfone Bluetooth" : nil),
+          badge: AudioCaptureService.isMetaGlassesName(device.name) ? "Óculos" : nil
         ) {
           preferredUID = device.uid
           onChanged()
@@ -136,9 +136,9 @@ struct MicrophonePickerCard: View {
       if pinnedDeviceIsMissing {
         row(
           selected: true,
-          title: "Selected microphone unavailable",
-          subtitle: "The microphone you picked isn't connected. Omi is capturing on the Mac's "
-            + "input device until it comes back. Choose another to stop waiting for it.",
+          title: "Microfone selecionado indisponível",
+          subtitle: "O microfone que você escolheu não está conectado. O Omi está capturando pelo dispositivo de entrada do Mac "
+            + "até ele voltar. Escolha outro para parar de esperar por ele.",
           warning: true
         ) {
           preferredUID = ""

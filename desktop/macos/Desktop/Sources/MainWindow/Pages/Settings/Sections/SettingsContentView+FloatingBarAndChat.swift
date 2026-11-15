@@ -9,7 +9,7 @@ extension SettingsContentView {
     VStack(spacing: OmiSpacing.xl) {
       settingsCard(settingId: "floatingbar.show") {
         HStack(spacing: OmiSpacing.lg) {
-          Text("Show floating bar")
+          Text("Mostrar barra flutuante")
             .scaledFont(size: OmiType.subheading, weight: .semibold)
             .foregroundColor(Ink.primary)
 
@@ -97,10 +97,10 @@ extension SettingsContentView {
       settingsCard(settingId: "floatingbar.typedvoiceanswers") {
         HStack(spacing: OmiSpacing.lg) {
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Typed Questions")
+            Text("Perguntas Digitadas")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
-            Text("Speak answers aloud when you submit a typed question from the floating bar.")
+            Text("Fala as respostas em voz alta quando você envia uma pergunta digitada pela barra flutuante.")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -113,10 +113,10 @@ extension SettingsContentView {
       settingsCard(settingId: "floatingbar.screenshare") {
         HStack(spacing: OmiSpacing.lg) {
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Screen Sharing in Chat")
+            Text("Compartilhar Tela no Chat")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
-            Text("Let Ask Omi capture your screen when you ask about what's on it.")
+            Text("Deixa o Perguntar ao Omi capturar sua tela quando você pergunta sobre o que está nela.")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -150,13 +150,13 @@ extension SettingsContentView {
         Image(systemName: "checkmark.circle.fill")
           .foregroundColor(Ink.listeningGreen)
           .scaledFont(size: OmiType.caption)
-        Text("Connected to Claude")
+        Text("Conectado ao Claude")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
 
         Spacer()
 
-        Button("Disconnect") {
+        Button("Desconectar") {
           Task {
             await chatProvider?.disconnectClaude()
           }
@@ -170,13 +170,13 @@ extension SettingsContentView {
         Image(systemName: "person.badge.key")
           .foregroundColor(Ink.secondary)
           .scaledFont(size: OmiType.caption)
-        Text("Not connected to Claude")
+        Text("Não conectado ao Claude")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
 
         Spacer()
 
-        Button("Connect Claude") {
+        Button("Conectar Claude") {
           Task {
             await chatProvider?.connectClaude()
           }
@@ -196,7 +196,7 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("AI Provider")
+            Text("Provedor de IA")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -248,7 +248,7 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("Ask Mode")
+            Text("Modo Perguntar")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -261,7 +261,7 @@ extension SettingsContentView {
           }
 
           Text(
-            "When enabled, shows an Ask/Act toggle in the chat. Ask mode restricts the AI to read-only actions. When disabled, the AI always runs in Act mode."
+            "Quando ativado, mostra um seletor Perguntar/Agir no chat. O modo Perguntar limita a IA a ações somente de leitura. Quando desativado, a IA sempre roda no modo Agir."
           )
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
@@ -276,18 +276,18 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("Workspace")
+            Text("Espaço de Trabalho")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
             Spacer()
 
-            Button("Browse…") {
+            Button("Procurar…") {
               let panel = NSOpenPanel()
               panel.canChooseFiles = false
               panel.canChooseDirectories = true
               panel.allowsMultipleSelection = false
-              panel.message = "Select a project directory"
+              panel.message = "Selecione uma pasta de projeto"
               if panel.runModal() == .OK, let url = panel.url {
                 aiChatWorkingDirectory = url.path
                 // `ChatProvider` holds its own `@AppStorage` wrapper over the same key, and a
@@ -304,7 +304,7 @@ extension SettingsContentView {
             .buttonStyle(OmiButtonStyle(.primary, size: .compact))
 
             if !aiChatWorkingDirectory.isEmpty {
-              Button("Clear") {
+              Button("Limpar") {
                 aiChatWorkingDirectory = ""
                 chatProvider?.aiChatWorkingDirectory = ""
                 chatProvider?.workingDirectory = nil
@@ -321,12 +321,12 @@ extension SettingsContentView {
               .lineLimit(1)
               .truncationMode(.middle)
 
-            Text("Project-level CLAUDE.md and skills will be discovered from this directory")
+            Text("O CLAUDE.md e as skills do projeto serão descobertos a partir desta pasta")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           } else {
             Text(
-              "No workspace set. Set a project directory to discover project-level CLAUDE.md and skills."
+              "Nenhum espaço de trabalho definido. Defina uma pasta de projeto para descobrir o CLAUDE.md e as skills do projeto."
             )
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
@@ -349,7 +349,7 @@ extension SettingsContentView {
             Spacer()
           }
 
-          Text("Reference only — CLAUDE.md content is never injected into chat instructions.")
+          Text("Apenas referência: o conteúdo do CLAUDE.md nunca é injetado nas instruções do chat.")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
 
@@ -369,8 +369,8 @@ extension SettingsContentView {
               Spacer()
 
               if aiChatClaudeMdContent != nil {
-                Button("View") {
-                  fileViewerTitle = "Global CLAUDE.md"
+                Button("Ver") {
+                  fileViewerTitle = "CLAUDE.md global"
                   fileViewerContent = aiChatClaudeMdContent ?? ""
                   showFileViewer = true
                 }
@@ -386,7 +386,7 @@ extension SettingsContentView {
                 .lineLimit(1)
                 .truncationMode(.middle)
             } else {
-              Text("No CLAUDE.md found at ~/.claude/CLAUDE.md")
+              Text("Nenhum CLAUDE.md encontrado em ~/.claude/CLAUDE.md")
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.secondary)
             }
@@ -398,7 +398,7 @@ extension SettingsContentView {
 
             VStack(alignment: .leading, spacing: OmiSpacing.sm) {
               HStack {
-                Text("Project")
+                Text("Projeto")
                   .scaledFont(size: OmiType.caption, weight: .medium)
                   .foregroundColor(Ink.secondary)
                   .padding(.horizontal, OmiSpacing.xs)
@@ -411,8 +411,8 @@ extension SettingsContentView {
                 Spacer()
 
                 if aiChatProjectClaudeMdContent != nil {
-                  Button("View") {
-                    fileViewerTitle = "Project CLAUDE.md"
+                  Button("Ver") {
+                    fileViewerTitle = "CLAUDE.md do projeto"
                     fileViewerContent = aiChatProjectClaudeMdContent ?? ""
                     showFileViewer = true
                   }
@@ -428,7 +428,7 @@ extension SettingsContentView {
                   .lineLimit(1)
                   .truncationMode(.middle)
               } else {
-                Text("No CLAUDE.md found at \(aiChatWorkingDirectory)/CLAUDE.md")
+                Text("Nenhum CLAUDE.md encontrado em \(aiChatWorkingDirectory)/CLAUDE.md")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
               }
@@ -446,12 +446,12 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
 
             if aiChatProjectDiscoveredSkills.isEmpty {
-              Text("Skills (\(aiChatDiscoveredSkills.count) discovered)")
+              Text("Skills (\(aiChatDiscoveredSkills.count) encontradas)")
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.primary)
             } else {
               Text(
-                "Skills (\(aiChatDiscoveredSkills.count) global + \(aiChatProjectDiscoveredSkills.count) project)"
+                "Skills (\(aiChatDiscoveredSkills.count) globais + \(aiChatProjectDiscoveredSkills.count) do projeto)"
               )
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
@@ -471,11 +471,11 @@ extension SettingsContentView {
             + aiChatProjectDiscoveredSkills.map { ($0, "Project") }
 
           if allSkills.isEmpty {
-            Text("No skills found in ~/.claude/skills/")
+            Text("Nenhuma skill encontrada em ~/.claude/skills/")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           } else {
-            Text("Skill descriptions are included in the AI chat system prompt")
+            Text("As descrições das skills são incluídas no prompt de sistema do chat com IA")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
 
@@ -485,7 +485,7 @@ extension SettingsContentView {
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.secondary)
 
-              TextField("Search skills…", text: $skillSearchQuery)
+              TextField("Buscar skills…", text: $skillSearchQuery)
                 .textFieldStyle(.plain)
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.primary)
@@ -513,7 +513,7 @@ extension SettingsContentView {
                   let origin = item.element.origin
                   HStack(spacing: OmiSpacing.sm) {
                     Toggle(
-                      "Enable \(skill.name)",
+                      "Ativar \(skill.name)",
                       isOn: Binding(
                         get: { !aiChatDisabledSkills.contains(skill.name) },
                         set: { enabled in
@@ -542,7 +542,7 @@ extension SettingsContentView {
                         // its own tint, the way `SettingsStatusChip` does, so the pair cannot
                         // drift into a contrast the label does not clear.
                         let originTint = origin == "Project" ? Ink.accent : Ink.secondary
-                        Text(origin)
+                        Text(origin == "Project" ? "Projeto" : "Global")
                           .scaledFont(size: OmiType.micro, weight: .medium)
                           .foregroundColor(originTint)
                           .padding(.horizontal, OmiSpacing.xxs)
@@ -564,11 +564,11 @@ extension SettingsContentView {
 
                     Spacer()
 
-                    Button("View") {
+                    Button("Ver") {
                       fileViewerTitle = "\(skill.name)/SKILL.md"
                       fileViewerContent =
                         (try? String(contentsOfFile: skill.path, encoding: .utf8))
-                        ?? "Unable to read file"
+                        ?? "Não foi possível ler o arquivo"
                       showFileViewer = true
                     }
                     .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -595,7 +595,7 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("Browser Extension")
+            Text("Extensão do Navegador")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -606,7 +606,7 @@ extension SettingsContentView {
                 Circle()
                   .fill(Ink.listeningGreen)
                   .frame(width: 6, height: 6)
-                Text("Connected")
+                Text("Conectado")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
               }
@@ -621,7 +621,7 @@ extension SettingsContentView {
               .labelsHidden()
           }
 
-          Text("Lets the AI use your Chrome browser with all your logged-in sessions.")
+          Text("Permite que a IA use seu navegador Chrome com todas as suas sessões logadas.")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
 
@@ -634,7 +634,7 @@ extension SettingsContentView {
                 HStack(spacing: OmiSpacing.xs) {
                   Image(systemName: "wrench.and.screwdriver")
                     .scaledFont(size: OmiType.caption)
-                  Text("Set Up")
+                  Text("Configurar")
                     .scaledFont(size: OmiType.body, weight: .medium)
                 }
               }
@@ -659,7 +659,7 @@ extension SettingsContentView {
                   HStack(spacing: OmiSpacing.xxs) {
                     Image(systemName: "arrow.clockwise")
                       .scaledFont(size: OmiType.caption)
-                    Text("Reconfigure")
+                    Text("Reconfigurar")
                       .scaledFont(size: OmiType.caption)
                   }
                 }
@@ -672,7 +672,7 @@ extension SettingsContentView {
                   HStack(spacing: OmiSpacing.xxs) {
                     Image(systemName: "arrow.counterclockwise")
                       .scaledFont(size: OmiType.caption)
-                    Text("Reset")
+                    Text("Redefinir")
                       .scaledFont(size: OmiType.caption)
                   }
                 }
@@ -691,7 +691,7 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("Dev Mode")
+            Text("Modo Desenvolvedor")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -706,7 +706,7 @@ extension SettingsContentView {
               }
           }
 
-          Text("Let the AI modify the app's source code, rebuild it, and add custom features.")
+          Text("Permite que a IA modifique o código-fonte do app, o recompile e adicione recursos personalizados.")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
 
@@ -716,7 +716,7 @@ extension SettingsContentView {
                 Image(systemName: "checkmark.circle.fill")
                   .foregroundColor(Ink.listeningGreen)
                   .scaledFont(size: OmiType.caption)
-                Text("AI can modify UI, add features, create custom SQLite tables")
+                Text("A IA pode modificar a interface, adicionar recursos e criar tabelas SQLite personalizadas")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
               }
@@ -724,7 +724,7 @@ extension SettingsContentView {
                 Image(systemName: "lock.fill")
                   .foregroundColor(SettingsInk.notice)
                   .scaledFont(size: OmiType.caption)
-                Text("Backend API, auth, and sync logic are read-only")
+                Text("A API do backend, a autenticação e a lógica de sincronização são somente leitura")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
               }

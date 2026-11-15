@@ -49,15 +49,15 @@ struct AssistantVoicePicker: View {
   var body: some View {
     HStack(spacing: OmiSpacing.lg) {
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Voice")
+        Text("Voz")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Text(
           store.lastError != nil
-            ? "Couldn't reach the voice service — your previous choice stays active."
+            ? "Não foi possível acessar o serviço de voz. Sua escolha anterior continua ativa."
             : previewFailed
-              ? "Couldn't play the preview — try again."
-              : "Your voice choice is shared across desktop and mobile."
+              ? "Não foi possível tocar a prévia, tente de novo."
+              : "Sua escolha de voz vale para o desktop e o celular."
         )
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
@@ -68,7 +68,7 @@ struct AssistantVoicePicker: View {
           .controlSize(.small)
       }
       if store.lastError != nil || previewFailed {
-        Button("Try Again") {
+        Button("Tentar de novo") {
           if previewFailed {
             runPreview()
           } else {
@@ -77,7 +77,7 @@ struct AssistantVoicePicker: View {
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
       }
-      OmiIconButton("play.fill", help: "Preview \(selectedVoiceName)", size: .compact) {
+      OmiIconButton("play.fill", help: "Ouvir prévia de \(selectedVoiceName)", size: .compact) {
         runPreview()
       }
       .disabled(previewBusy || store.isSaving || VoiceTurnCoordinator.shared.activeTurnID != nil)

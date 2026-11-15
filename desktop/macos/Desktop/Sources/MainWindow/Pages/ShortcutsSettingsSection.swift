@@ -8,15 +8,15 @@ enum PushToTalkSettingsGuidance {
     shortcutLabel: String
   ) -> [String] {
     guard pttEnabled else {
-      return ["Enable Push to Talk to use voice input."]
+      return ["Ative Apertar para Falar para usar a entrada de voz."]
     }
 
-    let hold = "Hold \(shortcutLabel) to speak, then release to send."
+    let hold = "Segure \(shortcutLabel) para falar e solte para enviar."
     let handsFree =
       doubleTapForLock
-      ? "Double-tap to keep listening hands-free; tap again to send."
-      : "Turn on Double-tap for Locked Mode for hands-free listening."
-    return [hold, handsFree, "Say “type…” to dictate into the focused app."]
+      ? "Toque duas vezes para continuar ouvindo sem usar as mãos; toque de novo para enviar."
+      : "Ative o Toque Duplo para o Modo Travado para ouvir sem usar as mãos."
+    return [hold, handsFree, "Diga “type…” para ditar no app em foco."]
   }
 }
 
@@ -55,10 +55,10 @@ struct ShortcutsSettingsSection: View {
   private var askOmiKeyCard: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Open Omi Shortcut")
+        Text("Atalho de Abrir o Omi")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
-        Text("Global shortcut to open the Omi app from anywhere.")
+        Text("Atalho global para abrir o app do Omi de qualquer lugar.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
@@ -82,11 +82,11 @@ struct ShortcutsSettingsSection: View {
       {
         shortcutRecorderCard(
           title: recordingTarget == .askOmi
-            ? "Press your custom Open Omi shortcut now" : "Custom Open Omi shortcut",
+            ? "Aperte agora seu atalho personalizado de Abrir o Omi" : "Atalho personalizado de Abrir o Omi",
           shortcut: settings.askOmiShortcut,
           isRecording: recordingTarget == .askOmi,
           action: { startShortcutCapture(.askOmi) },
-          helperText: "Use at least one non-modifier key."
+          helperText: "Use pelo menos uma tecla que não seja modificadora."
         )
       }
     }
@@ -116,10 +116,10 @@ struct ShortcutsSettingsSection: View {
   private var pttKeyCard: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Push to Talk")
+        Text("Apertar para Falar")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
-        Text("Hold the key to speak, release to send your question to AI.")
+        Text("Segure a tecla para falar e solte para enviar sua pergunta à IA.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
@@ -143,11 +143,11 @@ struct ShortcutsSettingsSection: View {
       {
         shortcutRecorderCard(
           title: recordingTarget == .pushToTalk
-            ? "Press your custom push-to-talk shortcut now" : "Custom push-to-talk shortcut",
+            ? "Aperte agora seu atalho personalizado de apertar para falar" : "Atalho personalizado de apertar para falar",
           shortcut: settings.pttShortcut,
           isRecording: recordingTarget == .pushToTalk,
           action: { startShortcutCapture(.pushToTalk) },
-          helperText: "Use a modifier key or a key combination."
+          helperText: "Use uma tecla modificadora ou uma combinação de teclas."
         )
       }
 
@@ -192,13 +192,13 @@ struct ShortcutsSettingsSection: View {
   private var doubleTapCard: some View {
     HStack(spacing: OmiSpacing.lg) {
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Double-tap for Locked Mode")
+        Text("Toque Duplo para o Modo Travado")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Text(
           settings.doubleTapForLock
-            ? "Double-tap the push-to-talk key to keep listening hands-free. Tap again to send."
-            : "Turn this on to keep listening hands-free with a double-tap."
+            ? "Toque duas vezes na tecla de apertar para falar para continuar ouvindo sem usar as mãos. Toque de novo para enviar."
+            : "Ative para continuar ouvindo sem usar as mãos com um toque duplo."
         )
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
@@ -222,10 +222,10 @@ struct ShortcutsSettingsSection: View {
   private var pttSoundsCard: some View {
     HStack(spacing: OmiSpacing.lg) {
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Push-to-Talk Sounds")
+        Text("Sons de Apertar para Falar")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
-        Text("Play audio feedback when starting and ending voice input.")
+        Text("Toca um som ao iniciar e terminar a entrada de voz.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
@@ -248,10 +248,10 @@ struct ShortcutsSettingsSection: View {
   private var muteAudioCard: some View {
     HStack(spacing: OmiSpacing.lg) {
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Mute Audio While Talking")
+        Text("Silenciar o Áudio Enquanto Fala")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
-        Text("Silence music and other playback while holding push-to-talk, then restore it on release.")
+        Text("Silencia música e outras reproduções enquanto você segura apertar para falar e restaura ao soltar.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
@@ -273,20 +273,20 @@ struct ShortcutsSettingsSection: View {
 
   private var referenceCard: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
-      Text("Keyboard Shortcuts")
+      Text("Atalhos de Teclado")
         .scaledFont(size: OmiType.subheading, weight: .semibold)
         .foregroundColor(Ink.primary)
 
       shortcutRow(
-        label: "Open Omi",
-        keys: settings.askOmiEnabled ? settings.askOmiShortcut.displayLabel : "Disabled")
-      shortcutRow(label: "Toggle floating bar", keys: "\u{2318}\\")
+        label: "Abrir o Omi",
+        keys: settings.askOmiEnabled ? settings.askOmiShortcut.displayLabel : "Desativado")
+      shortcutRow(label: "Alternar barra flutuante", keys: "\u{2318}\\")
       shortcutRow(
-        label: "Push to talk",
-        keys: settings.pttEnabled ? settings.pttShortcut.displayLabel + " hold" : "Disabled")
+        label: "Apertar para falar",
+        keys: settings.pttEnabled ? settings.pttShortcut.displayLabel + " segurando" : "Desativado")
       if settings.pttEnabled && settings.doubleTapForLock {
         shortcutRow(
-          label: "Locked listening", keys: settings.pttShortcut.displayLabel + " \u{00D7}2")
+          label: "Escuta travada", keys: settings.pttShortcut.displayLabel + " \u{00D7}2")
       }
     }
     .padding(OmiSpacing.xl)
@@ -322,7 +322,7 @@ struct ShortcutsSettingsSection: View {
       }
       startShortcutCapture(target)
     } label: {
-      Text("Custom")
+      Text("Personalizado")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
         .padding(.horizontal, OmiSpacing.md)
@@ -344,7 +344,7 @@ struct ShortcutsSettingsSection: View {
 
   private func disableShortcutButton(isDisabled: Bool, action: @escaping () -> Void) -> some View {
     Button(action: action) {
-      Text("Disable")
+      Text("Desativar")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
         .padding(.horizontal, OmiSpacing.md)
@@ -411,7 +411,7 @@ struct ShortcutsSettingsSection: View {
         Spacer()
 
         Button(action: action) {
-          Text(isRecording ? "Listening…" : "Save")
+          Text(isRecording ? "Ouvindo…" : "Salvar")
         }
         .buttonStyle(OmiButtonStyle(.primary, size: .compact))
       }
@@ -462,7 +462,7 @@ struct ShortcutsSettingsSection: View {
     switch target {
     case .askOmi:
       if event.type == .flagsChanged {
-        captureError = "Open Omi needs a non-modifier key."
+        captureError = "Abrir o Omi precisa de uma tecla que não seja modificadora."
         return true
       }
       guard
@@ -495,7 +495,7 @@ struct ShortcutsSettingsSection: View {
         return false
       }
       guard ShortcutSettings.isSafePushToTalkShortcut(shortcut) else {
-        captureError = "Push-to-talk needs a modifier so regular typing won't start a voice turn."
+        captureError = "Apertar para falar precisa de uma tecla modificadora para que a digitação normal não inicie uma fala."
         return true
       }
       pendingModifierOnlyShortcut = nil

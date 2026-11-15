@@ -20,7 +20,7 @@ extension SettingsContentView {
 
               VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
                 Text(
-                  AuthService.shared.displayName.isEmpty ? "User" : AuthService.shared.displayName
+                  AuthService.shared.displayName.isEmpty ? "Usuário" : AuthService.shared.displayName
                 )
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.primary)
@@ -34,7 +34,7 @@ extension SettingsContentView {
 
               Spacer()
 
-              Button("Sign Out") {
+              Button("Sair") {
                 appState.stopTranscription()
                 ProactiveAssistantsPlugin.shared.stopMonitoring(reason: .signOut)
                 Task {
@@ -52,12 +52,12 @@ extension SettingsContentView {
 
           HStack(alignment: .center, spacing: OmiSpacing.lg) {
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Delete Account & Data")
+              Text("Apagar Conta e Dados")
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.errorRed)
 
               Text(
-                "Permanently deletes server data, clears local data for this account, resets onboarding, and signs you out."
+                "Apaga permanentemente os dados do servidor, limpa os dados locais desta conta, reinicia a introdução e desconecta você."
               )
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
@@ -73,7 +73,7 @@ extension SettingsContentView {
                 ProgressView()
                   .controlSize(.small)
               } else {
-                Text("Delete")
+                Text("Apagar")
                   .scaledFont(size: OmiType.body, weight: .semibold)
               }
             }
@@ -90,10 +90,10 @@ extension SettingsContentView {
       }
       .shellConfirmation(
         isPresented: $showDeleteAccountAlert,
-        title: "Delete Account & Data?",
-        message: "This can't be undone. Your account, chat history, and all server data will be permanently "
-          + "deleted. Local data for this account will be cleared and you'll return to onboarding.",
-        confirmTitle: "Delete Permanently",
+        title: "Apagar Conta e Dados?",
+        message: "Isso não pode ser desfeito. Sua conta, o histórico do chat e todos os dados do servidor serão apagados permanentemente. "
+          + "Os dados locais desta conta serão limpos e você voltará à introdução.",
+        confirmTitle: "Apagar Permanentemente",
         onCancel: { AnalyticsManager.shared.deleteAccountCancelled() }
       ) {
         deleteAccountAndData()
@@ -142,7 +142,7 @@ extension SettingsContentView {
               .foregroundColor(trialTimeColor(remaining: trial.trialRemainingSeconds))
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Premium Trial Active")
+              Text("Teste Premium Ativo")
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.primary)
 
@@ -171,13 +171,13 @@ extension SettingsContentView {
           GlassSeparator()
 
           VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-            Text("Included in your trial")
+            Text("Incluído no seu teste")
               .scaledFont(size: OmiType.caption, weight: .semibold)
               .foregroundColor(Ink.secondary)
 
-            trialFeatureRow(text: "Unlimited listening & transcription")
-            trialFeatureRow(text: "Unlimited memories & insights")
-            trialFeatureRow(text: "Chat questions")
+            trialFeatureRow(text: "Escuta e transcrição ilimitadas")
+            trialFeatureRow(text: "Memórias e insights ilimitados")
+            trialFeatureRow(text: "Perguntas no chat")
           }
         }
       }
@@ -192,11 +192,11 @@ extension SettingsContentView {
               .foregroundColor(SettingsInk.notice)
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Trial Ended")
+              Text("Teste Encerrado")
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.primary)
 
-              Text("Upgrade to keep unlimited access")
+              Text("Faça upgrade para manter o acesso ilimitado")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
             }
@@ -209,7 +209,7 @@ extension SettingsContentView {
           Button(action: {
             selectedPlanIdForCheckout = omiProPlanId
           }) {
-            Text("View Plans")
+            Text("Ver Planos")
               .scaledFont(size: OmiType.body, weight: .semibold)
           }
           .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -235,18 +235,18 @@ extension SettingsContentView {
   }
 
   func trialCountdownText(remaining: Int) -> String {
-    if remaining <= 0 { return "Expired" }
+    if remaining <= 0 { return "Expirado" }
     let hours = remaining / 3600
     let minutes = (remaining % 3600) / 60
     if hours >= 24 {
       let days = hours / 24
       let leftoverHours = hours % 24
-      return "\(days)d \(leftoverHours)h remaining"
+      return "\(days)d \(leftoverHours)h restantes"
     }
     if hours > 0 {
-      return "\(hours)h \(minutes)m remaining"
+      return "\(hours)h \(minutes)m restantes"
     }
-    return "\(minutes)m remaining"
+    return "\(minutes)m restantes"
   }
 
   func trialTimeColor(remaining: Int) -> Color {
@@ -302,7 +302,7 @@ extension SettingsContentView {
                   onManage: openCustomerPortal
                 )
               } else {
-                Button("Refresh") {
+                Button("Atualizar") {
                   loadSubscriptionInfo()
                 }
                 .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -348,14 +348,14 @@ extension SettingsContentView {
                 Image(systemName: "exclamationmark.triangle.fill")
                   .foregroundColor(SettingsInk.notice)
                   .scaledFont(size: OmiType.subheading)
-                Text("Plan Retiring")
+                Text("Plano em Descontinuação")
                   .scaledFont(size: OmiType.subheading, weight: .semibold)
                   .foregroundColor(Ink.primary)
               }
 
               Text(
                 subscription.deprecationMessage
-                  ?? "Your \(currentPlanTitle) plan is being retired. Switch to Omi Pro for \(omiProDeprecationFallbackPrice)."
+                  ?? "Seu plano \(currentPlanTitle) está sendo descontinuado. Mude para o Omi Pro por \(omiProDeprecationFallbackPrice)."
               )
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
@@ -364,7 +364,7 @@ extension SettingsContentView {
               Button(action: {
                 selectedPlanIdForCheckout = omiProPlanId
               }) {
-                Text("Switch to Omi Pro")
+                Text("Mudar para o Omi Pro")
                   .scaledFont(size: OmiType.body, weight: .semibold)
               }
               .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -427,8 +427,8 @@ extension SettingsContentView {
                 : Ink.listeningGreen)
             Text(
               info.excessQuestions > 0
-                ? "Usage-based overage"
-                : "No overage yet this cycle"
+                ? "Excedente por uso"
+                : "Nenhum excedente neste ciclo ainda"
             )
             .scaledFont(size: OmiType.body, weight: .semibold)
             .foregroundColor(Ink.primary)
@@ -443,14 +443,14 @@ extension SettingsContentView {
 
           if info.excessQuestions > 0 {
             Text(
-              "You've gone \(info.excessQuestions) question\(info.excessQuestions == 1 ? "" : "s") past your plan's \(info.includedQuestions ?? 0) included. We'll bill the overage at end of your cycle."
+              "Você passou \(info.excessQuestions) pergunta\(info.excessQuestions == 1 ? "" : "s") do limite de \(info.includedQuestions ?? 0) incluídas no seu plano. Cobraremos o excedente no fim do ciclo."
             )
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
             .fixedSize(horizontal: false, vertical: true)
           } else {
             Text(
-              "Go over your \(info.includedQuestions ?? 0) included questions and we'll charge real provider cost + \(Int(info.markupPercent))%. No hard cutoff."
+              "Se passar das \(info.includedQuestions ?? 0) perguntas incluídas, cobraremos o custo real do provedor + \(Int(info.markupPercent))%. Sem corte brusco."
             )
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
@@ -476,7 +476,7 @@ extension SettingsContentView {
     ScrollView {
       VStack(alignment: .leading, spacing: OmiSpacing.lg) {
         HStack {
-          Text(overageInfo?.explainerTitle ?? "How overage billing works")
+          Text(overageInfo?.explainerTitle ?? "Como funciona a cobrança de excedente")
             .scaledFont(size: OmiType.heading, weight: .semibold)
             .foregroundColor(Ink.primary)
           Spacer()
@@ -491,22 +491,22 @@ extension SettingsContentView {
         if let info = overageInfo, info.isOveragePlan {
           GlassSeparator()
           VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-            Text("Your current cycle")
+            Text("Seu ciclo atual")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
-            overageExplainerRow("Questions used", value: "\(info.usedQuestions)")
-            overageExplainerRow("Included in plan", value: "\(info.includedQuestions ?? 0)")
-            overageExplainerRow("Over the limit", value: "\(info.excessQuestions)")
+            overageExplainerRow("Perguntas usadas", value: "\(info.usedQuestions)")
+            overageExplainerRow("Incluídas no plano", value: "\(info.includedQuestions ?? 0)")
+            overageExplainerRow("Acima do limite", value: "\(info.excessQuestions)")
             overageExplainerRow(
-              "Real provider cost",
+              "Custo real do provedor",
               value: String(format: "$%.2f", info.realCostUsd)
             )
             overageExplainerRow(
-              "Markup",
+              "Margem",
               value: String(format: "%.0f%%", info.markupPercent)
             )
             overageExplainerRow(
-              "Overage to bill",
+              "Excedente a cobrar",
               value: String(format: "$%.2f", info.overageUsd),
               emphasized: true
             )
@@ -551,7 +551,7 @@ extension SettingsContentView {
         }
 
         Button(action: openBYOKSettings) {
-          Text(APIKeyService.isByokActive ? "Manage Keys" : "Add Keys")
+          Text(APIKeyService.isByokActive ? "Gerenciar Chaves" : "Adicionar Chaves")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
         .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -580,7 +580,7 @@ extension SettingsContentView {
       settingsCard(settingId: "planusage.overview") {
         VStack(alignment: .leading, spacing: OmiSpacing.md) {
           HStack {
-            Text("Usage this month")
+            Text("Uso neste mês")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
             Spacer()
@@ -612,16 +612,16 @@ extension SettingsContentView {
             // only show the hard "upgrade" copy on Free and other hard-capped
             // plans.
             if let info = overageInfo, info.isOveragePlan {
-              Text("You're past your included limit — extra usage is billed as overage at end of cycle.")
+              Text("Você passou do limite incluído, e o uso extra é cobrado como excedente no fim do ciclo.")
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(SettingsInk.notice)
             } else {
-              Text("You've reached this month's limit. Upgrade your plan or wait until the next reset.")
+              Text("Você atingiu o limite deste mês. Faça upgrade do plano ou espere até a próxima renovação.")
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(SettingsInk.notice)
             }
           } else if quota.percent >= 80.0 {
-            Text("You're close to your monthly limit.")
+            Text("Você está perto do seu limite mensal.")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(SettingsInk.notice)
           }
@@ -631,7 +631,7 @@ extension SettingsContentView {
       settingsCard(settingId: "planusage.overview") {
         HStack {
           ProgressView().controlSize(.small)
-          Text("Loading usage…")
+          Text("Carregando uso…")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
         }
@@ -651,9 +651,9 @@ extension SettingsContentView {
 
   func chatUsageQuotaDescription(_ q: APIClient.ChatUsageQuota) -> String {
     if q.unit == "cost_usd" {
-      return "Chat spend on \(q.plan) plan"
+      return "Gasto do chat no plano \(q.plan)"
     }
-    return "Chat questions on \(q.plan) plan"
+    return "Perguntas do chat no plano \(q.plan)"
   }
 
   func chatUsageQuotaResetText(_ q: APIClient.ChatUsageQuota) -> String? {
@@ -662,12 +662,12 @@ extension SettingsContentView {
     let now = Date()
     let days = max(0, Int(resetDate.timeIntervalSince(now) / 86400))
     if days <= 0 {
-      return "Resets today"
+      return "Renova hoje"
     }
     if days == 1 {
-      return "Resets tomorrow"
+      return "Renova amanhã"
     }
-    return "Resets in \(days) days"
+    return "Renova em \(days) dias"
   }
 
   func chatUsageBarColor(_ q: APIClient.ChatUsageQuota) -> Color {

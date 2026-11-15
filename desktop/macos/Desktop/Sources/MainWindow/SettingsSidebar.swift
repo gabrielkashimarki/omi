@@ -19,128 +19,128 @@ struct SettingsSearchItem: Identifiable {
   static let allSearchableItems: [SettingsSearchItem] = [
     // General
     SettingsSearchItem(
-      name: "Notifications", subtitle: "macOS permission and banner status",
+      name: "Notificações", subtitle: "Status da permissão e dos banners do macOS",
       keywords: ["alerts", "notify", "banners", "system settings", "permission"], section: .general,
       icon: "gearshape",
       settingId: "general.notifications"),
     SettingsSearchItem(
-      name: "Interface Sounds", subtitle: "Sounds when an answer finishes or a card appears",
+      name: "Sons da Interface", subtitle: "Sons quando uma resposta termina ou um cartão aparece",
       keywords: ["sound", "sounds", "audio", "chime", "mute", "silence", "effects"],
       section: .general, icon: "speaker.wave.2", settingId: "general.interfacesounds"),
     SettingsSearchItem(
-      name: "Font Size", subtitle: "Adjust text size across the app",
+      name: "Tamanho da Fonte", subtitle: "Ajuste o tamanho do texto em todo o app",
       keywords: ["text size", "zoom", "scale", "reset"], section: .general, icon: "gearshape",
       settingId: "general.fontsize"),
     SettingsSearchItem(
-      name: "Reset Window Size", subtitle: "Restore the default window dimensions",
+      name: "Redefinir Tamanho da Janela", subtitle: "Restaura as dimensões padrão da janela",
       keywords: ["resize", "window", "default size"], section: .general, icon: "macwindow",
       settingId: "general.window"),
     SettingsSearchItem(
-      name: "Transparency", subtitle: "How see-through Omi's windows are",
+      name: "Transparência", subtitle: "Quão transparentes são as janelas do Omi",
       keywords: ["glass", "transparent", "opacity", "opaque", "blur", "see-through", "translucent"],
       section: .general, icon: "circle.lefthalf.filled", settingId: "general.transparency"),
 
     // Rewind
     SettingsSearchItem(
-      name: "Rewind", subtitle: "How long screen history is kept",
+      name: "Rewind", subtitle: "Por quanto tempo o histórico de tela é mantido",
       keywords: ["screen history", "screenshots", "recording", "retention"], section: .rewind,
       icon: "clock.arrow.circlepath", settingId: "rewind.retention"),
     SettingsSearchItem(
-      name: "Screen Capture", subtitle: "Toggle screen capture on or off",
+      name: "Captura de Tela", subtitle: "Liga ou desliga a captura de tela",
       keywords: ["screen capture", "screenshot", "monitor", "recording", "rewind"],
       section: .general, icon: "rectangle.dashed.badge.record", settingId: "general.screencapture"),
     SettingsSearchItem(
-      name: "Audio Recording", subtitle: "Off, Always On, or Only Meetings",
+      name: "Gravação de Áudio", subtitle: "Desligado, Sempre Ligado ou Só Reuniões",
       keywords: [
         "audio", "microphone", "recording", "transcription", "mic", "meeting", "zoom", "google meet",
         "teams", "call", "system audio",
       ], section: .general,
       icon: "mic.fill", settingId: "general.audiorecording"),
     SettingsSearchItem(
-      name: "Storage", subtitle: "View frame count and disk usage",
+      name: "Armazenamento", subtitle: "Veja a contagem de quadros e o uso de disco",
       keywords: ["frames", "storage", "disk", "space", "gb"], section: .rewind,
       icon: "clock.arrow.circlepath", settingId: "rewind.storage"),
     SettingsSearchItem(
-      name: "Excluded Apps", subtitle: "Screen capture is paused when these apps are active",
+      name: "Apps Excluídos", subtitle: "A captura de tela é pausada quando estes apps estão ativos",
       keywords: ["exclude", "ignore", "block apps", "blocklist", "reset to defaults"],
       section: .rewind, icon: "clock.arrow.circlepath", settingId: "rewind.excludedapps"),
     SettingsSearchItem(
-      name: "Battery Optimization", subtitle: "Saves power by reducing screenshot frequency",
+      name: "Otimização de Bateria", subtitle: "Economiza energia reduzindo a frequência das capturas",
       keywords: ["battery", "power", "energy", "low power"], section: .rewind,
       icon: "clock.arrow.circlepath", settingId: "rewind.battery"),
     SettingsSearchItem(
-      name: "Data Retention", subtitle: "How long to keep screen recordings",
+      name: "Retenção de Dados", subtitle: "Por quanto tempo manter as gravações de tela",
       keywords: ["retention", "storage", "delete old", "keep data"], section: .rewind,
       icon: "clock.arrow.circlepath", settingId: "rewind.retention"),
     SettingsSearchItem(
-      name: "Meeting Screenshots", subtitle: "Add screenshots of what was on screen to meeting notes",
+      name: "Capturas de Tela da Reunião", subtitle: "Adiciona às notas da reunião capturas do que estava na tela",
       keywords: ["meeting", "screenshots", "notes", "banner", "photos"], section: .rewind,
       icon: "photo.on.rectangle.angled", settingId: "rewind.meetingnotescreenshots"),
 
     // Transcription
     SettingsSearchItem(
-      name: "Transcription Settings", subtitle: "Configure speech-to-text options",
+      name: "Ajustes de Transcrição", subtitle: "Configure as opções de fala para texto",
       keywords: ["language", "vocabulary", "speech"], section: .transcription, icon: "waveform",
       settingId: "transcription.languagemode"),
     SettingsSearchItem(
-      name: "Language Mode", subtitle: "Choose single or multi-language transcription",
+      name: "Modo de Idioma", subtitle: "Escolha transcrição em um idioma ou em vários",
       keywords: ["language", "multilingual", "single language"], section: .transcription,
       icon: "waveform", settingId: "transcription.languagemode"),
     SettingsSearchItem(
-      name: "Voice Assistant Languages",
-      subtitle: "Languages you speak to Omi over push-to-talk",
+      name: "Idiomas do Assistente de Voz",
+      subtitle: "Idiomas que você fala com o Omi ao apertar para falar",
       keywords: ["voice", "push to talk", "ptt", "language", "russian", "multilingual"],
       section: .transcription, icon: "person.wave.2",
       settingId: "transcription.voicelanguages"),
     SettingsSearchItem(
-      name: "Custom Vocabulary",
-      subtitle: "Improve recognition of names, brands, and technical terms",
+      name: "Vocabulário Personalizado",
+      subtitle: "Melhora o reconhecimento de nomes, marcas e termos técnicos",
       keywords: ["vocabulary", "words", "custom words", "dictionary"], section: .transcription,
       icon: "waveform", settingId: "transcription.vocabulary"),
     SettingsSearchItem(
-      name: "Local VAD Gate", subtitle: "Skip silence to reduce transcription cost",
+      name: "Filtro VAD Local", subtitle: "Ignora o silêncio para reduzir o custo de transcrição",
       keywords: ["vad", "silence", "gate", "cost", "deepgram"], section: .transcription,
       icon: "waveform", settingId: "transcription.vadgate"),
     SettingsSearchItem(
-      name: "Silent Type", subtitle: "Keeps what you dictate with Omi Type out of the chat",
+      name: "Omi Type Silencioso", subtitle: "Mantém o que você dita com o Omi Type fora do chat",
       keywords: ["silent", "type", "dictation", "voice typing", "private", "chat context"],
       section: .transcription,
       icon: "keyboard", settingId: "transcription.silenttype"),
     SettingsSearchItem(
-      name: "Ignore Dictation Apps",
-      subtitle: "Stop listening while Wispr Flow, superwhisper, or macOS Dictation uses the mic",
+      name: "Ignorar Apps de Ditado",
+      subtitle: "Para de escutar enquanto o Wispr Flow, o superwhisper ou o Ditado do macOS usa o microfone",
       keywords: ["dictation", "wispr", "superwhisper", "noise", "mute", "conversations"],
       section: .transcription,
       icon: "mic.slash", settingId: "transcription.ignoredictationapps"),
 
     // Notifications
     SettingsSearchItem(
-      name: "Notification Settings", subtitle: "Control how often you receive notifications",
+      name: "Ajustes de Notificações", subtitle: "Controle com que frequência você recebe notificações",
       keywords: ["daily summary", "frequency", "alerts"], section: .notifications, icon: "bell",
       settingId: "notifications.settings"),
     SettingsSearchItem(
-      name: "Notification Frequency", subtitle: "How many proactive suggestions Omi sends",
+      name: "Frequência das Notificações", subtitle: "Quantas sugestões proativas o Omi envia",
       keywords: ["frequency", "how often", "interval"], section: .notifications, icon: "bell",
       settingId: "notifications.frequency"),
     SettingsSearchItem(
-      name: "Task Notifications",
-      subtitle: "Allow interruptions when a task needs attention",
+      name: "Notificações de Tarefas",
+      subtitle: "Permite interrupções quando uma tarefa precisa de atenção",
       keywords: ["task", "action item", "notify task", "interruption", "proactive"],
       section: .notifications, icon: "bell",
       settingId: "notifications.task"),
     SettingsSearchItem(
-      name: "Memory Notifications", subtitle: "Show notification when a memory is extracted",
+      name: "Notificações de Memórias", subtitle: "Mostra uma notificação quando uma memória é extraída",
       keywords: ["memory", "facts", "notify memory"], section: .notifications, icon: "bell",
       settingId: "notifications.memory"),
     SettingsSearchItem(
-      name: "Integration Notifications",
-      subtitle: "Occasionally offer to connect an app Omi can use — Gmail, Notion, ChatGPT",
+      name: "Notificações de Integrações",
+      subtitle: "De vez em quando oferece conectar um app que o Omi pode usar (Gmail, Notion, ChatGPT)",
       keywords: ["integration", "suggestions", "connect", "gmail", "notion", "nudge"],
       section: .notifications, icon: "bell",
       settingId: "notifications.integrationsuggestions"),
     SettingsSearchItem(
-      name: "Connect an Agent",
-      subtitle: "Setup prompts plus MCP and Developer API keys for Claude, ChatGPT, Codex, Cursor",
+      name: "Conectar um Agente",
+      subtitle: "Prompts de configuração e chaves de MCP e da API de Desenvolvedor para Claude, ChatGPT, Codex, Cursor",
       keywords: [
         "agent", "mcp", "api key", "developer", "claude", "chatgpt", "codex", "cursor", "openclaw",
         "hermes",
@@ -148,139 +148,139 @@ struct SettingsSearchItem: Identifiable {
       section: .advanced, icon: "point.3.connected.trianglepath.dotted",
       settingId: "advanced.connectagent"),
     SettingsSearchItem(
-      name: "Reset Integration Suggestions",
-      subtitle: "Clear every integration's suggestion history so Omi can offer them again",
+      name: "Redefinir Sugestões de Integrações",
+      subtitle: "Limpa o histórico de sugestões de todas as integrações para o Omi poder oferecê-las de novo",
       keywords: ["reset", "integration", "suggestions", "history", "again"],
       section: .advanced, icon: "wrench.and.screwdriver",
       settingId: "advanced.troubleshooting.resetintegrationsuggestions"),
     SettingsSearchItem(
-      name: "Daily Summary",
-      subtitle: "Receive a daily summary of your conversations and activities",
+      name: "Resumo do Dia",
+      subtitle: "Receba um resumo diário das suas conversas e atividades",
       keywords: ["daily", "summary", "digest", "end of day"], section: .notifications, icon: "bell",
       settingId: "notifications.dailysummary"),
     SettingsSearchItem(
-      name: "Summary Time", subtitle: "When to send your daily summary (hour only)",
+      name: "Horário do Resumo", subtitle: "Quando enviar seu resumo do dia (só a hora)",
       keywords: ["time", "schedule", "when", "hour"], section: .notifications, icon: "bell",
       settingId: "notifications.summarytime"),
 
     // Privacy
     SettingsSearchItem(
-      name: "Privacy", subtitle: "Control your data and privacy settings",
+      name: "Privacidade", subtitle: "Controle seus dados e ajustes de privacidade",
       keywords: ["data", "encryption", "cloud sync", "recordings"], section: .privacy,
       icon: "lock.shield", settingId: "privacy.privacy"),
     SettingsSearchItem(
-      name: "Store Recordings",
-      subtitle: "Allow Omi to store audio recordings of your conversations",
+      name: "Armazenar Gravações",
+      subtitle: "Permite que o Omi armazene gravações de áudio das suas conversas",
       keywords: ["store", "save recordings", "audio storage"], section: .privacy,
       icon: "lock.shield", settingId: "privacy.storerecordings"),
     SettingsSearchItem(
-      name: "Private Cloud Sync", subtitle: "Upload your recordings to your own cloud storage",
+      name: "Sincronização em Nuvem Privada", subtitle: "Envie suas gravações para o seu próprio armazenamento na nuvem",
       keywords: ["cloud", "sync", "private cloud"], section: .privacy, icon: "lock.shield",
       settingId: "privacy.storerecordings"),
     SettingsSearchItem(
-      name: "Encryption", subtitle: "Server-side encryption for your data",
+      name: "Criptografia", subtitle: "Criptografia no servidor para os seus dados",
       keywords: ["encrypt", "security", "end to end"], section: .privacy, icon: "lock.shield",
       settingId: "privacy.encryption"),
     SettingsSearchItem(
-      name: "What We Track", subtitle: "See the usage data Omi collects",
+      name: "O Que Monitoramos", subtitle: "Veja os dados de uso que o Omi coleta",
       keywords: ["tracking", "analytics", "telemetry", "data collection"], section: .privacy,
       icon: "lock.shield", settingId: "privacy.tracking"),
 
     // Account
     SettingsSearchItem(
-      name: "Account", subtitle: "Your profile and email", keywords: ["profile", "email"],
+      name: "Conta", subtitle: "Seu perfil e e-mail", keywords: ["profile", "email"],
       section: .account, icon: "person.circle", settingId: "account.account"),
     SettingsSearchItem(
-      name: "Sign Out", subtitle: "Sign out of your Omi account",
+      name: "Sair", subtitle: "Saia da sua conta do Omi",
       keywords: ["sign out", "log out", "logout", "signout"], section: .account,
       icon: "person.circle", settingId: "account.signout"),
 
     // Plan and Usage
     SettingsSearchItem(
-      name: "Plan and Usage", subtitle: "Subscription status and usage limits",
+      name: "Plano e Uso", subtitle: "Status da assinatura e limites de uso",
       keywords: ["subscription", "billing", "plan", "usage", "stripe", "omi pro", "pro"],
       section: .planUsage, icon: "creditcard", settingId: "planusage.overview"),
     SettingsSearchItem(
-      name: "Current Plan", subtitle: "See your current subscription and renewal status",
+      name: "Plano Atual", subtitle: "Veja sua assinatura atual e o status da renovação",
       keywords: ["current plan", "renewal", "billing"], section: .planUsage, icon: "creditcard",
       settingId: "planusage.current"),
     SettingsSearchItem(
-      name: "Upgrade Plan", subtitle: "Buy Omi Pro",
+      name: "Fazer Upgrade do Plano", subtitle: "Comprar o Omi Pro",
       keywords: ["upgrade", "buy", "pricing", "checkout", "omi pro", "pro"], section: .planUsage,
       icon: "creditcard", settingId: "planusage.purchase"),
 
     // Referral
     SettingsSearchItem(
-      name: "Refer a Friend", subtitle: "Share one free month of Omi Pro",
+      name: "Indique um Amigo", subtitle: "Compartilhe um mês grátis do Omi Pro",
       keywords: ["refer", "referral", "friend", "gift", "free month", "share link"],
       section: .referral, icon: "gift", settingId: "referral.link"),
 
     // About
     SettingsSearchItem(
-      name: "Software Updates", subtitle: "Check for and manage app updates",
+      name: "Atualizações de Software", subtitle: "Verifique e gerencie as atualizações do app",
       keywords: ["update", "auto update", "sparkle", "version", "check for updates", "check now"],
       section: .about, icon: "info.circle", settingId: "about.updates"),
     SettingsSearchItem(
-      name: "Automatic Updates", subtitle: "Check for updates automatically in the background",
+      name: "Atualizações Automáticas", subtitle: "Verifica atualizações automaticamente em segundo plano",
       keywords: ["auto check", "background updates", "check automatically"], section: .about,
       icon: "info.circle", settingId: "about.autoupdates"),
     SettingsSearchItem(
-      name: "Auto-Install Updates",
-      subtitle: "Automatically download and install updates when available",
+      name: "Instalar Atualizações Automaticamente",
+      subtitle: "Baixa e instala atualizações automaticamente quando disponíveis",
       keywords: ["auto install", "automatic install", "download updates", "install updates"],
       section: .about, icon: "info.circle", settingId: "about.autoinstall"),
     SettingsSearchItem(
-      name: "Omi Beta", subtitle: "Install the separate Omi Beta app beside this one",
+      name: "Omi Beta", subtitle: "Instale o app Omi Beta separado ao lado deste",
       keywords: ["channel", "beta", "stable", "release channel", "omi beta"], section: .about,
       icon: "info.circle", settingId: "about.channel"),
     SettingsSearchItem(
-      name: "Version Info", subtitle: "Current app version and build number",
+      name: "Informações da Versão", subtitle: "Versão atual do app e número da build",
       keywords: ["version", "build", "app version", "build number"], section: .about,
       icon: "info.circle", settingId: "about.version"),
 
     // Advanced subsections
     SettingsSearchItem(
-      name: "Reset Onboarding", subtitle: "Restart setup wizard for this app build only",
+      name: "Refazer Introdução", subtitle: "Reinicia o assistente de configuração só para esta versão do app",
       keywords: ["reset", "onboarding", "restart", "setup"], section: .advanced,
       icon: "arrow.counterclockwise", settingId: "advanced.resetonboarding"),
     SettingsSearchItem(
-      name: "AI User Profile", subtitle: "AI-generated summary of your preferences and habits",
+      name: "Perfil de Usuário da IA", subtitle: "Resumo gerado por IA das suas preferências e hábitos",
       keywords: ["profile", "generate", "generate now", "regenerate"], section: .advanced,
       icon: "brain", settingId: "advanced.aiuserprofile"),
     SettingsSearchItem(
-      name: "Your Stats", subtitle: "View your usage statistics and activity",
+      name: "Suas Estatísticas", subtitle: "Veja suas estatísticas de uso e atividade",
       keywords: ["statistics", "conversations", "usage"], section: .advanced, icon: "chart.bar",
       settingId: "advanced.stats"),
     SettingsSearchItem(
-      name: "AI Provider", subtitle: "Choose between your Omi account and Claude for desktop chat",
+      name: "Provedor de IA", subtitle: "Escolha entre sua conta do Omi e o Claude para o chat do desktop",
       keywords: ["provider", "agent sdk", "claude code", "acp", "bridge mode"], section: .advanced,
       icon: "cpu", settingId: "aichat.provider"),
     SettingsSearchItem(
-      name: "Workspace", subtitle: "Set a project directory for desktop chat context",
+      name: "Espaço de Trabalho", subtitle: "Defina uma pasta de projeto para o contexto do chat no desktop",
       keywords: ["workspace", "project", "directory", "folder", "working directory"],
       section: .advanced, icon: "cpu", settingId: "aichat.workspace"),
     SettingsSearchItem(
-      name: "Browser Extension",
-      subtitle: "Lets the AI use your Chrome browser with all your logged-in sessions",
+      name: "Extensão do Navegador",
+      subtitle: "Permite que a IA use seu navegador Chrome com todas as suas sessões logadas",
       keywords: [
         "playwright", "chrome", "browser extension", "browser", "set up", "reconfigure", "token",
       ], section: .advanced, icon: "cpu", settingId: "aichat.browserextension"),
     SettingsSearchItem(
-      name: "Dev Mode", subtitle: "Developer tools and debugging options",
+      name: "Modo Desenvolvedor", subtitle: "Ferramentas de desenvolvedor e opções de depuração",
       keywords: ["developer", "debug", "dev mode", "development"], section: .advanced, icon: "cpu",
       settingId: "aichat.devmode"),
     SettingsSearchItem(
-      name: "Goals", subtitle: "Track personal goals with AI-powered progress detection",
+      name: "Metas", subtitle: "Acompanhe metas pessoais com detecção de progresso por IA",
       keywords: ["goal", "target", "objective", "tracking"], section: .advanced, icon: "target",
       settingId: "advanced.goals"),
     SettingsSearchItem(
-      name: "Auto-Generate Goals",
-      subtitle: "Automatically suggest new goals daily based on your conversations and tasks",
+      name: "Gerar Metas Automaticamente",
+      subtitle: "Sugere novas metas todo dia com base nas suas conversas e tarefas",
       keywords: ["auto generate", "suggest goals", "daily goals"], section: .advanced,
       icon: "target", settingId: "advanced.goals.autogenerate"),
     SettingsSearchItem(
-      name: "Floating Bar",
-      subtitle: "Configure the floating bar appearance and visibility",
+      name: "Barra Flutuante",
+      subtitle: "Configure a aparência e a visibilidade da barra flutuante",
       keywords: ["floating bar", "ask omi", "show bar"], section: .floatingBar, icon: "sparkles",
       settingId: "floatingbar.show"),
     // HIDDEN DELIBERATELY (Nik, 2026-08-25): search entries for hidden floating-bar rows.
@@ -299,50 +299,50 @@ struct SettingsSearchItem: Identifiable {
     // keywords: ["drag", "move", "reposition", "draggable"], section: .floatingBar,
     // icon: "sparkles", settingId: "floatingbar.draggable"),
     SettingsSearchItem(
-      name: "Typed Questions", subtitle: "Speak replies aloud for typed floating-bar questions",
+      name: "Perguntas Digitadas", subtitle: "Fala as respostas em voz alta para perguntas digitadas na barra flutuante",
       keywords: ["typed", "text", "speech", "tts", "audio answers"], section: .floatingBar,
       icon: "sparkles", settingId: "floatingbar.typedvoiceanswers"),
     SettingsSearchItem(
-      name: "Screen Sharing in Chat",
-      subtitle: "Let Ask Omi capture your screen when you ask about it",
+      name: "Compartilhar Tela no Chat",
+      subtitle: "Deixa o Perguntar ao Omi capturar sua tela quando você pergunta sobre ela",
       keywords: ["screenshot", "screen", "capture", "share screen", "vision", "see my screen"],
       section: .floatingBar, icon: "camera.viewfinder", settingId: "floatingbar.screenshare"),
     SettingsSearchItem(
-      name: "Voice Speed", subtitle: "Adjust the playback speed for voice replies",
+      name: "Velocidade da Voz", subtitle: "Ajuste a velocidade de reprodução das respostas em voz",
       keywords: ["voice speed", "speech speed", "playback speed", "tts speed"],
       section: .floatingBar, icon: "sparkles", settingId: "floatingbar.voicespeed"),
     SettingsSearchItem(
-      name: "Shortcuts", subtitle: "Configure Open Omi and push-to-talk keyboard shortcuts",
+      name: "Atalhos", subtitle: "Configure os atalhos de teclado de Abrir o Omi e de apertar para falar",
       keywords: ["shortcuts", "keyboard", "hotkeys", "push to talk"], section: .shortcuts,
       icon: "keyboard", settingId: "floatingbar.shortcut"),
     SettingsSearchItem(
-      name: "Open Omi Shortcut", subtitle: "Global shortcut to open the Omi app from anywhere",
+      name: "Atalho de Abrir o Omi", subtitle: "Atalho global para abrir o app do Omi de qualquer lugar",
       keywords: ["shortcut", "hotkey", "keyboard", "global shortcut"], section: .shortcuts,
       icon: "keyboard", settingId: "floatingbar.shortcut"),
     SettingsSearchItem(
-      name: "Push to Talk", subtitle: "Hold a key to speak, release to send your question to AI",
+      name: "Apertar para Falar", subtitle: "Segure uma tecla para falar e solte para enviar sua pergunta à IA",
       keywords: ["push to talk", "ptt", "hold to talk", "microphone key"], section: .shortcuts,
       icon: "keyboard", settingId: "floatingbar.ptt"),
     SettingsSearchItem(
-      name: "Double-tap for Locked Mode",
-      subtitle: "Double-tap the push-to-talk key to keep listening hands-free",
+      name: "Toque Duplo para o Modo Travado",
+      subtitle: "Toque duas vezes na tecla de apertar para falar para continuar ouvindo sem usar as mãos",
       keywords: ["double tap", "locked mode", "hands free", "listening"], section: .shortcuts,
       icon: "keyboard", settingId: "floatingbar.doubletap"),
     SettingsSearchItem(
-      name: "Push-to-Talk Sounds",
-      subtitle: "Play audio feedback when starting and ending voice input",
+      name: "Sons de Apertar para Falar",
+      subtitle: "Toca um som ao iniciar e terminar a entrada de voz",
       keywords: ["sounds", "audio feedback", "ptt sounds"], section: .shortcuts, icon: "keyboard",
       settingId: "floatingbar.pttsounds"),
     SettingsSearchItem(
-      name: "Launch at Login", subtitle: "Start Omi automatically when you log in",
+      name: "Abrir ao Iniciar a Sessão", subtitle: "Abre o Omi automaticamente quando você inicia a sessão",
       keywords: ["startup", "login", "boot"], section: .advanced, icon: "slider.horizontal.3",
       settingId: "advanced.preferences.launchatlogin"),
     SettingsSearchItem(
-      name: "Report an Issue", subtitle: "Save a redacted report on this Mac to share manually",
+      name: "Reportar um Problema", subtitle: "Salva neste Mac um relatório com dados ocultados para compartilhar manualmente",
       keywords: ["bug", "feedback", "logs", "report", "issue"], section: .advanced,
       icon: "wrench.and.screwdriver", settingId: "advanced.troubleshooting.reportissue"),
     SettingsSearchItem(
-      name: "Rescan Files", subtitle: "Re-index your files and update your AI profile",
+      name: "Reexaminar Arquivos", subtitle: "Reindexa seus arquivos e atualiza seu perfil de IA",
       keywords: ["index", "reindex", "rescan", "files", "scan", "file indexing", "profile"],
       section: .advanced, icon: "wrench.and.screwdriver",
       settingId: "advanced.troubleshooting.rescanfiles"),
@@ -438,7 +438,7 @@ struct SettingsSidebar: View {
       Spacer().frame(height: OmiSpacing.xxl)
 
       // Settings title
-      Text("Settings")
+      Text("Ajustes")
         .scaledFont(size: OmiType.heading, weight: .bold)
         .foregroundColor(Ink.primary)
         .padding(.horizontal, OmiSpacing.lg)
@@ -492,7 +492,7 @@ struct SettingsSidebar: View {
         .foregroundColor(isSearchFocused ? Ink.accent : Ink.secondary)
         .omiAnimation(.easeInOut(duration: 0.15), value: isSearchFocused)
 
-      TextField("Search", text: $searchQuery)
+      TextField("Buscar", text: $searchQuery)
         .textFieldStyle(.plain)
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.primary)
@@ -522,7 +522,7 @@ struct SettingsSidebar: View {
     ScrollView(showsIndicators: false) {
       VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
         if filteredSearchItems.isEmpty {
-          Text("No results")
+          Text("Nenhum resultado")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
             .padding(.horizontal, OmiSpacing.md)
@@ -629,7 +629,7 @@ struct SettingsSidebarItem: View {
         .accessibilityLabel(
           Text(
             showsMissingPermissionNotice
-              ? "\(section.displayTitle), permissions required"
+              ? "\(section.displayTitle), permissões necessárias"
               : section.displayTitle)
         )
       }
@@ -658,7 +658,7 @@ struct SettingsSubsectionItem: View {
           .foregroundColor(SettingsSelection.rowIcon(isSelected: isSelected))
           .frame(width: 16)
 
-        Text(subsection.rawValue)
+        Text(subsection.displayTitle)
           .scaledFont(size: OmiType.body, weight: SettingsSelection.rowWeight(isSelected: isSelected))
           .foregroundColor(Ink.primary)
 

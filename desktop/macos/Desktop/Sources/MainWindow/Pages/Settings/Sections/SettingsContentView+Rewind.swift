@@ -21,7 +21,7 @@ enum RewindStorageSummaryState: Equatable {
     didCompleteRead: Bool
   ) -> RewindStorageSummaryState {
     if let stats {
-      return .loaded(caption: "\(stats.total) frames • \(RewindStorage.formatBytes(stats.storageSize))")
+      return .loaded(caption: "\(stats.total) quadros • \(RewindStorage.formatBytes(stats.storageSize))")
     }
     return didCompleteRead ? .unavailable : .loading
   }
@@ -42,7 +42,7 @@ struct RewindStorageSummary: View {
         .foregroundColor(Ink.secondary)
 
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Storage")
+        Text("Armazenamento")
           .scaledFont(size: OmiType.subheading, weight: .medium)
           .foregroundColor(Ink.primary)
 
@@ -52,11 +52,11 @@ struct RewindStorageSummary: View {
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
         case .loading:
-          Text("Loading…")
+          Text("Carregando…")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
         case .unavailable:
-          Text("Couldn't read Rewind storage")
+          Text("Não foi possível ler o armazenamento do Rewind")
             .scaledFont(size: OmiType.body)
             .foregroundColor(SettingsInk.notice)
         }
@@ -67,7 +67,7 @@ struct RewindStorageSummary: View {
       if case .unavailable = RewindStorageSummaryState.resolve(
         stats: stats, didCompleteRead: didCompleteRead)
       {
-        Button("Try Again") {
+        Button("Tentar de novo") {
           Task { await read() }
         }
         .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -103,11 +103,11 @@ extension SettingsContentView {
             .foregroundColor(Ink.secondary)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Meeting Screenshots")
+            Text("Capturas de Tela da Reunião")
               .scaledFont(size: OmiType.subheading, weight: .medium)
               .foregroundColor(Ink.primary)
 
-            Text("Add a few screenshots of what was on screen to a meeting's note")
+            Text("Adiciona algumas capturas do que estava na tela à nota da reunião")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -134,18 +134,18 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Excluded Apps")
+              Text("Apps Excluídos")
                 .scaledFont(size: OmiType.subheading, weight: .medium)
                 .foregroundColor(Ink.primary)
 
-              Text("Screen capture is paused when these apps are active")
+              Text("A captura de tela é pausada quando estes apps estão ativos")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
             }
 
             Spacer()
 
-            Button("Reset to Defaults") {
+            Button("Restaurar Padrões") {
               rewindSettings.resetToDefaults()
             }
             .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -161,7 +161,7 @@ extension SettingsContentView {
                 Image(systemName: "checkmark.shield")
                   .scaledFont(size: 24)
                   .foregroundColor(Ink.secondary)
-                Text("No apps excluded")
+                Text("Nenhum app excluído")
                   .scaledFont(size: OmiType.body)
                   .foregroundColor(Ink.secondary)
               }
@@ -191,9 +191,9 @@ extension SettingsContentView {
 
           // Add app section
           AppRuleEditorView(
-            title: "Add App to Exclusion List",
-            placeholder: "App name (e.g., Passwords)",
-            addButtonTitle: "Add",
+            title: "Adicionar App à Lista de Exclusão",
+            placeholder: "Nome do app (ex.: Senhas)",
+            addButtonTitle: "Adicionar",
             existingApps: rewindSettings.excludedApps,
             builtInApps: TaskAssistantSettings.builtInExcludedApps,
             onAdd: { appName in
@@ -212,12 +212,12 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Battery Optimization")
+              Text("Otimização de Bateria")
                 .scaledFont(size: OmiType.subheading, weight: .medium)
                 .foregroundColor(Ink.primary)
 
               Text(
-                "On battery, Omi captures your screen less often to save power while keeping text recognition accurate."
+                "Na bateria, o Omi captura sua tela com menos frequência para economizar energia, mantendo o reconhecimento de texto preciso."
               )
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
@@ -225,7 +225,7 @@ extension SettingsContentView {
 
             Spacer()
 
-            Text("Automatic")
+            Text("Automático")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(Ink.secondary)
           }
@@ -241,14 +241,14 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Data Retention")
+              Text("Retenção de Dados")
                 .scaledFont(size: OmiType.subheading, weight: .medium)
                 .foregroundColor(Ink.primary)
 
               Text(
                 rewindSettings.keepsEverything
-                  ? "Rewind reaches back as far as you have been capturing"
-                  : "Older screen recordings are deleted, and Rewind cannot reach past them"
+                  ? "O Rewind alcança tudo o que você já capturou"
+                  : "Gravações de tela mais antigas são apagadas e o Rewind não consegue alcançá-las"
               )
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
@@ -257,11 +257,11 @@ extension SettingsContentView {
             Spacer()
 
             SettingsMenuPicker(selection: $rewindSettings.retentionDays) {
-              Text("3 days").tag(3)
-              Text("7 days").tag(7)
-              Text("14 days").tag(14)
-              Text("30 days").tag(30)
-              Text("Keep everything").tag(RewindSettings.unlimitedRetentionDays)
+              Text("3 dias").tag(3)
+              Text("7 dias").tag(7)
+              Text("14 dias").tag(14)
+              Text("30 dias").tag(30)
+              Text("Manter tudo").tag(RewindSettings.unlimitedRetentionDays)
             }
           }
         }

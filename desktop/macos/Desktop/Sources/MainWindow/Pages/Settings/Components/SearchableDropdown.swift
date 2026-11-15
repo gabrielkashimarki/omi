@@ -188,7 +188,7 @@ private struct SearchableDropdownPopover: View {
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
 
-        TextField("Search", text: $query)
+        TextField("Buscar", text: $query)
           .textFieldStyle(.plain)
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.primary)
@@ -216,7 +216,7 @@ private struct SearchableDropdownPopover: View {
       )
 
       if filteredOptions.isEmpty {
-        Text("No matches")
+        Text("Nada encontrado")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
           .frame(maxWidth: .infinity, minHeight: listHeight)

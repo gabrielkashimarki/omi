@@ -47,9 +47,9 @@ struct StorefrontPlansSection: View {
     )
     .shellConfirmation(
       isPresented: $showsConfirmation,
-      title: confirmation?.price.ctaLabel ?? confirmation?.tier.ctaLabel ?? "Plans",
+      title: confirmation?.price.ctaLabel ?? confirmation?.tier.ctaLabel ?? "Planos",
       message: confirmation?.price.confirmLines.joined(separator: "\n") ?? "",
-      confirmTitle: confirmation?.price.ctaLabel ?? "Switch to yearly",
+      confirmTitle: confirmation?.price.ctaLabel ?? "Mudar para o anual",
       isDestructive: false,
       onCancel: { confirmation = nil },
       onConfirm: {
@@ -131,7 +131,7 @@ struct StorefrontBudgetEntry: View {
       }
       .frame(width: 520, height: 640)
       .overlay(alignment: .topTrailing) {
-        Button("Close") { showingSheet = false }
+        Button("Fechar") { showingSheet = false }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
           .keyboardShortcut(.cancelAction)
           .padding(OmiSpacing.md)
@@ -156,7 +156,7 @@ struct StorefrontFeatureEntry: View {
   var body: some View {
     Group {
       if eligible, let data {
-        Button(data.header ?? "Plans") { showing = true }
+        Button(data.header ?? "Planos") { showing = true }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
       }
     }

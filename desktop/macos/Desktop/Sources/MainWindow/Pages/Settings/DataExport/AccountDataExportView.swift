@@ -13,7 +13,7 @@ struct AccountDataExportView: View {
           Text(ByteCountFormatter.string(fromByteCount: model.bytesReceived, countStyle: .file))
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
-          Button("Cancel") { model.cancelExport() }
+          Button("Cancelar") { model.cancelExport() }
             .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         }
       }
@@ -23,7 +23,7 @@ struct AccountDataExportView: View {
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.errorRed)
             .fixedSize(horizontal: false, vertical: true)
-          Button("Try Again") { model.startExport() }
+          Button("Tentar de novo") { model.startExport() }
             .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         }
       }

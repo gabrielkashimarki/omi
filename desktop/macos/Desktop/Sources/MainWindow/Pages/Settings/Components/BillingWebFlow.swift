@@ -28,7 +28,7 @@ struct BillingWebFlowSheet: View {
 
         Spacer()
 
-        Button("Close") {
+        Button("Fechar") {
           onComplete(.dismissed)
         }
         .buttonStyle(OmiButtonStyle(.primary, size: .compact))

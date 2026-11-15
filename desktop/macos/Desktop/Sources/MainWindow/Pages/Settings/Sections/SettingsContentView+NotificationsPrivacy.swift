@@ -13,7 +13,7 @@ extension SettingsContentView {
       settingsCard(settingId: "notifications.settings") {
         VStack(alignment: .leading, spacing: OmiSpacing.lg) {
           HStack {
-            settingsCardHeader(icon: "bell.badge.fill", title: "Notifications")
+            settingsCardHeader(icon: "bell.badge.fill", title: "Notificações")
 
             Spacer()
 
@@ -25,7 +25,7 @@ extension SettingsContentView {
               }
           }
 
-          Text("Control how often you receive notifications")
+          Text("Controle com que frequência você recebe notificações")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
 
@@ -41,7 +41,7 @@ extension SettingsContentView {
             // floating bar's "Hide for 2 hours" is deliberately not this: that hides the
             // bar and still lets notifications through.
             settingRow(
-              title: "Silence Notifications",
+              title: "Silenciar Notificações",
               subtitle: notificationSnoozeSubtitle,
               settingId: "notifications.snooze"
             ) {
@@ -57,22 +57,22 @@ extension SettingsContentView {
                 // ForEach was not the cause; that lane is simply running at ~95% of its cap
                 // and drifting up. Restoring it is safe on the merits and still a bad bet
                 // until the lane has margin.
-                Button("For 1 hour") { applyNotificationSnooze(60 * 60) }
-                Button("For 4 hours") { applyNotificationSnooze(4 * 60 * 60) }
-                Button("For 8 hours") { applyNotificationSnooze(8 * 60 * 60) }
-                Button("Until tomorrow") {
+                Button("Por 1 hora") { applyNotificationSnooze(60 * 60) }
+                Button("Por 4 horas") { applyNotificationSnooze(4 * 60 * 60) }
+                Button("Por 8 horas") { applyNotificationSnooze(8 * 60 * 60) }
+                Button("Até amanhã") {
                   NotificationService.snoozeNotificationsUntilTomorrow()
                   notificationsSnoozedUntil = NotificationService.currentSnoozeExpiry()
                 }
                 if notificationsSnoozedUntil != nil {
                   Divider()
-                  Button("Resume now") {
+                  Button("Reativar agora") {
                     NotificationService.endNotificationSnooze()
                     notificationsSnoozedUntil = nil
                   }
                 }
               } label: {
-                Text(notificationsSnoozedUntil == nil ? "Off" : "Silenced")
+                Text(notificationsSnoozedUntil == nil ? "Desligado" : "Silenciado")
               }
               .frame(width: 110)
             }
@@ -83,8 +83,8 @@ extension SettingsContentView {
             // frequency caps how often any proactive card is delivered, and this decides
             // whether focus nudges are generated at all.
             settingRow(
-              title: "Focus Notifications",
-              subtitle: "Short suggestions in the notch based on what you're working on",
+              title: "Notificações de Foco",
+              subtitle: "Sugestões curtas no notch com base no que você está fazendo",
               settingId: "notifications.livesuggestions"
             ) {
               Toggle("", isOn: $liveSuggestionsEnabled)
@@ -98,8 +98,8 @@ extension SettingsContentView {
             GlassSeparator()
 
             settingRow(
-              title: "Task Notifications",
-              subtitle: "Allow interruptions when a task needs attention",
+              title: "Notificações de Tarefas",
+              subtitle: "Permite interrupções quando uma tarefa precisa de atenção",
               settingId: "notifications.task"
             ) {
               Toggle("", isOn: $taskNotificationsEnabled)
@@ -116,8 +116,8 @@ extension SettingsContentView {
             GlassSeparator()
 
             settingRow(
-              title: "Goal and Reminder Notifications",
-              subtitle: "Allow goals and resurfaced items to notify you",
+              title: "Notificações de Metas e Lembretes",
+              subtitle: "Permite que metas e itens resgatados te notifiquem",
               settingId: "notifications.goalReminder"
             ) {
               Toggle("", isOn: $goalReminderNotificationsEnabled)
@@ -132,8 +132,8 @@ extension SettingsContentView {
             GlassSeparator()
 
             settingRow(
-              title: "Meeting Summary Notifications",
-              subtitle: "After a call, offer to copy the share link or email the summary to participants",
+              title: "Notificações de Resumo de Reunião",
+              subtitle: "Após uma chamada, oferece copiar o link de compartilhamento ou enviar o resumo por e-mail aos participantes",
               settingId: "notifications.meetingsummary"
             ) {
               Toggle("", isOn: $meetingSummaryNotificationsEnabled)
@@ -147,8 +147,8 @@ extension SettingsContentView {
             GlassSeparator()
 
             settingRow(
-              title: "Memory Notifications",
-              subtitle: "Show notification when a memory is extracted",
+              title: "Notificações de Memórias",
+              subtitle: "Mostra uma notificação quando uma memória é extraída",
               settingId: "notifications.memory"
             ) {
               Toggle("", isOn: $memoryNotificationsEnabled)
@@ -171,8 +171,8 @@ extension SettingsContentView {
             // `@AppStorage` already persists to the key the coordinator reads;
             // a second writer on one key only invites drift.
             settingRow(
-              title: "Integration Notifications",
-              subtitle: "Occasionally offer to connect an app Omi can use — Gmail, Notion, ChatGPT",
+              title: "Notificações de Integrações",
+              subtitle: "De vez em quando oferece conectar um app que o Omi pode usar (Gmail, Notion, ChatGPT)",
               settingId: "notifications.integrationsuggestions"
             ) {
               Toggle("", isOn: $integrationNudgesEnabled)
@@ -187,7 +187,7 @@ extension SettingsContentView {
       settingsCard(settingId: "notifications.dailysummary") {
         VStack(alignment: .leading, spacing: OmiSpacing.lg) {
           HStack {
-            settingsCardHeader(icon: "text.badge.checkmark", title: "Daily Summary")
+            settingsCardHeader(icon: "text.badge.checkmark", title: "Resumo do Dia")
 
             Spacer()
 
@@ -199,7 +199,7 @@ extension SettingsContentView {
               }
           }
 
-          Text("Receive a daily summary of your conversations and activities")
+          Text("Receba um resumo diário das suas conversas e atividades")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
 
@@ -214,7 +214,7 @@ extension SettingsContentView {
             GlassSeparator()
 
             settingRow(
-              title: "Summary Time", subtitle: "When to send your daily summary (hour only)",
+              title: "Horário do Resumo", subtitle: "Quando enviar seu resumo do dia (só a hora)",
               settingId: "notifications.summarytime"
             ) {
               DatePicker(
@@ -242,20 +242,20 @@ extension SettingsContentView {
             GlassSeparator()
 
             settingRow(
-              title: "Recap Depth",
-              subtitle: "Choose how much detail future daily summaries include",
+              title: "Profundidade do Resumo",
+              subtitle: "Escolha quanto detalhe os próximos resumos do dia incluem",
               settingId: "notifications.recapdepth"
             ) {
               HStack(spacing: OmiSpacing.sm) {
                 if dailySummaryDepthSaving {
                   ProgressView()
                     .controlSize(.small)
-                    .accessibilityLabel("Saving recap depth")
+                    .accessibilityLabel("Salvando profundidade do resumo")
                 }
                 SettingsMenuPicker(selection: $dailySummaryDepth) {
-                  Text("Brief").tag(DailySummaryDepth.brief)
+                  Text("Breve").tag(DailySummaryDepth.brief)
                   Text("Normal").tag(DailySummaryDepth.normal)
-                  Text("Deep Reflection").tag(DailySummaryDepth.deep)
+                  Text("Reflexão Profunda").tag(DailySummaryDepth.deep)
                 }
                 .frame(minWidth: 155)
                 .disabled(dailySummaryDepthSaving)
@@ -311,10 +311,10 @@ extension SettingsContentView {
         HStack(spacing: OmiSpacing.lg) {
           SettingsIconTile(symbol: "sparkles")
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Use Omi with Siri & Apple Intelligence")
+            Text("Usar o Omi com a Siri e o Apple Intelligence")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
-            Text("Make conversation summaries, memories and tasks available to Siri on this Mac")
+            Text("Deixa resumos de conversas, memórias e tarefas disponíveis para a Siri neste Mac")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -339,12 +339,12 @@ extension SettingsContentView {
       // Data Controls
       settingsCard(settingId: "privacy.storerecordings") {
         VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-          settingsCardHeader(icon: "shield", title: "Data Controls")
+          settingsCardHeader(icon: "shield", title: "Controle de Dados")
 
           privacyToggleRow(
             icon: "mic.fill",
-            title: "Store Recordings",
-            subtitle: "Allow Omi to store audio recordings of your conversations",
+            title: "Armazenar Gravações",
+            subtitle: "Permite que o Omi armazene gravações de áudio das suas conversas",
             isOn: $recordingPermissionEnabled,
             errorText: recordingPermissionError
           ) { newValue in
@@ -355,8 +355,8 @@ extension SettingsContentView {
 
           privacyToggleRow(
             icon: "cloud.fill",
-            title: "Private Cloud Sync",
-            subtitle: "Upload your recordings to your own cloud storage",
+            title: "Sincronização em Nuvem Privada",
+            subtitle: "Envie suas gravações para o seu próprio armazenamento na nuvem",
             isOn: $privateCloudSyncEnabled,
             errorText: privateCloudSyncError
           ) { newValue in
@@ -366,11 +366,11 @@ extension SettingsContentView {
           GlassSeparator()
 
           settingRow(
-            title: "Export All Data",
-            subtitle: "Download a JSON copy of your account data",
+            title: "Exportar Todos os Dados",
+            subtitle: "Baixe uma cópia JSON dos dados da sua conta",
             settingId: "privacy.exportdata"
           ) {
-            Button("Export All Data…") {
+            Button("Exportar Todos os Dados…") {
               dataExportModel.startExport()
             }
             .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
@@ -385,7 +385,7 @@ extension SettingsContentView {
       // Encryption
       settingsCard(settingId: "privacy.encryption") {
         VStack(alignment: .leading, spacing: OmiSpacing.md) {
-          settingsCardHeader(icon: "shield.lefthalf.filled", title: "Encryption")
+          settingsCardHeader(icon: "shield.lefthalf.filled", title: "Criptografia")
 
           HStack(spacing: OmiSpacing.sm) {
             Image(systemName: "checkmark.circle.fill")
@@ -393,11 +393,11 @@ extension SettingsContentView {
               .foregroundColor(Ink.listeningGreen)
               .frame(width: 20, alignment: .leading)
 
-            Text("Server-side encryption")
+            Text("Criptografia no servidor")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
 
-            Text("Active")
+            Text("Ativa")
               .scaledFont(size: OmiType.micro, weight: .semibold)
               .foregroundColor(Ink.listeningGreen)
               .padding(.horizontal, OmiSpacing.xxs)
@@ -406,7 +406,7 @@ extension SettingsContentView {
               .cornerRadius(OmiChrome.stripRadius)
           }
 
-          Text("Your data is encrypted and stored securely with Google Cloud infrastructure.")
+          Text("Seus dados são criptografados e armazenados com segurança na infraestrutura do Google Cloud.")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
@@ -426,7 +426,7 @@ extension SettingsContentView {
                 .foregroundColor(Ink.secondary)
                 .frame(width: 20)
 
-              Text("What We Track")
+              Text("O Que Monitoramos")
                 .scaledFont(size: OmiType.body, weight: .medium)
                 .foregroundColor(Ink.primary)
 
@@ -442,16 +442,16 @@ extension SettingsContentView {
 
           if isTrackingExpanded {
             VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-              trackingItem("Onboarding steps completed")
-              trackingItem("Settings changes")
-              trackingItem("App installations and usage")
-              trackingItem("Transcript processing events")
-              trackingItem("Conversation creation and updates")
-              trackingItem("Memory extraction events")
-              trackingItem("Chat interactions")
-              trackingItem("Speech profile creation")
-              trackingItem("Focus session events")
-              trackingItem("App open/close events")
+              trackingItem("Etapas da introdução concluídas")
+              trackingItem("Mudanças nos ajustes")
+              trackingItem("Instalações e uso de apps")
+              trackingItem("Eventos de processamento de transcrição")
+              trackingItem("Criação e atualização de conversas")
+              trackingItem("Eventos de extração de memórias")
+              trackingItem("Interações no chat")
+              trackingItem("Criação do perfil de voz")
+              trackingItem("Eventos de sessões de foco")
+              trackingItem("Eventos de abrir/fechar o app")
             }
             .transition(.opacity)
           }
@@ -467,16 +467,16 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
               .frame(width: 20)
 
-            Text("Privacy Guarantees")
+            Text("Garantias de Privacidade")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(Ink.primary)
           }
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            privacyBullet("Anonymous tracking with randomly generated IDs")
-            privacyBullet("No personal info stored in analytics")
-            privacyBullet("Data is never sold or shared with third parties")
-            privacyBullet("Opt out of tracking at any time")
+            privacyBullet("Monitoramento anônimo com IDs gerados aleatoriamente")
+            privacyBullet("Nenhuma informação pessoal armazenada nas análises")
+            privacyBullet("Os dados nunca são vendidos nem compartilhados com terceiros")
+            privacyBullet("Desative o monitoramento a qualquer momento")
           }
         }
       }
@@ -492,18 +492,18 @@ extension SettingsContentView {
   /// Settings sat open is reported as off.
   var notificationSnoozeSubtitle: String {
     guard let until = NotificationService.currentSnoozeExpiry(), until > Date() else {
-      return "Pause suggestions and nudges for a while"
+      return "Pausa sugestões e lembretes por um tempo"
     }
     let formatter = DateFormatter()
     formatter.timeStyle = .short
     formatter.dateStyle = .none
     let time = formatter.string(from: until)
-    // "Until tomorrow" lands on another calendar day, where a bare time is ambiguous —
+    // "Até amanhã" lands on another calendar day, where a bare time is ambiguous —
     // 9:00 AM tomorrow and 9:00 AM today read identically.
     guard Calendar.current.isDateInToday(until) else {
-      return "Silenced until \(time) tomorrow"
+      return "Silenciado até amanhã às \(time)"
     }
-    return "Silenced until \(time)"
+    return "Silenciado até \(time)"
   }
 
   func applyNotificationSnooze(_ duration: TimeInterval) {

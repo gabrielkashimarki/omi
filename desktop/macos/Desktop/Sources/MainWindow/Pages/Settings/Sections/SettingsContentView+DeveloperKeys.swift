@@ -43,13 +43,13 @@ extension SettingsContentView {
 
       settingsCard(settingId: "advanced.devkeys.llm") {
         VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-          Text("Language model")
+          Text("Modelo de linguagem")
             .scaledFont(size: OmiType.body, weight: .medium)
             .foregroundColor(Ink.primary)
-          Text("Choose a provider for supported memory and insight features. Desktop chat supports Anthropic keys.")
+          Text("Escolha um provedor para os recursos compatíveis de memórias e insights. O chat do desktop aceita chaves da Anthropic.")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
-          Picker("LLM provider", selection: $devBYOKLLMProvider) {
+          Picker("Provedor de LLM", selection: $devBYOKLLMProvider) {
             ForEach(BYOKLLMProvider.allCases) { provider in
               Text(provider.displayName).tag(provider.rawValue)
             }
@@ -60,7 +60,7 @@ extension SettingsContentView {
 
       developerKeyField(
         provider: selectedBYOKLLMProvider.provider,
-        title: "\(selectedBYOKLLMProvider.displayName) API Key",
+        title: "Chave de API: \(selectedBYOKLLMProvider.displayName)",
         subtitle: selectedBYOKLLMSubtitle,
         settingId: "advanced.devkeys.llm-key",
         value: selectedBYOKLLMKey
@@ -68,8 +68,8 @@ extension SettingsContentView {
 
       developerKeyField(
         provider: .deepgram,
-        title: "Deepgram API Key",
-        subtitle: "Needed to use your own Deepgram key. Without it, transcription counts toward your Omi plan.",
+        title: "Chave de API do Deepgram",
+        subtitle: "Necessária para usar sua própria chave do Deepgram. Sem ela, a transcrição conta no seu plano Omi.",
         settingId: "advanced.devkeys.deepgram",
         value: $devDeepgramKey
       )
@@ -83,7 +83,7 @@ extension SettingsContentView {
           HStack {
             Spacer()
             Button(action: clearAllBYOKKeys) {
-              Text("Clear All Custom Keys")
+              Text("Limpar Todas as Chaves Próprias")
                 .scaledFont(size: OmiType.body, weight: .medium)
                 .foregroundColor(Ink.errorRed)
             }
@@ -133,10 +133,10 @@ extension SettingsContentView {
 
   var selectedBYOKLLMSubtitle: String {
     switch selectedBYOKLLMProvider {
-    case .openrouter: return "Routes supported models through your OpenRouter account."
-    case .openai: return "Uses your OpenAI API key directly."
-    case .gemini: return "Uses Gemini 2.5 Flash Lite directly."
-    case .anthropic: return "Uses your Anthropic API key directly."
+    case .openrouter: return "Encaminha os modelos compatíveis pela sua conta do OpenRouter."
+    case .openai: return "Usa sua chave de API da OpenAI diretamente."
+    case .gemini: return "Usa o Gemini 2.5 Flash Lite diretamente."
+    case .anthropic: return "Usa sua chave de API da Anthropic diretamente."
     }
   }
 
@@ -162,11 +162,11 @@ extension SettingsContentView {
   }
 
   var byokStatusTitle: String {
-    hasActiveLLMByok ? "LLM BYOK active" : "Bring your own keys"
+    hasActiveLLMByok ? "BYOK de LLM ativa" : "Use suas próprias chaves"
   }
 
   var byokUsageDescription: String {
-    "An LLM key covers supported AI features only. Desktop chat supports Anthropic keys; other LLM keys do not remove Omi's chat limit."
+    "Uma chave de LLM cobre só os recursos de IA compatíveis. O chat do desktop aceita chaves da Anthropic; outras chaves de LLM não removem o limite de chat do Omi."
   }
 
   @ViewBuilder
@@ -183,17 +183,17 @@ extension SettingsContentView {
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
           Text(
-            "A validated Deepgram key is required to avoid Omi's transcription allowance. Without it, new synced conversations may be locked when that allowance runs out."
+            "É preciso uma chave do Deepgram validada para não usar a franquia de transcrição do Omi. Sem ela, novas conversas sincronizadas podem ser bloqueadas quando essa franquia acabar."
           )
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
           Text(TranscriptionAllowancePresentation.statusText(userSubscription?.transcriptionAllowance))
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.primary)
-          Text("Adding Deepgram later does not unlock conversations already locked.")
+          Text("Adicionar o Deepgram depois não desbloqueia conversas que já foram bloqueadas.")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
-          Text("Keys are saved on this Mac and sent with requests, never stored on Omi's servers.")
+          Text("As chaves ficam salvas neste Mac e são enviadas nas requisições, nunca armazenadas nos servidores do Omi.")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
@@ -300,7 +300,7 @@ extension SettingsContentView {
           await MainActor.run {
             byokKeyStatuses = results
             byokActivationError =
-              "Could not enroll keys with Omi. Free plan stays off until enrollment succeeds."
+              "Não foi possível registrar as chaves no Omi. O plano gratuito continua desligado até o registro dar certo."
           }
         }
       } else if BYOKValidator.isTransient(results[selectedBYOKLLMProvider.provider] ?? .failed("missing")) {
@@ -311,7 +311,7 @@ extension SettingsContentView {
         await MainActor.run {
           byokKeyStatuses = results
           byokActivationError =
-            "Couldn't reach \(selectedBYOKLLMProvider.displayName) to verify your key. Your saved keys stay active — try again in a moment."
+            "Não foi possível acessar \(selectedBYOKLLMProvider.displayName) para verificar sua chave. Suas chaves salvas continuam ativas, tente de novo em instantes."
         }
       } else {
         let failed = results.filter {
@@ -325,7 +325,7 @@ extension SettingsContentView {
         await MainActor.run {
           byokKeyStatuses = results
           byokActivationError =
-            "Rejected by provider: \(names). Free plan stays off until the selected language model authenticates."
+            "Rejeitada pelo provedor: \(names). O plano gratuito continua desligado até o modelo de linguagem selecionado autenticar."
         }
       }
 
@@ -360,7 +360,7 @@ extension SettingsContentView {
         Text(subtitle)
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
-        SecureField("Leave blank for default", text: value)
+        SecureField("Deixe em branco para o padrão", text: value)
           .textFieldStyle(.roundedBorder)
           .scaledFont(size: OmiType.body)
         if let provider, case .failed(let msg) = byokKeyStatuses[provider] ?? .notChecked {
@@ -380,14 +380,14 @@ extension SettingsContentView {
     case .checking:
       HStack(spacing: OmiSpacing.xxs) {
         ProgressView().controlSize(.mini)
-        Text("Checking…").scaledFont(size: OmiType.caption).foregroundColor(Ink.secondary)
+        Text("Verificando…").scaledFont(size: OmiType.caption).foregroundColor(Ink.secondary)
       }
     case .ok:
-      Text("Valid").scaledFont(size: OmiType.caption, weight: .semibold).foregroundColor(Ink.listeningGreen)
+      Text("Válida").scaledFont(size: OmiType.caption, weight: .semibold).foregroundColor(Ink.listeningGreen)
     case .failed:
-      Text("Invalid").scaledFont(size: OmiType.caption, weight: .semibold).foregroundColor(SettingsInk.notice)
+      Text("Inválida").scaledFont(size: OmiType.caption, weight: .semibold).foregroundColor(SettingsInk.notice)
     case .transient:
-      Text("Check failed").scaledFont(size: OmiType.caption, weight: .semibold).foregroundColor(Ink.secondary)
+      Text("Falha na verificação").scaledFont(size: OmiType.caption, weight: .semibold).foregroundColor(Ink.secondary)
     }
   }
 

@@ -18,7 +18,7 @@ struct ExcludedAppRow: View {
 
       Spacer()
 
-      Button("Remove \(appName)", systemImage: "xmark.circle.fill", action: onRemove)
+      Button("Remover \(appName)", systemImage: "xmark.circle.fill", action: onRemove)
         .labelStyle(.iconOnly)
         .scaledFont(size: OmiType.subheading)
         .foregroundColor(isHovered ? Ink.errorRed : Ink.secondary)
@@ -65,11 +65,11 @@ struct AppRuleEditorView: View {
 
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
         HStack {
-          Text("Currently Running Apps")
+          Text("Apps em Execução")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.secondary)
           Spacer()
-          Button("Refresh running apps", systemImage: "arrow.clockwise", action: refreshRunningApps)
+          Button("Atualizar apps em execução", systemImage: "arrow.clockwise", action: refreshRunningApps)
             .labelStyle(.iconOnly)
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
@@ -135,11 +135,11 @@ struct BrowserKeywordListView: View {
         Image(systemName: "line.3.horizontal.decrease")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
-        TextField("Filter keywords…", text: $filterText)
+        TextField("Filtrar palavras-chave…", text: $filterText)
           .textFieldStyle(.plain)
           .scaledFont(size: OmiType.caption)
         if !filterText.isEmpty {
-          Button("Clear keyword filter", systemImage: "xmark.circle.fill") {
+          Button("Limpar filtro de palavras-chave", systemImage: "xmark.circle.fill") {
             filterText = ""
           }
           .labelStyle(.iconOnly)
@@ -161,7 +161,7 @@ struct BrowserKeywordListView: View {
               Text(keyword)
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.primary)
-              Button("Remove \(keyword)", systemImage: "xmark") {
+              Button("Remover \(keyword)", systemImage: "xmark") {
                 onRemove(keyword)
               }
               .labelStyle(.iconOnly)
@@ -181,16 +181,16 @@ struct BrowserKeywordListView: View {
 
       // Add new keyword
       HStack(spacing: OmiSpacing.sm) {
-        TextField("Add keyword…", text: $newKeyword)
+        TextField("Adicionar palavra-chave…", text: $newKeyword)
           .settingsTextInputStyle()
           .onSubmit { addKeyword() }
 
-        Button("Add") { addKeyword() }
+        Button("Adicionar") { addKeyword() }
           .buttonStyle(OmiButtonStyle(.primary, size: .compact))
           .disabled(newKeyword.trimmingCharacters(in: .whitespaces).isEmpty)
       }
 
-      Text("\(keywords.count) keywords")
+      Text("\(palavras-chave.count) keywords")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
     }

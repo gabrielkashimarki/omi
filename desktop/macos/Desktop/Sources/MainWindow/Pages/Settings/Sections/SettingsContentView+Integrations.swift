@@ -16,7 +16,7 @@ extension SettingsContentView {
             .frame(width: 24, height: 24)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Email account")
+            Text("Conta de e-mail")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -35,7 +35,7 @@ extension SettingsContentView {
                 .scaleEffect(0.7)
                 .frame(width: 70, height: 22)
             } else {
-              Text("Choose…")
+              Text("Escolher…")
                 .scaledFont(size: OmiType.body, weight: .medium)
             }
           }
@@ -53,16 +53,16 @@ extension SettingsContentView {
             .frame(width: 24, height: 24)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Read Gmail")
+            Text("Ler Gmail")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
             if let lastFetched = gmailLastFetched {
-              Text("Last read \(lastFetched, formatter: relativeDateFormatter)")
+              Text("Última leitura \(lastFetched, formatter: relativeDateFormatter)")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
             } else {
-              Text("Reads your recent email through your signed-in browser. No separate Google sign-in needed.")
+              Text("Lê seus e-mails recentes pelo navegador em que você já está logado. Não precisa de outro login no Google.")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
             }
@@ -78,7 +78,7 @@ extension SettingsContentView {
                 .scaleEffect(0.7)
                 .frame(width: 60, height: 22)
             } else {
-              Text("Read Gmail")
+              Text("Ler Gmail")
                 .scaledFont(size: OmiType.body, weight: .medium)
             }
           }
@@ -108,7 +108,7 @@ extension SettingsContentView {
           HStack(spacing: OmiSpacing.md) {
             Image(systemName: "checkmark.circle.fill")
               .foregroundColor(Ink.listeningGreen)
-            Text("\(gmailMemoriesSaved) emails saved as memories")
+            Text("\(gmailMemoriesSaved) e-mails salvos como memórias")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
             Spacer()
@@ -162,7 +162,7 @@ extension SettingsContentView {
 
   var gmailAccountSummary: String {
     let label = GmailSelectionStore.selectedAccountLabel
-    return label.isEmpty ? "Automatic — first readable browser account" : label
+    return label.isEmpty ? "Automático (primeira conta legível do navegador)" : label
   }
 
   func probeGmailAccounts() async {
@@ -172,7 +172,7 @@ extension SettingsContentView {
     do {
       let accounts = try await GmailAccountProbe.availableAccounts()
       guard !accounts.isEmpty else {
-        gmailReadError = "No readable Gmail accounts found."
+        gmailReadError = "Nenhuma conta do Gmail legível encontrada."
         return
       }
       gmailAccounts = accounts
@@ -246,15 +246,15 @@ extension SettingsContentView {
             .foregroundColor(Ink.secondary)
             .frame(width: 24, height: 24)
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Sync Calendar")
+            Text("Sincronizar Calendário")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
             if let lastSynced = calendarLastSynced {
-              Text("Last synced \(lastSynced, formatter: relativeDateFormatter)")
+              Text("Última sincronização \(lastSynced, formatter: relativeDateFormatter)")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
             } else {
-              Text("Reads your Google Calendar through your signed-in browser. No separate Google sign-in needed.")
+              Text("Lê seu Google Calendar pelo navegador em que você já está logado. Não precisa de outro login no Google.")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
             }
@@ -264,7 +264,7 @@ extension SettingsContentView {
             if isReadingCalendar {
               ProgressView().scaleEffect(0.7).frame(width: 80, height: 22)
             } else {
-              Text("Sync Calendar")
+              Text("Sincronizar Calendário")
                 .scaledFont(size: OmiType.body, weight: .medium)
             }
           }
@@ -287,7 +287,7 @@ extension SettingsContentView {
           HStack(spacing: OmiSpacing.md) {
             Image(systemName: "checkmark.circle.fill").foregroundColor(Ink.listeningGreen)
             Text(
-              "\(calendarMemoriesCreated) memories and \(calendarTasksCreated) tasks created from \(calendarEvents.count) events"
+              "\(calendarMemoriesCreated) memórias e \(calendarTasksCreated) tarefas criadas a partir de \(calendarEvents.count) eventos"
             )
             .scaledFont(size: OmiType.body).foregroundColor(Ink.secondary)
             Spacer()
@@ -306,10 +306,10 @@ extension SettingsContentView {
                   .lineLimit(1)
                   .help(event.startTime)
                 if !event.attendees.isEmpty {
-                  Text("With: \(event.attendees.prefix(3).joined(separator: ", "))").scaledFont(
+                  Text("Com: \(event.attendees.prefix(3).joined(separator: ", "))").scaledFont(
                     size: 12
                   ).foregroundColor(Ink.secondary).lineLimit(1).help(
-                    "With: \(event.attendees.joined(separator: ", "))"
+                    "Com: \(event.attendees.joined(separator: ", "))"
                   )
                 }
               }
@@ -365,11 +365,11 @@ extension SettingsContentView {
             .scaledFont(size: OmiType.heading)
             .foregroundColor(Ink.secondary)
           VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-            Text("Connect Claude, ChatGPT, Codex, Cursor, or any agent")
+            Text("Conecte Claude, ChatGPT, Codex, Cursor ou qualquer agente")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
             Text(
-              "Copy a setup prompt your agent follows on its own, or create MCP and Developer API keys. Opens Omi on the web."
+              "Copie um prompt de configuração que seu agente segue sozinho, ou crie chaves de MCP e da API de Desenvolvedor. Abre o Omi na web."
             )
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
@@ -379,7 +379,7 @@ extension SettingsContentView {
 
         storefrontFeatureEntry(.mcpDailyCap)
         Button(action: { NSWorkspace.shared.open(DeveloperHomeLink.url) }) {
-          Text("Open Developer Home")
+          Text("Abrir Central do Desenvolvedor")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
         .buttonStyle(OmiButtonStyle(.primary, size: .compact))

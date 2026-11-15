@@ -14,7 +14,7 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("Task Assistant")
+            Text("Assistente de Tarefas")
               .scaledFont(size: OmiType.subheading, weight: .medium)
               .foregroundColor(Ink.primary)
 
@@ -30,7 +30,7 @@ extension SettingsContentView {
               }
           }
 
-          Text("Extract tasks and action items from your screen")
+          Text("Extrai tarefas e itens de ação da sua tela")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
 
@@ -40,10 +40,10 @@ extension SettingsContentView {
             // Task Agent (chat / investigate) toggle
             HStack {
               VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-                Text("Task Agent")
+                Text("Agente de Tarefas")
                   .scaledFont(size: OmiType.body)
                   .foregroundColor(Ink.secondary)
-                Text("Adds an Investigate button and a chat panel to tasks so Omi can work on them with you")
+                Text("Adiciona um botão Investigar e um painel de chat às tarefas para o Omi trabalhar nelas com você")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
               }
@@ -61,12 +61,12 @@ extension SettingsContentView {
             // Working Directory (shared by chat agent and terminal agent)
             HStack(spacing: OmiSpacing.sm) {
               VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-                Text("Working Directory")
+                Text("Pasta de Trabalho")
                   .scaledFont(size: OmiType.body)
                   .foregroundColor(Ink.secondary)
                 Text(
                   taskAgentWorkingDirectory.isEmpty
-                    ? "Not set — chat agent defaults to ~" : taskAgentWorkingDirectory
+                    ? "Não definida (o agente do chat usa ~ por padrão)" : taskAgentWorkingDirectory
                 )
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.secondary)
@@ -76,7 +76,7 @@ extension SettingsContentView {
 
               Spacer()
 
-              Button("Browse…") {
+              Button("Procurar…") {
                 let panel = NSOpenPanel()
                 panel.canChooseFiles = false
                 panel.canChooseDirectories = true
@@ -93,7 +93,7 @@ extension SettingsContentView {
               .buttonStyle(OmiButtonStyle(.primary, size: .compact))
 
               if !taskAgentWorkingDirectory.isEmpty {
-                Button("Clear") {
+                Button("Limpar") {
                   taskAgentWorkingDirectory = ""
                   TaskAgentSettings.shared.workingDirectory = ""
                 }
@@ -107,10 +107,10 @@ extension SettingsContentView {
             VStack(alignment: .leading, spacing: OmiSpacing.sm) {
               HStack {
                 VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-                  Text("Extraction Interval")
+                  Text("Intervalo de Extração")
                     .scaledFont(size: OmiType.body)
                     .foregroundColor(Ink.secondary)
-                  Text("How often to scan for new tasks")
+                  Text("Com que frequência procurar novas tarefas")
                     .scaledFont(size: OmiType.caption)
                     .foregroundColor(Ink.secondary)
                 }
@@ -151,10 +151,10 @@ extension SettingsContentView {
             VStack(alignment: .leading, spacing: OmiSpacing.sm) {
               HStack {
                 VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-                  Text("Minimum Confidence")
+                  Text("Confiança Mínima")
                     .scaledFont(size: OmiType.body)
                     .foregroundColor(Ink.secondary)
-                  Text("Only show tasks above this confidence level")
+                  Text("Só mostra tarefas acima deste nível de confiança")
                     .scaledFont(size: OmiType.caption)
                     .foregroundColor(Ink.secondary)
                 }
@@ -178,8 +178,8 @@ extension SettingsContentView {
             }
 
             settingRow(
-              title: "Task Extraction Prompt",
-              subtitle: "Customize AI instructions for task extraction",
+              title: "Prompt de Extração de Tarefas",
+              subtitle: "Personalize as instruções da IA para extrair tarefas",
               settingId: "advanced.taskassistant.prompt"
             ) {
               HStack(spacing: OmiSpacing.sm) {
@@ -189,7 +189,7 @@ extension SettingsContentView {
                   HStack(spacing: OmiSpacing.xxs) {
                     Image(systemName: "play.circle")
                       .scaledFont(size: OmiType.caption)
-                    Text("Test Run")
+                    Text("Executar Teste")
                       .scaledFont(size: OmiType.caption)
                   }
                 }
@@ -199,7 +199,7 @@ extension SettingsContentView {
                   TaskPromptEditorWindow.show()
                 }) {
                   HStack(spacing: OmiSpacing.xxs) {
-                    Text("Edit")
+                    Text("Editar")
                       .scaledFont(size: OmiType.caption)
                     Image(systemName: "arrow.up.right.square")
                       .scaledFont(size: OmiType.caption)
@@ -214,11 +214,11 @@ extension SettingsContentView {
             // Allowed Apps for Task Extraction (Whitelist)
             VStack(alignment: .leading, spacing: OmiSpacing.md) {
               VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-                Text("Allowed Apps")
+                Text("Apps Permitidos")
                   .scaledFont(size: OmiType.body)
                   .foregroundColor(Ink.secondary)
                 Text(
-                  "Tasks will only be extracted from these apps. Browsers are also filtered by keywords below."
+                  "As tarefas só serão extraídas destes apps. Os navegadores também são filtrados pelas palavras-chave abaixo."
                 )
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.secondary)
@@ -235,7 +235,7 @@ extension SettingsContentView {
                       .foregroundColor(Ink.primary)
 
                     if TaskAssistantSettings.isBrowser(appName) {
-                      Text("browser")
+                      Text("navegador")
                         .scaledFont(size: OmiType.micro)
                         .foregroundColor(Ink.secondary)
                         .padding(.horizontal, OmiSpacing.xs)
@@ -262,9 +262,9 @@ extension SettingsContentView {
               }
 
               AppRuleEditorView(
-                title: "Add App to Allowed List",
-                placeholder: "App name (e.g., Mail)",
-                addButtonTitle: "Add",
+                title: "Adicionar App à Lista de Permitidos",
+                placeholder: "Nome do app (ex.: Mail)",
+                addButtonTitle: "Adicionar",
                 existingApps: taskAllowedApps,
                 builtInApps: TaskAssistantSettings.defaultAllowedApps,
                 onAdd: { appName in
@@ -279,11 +279,11 @@ extension SettingsContentView {
             // Browser Window Keywords
             VStack(alignment: .leading, spacing: OmiSpacing.md) {
               VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-                Text("Browser Window Keywords")
+                Text("Palavras-chave de Janelas do Navegador")
                   .scaledFont(size: OmiType.body)
                   .foregroundColor(Ink.secondary)
                 Text(
-                  "For browser apps, only analyze windows whose title contains one of these keywords."
+                  "Em apps de navegador, só analisa janelas cujo título contenha uma destas palavras-chave."
                 )
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.secondary)
@@ -307,8 +307,8 @@ extension SettingsContentView {
 
             // Task Prioritization Re-score
             settingRow(
-              title: "Task Prioritization",
-              subtitle: "Re-score all tasks by relevance to your profile and goals",
+              title: "Priorização de Tarefas",
+              subtitle: "Reavalia todas as tarefas pela relevância para seu perfil e suas metas",
               settingId: "advanced.taskassistant.prioritization"
             ) {
               if isRescoringTasks {
@@ -325,7 +325,7 @@ extension SettingsContentView {
                   HStack(spacing: OmiSpacing.xxs) {
                     Image(systemName: "arrow.trianglehead.counterclockwise")
                       .scaledFont(size: OmiType.caption)
-                    Text("Re-score")
+                    Text("Reavaliar")
                       .scaledFont(size: OmiType.caption)
                   }
                 }
@@ -347,7 +347,7 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("Memory Assistant")
+            Text("Assistente de Memórias")
               .scaledFont(size: OmiType.subheading, weight: .medium)
               .foregroundColor(Ink.primary)
 
@@ -363,7 +363,7 @@ extension SettingsContentView {
               }
           }
 
-          Text("Extract facts and wisdom from your screen")
+          Text("Extrai fatos e aprendizados da sua tela")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
 
@@ -374,10 +374,10 @@ extension SettingsContentView {
             VStack(alignment: .leading, spacing: OmiSpacing.sm) {
               HStack {
                 VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-                  Text("Extraction Interval")
+                  Text("Intervalo de Extração")
                     .scaledFont(size: OmiType.body)
                     .foregroundColor(Ink.secondary)
-                  Text("How often to scan for new memories")
+                  Text("Com que frequência procurar novas memórias")
                     .scaledFont(size: OmiType.caption)
                     .foregroundColor(Ink.secondary)
                 }
@@ -418,10 +418,10 @@ extension SettingsContentView {
             VStack(alignment: .leading, spacing: OmiSpacing.sm) {
               HStack {
                 VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-                  Text("Minimum Confidence")
+                  Text("Confiança Mínima")
                     .scaledFont(size: OmiType.body)
                     .foregroundColor(Ink.secondary)
-                  Text("Only save memories above this confidence level")
+                  Text("Só salva memórias acima deste nível de confiança")
                     .scaledFont(size: OmiType.caption)
                     .foregroundColor(Ink.secondary)
                 }
@@ -446,15 +446,15 @@ extension SettingsContentView {
             }
 
             settingRow(
-              title: "Memory Extraction Prompt",
-              subtitle: "Customize AI instructions for memory extraction",
+              title: "Prompt de Extração de Memórias",
+              subtitle: "Personalize as instruções da IA para extrair memórias",
               settingId: "advanced.memoryassistant.prompt"
             ) {
               Button(action: {
                 MemoryPromptEditorWindow.show()
               }) {
                 HStack(spacing: OmiSpacing.xxs) {
-                  Text("Edit")
+                  Text("Editar")
                     .scaledFont(size: OmiType.caption)
                   Image(systemName: "arrow.up.right.square")
                     .scaledFont(size: OmiType.caption)
@@ -468,10 +468,10 @@ extension SettingsContentView {
             // Excluded Apps for Memory Extraction
             VStack(alignment: .leading, spacing: OmiSpacing.md) {
               VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-                Text("Excluded Apps")
+                Text("Apps Excluídos")
                   .scaledFont(size: OmiType.body)
                   .foregroundColor(Ink.secondary)
-                Text("Memories won't be extracted from these apps")
+                Text("Não serão extraídas memórias destes apps")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
               }
@@ -496,7 +496,7 @@ extension SettingsContentView {
                 }
               } label: {
                 Text(
-                  "System apps always excluded (\(TaskAssistantSettings.builtInExcludedApps.count))"
+                  "Apps do sistema sempre excluídos (\(TaskAssistantSettings.builtInExcludedApps.count))"
                 )
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.secondary)
@@ -518,9 +518,9 @@ extension SettingsContentView {
               }
 
               AppRuleEditorView(
-                title: "Add App to Exclusion List",
-                placeholder: "App name (e.g., Passwords)",
-                addButtonTitle: "Add",
+                title: "Adicionar App à Lista de Exclusão",
+                placeholder: "Nome do app (ex.: Senhas)",
+                addButtonTitle: "Adicionar",
                 existingApps: memoryExcludedApps,
                 builtInApps: TaskAssistantSettings.builtInExcludedApps,
                 onAdd: { appName in
@@ -541,10 +541,10 @@ extension SettingsContentView {
         VStack(alignment: .leading, spacing: OmiSpacing.sm) {
           HStack {
             VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-              Text("Analysis Throttle")
+              Text("Limite de Análise")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
-              Text("Wait before analyzing after switching apps")
+              Text("Espera antes de analisar depois de trocar de app")
                 .scaledFont(size: OmiType.caption)
                 .foregroundColor(Ink.secondary)
             }
@@ -593,22 +593,22 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("Goals")
+            Text("Metas")
               .scaledFont(size: OmiType.subheading, weight: .medium)
               .foregroundColor(Ink.primary)
 
             Spacer()
           }
 
-          Text("Track personal goals with AI-powered progress detection from your conversations")
+          Text("Acompanhe metas pessoais com detecção de progresso por IA a partir das suas conversas")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
 
           GlassSeparator()
 
           settingRow(
-            title: "Auto-Generate Goals",
-            subtitle: "Automatically suggest new goals daily based on your conversations and tasks",
+            title: "Gerar Metas Automaticamente",
+            subtitle: "Sugere novas metas todo dia com base nas suas conversas e tarefas",
             settingId: "advanced.goals.autogenerate"
           ) {
             Toggle("", isOn: $goalsAutoGenerateEnabled)
@@ -633,11 +633,11 @@ extension SettingsContentView {
             .frame(width: 24, height: 24)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Speak Notifications Aloud")
+            Text("Falar Notificações em Voz Alta")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
-            Text("Read proactive notifications out loud when they arrive, using your chat voice")
+            Text("Lê em voz alta as notificações proativas quando chegam, usando a voz do seu chat")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -659,7 +659,7 @@ extension SettingsContentView {
             .frame(width: 24, height: 24)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Launch at Login")
+            Text("Abrir ao Iniciar a Sessão")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -703,11 +703,11 @@ extension SettingsContentView {
             .frame(width: 24, height: 24)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Report Issue")
+            Text("Reportar Problema")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
-            Text("Save a redacted report on this Mac to share manually")
+            Text("Salva neste Mac um relatório com dados ocultados para compartilhar manualmente")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -717,7 +717,7 @@ extension SettingsContentView {
           Button(action: {
             FeedbackWindow.show(userEmail: AuthState.shared.userEmail)
           }) {
-            Text("Report")
+            Text("Reportar")
           }
           .buttonStyle(OmiButtonStyle(.primary, size: .compact))
         }
@@ -737,18 +737,18 @@ extension SettingsContentView {
             .frame(width: 24, height: 24)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Reset Integration Suggestions")
+            Text("Redefinir Sugestões de Integrações")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
-            Text("Clears every integration's suggestion history, including ones you hid, so Omi can offer them again")
+            Text("Limpa o histórico de sugestões de todas as integrações, inclusive as que você ocultou, para o Omi poder oferecê-las de novo")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
 
           Spacer()
 
-          Button("Reset…") {
+          Button("Redefinir…") {
             isConfirmingNudgeReset = true
           }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
@@ -756,10 +756,10 @@ extension SettingsContentView {
       }
       .shellConfirmation(
         isPresented: $isConfirmingNudgeReset,
-        title: "Reset Integration Suggestions?",
-        message: "Every integration's suggestion history is cleared, including ones you hid, so Omi may "
-          + "suggest them again. This can't be undone.",
-        confirmTitle: "Reset"
+        title: "Redefinir Sugestões de Integrações?",
+        message: "O histórico de sugestões de todas as integrações é limpo, inclusive das que você ocultou, então o Omi pode "
+          + "sugeri-las de novo. Isso não pode ser desfeito.",
+        confirmTitle: "Redefinir"
       ) {
         IntegrationNudgeStore.shared.resetAll()
       }
@@ -778,11 +778,11 @@ extension SettingsContentView {
             .frame(width: 24, height: 24)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Reset Onboarding")
+            Text("Refazer Introdução")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
-            Text("Restart setup wizard for this app build only")
+            Text("Reinicia o assistente de configuração só para esta versão do app")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -793,7 +793,7 @@ extension SettingsContentView {
           // window is a transparent rectangle larger than the panels in it, so the system's backdrop
           // landed on the wallpaper — see `ShellConfirmationDialog`.
           Button(action: { showResetOnboardingConfirm = true }) {
-            Text("Reset")
+            Text("Redefinir")
           }
           .buttonStyle(OmiButtonStyle(.primary, size: .compact))
         }
@@ -891,14 +891,14 @@ enum FileRescanState: Equatable {
   var subtitle: String {
     switch self {
     case .idle:
-      return "Re-index the files in your standard folders"
+      return "Reindexa os arquivos das suas pastas padrão"
     case .scanning:
-      return "Re-indexing files…"
+      return "Reindexando arquivos…"
     case .finished(let indexedFiles):
       // A zero is not evidence of an empty Mac: `getIndexedFileCount()` also answers 0 when the
       // local database could not be opened, so the count is only stated when there is one.
-      guard indexedFiles > 0 else { return "Re-index finished" }
-      return "Re-indexed — \(indexedFiles) file\(indexedFiles == 1 ? "" : "s") in the index"
+      guard indexedFiles > 0 else { return "Reindexação concluída" }
+      return "Reindexado, \(indexedFiles) arquivo\(indexedFiles == 1 ? "" : "s") no índice"
     }
   }
 }
@@ -920,7 +920,7 @@ struct RescanFilesRow: View {
         .frame(width: 24, height: 24)
 
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Rescan Files")
+        Text("Reexaminar Arquivos")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -936,17 +936,17 @@ struct RescanFilesRow: View {
           .controlSize(.small)
       } else {
         Button(action: { showConfirmation = true }) {
-          Text("Rescan")
+          Text("Reexaminar")
         }
         .buttonStyle(OmiButtonStyle(.primary, size: .compact))
       }
     }
     .shellConfirmation(
       isPresented: $showConfirmation,
-      title: "Rescan Files?",
-      message: "Omi re-reads the names, sizes and folders of the files in your standard folders so recent "
-        + "ones are searchable. File contents are not read.",
-      confirmTitle: "Rescan",
+      title: "Reexaminar Arquivos?",
+      message: "O Omi relê os nomes, tamanhos e pastas dos arquivos das suas pastas padrão para que os "
+        + "recentes possam ser buscados. O conteúdo dos arquivos não é lido.",
+      confirmTitle: "Reexaminar",
       isDestructive: false
     ) {
       rescan()

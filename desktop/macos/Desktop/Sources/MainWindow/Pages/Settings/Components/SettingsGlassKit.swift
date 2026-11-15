@@ -135,7 +135,7 @@ struct SettingsKeyHint: View {
           .fill(Ink.wash)
       )
       .fixedSize()
-      .accessibilityLabel(Text("Keyboard shortcut \(text)"))
+      .accessibilityLabel(Text("Atalho de teclado \(text)"))
   }
 }
 

@@ -98,12 +98,12 @@ enum SettingsControlMetrics {
     hasPermission: Bool, bannersDisabled: Bool
   ) -> String {
     if !hasPermission {
-      return "macOS notification permission is off"
+      return "A permissão de notificações do macOS está desligada"
     }
     if bannersDisabled {
-      return "Permission granted, but macOS banners are off"
+      return "Permissão concedida, mas os banners do macOS estão desligados"
     }
-    return "macOS banners enabled"
+    return "Banners do macOS ativados"
   }
 }
 
@@ -170,7 +170,7 @@ extension SettingsContentView {
             Text(ShortcutSettings.voiceSpeedLabel(for: currentSpeed))
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
-            Text("Voice playback speed")
+            Text("Velocidade da voz")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -244,11 +244,11 @@ extension SettingsContentView {
           .frame(height: 22)
 
           HStack {
-            Text("Slow")
+            Text("Lenta")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
             Spacer()
-            Text("Max")
+            Text("Máx.")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           }
@@ -270,10 +270,10 @@ extension SettingsContentView {
     let body = VStack(alignment: .leading, spacing: OmiSpacing.md) {
       HStack(alignment: .center) {
         VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-          Text("Frequency")
+          Text("Frequência")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
-          Text("How often to receive notifications")
+          Text("Com que frequência receber notificações")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
@@ -347,11 +347,11 @@ extension SettingsContentView {
       .frame(height: 22)
 
       HStack {
-        Text(frequencyOptions.first?.1 ?? "Off")
+        Text(frequencyOptions.first?.1 ?? "Desligado")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
         Spacer()
-        Text(frequencyOptions.last?.1 ?? "Maximum")
+        Text(frequencyOptions.last?.1 ?? "Máximo")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
       }
@@ -373,7 +373,7 @@ extension SettingsContentView {
   @ViewBuilder
   func offLadderStepNote<Value: Equatable>(for value: Value, in ladder: [Value]) -> some View {
     if !SettingsControlMetrics.isOnLadder(value, in: ladder) {
-      Text("Not one of these steps — the handle shows the nearest one. Move it to choose a step.")
+      Text("Não é uma destas etapas: o controle mostra a mais próxima. Mova-o para escolher uma etapa.")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
         .fixedSize(horizontal: false, vertical: true)
@@ -417,7 +417,7 @@ extension SettingsContentView {
   ) -> some View {
     VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
       HStack {
-        Text("Tier \(tier)")
+        Text("Nível \(tier)")
           .scaledFont(size: OmiType.caption, weight: .semibold)
           .foregroundColor(unlocked ? Ink.accent : Ink.secondary)
           .padding(.horizontal, OmiSpacing.xs)
@@ -576,7 +576,7 @@ extension SettingsContentView {
                 }
               }
 
-              Text("Version \(updaterViewModel.currentVersion) (\(updaterViewModel.buildNumber))")
+              Text("Versão \(updaterViewModel.currentVersion) (\(updaterViewModel.buildNumber))")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
                 .textSelection(.enabled)
@@ -588,14 +588,14 @@ extension SettingsContentView {
           GlassSeparator()
 
           // Links
-          linkRow(title: "What's New", url: AppBuild.changelogURLString)
-          linkRow(title: "Visit Website", url: "https://omi.me")
-          linkRow(title: "Help Center", url: "https://help.omi.me")
+          linkRow(title: "Novidades", url: AppBuild.changelogURLString)
+          linkRow(title: "Visitar o Site", url: "https://omi.me")
+          linkRow(title: "Central de Ajuda", url: "https://help.omi.me")
           Button(action: {
             selectedSection = .privacy
           }) {
             HStack {
-              Text("Privacy Policy")
+              Text("Política de Privacidade")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
 
@@ -607,7 +607,7 @@ extension SettingsContentView {
             }
           }
           .buttonStyle(.plain)
-          linkRow(title: "Terms of Service", url: "https://omi.me/terms")
+          linkRow(title: "Termos de Serviço", url: "https://omi.me/terms")
         }
       }
 
@@ -627,7 +627,7 @@ extension SettingsContentView {
               .scaledFont(size: OmiType.subheading)
               .foregroundColor(Ink.secondary)
 
-            Text("Software Updates")
+            Text("Atualizações de Software")
               .scaledFont(size: OmiType.subheading, weight: .medium)
               .foregroundColor(Ink.primary)
 
@@ -640,9 +640,9 @@ extension SettingsContentView {
             .disabled(!updaterViewModel.canManuallyCheckForUpdates)
             .help(
               updaterViewModel.canManuallyCheckForUpdates
-                ? "Check for app updates"
+                ? "Verificar atualizações do app"
                 : updaterViewModel.updateSessionInProgress
-                  ? "An update is already in progress…" : "Already checking for updates…")
+                  ? "Já há uma atualização em andamento…" : "Já verificando atualizações…")
           }
 
           if updateStatus.isVisible {
@@ -677,7 +677,7 @@ extension SettingsContentView {
           }
 
           if let lastCheck = updaterViewModel.lastUpdateCheckDate {
-            Text("Last checked: \(lastCheck, style: .relative) ago")
+            Text("Última verificação: há \(lastCheck, style: .relative)")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           }
@@ -690,7 +690,7 @@ extension SettingsContentView {
                   .foregroundColor(SettingsInk.notice)
 
                 VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-                  Text("Update Needs Attention")
+                  Text("A Atualização Precisa de Atenção")
                     .scaledFont(size: OmiType.body, weight: .semibold)
                     .foregroundColor(Ink.primary)
                   Text(failure.userMessage)
@@ -702,19 +702,19 @@ extension SettingsContentView {
 
               HStack(spacing: OmiSpacing.sm) {
                 if failure.isRecoverableLaunchLocation {
-                  Button("Open Applications") {
+                  Button("Abrir Aplicativos") {
                     NSWorkspace.shared.open(
                       URL(fileURLWithPath: "/Applications", isDirectory: true))
                   }
                   .buttonStyle(OmiButtonStyle(.primary, size: .compact))
                 }
 
-                Button("Download Latest") {
+                Button("Baixar a Mais Recente") {
                   openURLInDefaultBrowser(AppBuild.manualDownloadURL)
                 }
                 .buttonStyle(OmiButtonStyle(.primary, size: .compact))
 
-                Button("Dismiss") {
+                Button("Dispensar") {
                   updaterViewModel.lastUpdateFailure = nil
                 }
                 .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -728,8 +728,8 @@ extension SettingsContentView {
           GlassSeparator()
 
           settingRow(
-            title: "Automatic Updates",
-            subtitle: "Check for updates automatically in the background",
+            title: "Atualizações Automáticas",
+            subtitle: "Verifica atualizações automaticamente em segundo plano",
             settingId: "about.autoupdates"
           ) {
             Toggle("", isOn: $updaterViewModel.automaticallyChecksForUpdates)
@@ -740,8 +740,8 @@ extension SettingsContentView {
 
           if updaterViewModel.automaticallyChecksForUpdates {
             settingRow(
-              title: "Auto-Install Updates",
-              subtitle: "Automatically download and install updates when available",
+              title: "Instalar Atualizações Automaticamente",
+              subtitle: "Baixa e instala atualizações automaticamente quando disponíveis",
               settingId: "about.autoinstall"
             ) {
               Toggle("", isOn: $updaterViewModel.automaticallyDownloadsUpdates)
@@ -752,16 +752,16 @@ extension SettingsContentView {
           }
 
           if updaterViewModel.usesManagedUpdatePolicy {
-            Text("Release builds always auto-check and auto-install updates in the background.")
+            Text("Versões de lançamento sempre verificam e instalam atualizações automaticamente em segundo plano.")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           } else if AppBuild.isNamedDevelopmentBundle {
-            Text("Named developer bundles do not use shared Sparkle updates. Run omi-dev update instead.")
+            Text("Bundles de desenvolvedor nomeados não usam as atualizações compartilhadas do Sparkle. Rode omi-dev update.")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           } else if AnalyticsManager.isDevBuild {
             Text(
-              "Development builds keep automatic installation disabled to avoid replacing the local app."
+              "Versões de desenvolvimento mantêm a instalação automática desativada para não substituir o app local."
             )
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
@@ -772,10 +772,10 @@ extension SettingsContentView {
           if !AppBuild.isBetaProductionBundle {
             settingRow(
               title: "Omi Beta",
-              subtitle: "Install the separate Omi Beta app. It runs beside this one.",
+              subtitle: "Instale o app Omi Beta separado. Ele roda ao lado deste.",
               settingId: "about.channel"
             ) {
-              Button("Get Omi Beta") {
+              Button("Baixar o Omi Beta") {
                 openURLInDefaultBrowser(AppBuild.omiBetaInstallURL)
               }
               .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -783,10 +783,10 @@ extension SettingsContentView {
           } else {
             settingRow(
               title: "Omi Beta",
-              subtitle: "This app updates from the Beta feed and runs beside Omi.",
+              subtitle: "Este app atualiza pelo canal Beta e roda ao lado do Omi.",
               settingId: "about.channel"
             ) {
-              Text("Installed")
+              Text("Instalado")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
             }
@@ -801,18 +801,18 @@ extension SettingsContentView {
             .foregroundColor(Ink.secondary)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Community")
+            Text("Comunidade")
               .scaledFont(size: OmiType.subheading, weight: .medium)
               .foregroundColor(Ink.primary)
 
-            Text("Get help from the Omi community and team")
+            Text("Peça ajuda à comunidade e à equipe do Omi")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
 
           Spacer()
 
-          Button("Join Discord") {
+          Button("Entrar no Discord") {
             openURLInDefaultBrowser(SupportLinks.discord)
           }
           .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -826,18 +826,18 @@ extension SettingsContentView {
             .foregroundColor(Ink.secondary)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Report an Issue")
+            Text("Reportar um Problema")
               .scaledFont(size: OmiType.subheading, weight: .medium)
               .foregroundColor(Ink.primary)
 
-            Text("Help us improve Omi")
+            Text("Ajude a melhorar o Omi")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
 
           Spacer()
 
-          Button("Report") {
+          Button("Reportar") {
             FeedbackWindow.show(userEmail: AuthState.shared.userEmail)
           }
           .buttonStyle(OmiButtonStyle(.primary, size: .compact))

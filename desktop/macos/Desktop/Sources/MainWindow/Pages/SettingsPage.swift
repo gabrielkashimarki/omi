@@ -42,10 +42,10 @@ struct SettingsPage: View {
     // user's wallpaper. See `ShellConfirmationDialog`.
     .shellConfirmation(
       isPresented: $showResetOnboardingConfirm,
-      title: "Reset Onboarding?",
-      message: "This will reset onboarding for this app build only, clear onboarding chat history, "
-        + "and restart the app without affecting the other installed build.",
-      confirmTitle: "Reset & Restart"
+      title: "Redefinir a configuração inicial?",
+      message: "Isto redefine a configuração inicial só desta build do app, apaga o histórico do chat da configuração "
+        + "e reinicia o app sem afetar a outra build instalada.",
+      confirmTitle: "Redefinir e reiniciar"
     ) {
       appState.resetOnboardingAndRestart()
     }
@@ -376,12 +376,12 @@ struct SettingsContentView: View {
   let extractionIntervalOptions: [Double] = [10.0, 60.0, 300.0, 600.0, 1800.0, 3600.0]
   let hourOptions = Array(0...23)
   let frequencyOptions = [
-    (0, "Off"),
-    (1, "Minimal"),
-    (2, "Low"),
-    (3, "Balanced"),
-    (4, "High"),
-    (5, "Maximum"),
+    (0, "Desligado"),
+    (1, "Mínimo"),
+    (2, "Baixo"),
+    (3, "Equilibrado"),
+    (4, "Alto"),
+    (5, "Máximo"),
   ]
   // Use the full language list from AssistantSettings
   var languageOptions: [(String, String)] {
@@ -471,10 +471,18 @@ struct SettingsContentView: View {
     /// `omi-ctl navigate settings <section>`, e2e flow waits).
     var displayTitle: String {
       switch self {
-      case .account, .planUsage: return "Account & Plan"
-      case .notifications, .privacy: return "Alerts & Privacy"
-      case .advanced: return "AI & Automation"
-      default: return rawValue
+      case .account, .planUsage: return "Conta e plano"
+      case .notifications, .privacy: return "Alertas e privacidade"
+      case .advanced: return "IA e automação"
+      case .general: return "Geral"
+      case .rewind: return "Rewind"
+      case .transcription: return "Transcrição"
+      case .aiChat: return "Chat com IA"
+      case .floatingBar: return "Barra flutuante"
+      case .shortcuts: return "Atalhos"
+      case .referral: return "Indique um amigo"
+      case .about: return "Sobre"
+      case .permissions: return "Permissões"
       }
     }
 
@@ -528,6 +536,25 @@ struct SettingsContentView: View {
     case gmailReader = "Gmail Reader"
     case calendarSync = "Calendar Sync"
     case developerKeys = "Model Provider Keys"
+
+    /// Rótulo exibido na interface; o rawValue segue como contrato de automação.
+    var displayTitle: String {
+      switch self {
+      case .resetOnboarding: return "Redefinir configuração inicial"
+      case .aiUserProfile: return "Perfil do usuário na IA"
+      case .stats: return "Suas estatísticas"
+      case .focusAssistant: return "Assistente de foco"
+      case .taskAssistant: return "Assistente de tarefas"
+      case .memoryAssistant: return "Assistente de memórias"
+      case .analysisThrottle: return "Limite de análises"
+      case .goals: return "Metas"
+      case .preferences: return "Preferências"
+      case .troubleshooting: return "Solução de problemas"
+      case .gmailReader: return "Leitor do Gmail"
+      case .calendarSync: return "Sincronização da agenda"
+      case .developerKeys: return "Chaves de provedores de modelo"
+      }
+    }
 
     var icon: String {
       switch self {
@@ -665,11 +692,11 @@ struct SettingsContentView: View {
           transcriptionSection
         case .notifications, .privacy:
           notificationsSection
-          mergedSectionHeader(title: "Privacy", icon: "lock.shield")
+          mergedSectionHeader(title: "Privacidade", icon: "lock.shield")
           privacySection
         case .account, .planUsage:
           accountSection
-          mergedSectionHeader(title: "Plan and Usage", icon: "creditcard")
+          mergedSectionHeader(title: "Plano e uso", icon: "creditcard")
           planUsageSection
         case .aiChat:
           aiChatSection

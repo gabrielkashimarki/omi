@@ -13,17 +13,17 @@ let omiProPlanId = "unlimited_v2"
 let omiProDeprecationFallbackPrice = "$29.99/mo"
 
 enum SubscriptionPlanPresentation {
-  static let resubscribeFirst = "Resubscribe first to change plans."
+  static let resubscribeFirst = "Assine de novo antes de trocar de plano."
 
   /// The two routes use 409 for different refusals: upgrade means a pending
   /// cancellation, checkout means the account already has a subscription.
   static func upgradeErrorMessage(_ error: APIError) -> String {
     if case .httpError(let statusCode, _) = error, statusCode == 409 { return resubscribeFirst }
-    return error.detail ?? "Failed to schedule plan change."
+    return error.detail ?? "Falha ao agendar a troca de plano."
   }
 
   static func checkoutErrorMessage(_ error: APIError) -> String {
-    error.detail ?? "Failed to open checkout."
+    error.detail ?? "Falha ao abrir o pagamento."
   }
 
   enum Purchase {
@@ -41,18 +41,18 @@ enum SubscriptionPlanPresentation {
   }
 
   static func endsLine(plan: String, date: String) -> String {
-    "Your \(plan) plan ends \(date)."
+    "Seu plano \(plan) termina em \(date)."
   }
 
   static func renewsLine(plan: String, date: String) -> String {
-    "Your \(plan) plan will renew on \(date)."
+    "Seu plano \(plan) será renovado em \(date)."
   }
 
   static func selectionLabel(planTitle: String, startingPrice: String?) -> String {
     guard let startingPrice, !startingPrice.isEmpty else {
-      return "Select \(planTitle)"
+      return "Escolher \(planTitle)"
     }
-    return "Select \(planTitle) · \(startingPrice)"
+    return "Escolher \(planTitle) · \(startingPrice)"
   }
 }
 
@@ -80,7 +80,7 @@ struct CurrentPlanCardActions: View {
             ProgressView()
               .controlSize(.small)
           } else {
-            Text("Resubscribe")
+            Text("Assinar de Novo")
               .scaledFont(size: OmiType.body, weight: .semibold)
           }
         }
@@ -94,7 +94,7 @@ struct CurrentPlanCardActions: View {
           ProgressView()
             .controlSize(.small)
         } else {
-          Text("Manage")
+          Text("Gerenciar")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
       }
@@ -108,15 +108,15 @@ struct CurrentPlanCardActions: View {
 /// subscription flag: an enrolled LLM key alone does not pay for transcription.
 enum TranscriptionAllowancePresentation {
   static func statusText(_ allowance: TranscriptionAllowanceSnapshot?) -> String {
-    guard let allowance else { return "Transcription allowance unavailable — refresh to check" }
+    guard let allowance else { return "Franquia de transcrição indisponível, atualize para verificar" }
     switch allowance.reason {
-    case "byok": return "Transcription: using your Deepgram key"
-    case "plan_within_allowance": return "Transcription: Omi-managed allowance"
-    case "plan_allowance_exhausted": return "Transcription: Omi-managed allowance exhausted"
-    case "plan_unlimited", "marketplace_reviewer": return "Transcription: Omi-managed (unlimited)"
-    case "trial_paywalled": return "Transcription: Omi trial access ended"
-    case "subscription_inactive": return "Transcription: Omi plan inactive"
-    default: return "Transcription allowance unavailable — refresh to check"
+    case "byok": return "Transcrição: usando sua chave do Deepgram"
+    case "plan_within_allowance": return "Transcrição: franquia gerenciada pelo Omi"
+    case "plan_allowance_exhausted": return "Transcrição: franquia gerenciada pelo Omi esgotada"
+    case "plan_unlimited", "marketplace_reviewer": return "Transcrição: gerenciada pelo Omi (ilimitada)"
+    case "trial_paywalled": return "Transcrição: acesso de teste do Omi encerrado"
+    case "subscription_inactive": return "Transcrição: plano Omi inativo"
+    default: return "Franquia de transcrição indisponível, atualize para verificar"
     }
   }
 }
@@ -159,16 +159,16 @@ extension SettingsContentView {
 
   var currentPlanTitle: String {
     guard let subscription = userSubscription?.subscription else {
-      return isLoadingSubscription ? "Loading plan…" : "Free"
+      return isLoadingSubscription ? "Carregando plano…" : "Grátis"
     }
     // The synthetic BYOK subscription describes enrolled keys, not an
     // unlimited allowance for every feature. Chat has its own quota snapshot.
     if subscription.features.contains("byok") {
-      return "Custom keys (BYOK)"
+      return "Chaves próprias (BYOK)"
     }
     switch subscription.plan {
     case .basic:
-      return "Free"
+      return "Grátis"
     case .plus:
       return "Plus"
     case .unlimited:
@@ -209,18 +209,18 @@ extension SettingsContentView {
 
   var currentPlanSubtitle: String {
     if isLoadingSubscription {
-      return "Fetching subscription details from Omi."
+      return "Buscando os detalhes da assinatura no Omi."
     }
     if userSubscription?.subscription.features.contains("byok") == true {
-      return "Using your own AI keys for supported features."
+      return "Usando suas próprias chaves de IA nos recursos compatíveis."
     }
     if let detail = currentPlanBillingDetail {
       return detail
     }
     if hasPaidSubscription {
-      return "Your paid plan is active."
+      return "Seu plano pago está ativo."
     }
-    return "You are currently on the free tier."
+    return "Você está no plano gratuito."
   }
 
   var currentPlanBillingDetail: String? {
@@ -251,7 +251,7 @@ extension SettingsContentView {
     if subscription.cancelAtPeriodEnd {
       return SubscriptionPlanPresentation.endsLine(plan: subscription.plan.displayName, date: formatted)
     }
-    return "Renews on \(formatted)"
+    return "Renova em \(formatted)"
   }
 
   func mediumPeriodDate(_ periodEnd: Int) -> String {
@@ -264,13 +264,13 @@ extension SettingsContentView {
   static func planSubtitle(for planId: String) -> String? {
     switch planId {
     case omiProPlanId:
-      return "1,000 questions per month"
+      return "1.000 perguntas por mês"
     case "unlimited":
-      return "200 questions per month"
+      return "200 perguntas por mês"
     case "operator":
-      return "500 questions per month"
+      return "500 perguntas por mês"
     case "architect":
-      return "Power-user AI — thousands of chats + agentic automations"
+      return "IA para usuários avançados: milhares de chats + automações com agentes"
     default:
       return nil
     }
@@ -306,28 +306,28 @@ extension SettingsContentView {
   static func planEyebrow(for planId: String) -> String {
     switch planId {
     case omiProPlanId:
-      return "Mac + mobile + web"
+      return "Mac + celular + web"
     case "unlimited":
-      return "Starter"
+      return "Inicial"
     case "operator":
-      return "Most popular"
+      return "Mais popular"
     case "architect":
-      return "Automation + coding"
+      return "Automação + programação"
     default:
-      return "Plan"
+      return "Plano"
     }
   }
 
   static func planDescription(for planId: String) -> String {
     switch planId {
     case omiProPlanId:
-      return "1,000 chat questions per month. Works on Mac, mobile, and web."
+      return "1.000 perguntas de chat por mês. Funciona no Mac, no celular e na web."
     case "unlimited":
-      return "200 chat questions per month. Shared with mobile and web."
+      return "200 perguntas de chat por mês. Compartilhadas com o celular e a web."
     case "operator":
-      return "500 chat questions per month. Shared with mobile and web."
+      return "500 perguntas de chat por mês. Compartilhadas com o celular e a web."
     case "architect":
-      return "Power-user AI for heavy agentic workflows and vibe coding."
+      return "IA para usuários avançados, com fluxos pesados de agentes e vibe coding."
     default:
       return ""
     }
@@ -372,31 +372,31 @@ extension SettingsContentView {
     switch planId {
     case omiProPlanId:
       return [
-        "Unlimited listening and transcription",
-        "1,000 chat questions per month",
-        "Unlimited memories and insights",
-        "Works on Mac, mobile, and web",
+        "Escuta e transcrição ilimitadas",
+        "1.000 perguntas de chat por mês",
+        "Memórias e insights ilimitados",
+        "Funciona no Mac, no celular e na web",
       ]
     case "architect":
       return [
-        "Automations and vibe coding",
-        "Unlimited listening, memories, and insights",
-        "Priority desktop AI features",
-        "~$400 of monthly AI compute included (fair-use cap)",
+        "Automações e vibe coding",
+        "Escuta, memórias e insights ilimitados",
+        "Recursos de IA do desktop com prioridade",
+        "~US$ 400 por mês de computação de IA incluídos (limite de uso justo)",
       ]
     case "operator":
       return [
-        "500 chat questions per month",
-        "Unlimited listening and transcription",
-        "Unlimited memories and insights",
-        "Shared with mobile and web",
+        "500 perguntas de chat por mês",
+        "Escuta e transcrição ilimitadas",
+        "Memórias e insights ilimitados",
+        "Compartilhado com o celular e a web",
       ]
     case "unlimited":
       return [
-        "200 chat questions per month",
-        "Unlimited listening and transcription",
-        "Unlimited memories and insights",
-        "Shared with mobile and web",
+        "200 perguntas de chat por mês",
+        "Escuta e transcrição ilimitadas",
+        "Memórias e insights ilimitados",
+        "Compartilhado com o celular e a web",
       ]
     default:
       return []
@@ -428,13 +428,13 @@ extension SettingsContentView {
       case omiProPlanId:
         title = "Omi Pro"
       default:
-        title = options.first?.title ?? "Plan"
+        title = options.first?.title ?? "Plano"
       }
 
       let mappedPrices = options.map { option in
         SubscriptionPriceOption(
           id: option.id,
-          title: option.interval.lowercased().contains("year") ? "Annual" : "Monthly",
+          title: option.interval.lowercased().contains("year") ? "Anual" : "Mensal",
           description: option.description,
           priceString: option.priceString
         )
@@ -506,7 +506,7 @@ extension SettingsContentView {
             .lineLimit(1)
             .minimumScaleFactor(0.72)
 
-          Text("starting price")
+          Text("preço inicial")
             .scaledFont(size: OmiType.micro, weight: .medium)
             .foregroundColor(Ink.secondary)
         }
@@ -554,7 +554,7 @@ extension SettingsContentView {
               HStack(spacing: OmiSpacing.xs) {
                 Image(systemName: "tag")
                   .scaledFont(size: OmiType.caption)
-                Text("Promo code")
+                Text("Código promocional")
                   .scaledFont(size: OmiType.caption)
                 Image(systemName: isPromoCodeExpanded ? "chevron.up" : "chevron.down")
                   .scaledFont(size: OmiType.micro)
@@ -565,7 +565,7 @@ extension SettingsContentView {
 
             if isPromoCodeExpanded {
               VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-                TextField("Enter promo code", text: $upgradePromotionCode)
+                TextField("Digite o código promocional", text: $upgradePromotionCode)
                   .settingsTextInputStyle()
                   .disabled(activeCheckoutPriceId != nil)
                   .onChange(of: upgradePromotionCode) {
@@ -586,7 +586,7 @@ extension SettingsContentView {
             }
           }
 
-          Text("Choose billing")
+          Text("Escolha a cobrança")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Ink.secondary)
 
@@ -626,7 +626,7 @@ extension SettingsContentView {
                   .controlSize(.small)
                   .frame(maxWidth: .infinity)
               } else {
-                Text("Resubscribe")
+                Text("Assinar de Novo")
                   .frame(maxWidth: .infinity)
               }
             }
@@ -635,7 +635,7 @@ extension SettingsContentView {
           .disabled(activeCheckoutPriceId != nil)
         } else {
           HStack {
-            Text("Current Plan")
+            Text("Plano Atual")
               .scaledFont(size: OmiType.caption, weight: .bold)
               .foregroundColor(Ink.primary)
             Spacer()
@@ -696,9 +696,9 @@ extension SettingsContentView {
   /// Subtitle text for auto-detect toggle
   var autoDetectSubtitle: String {
     if autoDetectSupported {
-      return "Automatically detect spoken language"
+      return "Detectar automaticamente o idioma falado"
     } else {
-      return "Not available for \(languageName(for: transcriptionLanguage))"
+      return "Indisponível para \(languageName(for: transcriptionLanguage))"
     }
   }
 
@@ -732,7 +732,7 @@ extension SettingsContentView {
 
   func toggleMonitoring(enabled: Bool) {
     if enabled && !ProactiveAssistantsPlugin.shared.hasScreenRecordingPermission {
-      permissionError = "Screen recording permission required"
+      permissionError = "Permissão de gravação de tela necessária"
       isMonitoring = false
       ScreenCaptureService.requestScreenRecordingAccessAndOpenSettings()
       return
@@ -749,7 +749,7 @@ extension SettingsContentView {
         DispatchQueue.main.async {
           isToggling = false
           if !success {
-            permissionError = error ?? "Failed to start monitoring"
+            permissionError = error ?? "Falha ao iniciar o monitoramento"
             isMonitoring = false
           }
         }
@@ -832,35 +832,35 @@ extension SettingsContentView {
 
   func formatMinutes(_ minutes: Int) -> String {
     if minutes == 1 {
-      return "1 minute"
+      return "1 minuto"
     } else if minutes < 60 {
-      return "\(minutes) minutes"
+      return "\(minutos) minutes"
     } else {
-      return "1 hour"
+      return "1 hora"
     }
   }
 
   func formatAnalysisDelay(_ seconds: Int) -> String {
     if seconds == 0 {
-      return "Instant"
+      return "Instantâneo"
     } else if seconds < 60 {
-      return "\(seconds) seconds"
+      return "\(segundos) seconds"
     } else if seconds == 60 {
-      return "1 minute"
+      return "1 minuto"
     } else {
-      return "\(seconds / 60) minutes"
+      return "\(seconds / 60) minutos"
     }
   }
 
   func formatExtractionInterval(_ seconds: Double) -> String {
     if seconds < 60 {
-      return "\(Int(seconds)) seconds"
+      return "\(Int(segundos)) seconds"
     } else if seconds < 3600 {
       let minutes = Int(seconds / 60)
-      return minutes == 1 ? "1 minute" : "\(minutes) minutes"
+      return minutes == 1 ? "1 minuto" : "\(minutes) minutos"
     } else {
       let hours = Int(seconds / 3600)
-      return hours == 1 ? "1 hour" : "\(hours) hours"
+      return hours == 1 ? "1 hora" : "\(hours) horas"
     }
   }
 
@@ -1020,7 +1020,7 @@ extension SettingsContentView {
       } catch {
         logError("Failed to load subscription", error: error)
         await MainActor.run {
-          subscriptionError = "Failed to load plan information."
+          subscriptionError = "Falha ao carregar as informações do plano."
           isLoadingSubscription = false
         }
       }
@@ -1166,7 +1166,7 @@ extension SettingsContentView {
           await MainActor.run {
             activeCheckoutPriceId = nil
             pendingSubscriptionPriceId = nil
-            subscriptionError = "Failed to schedule plan change."
+            subscriptionError = "Falha ao agendar a troca de plano."
           }
         }
       }
@@ -1185,7 +1185,7 @@ extension SettingsContentView {
 
         if response.status == "reactivated" {
           await MainActor.run {
-            let planName = userSubscription?.subscription.plan.displayName ?? "plan"
+            let planName = userSubscription?.subscription.plan.displayName ?? "plano"
             if let periodEnd = userSubscription?.subscription.currentPeriodEnd {
               subscriptionConfirmation = SubscriptionPlanPresentation.renewsLine(
                 plan: planName, date: mediumPeriodDate(periodEnd))
@@ -1200,7 +1200,7 @@ extension SettingsContentView {
           let normalizedBaseURL = apiBaseURL.hasSuffix("/") ? apiBaseURL : apiBaseURL + "/"
           await MainActor.run {
             activeBillingWebFlow = BillingWebFlow(
-              title: "Complete Your Upgrade",
+              title: "Conclua Seu Upgrade",
               url: url,
               completionURLs: [
                 normalizedBaseURL + "v1/payments/success",
@@ -1210,7 +1210,7 @@ extension SettingsContentView {
           }
         } else {
           await MainActor.run {
-            subscriptionError = response.message ?? "Could not start checkout."
+            subscriptionError = response.message ?? "Não foi possível iniciar o pagamento."
           }
         }
       } catch let apiError as APIError {
@@ -1227,7 +1227,7 @@ extension SettingsContentView {
           activeCheckoutPriceId = nil
           pendingSubscriptionPriceId = nil
           pendingCheckoutSessionId = nil
-          subscriptionError = "Failed to open checkout."
+          subscriptionError = "Falha ao abrir o pagamento."
         }
       }
     }
@@ -1248,18 +1248,18 @@ extension SettingsContentView {
         if let url = URL(string: response.url) {
           await MainActor.run {
             openURLInDefaultBrowser(url)
-            subscriptionError = "Billing portal opened in your browser."
+            subscriptionError = "Portal de cobrança aberto no seu navegador."
           }
         } else {
           await MainActor.run {
-            subscriptionError = "Could not open billing portal."
+            subscriptionError = "Não foi possível abrir o portal de cobrança."
           }
         }
       } catch {
         logError("Failed to open customer portal", error: error)
         await MainActor.run {
           isOpeningCustomerPortal = false
-          subscriptionError = "Failed to open billing portal."
+          subscriptionError = "Falha ao abrir o portal de cobrança."
         }
       }
     }
@@ -1312,7 +1312,7 @@ extension SettingsContentView {
             await MainActor.run {
               userSubscription = subscription
               subscriptionError =
-                "Payment completed, but plan refresh is still catching up. Please try reloading this page in a moment."
+                "Pagamento concluído, mas a atualização do plano ainda está em andamento. Tente recarregar esta página em instantes."
               // The refreshed subscription has not shown the new price, so this
               // is not Upgrade Succeeded.
               pendingSubscriptionPriceId = nil
@@ -1325,7 +1325,7 @@ extension SettingsContentView {
         } catch {
           if attempt == 7 {
             await MainActor.run {
-              subscriptionError = "Payment completed, but subscription refresh failed."
+              subscriptionError = "Pagamento concluído, mas a atualização da assinatura falhou."
               pendingSubscriptionPriceId = nil
               pendingCheckoutSessionId = nil
             }

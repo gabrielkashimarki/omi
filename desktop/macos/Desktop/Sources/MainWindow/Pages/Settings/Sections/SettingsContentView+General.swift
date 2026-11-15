@@ -27,7 +27,7 @@ extension SettingsContentView {
           SettingsIconTile(symbol: "rectangle.dashed.badge.record")
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Screen Capture")
+            Text("Captura de Tela")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -74,7 +74,7 @@ extension SettingsContentView {
             SettingsIconTile(symbol: "mic.fill")
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Audio Recording")
+              Text("Gravação de Áudio")
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.primary)
 
@@ -98,7 +98,7 @@ extension SettingsContentView {
             SettingsIconTile(symbol: "waveform.and.mic")
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Wake Word")
+              Text("Palavra de Ativação")
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.primary)
 
@@ -127,7 +127,7 @@ extension SettingsContentView {
             SettingsIconTile(symbol: "bell.fill")
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Notifications")
+              Text("Notificações")
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.primary)
 
@@ -183,7 +183,7 @@ extension SettingsContentView {
                 .foregroundColor(SettingsInk.notice)
 
               Text(
-                "Banners disabled - you won't see visual alerts. Set style to \"Banners\" in System Settings."
+                "Banners desativados: você não verá alertas visuais. Defina o estilo como \"Banners\" nos Ajustes do Sistema."
               )
               .scaledFont(size: OmiType.caption)
               .foregroundColor(SettingsInk.notice)
@@ -211,11 +211,11 @@ extension SettingsContentView {
             SettingsIconTile(symbol: "textformat.size")
 
             VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Font Size")
+              Text("Tamanho da Fonte")
                 .scaledFont(size: 16, weight: .semibold)
                 .foregroundColor(Ink.primary)
 
-              Text("Scale: \(Int(fontScaleSettings.scale * 100))%")
+              Text("Escala: \(Int(fontScaleSettings.scale * 100))%")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
             }
@@ -223,7 +223,7 @@ extension SettingsContentView {
             Spacer()
 
             if fontScaleSettings.scale != 1.0 {
-              Button("Reset") {
+              Button("Redefinir") {
                 fontScaleSettings.resetToDefault()
               }
               .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
@@ -248,7 +248,7 @@ extension SettingsContentView {
               .foregroundColor(Ink.secondary)
           }
 
-          Text("The quick brown fox jumps over the lazy dog")
+          Text("Um pequeno jabuti xereta viu dez cegonhas felizes")
             .scaledFont(size: 14)
             .foregroundColor(Ink.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -277,22 +277,22 @@ extension SettingsContentView {
       SettingsIconTile(symbol: "macwindow")
 
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Window Size")
+        Text("Tamanho da Janela")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
-        Text("Return the main window to its default dimensions")
+        Text("Volta a janela principal às dimensões padrão")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
 
       Spacer()
 
-      Button("Reset") {
+      Button("Redefinir") {
         resetWindowToDefaultSize()
       }
       .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
-      .accessibilityLabel("Reset Window Size")
+      .accessibilityLabel("Redefinir tamanho da janela")
       .accessibilityIdentifier("settings-reset-window-size")
     }
   }
@@ -310,14 +310,14 @@ extension SettingsContentView {
         SettingsIconTile(symbol: "circle.lefthalf.filled")
 
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Transparency")
+          Text("Transparência")
             .scaledFont(size: 16, weight: .semibold)
             .foregroundColor(Ink.primary)
 
           Text(
             reduced
-              ? "Off while Reduce Transparency is on in System Settings"
-              : "Glass: \(Int((glassTransparencySettings.transparency * 100).rounded()))%"
+              ? "Desligado enquanto Reduzir Transparência está ativo nos Ajustes do Sistema"
+              : "Vidro: \(Int((glassTransparencySettings.transparency * 100).rounded()))%"
           )
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
@@ -328,7 +328,7 @@ extension SettingsContentView {
         // Reset rewrites the same value the slider does, which changes just as little under Reduce
         // Transparency, so it wears the slider's disabled state rather than contradicting the caption.
         if !glassTransparencySettings.isDefault {
-          Button("Reset") {
+          Button("Redefinir") {
             glassTransparencySettings.resetToDefault()
           }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
@@ -341,7 +341,7 @@ extension SettingsContentView {
         Image(systemName: "square.fill")
           .scaledFont(size: 12)
           .foregroundColor(Ink.secondary)
-          .help("Solid")
+          .help("Sólido")
 
         Slider(
           value: $glassTransparencySettings.transparency,
@@ -350,12 +350,12 @@ extension SettingsContentView {
         .tint(SettingsSelection.valueFill)
         // The side icons' tooltips do not attach to the control, so without this VoiceOver reads a
         // bare percentage with no word for what it is.
-        .accessibilityLabel("Transparency")
+        .accessibilityLabel("Transparência")
 
         Image(systemName: "square.dotted")
           .scaledFont(size: 12)
           .foregroundColor(Ink.secondary)
-          .help("Clear")
+          .help("Transparente")
       }
       .disabled(reduced)
       .opacity(reduced ? 0.45 : 1)
@@ -404,23 +404,23 @@ extension SettingsContentView {
   private var wakeWordSubtitle: String {
     let requiresListeningText: String
     switch audioRecordingMode {
-    case .off: requiresListeningText = "Requires Audio Recording to be on"
-    case .onlyMeetings: requiresListeningText = "Listens during meetings and calls"
-    case .always: requiresListeningText = "Listens in the background"
+    case .off: requiresListeningText = "Requer Gravação de Áudio ligada"
+    case .onlyMeetings: requiresListeningText = "Escuta durante reuniões e chamadas"
+    case .always: requiresListeningText = "Escuta em segundo plano"
     }
-    return "Say \"\(AssistantSettings.shared.wakeWordPhrase)\" then a command, hands-free. \(requiresListeningText)."
+    return "Diga \"\(AssistantSettings.shared.wakeWordPhrase)\" e depois um comando, sem usar as mãos. \(requiresListeningText)."
   }
 
   private var audioRecordingStatusText: String {
-    if audioRecordingNeedsAttention { return "Microphone permission required" }
+    if audioRecordingNeedsAttention { return "Permissão de microfone necessária" }
     switch audioRecordingMode {
     case .off:
-      return "Off — no ambient audio is recorded"
+      return "Desligado, nenhum áudio ambiente é gravado"
     case .always:
-      return appState.isTranscribing ? "Always on — recording audio" : "Always on — ready to record"
+      return appState.isTranscribing ? "Sempre ligado, gravando áudio" : "Sempre ligado, pronto para gravar"
     case .onlyMeetings:
-      if appState.isAwaitingMeeting { return "Only Meetings — waiting for a call" }
-      return appState.isTranscribing ? "Only Meetings — recording a call" : "Only Meetings — ready"
+      if appState.isAwaitingMeeting { return "Só reuniões, aguardando uma chamada" }
+      return appState.isTranscribing ? "Só reuniões, gravando uma chamada" : "Só reuniões, pronto"
     }
   }
 }
@@ -450,7 +450,7 @@ private struct AudioRecordingModeSwitcher: View {
     // Wide enough for "Only Meetings" in equal segments at the default text size.
     .frame(width: 300)
     .accessibilityElement(children: .contain)
-    .accessibilityLabel("Audio Recording")
+    .accessibilityLabel("Gravação de Áudio")
   }
 
   private func segment(
@@ -500,11 +500,11 @@ private struct InterfaceSoundsRow: View {
       SettingsIconTile(symbol: "speaker.wave.2")
 
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Interface Sounds")
+        Text("Sons da Interface")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
-        Text("Play a short sound when a chat answer finishes, a permission is granted, or a new card appears.")
+        Text("Toca um som curto quando uma resposta do chat termina, uma permissão é concedida ou um novo cartão aparece.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
