@@ -662,6 +662,9 @@ extension RealtimeHubController {
       }
       return .succeeded("Clicked at \(Int(x)), \(Int(y)).")
 
+    case .mexerNoMac:
+      return await mexerNoMac(pedido: (command.input["pedido"] as? String) ?? turnTranscript)
+
     case .perguntarCerebro:
       return await perguntarCerebro(
         pergunta: (command.input["pergunta"] as? String) ?? turnTranscript,

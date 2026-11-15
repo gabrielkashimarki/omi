@@ -721,6 +721,17 @@ enum GeneratedToolCapabilities {
     ]
     ),
     Capability(
+      toolName: "mexer_no_mac",
+      title: "Mexer no Mac",
+      latency: .asyncBackground,
+      surfaces: Set([.realtimeHub]),
+      summary: "Operate the user's Mac through the embedded Atticus engine: open apps, click, type, read windows, run multi-step tasks.",
+      bullets: [
+      "Use when the user asks to do something on the Mac: open an app or site, click, type, fill, send, organize windows or files.",
+      "Pass the full request in Portuguese, as the user said it."
+    ]
+    ),
+    Capability(
       toolName: "perguntar_cerebro",
       title: "Perguntar ao Cérebro",
       latency: .fastNetwork,
@@ -895,6 +906,6 @@ enum GeneratedToolCapabilities {
   }
 
   static var realtimeToolNames: [String] {
-    ["cancel_agent_run","check_permission_status","create_action_item","create_calendar_event","create_context_reminder","get_action_items","get_agent_run","get_conversations","get_daily_recap","get_memories","get_tasks","inspect_agent_artifacts","list_agent_sessions","perguntar_cerebro","point_click","read_conversation_evidence","read_tool_output","report_screen_observation","request_permission","screenshot","search_conversation_evidence","search_conversations","search_memories","search_screen_history","search_tool_output","set_desktop_attention_override","spawn_agent","think_deeper","update_action_item","update_agent_artifact_lifecycle","web_search"]
+    ["cancel_agent_run","check_permission_status","create_action_item","create_calendar_event","create_context_reminder","get_action_items","get_agent_run","get_conversations","get_daily_recap","get_memories","get_tasks","inspect_agent_artifacts","list_agent_sessions","mexer_no_mac","perguntar_cerebro","point_click","read_conversation_evidence","read_tool_output","report_screen_observation","request_permission","screenshot","search_conversation_evidence","search_conversations","search_memories","search_screen_history","search_tool_output","set_desktop_attention_override","spawn_agent","think_deeper","update_action_item","update_agent_artifact_lifecycle","web_search"]
   }
 }

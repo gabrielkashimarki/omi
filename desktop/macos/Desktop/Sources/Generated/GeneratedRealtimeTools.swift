@@ -28,6 +28,7 @@ enum HubTool: String {
   case getTasks = "get_tasks"
   case createCalendarEvent = "create_calendar_event"
   case thinkDeeper = "think_deeper"
+  case mexerNoMac = "mexer_no_mac"
   case perguntarCerebro = "perguntar_cerebro"
   case webSearch = "web_search"
   case screenshot = "screenshot"
@@ -776,6 +777,23 @@ enum GeneratedRealtimeTools {
       },
       "required": [
         "query"
+      ]
+    }
+  },
+  {
+    "type": "function",
+    "name": "mexer_no_mac",
+    "description": "Do something on the user's Mac through the Atticus engine (open apps or sites, click, type, fill forms, read the screen, multi-step tasks). Call it whenever the user asks you to act on the Mac. Pass the complete request in Portuguese as `pedido`. It can take up to a couple of minutes; say one short line that you are doing it, then wait. Report back only what the returned text says happened.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "pedido": {
+          "type": "string",
+          "description": "Pedido completo, em português, como o usuário falou."
+        }
+      },
+      "required": [
+        "pedido"
       ]
     }
   },
