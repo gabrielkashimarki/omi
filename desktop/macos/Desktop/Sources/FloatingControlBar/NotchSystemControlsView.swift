@@ -42,13 +42,13 @@ struct NotchSystemControlsView: View {
         hideButton
         controlButton(
           icon: "rectangle.dashed.badge.record",
-          label: "Screen",
+          label: "Tela",
           isOn: screenCaptureOn,
           action: toggleScreenCapture
         )
         controlButton(
           icon: "mic.fill",
-          label: "Audio",
+          label: "Áudio",
           isOn: audioRecordingOn,
           action: toggleAudioRecording
         )
@@ -85,7 +85,7 @@ struct NotchSystemControlsView: View {
         .truncationMode(.tail)
     }
     .accessibilityElement(children: .combine)
-    .accessibilityLabel(screenCaptureOn ? "Omi is watching \(name)" : "Omi is not watching \(name)")
+    .accessibilityLabel(screenCaptureOn ? "O Omi está observando \(name)" : "O Omi não está observando \(name)")
   }
 
   // MARK: - Shortcut legend
@@ -99,14 +99,14 @@ struct NotchSystemControlsView: View {
     // listed: two near-identical "open" rows read as a bug, not a feature.
     VStack(alignment: .trailing, spacing: 3) {
       if shortcuts.pttEnabled {
-        shortcutRow("Talk", keys: shortcuts.pttShortcut.displayTokens)
+        shortcutRow("Falar", keys: shortcuts.pttShortcut.displayTokens)
       }
       if shortcuts.askOmiEnabled {
-        shortcutRow("Open", keys: shortcuts.askOmiShortcut.displayTokens)
+        shortcutRow("Abrir", keys: shortcuts.askOmiShortcut.displayTokens)
       }
     }
     .accessibilityElement(children: .contain)
-    .accessibilityLabel("Keyboard shortcuts")
+    .accessibilityLabel("Atalhos de teclado")
   }
 
   private func shortcutRow(_ title: String, keys: [String]) -> some View {
@@ -152,10 +152,10 @@ struct NotchSystemControlsView: View {
       .contentShape(Capsule())
     }
     .buttonStyle(.plain)
-    .accessibilityLabel("\(label) capture")
+    .accessibilityLabel("Captura de \(label.lowercased())")
     .accessibilityValue(isOn ? "On" : "Off")
-    .accessibilityHint("Toggles whether Omi captures \(label.lowercased())")
-    .help("\(label) capture is \(isOn ? "on" : "off")")
+    .accessibilityHint("Liga ou desliga a captura de \(label.lowercased()) pelo Omi")
+    .help("Captura de \(label.lowercased()) \(isOn ? "ligada" : "desligada")")
   }
 
   /// Hides the notch. Styled as the capture toggles' quiet sibling rather than as an "on"
@@ -165,7 +165,7 @@ struct NotchSystemControlsView: View {
       HStack(spacing: OmiSpacing.xxs) {
         Image(systemName: "eye.slash")
           .font(.system(size: 9, weight: .semibold))
-        Text("Hide")
+        Text("Ocultar")
           .scaledFont(size: OmiType.micro, weight: .semibold)
       }
       .foregroundColor(NotchGlass.controlLabel(isActive: false))
@@ -177,9 +177,9 @@ struct NotchSystemControlsView: View {
       .contentShape(Capsule())
     }
     .buttonStyle(.plain)
-    .accessibilityLabel("Hide notch")
-    .accessibilityHint("Hides the notch. Bring it back from the Omi menu bar icon, Push-to-Talk, or Settings")
-    .help("Hide the notch — bring it back from the menu bar (Show Floating Bar)")
+    .accessibilityLabel("Ocultar notch")
+    .accessibilityHint("Oculta o notch. Traga de volta pelo ícone do Omi na barra de menus, pelo Apertar para falar ou pelos Ajustes")
+    .help("Oculta o notch. Traga de volta pela barra de menus (Mostrar barra flutuante)")
   }
 
   // MARK: - Actions

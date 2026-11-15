@@ -6,7 +6,7 @@ import SwiftUI
 ///
 /// `DismissButton` itself draws with `GlassShellChrome`'s light-panel Ink ladder, which is
 /// near-black on this surface (see `NotchGlassChrome.swift`), so the notch gets this variant with
-/// the same glyph, the same "Dismiss (Esc)" label, and `NotchGlass` colors. The target is
+/// the same glyph, the same "Dispensar (Esc)" label, and `NotchGlass` colors. The target is
 /// `NotchDismissButton.diameter` (24 pt), the minimum click size; the cards it sat on used an
 /// 18 pt circle with three different labels, and one had none.
 struct NotchDismissButton: View {
@@ -18,8 +18,8 @@ struct NotchDismissButton: View {
 
   let action: () -> Void
   /// What is dismissed, for VoiceOver only ("Dismiss suggestion"). The visible tooltip stays
-  /// "Dismiss (Esc)" everywhere.
-  var accessibilityLabel: String = "Dismiss"
+  /// "Dispensar (Esc)" everywhere.
+  var accessibilityLabel: String = "Dispensar"
 
   var body: some View {
     Button(action: action) {
@@ -27,7 +27,7 @@ struct NotchDismissButton: View {
         .scaledFont(size: OmiType.micro, weight: .bold)
     }
     .buttonStyle(NotchDismissButtonStyle())
-    .help("Dismiss (Esc)")
+    .help("Dispensar (Esc)")
     .accessibilityLabel(accessibilityLabel)
   }
 }
@@ -35,7 +35,7 @@ struct NotchDismissButton: View {
 extension View {
   /// Places the notch card's close control at its top-trailing corner.
   func notchDismissOverlay(
-    accessibilityLabel: String = "Dismiss",
+    accessibilityLabel: String = "Dispensar",
     action: @escaping () -> Void = { FloatingControlBarManager.shared.dismissCurrentNotification() }
   ) -> some View {
     overlay(alignment: .topTrailing) {

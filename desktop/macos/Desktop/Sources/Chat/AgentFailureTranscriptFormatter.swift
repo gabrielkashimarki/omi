@@ -5,7 +5,7 @@ enum AgentFailureTranscriptFormatter {
   // generic start failure must not blame OpenClaw (or any external provider) —
   // the user may never have installed or intended to use one. Genuine
   // missing-adapter errors still map to provider-specific setup copy below.
-  static let genericSpawnFailure = "Agent couldn't start — try again"
+  static let genericSpawnFailure = "O agente não conseguiu iniciar. Tente de novo"
 
   static func errorText(for projection: AgentRunProjection) -> String? {
     switch projection.status {
@@ -120,12 +120,12 @@ enum AgentFailureTranscriptFormatter {
     switch adapterId {
     case "acp":
       return
-        "This thread uses Claude. Claude reported a billing issue. Check its billing settings or reconnect your account."
+        "Esta conversa usa o Claude. O Claude informou um problema de cobrança. Confira as configurações de cobrança dele ou reconecte sua conta."
     case "pi-mono", "piMono":
-      return "Omi AI declined this request for billing reasons. Check AI & Automation settings or contact Omi Support."
+      return "A IA do Omi recusou esta solicitação por motivos de cobrança. Confira os ajustes de IA e Automação ou fale com o suporte do Omi."
     default:
       return
-        "The AI provider declined this request for billing reasons. Check the provider account used by this thread."
+        "O provedor de IA recusou esta solicitação por motivos de cobrança. Confira a conta do provedor usada nesta conversa."
     }
   }
 

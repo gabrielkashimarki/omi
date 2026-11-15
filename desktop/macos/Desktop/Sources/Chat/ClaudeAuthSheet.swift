@@ -12,7 +12,7 @@ struct ClaudeAuthSheet: View {
     VStack(spacing: 0) {
       // Header
       HStack {
-        Text("Upgrade to Omi Pro")
+        Text("Fazer upgrade para o Omi Pro")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -36,12 +36,12 @@ struct ClaudeAuthSheet: View {
 
         // Description
         VStack(spacing: OmiSpacing.sm) {
-          Text("Unlock Omi Pro")
+          Text("Desbloquear o Omi Pro")
             .scaledFont(size: OmiType.subheading, weight: .medium)
             .foregroundColor(Ink.primary)
             .multilineTextAlignment(.center)
 
-          Text("Your browser will open to the Omi Pro checkout. After subscribing, return to Omi.")
+          Text("Seu navegador vai abrir o checkout do Omi Pro. Depois de assinar, volte ao Omi.")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
             .multilineTextAlignment(.center)
@@ -54,7 +54,7 @@ struct ClaudeAuthSheet: View {
             ProgressView()
               .controlSize(.small)
 
-            Text("Complete sign-in in your browser…")
+            Text("Conclua o login no navegador…")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -77,7 +77,7 @@ struct ClaudeAuthSheet: View {
               ProgressView()
                 .controlSize(.mini)
             }
-            Text(isConnecting ? "Opening checkout…" : "Upgrade to Omi Pro")
+            Text(isConnecting ? "Abrindo o checkout…" : "Fazer upgrade para o Omi Pro")
               .scaledFont(size: OmiType.body, weight: .semibold)
           }
           .frame(maxWidth: .infinity)
@@ -93,7 +93,7 @@ struct ClaudeAuthSheet: View {
         .disabled(isConnecting)
 
         Button(action: onCancel) {
-          Text("Cancel")
+          Text("Cancelar")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
         }

@@ -14,7 +14,7 @@ extension FloatingControlBarView {
         .scaledFont(size: 12.5)
         .foregroundColor(NotchGlass.primary)
       VStack(alignment: .leading, spacing: 1) {
-        Text("Suggested task")
+        Text("Tarefa sugerida")
           .scaledFont(size: 10)
           .foregroundColor(NotchGlass.ink(.w55))
         Text(card?.description ?? notification.title)
@@ -27,7 +27,7 @@ extension FloatingControlBarView {
         NotchMomentsCoordinator.shared.reviewLastReceipt()
         FloatingControlBarManager.shared.dismissCurrentNotification()
       } label: {
-        Text("Review")
+        Text("Revisar")
           .scaledFont(size: 11.5)
           .foregroundColor(NotchGlass.primary)
           .underline()

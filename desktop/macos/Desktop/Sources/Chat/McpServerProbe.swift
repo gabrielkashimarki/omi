@@ -29,13 +29,13 @@ enum McpServerProbe {
     /// What the card shows in place of the old unconditional "Active in chat".
     var label: String {
       switch self {
-      case .checking: return "Checking…"
-      case .configured: return "Ready"
+      case .checking: return "Verificando…"
+      case .configured: return "Pronto"
       case .running(let count):
-        if count < 0 { return "Responding" }
-        return count == 1 ? "1 tool" : "\(count) tools"
-      case .needsAuth: return "Needs sign-in"
-      case .unreachable: return "Not responding"
+        if count < 0 { return "Respondendo" }
+        return count == 1 ? "1 ferramenta" : "\(count) ferramentas"
+      case .needsAuth: return "Precisa de login"
+      case .unreachable: return "Sem resposta"
       }
     }
 
@@ -90,7 +90,7 @@ enum McpServerProbe {
     case .sse(let url, let headers):
       return await probeSSE(url: url, headers: headers)
     case .unconfigured:
-      return .unreachable("No command or URL configured")
+      return .unreachable("Nenhum comando ou URL configurado")
     }
   }
 
@@ -121,9 +121,9 @@ enum McpServerProbe {
       guard let http = response as? HTTPURLResponse else { return .unreachable("No response") }
       if http.statusCode == 401 || http.statusCode == 403 { return .needsAuth }
       guard (200..<300).contains(http.statusCode) else {
-        return .unreachable("Server returned HTTP \(http.statusCode)")
+        return .unreachable("O servidor retornou HTTP \(http.statusCode)")
       }
-      guard payload(from: data) != nil else { return .unreachable("Unexpected response") }
+      guard payload(from: data) != nil else { return .unreachable("Resposta inesperada") }
 
       // Streamable HTTP binds the rest of the exchange to the session it just issued.
       var session = headers
@@ -137,7 +137,7 @@ enum McpServerProbe {
       }
       return .running(toolCount: tools.count)
     } catch {
-      return .unreachable("Could not reach the server")
+      return .unreachable("Não foi possível acessar o servidor")
     }
   }
 
@@ -157,7 +157,7 @@ enum McpServerProbe {
       guard let http = response as? HTTPURLResponse else { return .unreachable("No response") }
       if http.statusCode == 401 || http.statusCode == 403 { return .needsAuth }
       guard (200..<300).contains(http.statusCode) else {
-        return .unreachable("Server returned HTTP \(http.statusCode)")
+        return .unreachable("O servidor retornou HTTP \(http.statusCode)")
       }
       // Bounded by lines read, not only by the request timeout: that timeout measures
       // the gap between packets, and a server sending `: ping` keepalives before it
@@ -173,9 +173,9 @@ enum McpServerProbe {
         }
         if linesRead >= maxSseProbeLines { break }
       }
-      return .unreachable("Server never named a message endpoint")
+      return .unreachable("O servidor não informou um endpoint de mensagens")
     } catch {
-      return .unreachable("Could not reach the server")
+      return .unreachable("Não foi possível acessar o servidor")
     }
   }
 
@@ -229,14 +229,14 @@ enum McpServerProbe {
   static func resolveCommand(_ command: String) -> Status {
     if command.contains("/") {
       return FileManager.default.isExecutableFile(atPath: command)
-        ? .configured : .unreachable("\(command) is not an executable file")
+        ? .configured : .unreachable("\(command) não é um arquivo executável")
     }
     let manager = FileManager.default
     for directory in searchPath(from: ProcessInfo.processInfo.environment).split(separator: ":") {
       let candidate = "\(directory)/\(command)"
       if manager.isExecutableFile(atPath: candidate) { return .configured }
     }
-    return .unreachable("\(command) is not installed")
+    return .unreachable("\(command) não está instalado")
   }
 
   /// Homebrew and Node version managers are where `npx` and `uvx` actually live, and a bundled app

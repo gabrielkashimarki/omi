@@ -90,22 +90,22 @@ struct PushToTalkMicButton: View {
   private var helpText: String {
     switch state {
     case .idle:
-      return "Ask by voice — click to start, click again to send (or hold \(shortcutLabel))"
+      return "Pergunte por voz: clique para começar, clique de novo para enviar (ou segure \(shortcutLabel))"
     case .listening:
-      return "Stop and send (or press \(shortcutLabel))"
+      return "Parar e enviar (ou pressione \(shortcutLabel))"
     case .committing:
-      return "Sending your voice message…"
+      return "Enviando sua mensagem de voz…"
     case .blocked:
-      return "Monthly free message limit reached — click to see your options"
+      return "Limite mensal de mensagens gratuitas atingido. Clique para ver suas opções"
     }
   }
 
   private var accessibilityLabel: String {
     switch state {
-    case .idle: return "Start voice input"
-    case .listening: return "Stop voice input and send"
-    case .committing: return "Sending voice input"
-    case .blocked: return "Voice input unavailable, monthly message limit reached"
+    case .idle: return "Iniciar entrada de voz"
+    case .listening: return "Parar entrada de voz e enviar"
+    case .committing: return "Enviando entrada de voz"
+    case .blocked: return "Entrada de voz indisponível, limite mensal de mensagens atingido"
     }
   }
 }

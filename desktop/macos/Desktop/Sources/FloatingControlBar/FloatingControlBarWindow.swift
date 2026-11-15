@@ -1907,7 +1907,7 @@ class FloatingControlBarWindow: NSPanel, NSWindowDelegate {
       OmiMotion.withGated(.easeOut(duration: 0.12)) {
         state.isAILoading = false
       }
-      state.replaceLocalAnswerText(text.isEmpty ? "An unknown error occurred." : text)
+      state.replaceLocalAnswerText(text.isEmpty ? "Ocorreu um erro desconhecido." : text)
     default:
       break
     }
@@ -3513,7 +3513,7 @@ class FloatingControlBarManager {
     window?.showNotification(
       FloatingBarNotification(
         ownerID: RuntimeOwnerIdentity.currentOwnerId() ?? "",
-        title: "Couldn't reach Omi",
+        title: "Não foi possível falar com o Omi",
         message: message,
         assistantId: "reach_error",
         kind: .functional
@@ -4360,7 +4360,7 @@ class FloatingControlBarManager {
   }
 
   private func showSharedProviderBusy(in barWindow: FloatingControlBarWindow, presentation: QueryPresentation) {
-    let message = ChatMessage(text: "Omi is already responding in the app.", sender: .ai)
+    let message = ChatMessage(text: "O Omi já está respondendo no app.", sender: .ai)
     switch presentation {
     case .visible:
       chatCancellable?.cancel()
@@ -4431,7 +4431,7 @@ class FloatingControlBarManager {
     in barWindow: FloatingControlBarWindow,
     provider: ChatProvider?
   ) {
-    let warning = "⚠️ I couldn't save that response. Please try again."
+    let warning = "⚠️ Não consegui salvar essa resposta. Tente de novo."
     if let existing = barWindow.state.currentAIMessage(from: provider),
       FloatingControlBarState.messageHasAnswerContent(existing)
     {
@@ -4439,7 +4439,7 @@ class FloatingControlBarManager {
         let index = provider.messages.firstIndex(where: { $0.id == existing.id })
       {
         let existingText = provider.messages[index].text
-        if !existingText.contains("couldn't save that response") {
+        if !existingText.contains("Não consegui salvar essa resposta") {
           provider.messages[index].text =
             existingText.isEmpty
             ? warning
@@ -4454,7 +4454,7 @@ class FloatingControlBarManager {
       }
       let existingText = existing.text
       let combined =
-        existingText.isEmpty || existingText.contains("couldn't save that response")
+        existingText.isEmpty || existingText.contains("Não consegui salvar essa resposta")
         ? (existingText.isEmpty ? warning : existingText)
         : existingText + "\n\n" + warning
       var override = existing
@@ -5691,7 +5691,7 @@ class FloatingControlBarManager {
     } else if let errorText = provider.displayErrorMessage, !errorText.isEmpty {
       FloatingBarVoicePlaybackService.shared.speakOneShot(errorText)
     } else {
-      FloatingBarVoicePlaybackService.shared.speakOneShot("I couldn't get a response. Please try again.")
+      FloatingBarVoicePlaybackService.shared.speakOneShot("Não consegui uma resposta. Tente de novo.")
     }
 
     chatCancellable?.cancel()

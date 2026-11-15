@@ -422,7 +422,7 @@ struct FloatingControlBarView: View {
           .padding(.bottom, notchSurfaceBottomInset + 8)
           .accessibilityIdentifier("floating_chat_ptt_recording")
           .accessibilityLabel(
-            state.pttHintText.isEmpty ? "Recording voice message" : state.pttHintText
+            state.pttHintText.isEmpty ? "Gravando mensagem de voz" : state.pttHintText
           )
           .allowsHitTesting(false)
           .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -641,7 +641,7 @@ struct FloatingControlBarView: View {
         }
 
         VStack(alignment: .leading, spacing: 3) {
-          Text("Suggested by Omi")
+          Text("Sugerido pelo Omi")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(.white.opacity(0.5))
             .lineLimit(1)
@@ -668,7 +668,7 @@ struct FloatingControlBarView: View {
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
-    .notchDismissOverlay(accessibilityLabel: "Dismiss suggestion")
+    .notchDismissOverlay(accessibilityLabel: "Dispensar sugestão")
   }
 
   /// Conversation ends — the USP moment. "N follow-ups ready" + Review / Later.
@@ -689,7 +689,7 @@ struct FloatingControlBarView: View {
           NotchMomentsCoordinator.shared.reviewFollowUps()
           FloatingControlBarManager.shared.dismissCurrentNotification()
         } label: {
-          Text("Review")
+          Text("Revisar")
             .scaledFont(size: 12, weight: .semibold)
             .foregroundColor(.black)
             .padding(.horizontal, 11).padding(.vertical, 4)
@@ -700,7 +700,7 @@ struct FloatingControlBarView: View {
         Button {
           FloatingControlBarManager.shared.dismissCurrentNotification()
         } label: {
-          Text("Not Now").scaledFont(size: 12).foregroundColor(.white.opacity(0.5))
+          Text("Agora não").scaledFont(size: 12).foregroundColor(.white.opacity(0.5))
         }
         .buttonStyle(.plain)
       }
@@ -737,7 +737,7 @@ struct FloatingControlBarView: View {
       Button {
         FloatingControlBarManager.shared.retryReachError()
       } label: {
-        Text("Try Again")
+        Text("Tentar de novo")
           .scaledFont(size: 12, weight: .semibold)
           .foregroundColor(.white)
           .padding(.horizontal, OmiSpacing.sm)
@@ -750,7 +750,7 @@ struct FloatingControlBarView: View {
       Button {
         FloatingControlBarManager.shared.dismissReachError()
       } label: {
-        Text("Dismiss")
+        Text("Dispensar")
           .scaledFont(size: 12, weight: .semibold)
           .foregroundColor(.white.opacity(0.6))
           .padding(.horizontal, OmiSpacing.xs)
@@ -779,8 +779,8 @@ struct FloatingControlBarView: View {
         .onTapGesture {
           openAgentChatsFromNotchLogo()
         }
-        .accessibilityLabel("Agent chats")
-        .accessibilityHint("Open agent chats")
+        .accessibilityLabel("Chats de agentes")
+        .accessibilityHint("Abrir chats de agentes")
     }
   }
 
@@ -823,7 +823,7 @@ struct FloatingControlBarView: View {
     .accessibilityLabel(
       showingNotchVoiceControl
         ? NotchVoiceControlPresentation.accessibilityLabel(isLocked: state.isVoiceLocked)
-        : "Open Omi chat"
+        : "Abrir chat do Omi"
     )
     .accessibilityValue(
       showingNotchVoiceControl
@@ -833,12 +833,12 @@ struct FloatingControlBarView: View {
     .accessibilityHint(
       showingNotchVoiceControl
         ? NotchVoiceControlPresentation.accessibilityHint(isLocked: state.isVoiceLocked)
-        : "Open the main Omi chat window"
+        : "Abrir a janela principal do chat do Omi"
     )
     .help(
       showingNotchVoiceControl
         ? NotchVoiceControlPresentation.accessibilityHint(isLocked: state.isVoiceLocked)
-        : "Open the main Omi chat window"
+        : "Abrir a janela principal do chat do Omi"
     )
   }
 
@@ -881,7 +881,7 @@ struct FloatingControlBarView: View {
   @ViewBuilder
   private var barContextMenu: some View {
     PTTRecoveryMenuItems()
-    Button("Hide for 2 hours") {
+    Button("Ocultar por 2 horas") {
       FloatingControlBarManager.shared.snooze(
         for: FloatingControlBarManager.snoozeTwoHoursDuration
       )
@@ -896,17 +896,17 @@ struct FloatingControlBarView: View {
     // `.contextMenu` does not render reliably on macOS, and the adjacent
     // "Hide for 2 hours" button is the shape already proven to work here.
     if let snoozedUntil = NotificationService.currentSnoozeExpiry(), snoozedUntil > Date() {
-      Button("Resume suggestions") {
+      Button("Retomar sugestões") {
         NotificationService.endNotificationSnooze()
       }
     } else {
-      Button("Silence suggestions for 1 hour") {
+      Button("Silenciar sugestões por 1 hora") {
         NotificationService.snoozeNotifications(for: 60 * 60)
       }
-      Button("Silence suggestions for 4 hours") {
+      Button("Silenciar sugestões por 4 horas") {
         NotificationService.snoozeNotifications(for: 4 * 60 * 60)
       }
-      Button("Silence suggestions for 8 hours") {
+      Button("Silenciar sugestões por 8 horas") {
         NotificationService.snoozeNotifications(for: 8 * 60 * 60)
       }
     }
@@ -960,10 +960,10 @@ struct FloatingControlBarView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help(agentPills.pills.isEmpty ? "Close Omi Chat (Esc)" : "Back to subagents")
-        .accessibilityLabel(agentPills.pills.isEmpty ? "Close Omi Chat" : "Back to subagents")
+        .help(agentPills.pills.isEmpty ? "Fechar chat do Omi (Esc)" : "Voltar aos subagentes")
+        .accessibilityLabel(agentPills.pills.isEmpty ? "Fechar chat do Omi" : "Voltar aos subagentes")
 
-        Text("Omi Chat")
+        Text("Chat do Omi")
           .scaledFont(size: OmiType.body, weight: .bold)
           .foregroundColor(.white)
           .lineLimit(1)
@@ -988,7 +988,7 @@ struct FloatingControlBarView: View {
 
   private var clearConversationButton: some View {
     Button(action: onClearVisibleConversation) {
-      Text("Clear")
+      Text("Limpar")
         .scaledFont(size: OmiType.caption, weight: .medium)
         .foregroundColor(.secondary)
         .padding(.horizontal, OmiSpacing.sm)
@@ -996,7 +996,7 @@ struct FloatingControlBarView: View {
         .background(Capsule().fill(NotchGlass.ink(.w1)))
     }
     .buttonStyle(.plain)
-    .help("Clear this conversation")
+    .help("Limpar esta conversa")
   }
 
   /// The hover surface's Hide control. Closes the hover rows first so the island retracts as
@@ -1289,7 +1289,7 @@ struct FloatingControlBarView: View {
             HStack(spacing: OmiSpacing.xxs) {
               Image(systemName: "sparkles")
                 .font(.system(size: 9, weight: .bold))
-              Text("Execute")
+              Text("Executar")
                 .scaledFont(size: OmiType.micro, weight: .semibold)
             }
             .foregroundColor(.white)
@@ -1299,7 +1299,7 @@ struct FloatingControlBarView: View {
             .clipShape(Capsule())
           }
           .buttonStyle(.plain)
-          .help("Spawn an agent to handle this")
+          .help("Iniciar um agente para cuidar disso")
         }
 
         NotchDismissButton(action: { FloatingControlBarManager.shared.dismissCurrentNotification() })
@@ -1334,12 +1334,12 @@ struct FloatingControlBarView: View {
           .transition(.opacity)
       } else if allowsHoverExpansion {
         VStack(spacing: 1) {
-          compactButton(title: "Open Omi", keys: shortcutSettings.askOmiShortcut.displayTokens) {
+          compactButton(title: "Abrir o Omi", keys: shortcutSettings.askOmiShortcut.displayTokens) {
             onAskAI()
           }
 
           HStack(spacing: OmiSpacing.xs) {
-            compactLabel("Push to talk", keys: shortcutSettings.pttShortcut.displayTokens)
+            compactLabel("Apertar para falar", keys: shortcutSettings.pttShortcut.displayTokens)
           }
         }
         .padding(.horizontal, OmiSpacing.xs)
@@ -1549,7 +1549,7 @@ struct FloatingControlBarView: View {
       // read as decoration, and gating it on an empty hint hid it for most of the turn.
       // Restores the pre-2b416572c0 badge, always shown while locked.
       if state.isVoiceLocked {
-        Text("LOCKED")
+        Text("TRAVADO")
           .scaledFont(size: 10, weight: .bold)
           .foregroundColor(.orange)
           .padding(.horizontal, 6)
@@ -1575,7 +1575,7 @@ struct FloatingControlBarView: View {
     guard settings.pttEnabled else { return nil }
     let shortcut = settings.pttShortcut.displayTokens.joined()
     guard !shortcut.isEmpty else { return nil }
-    return "or hold \(shortcut) to ask aloud"
+    return "ou segure \(shortcut) para perguntar falando"
   }
 
   private var aiResponseView: some View {
@@ -1892,7 +1892,7 @@ private struct AgentMainChatView: View {
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
-      .help("Back to chats")
+      .help("Voltar aos chats")
 
       Text(pill.title)
         .scaledFont(size: OmiType.body, weight: .bold)
@@ -1916,7 +1916,7 @@ private struct AgentMainChatView: View {
             statusBadgeLabel
           }
           .buttonStyle(.plain)
-          .help("Dismiss agent")
+          .help("Dispensar agente")
         } else {
           statusBadgeLabel
         }
@@ -1940,8 +1940,8 @@ private struct AgentMainChatView: View {
         .clipShape(Circle())
     }
     .buttonStyle(.plain)
-    .accessibilityLabel("Stop subagent")
-    .help("Stop subagent")
+    .accessibilityLabel("Parar subagente")
+    .help("Parar subagente")
   }
 
   private var statusBadgeLabel: some View {
@@ -2047,7 +2047,7 @@ private struct AgentMainChatView: View {
       .background(Color.white.opacity(0.10))
       .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
       .contextMenu {
-        Button("Copy") {
+        Button("Copiar") {
           NSPasteboard.general.clearContents()
           NSPasteboard.general.setString(message.copyableText, forType: .string)
         }
@@ -2070,7 +2070,7 @@ private struct AgentMainChatView: View {
       }
       .padding(.horizontal, OmiSpacing.xxs)
       .contextMenu {
-        Button("Copy") {
+        Button("Copiar") {
           NSPasteboard.general.clearContents()
           NSPasteboard.general.setString(message.copyableText, forType: .string)
         }
@@ -2186,7 +2186,7 @@ private struct AgentMainChatView: View {
         AppDelegate.summonWindowTarget()?.openMainAppChat()
       } label: {
         HStack(spacing: OmiSpacing.xs) {
-          Text("Continue in Omi")
+          Text("Continuar no Omi")
             .scaledFont(size: OmiType.body, weight: .medium)
             .foregroundColor(.white.opacity(0.85))
           Spacer(minLength: 0)
@@ -2201,7 +2201,7 @@ private struct AgentMainChatView: View {
         .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
-      .help("Open the Omi app to steer this agent")
+      .help("Abra o app do Omi para orientar este agente")
     }
   }
 }
@@ -2271,7 +2271,7 @@ private struct AgentStatusGlow: ViewModifier {
         breathing = false
         DispatchQueue.main.async { breathing = true }
       }
-      .accessibilityLabel(group.map { "Subagents: \($0.title)" } ?? "")
+      .accessibilityLabel(group.map { "Subagentes: \($0.title)" } ?? "")
   }
 }
 
@@ -2315,12 +2315,12 @@ private struct NotchAgentPillsRowView: View {
     .accessibilityLabel(
       isVoiceListening
         ? NotchVoiceControlPresentation.stateLabel(isLocked: isLocked)
-        : "Subagent status"
+        : "Status do subagente"
     )
     .accessibilityHint(
       isVoiceListening
         ? ""
-        : "Hover to show running agents. Click to keep them open."
+        : "Passe o mouse para ver os agentes em execução. Clique para mantê-los abertos."
     )
     .onAppear { syncPillStatusObservers() }
     .onChange(of: manager.pills.map(\.id)) { _, _ in
@@ -2673,11 +2673,11 @@ private enum NotchAgentStatusGroup: String, Identifiable {
 
   var title: String {
     switch self {
-    case .running: return "Running"
-    case .queued: return "Queued"
-    case .failed: return "Failed"
-    case .stopped: return "Stopped"
-    case .done: return "Done"
+    case .running: return "Em execução"
+    case .queued: return "Na fila"
+    case .failed: return "Falhou"
+    case .stopped: return "Parado"
+    case .done: return "Concluído"
     }
   }
 
@@ -2854,7 +2854,7 @@ private struct MeetingSummaryShareCard: View {
     .padding(.horizontal, OmiSpacing.lg)
     .padding(.vertical, OmiSpacing.md + 2)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .notchDismissOverlay(accessibilityLabel: "Dismiss meeting summary")
+    .notchDismissOverlay(accessibilityLabel: "Dispensar resumo da reunião")
     .onReceive(NotificationCenter.default.publisher(for: .meetingSummaryShareBeginAddressing)) { _ in
       beginAddressing()
     }
@@ -2879,7 +2879,7 @@ private struct MeetingSummaryShareCard: View {
             HStack(spacing: 4) {
               Image(systemName: "lock.fill")
                 .font(.system(size: 9, weight: .semibold))
-              Text("Share")
+              Text("Compartilhar")
             }
             .scaledFont(size: 12, weight: .semibold)
             .foregroundColor(.black)
@@ -2889,7 +2889,7 @@ private struct MeetingSummaryShareCard: View {
           }
           .buttonStyle(.plain)
           .disabled(isBusy)
-          .help("Email these notes to someone")
+          .help("Enviar estas notas por e-mail para alguém")
           .accessibilityIdentifier("meeting-summary-share-send")
 
           Button {
@@ -2910,7 +2910,7 @@ private struct MeetingSummaryShareCard: View {
           }
           .buttonStyle(.plain)
           .disabled(isBusy)
-          .help("Copy the share link")
+          .help("Copiar o link de compartilhamento")
           .accessibilityIdentifier("meeting-summary-share-copy")
 
           // Text-style link, deliberately chrome-free beside the two controls.
@@ -2918,7 +2918,7 @@ private struct MeetingSummaryShareCard: View {
             FloatingControlBarManager.shared.dismissCurrentNotification()
             MeetingSummaryShareActions.openSummary(conversationID: conversationID)
           } label: {
-            Text("See summary")
+            Text("Ver resumo")
               .scaledFont(size: 12, weight: .medium)
               .foregroundColor(.white.opacity(0.55))
               .underline()
@@ -2954,7 +2954,7 @@ private struct MeetingSummaryShareCard: View {
           if phase == .sending {
             ProgressView().controlSize(.mini)
           }
-          Text("Send")
+          Text("Enviar")
         }
         .scaledFont(size: 12, weight: .semibold)
         .foregroundColor(.black)
@@ -2970,7 +2970,7 @@ private struct MeetingSummaryShareCard: View {
         isAddressing = false
         recipientFieldFocused = false
       } label: {
-        Text("Cancel")
+        Text("Cancelar")
           .scaledFont(size: 12, weight: .medium)
           .foregroundColor(.white.opacity(0.55))
       }
@@ -2999,9 +2999,9 @@ private struct MeetingSummaryShareCard: View {
     Task { @MainActor in
       let feedback = await MeetingSummaryShareActions.copyLink(conversationID: conversationID)
       if feedback == .copied {
-        finish(confirmation: "Link copied")
+        finish(confirmation: "Link copiado")
       } else {
-        phase = .failed("Couldn't copy the link — try again")
+        phase = .failed("Não foi possível copiar o link. Tente de novo")
       }
     }
   }
@@ -3016,10 +3016,10 @@ private struct MeetingSummaryShareCard: View {
         let sent = try await MeetingSummaryShareActions.sendSummary(
           conversationID: conversationID, recipientEmails: [address])
         let label = ConversationShareRecipient(name: nil, email: address).shortLabel
-        finish(confirmation: sent.count > 1 ? "Sent to \(label) +\(sent.count - 1)" : "Sent to \(label)")
+        finish(confirmation: sent.count > 1 ? "Enviado para \(label) +\(sent.count - 1)" : "Enviado para \(label)")
       } catch {
         isAddressing = true
-        phase = .failed("Couldn't send — try again")
+        phase = .failed("Não foi possível enviar. Tente de novo")
       }
     }
   }

@@ -1821,7 +1821,7 @@ class PushToTalkManager: ObservableObject {
       log("PushToTalkManager: turn audio hit \(Self.maxBatchAudioBytes)-byte cap — bounding buffer, warning user")
       if let turnID = self.currentVoiceTurnID {
         self.voiceTurnCoordinator.publish(
-          .hintChanged(turnID: turnID, text: "Recording too long — keep it under 5 min"))
+          .hintChanged(turnID: turnID, text: "Gravação longa demais. Mantenha em até 5 min"))
       }
     }
   }

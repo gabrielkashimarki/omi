@@ -18,13 +18,13 @@ extension ChatProvider {
   nonisolated static func attachmentOnlyCaption(attachmentCount: Int, referenceCount: Int) -> String {
     var parts: [String] = []
     if attachmentCount > 0 {
-      parts.append(attachmentCount == 1 ? "1 file" : "\(attachmentCount) files")
+      parts.append(attachmentCount == 1 ? "1 arquivo" : "\(attachmentCount) arquivos")
     }
     if referenceCount > 0 {
-      parts.append(referenceCount == 1 ? "1 conversation" : "\(referenceCount) conversations")
+      parts.append(referenceCount == 1 ? "1 conversa" : "\(referenceCount) conversas")
     }
     guard !parts.isEmpty else { return "" }
-    return parts.joined(separator: " and ") + " attached"
+    return parts.joined(separator: " e ") + (attachmentCount + referenceCount == 1 ? " anexado" : " anexados")
   }
 
   /// What the model is asked on an attachment-only send. The caption above is a label, not a

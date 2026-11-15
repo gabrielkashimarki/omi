@@ -349,7 +349,7 @@ package struct VoiceTurnUIProjection: Equatable, Sendable {
 /// Every string here is derived from existing `VoiceTurnUIProjection` / `VoiceTurnTerminalReason`
 /// — not a second lifecycle enum.
 package enum VoiceTurnUICopy {
-  package static let transcribingProgress = "Transcribing…"
+  package static let transcribingProgress = "Transcrevendo…"
 
   /// Banner text is reserved for actionable capture/provider failures. Normal
   /// recording, transcription, fallback, and barge-in state stays visual.
@@ -361,25 +361,25 @@ package enum VoiceTurnUICopy {
   package static func terminalHint(for reason: VoiceTurnTerminalReason) -> String? {
     switch reason {
     case .tooShort:
-      return "Hold longer to record"
+      return "Segure por mais tempo para gravar"
     case .captureFailed:
-      return "Microphone unavailable — try again"
+      return "Microfone indisponível. Tente de novo"
     case .captureNotReady:
-      return "Microphone wasn't ready — retrying, hold again"
+      return "O microfone não estava pronto. Tentando de novo, segure outra vez"
     case .transcriptionFailed:
-      return "Couldn't transcribe that — try again"
+      return "Não foi possível transcrever. Tente de novo"
     case .journalFailed:
-      return "Couldn't save that reply — try again"
+      return "Não foi possível salvar essa resposta. Tente de novo"
     case .providerFailed, .providerNoResponse, .deferredCommitTimeout:
-      return "Couldn't get a voice reply — try again"
+      return "Não foi possível obter uma resposta por voz. Tente de novo"
     case .noNetwork:
-      return "No network — say “type …” to dictate offline"
+      return "Sem rede. Diga “type …” para ditar offline"
     case .bargeInReplacementTimeout:
-      return "Previous reply was interrupted — try again"
+      return "A resposta anterior foi interrompida. Tente de novo"
     case .toolTimeout:
-      return "A tool took too long — try again"
+      return "Uma ferramenta demorou demais. Tente de novo"
     case .playbackFailed:
-      return "Audio playback failed"
+      return "Falha ao reproduzir o áudio"
     case .interruptedByBargeIn:
       // Applied on the replacement turn in `.start` (this turn is replaced immediately).
       return nil

@@ -29,9 +29,9 @@ enum ChatVideoSamplerError: Error, LocalizedError {
 
   var errorDescription: String? {
     switch self {
-    case .noPicture: return "That file has no video to read."
-    case .noFrames: return "Couldn't read frames from that video."
-    case .audioUnreadable: return "Couldn't read that video's sound. Try exporting it again."
+    case .noPicture: return "Esse arquivo não tem vídeo para ler."
+    case .noFrames: return "Não foi possível ler os quadros desse vídeo."
+    case .audioUnreadable: return "Não foi possível ler o som desse vídeo. Tente exportá-lo de novo."
     }
   }
 }

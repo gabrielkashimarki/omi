@@ -66,31 +66,31 @@ final class VoiceTypeSession: ObservableObject {
     var statusHint: String? {
       switch self {
       case .none, .pasted: return nil
-      case .copied(_, .accessibilityDenied): return "Copied: turn on Accessibility to paste automatically"
-      case .copied(_, .insertionUnavailable): return "Copied: press ⌘V to paste"
+      case .copied(_, .accessibilityDenied): return "Copiado: ative a Acessibilidade para colar automaticamente"
+      case .copied(_, .insertionUnavailable): return "Copiado: pressione ⌘V para colar"
       // Plain enough to act on. "Insertion unconfirmed" read to people as an
       // error the dictation had hit, rather than as the one thing it means:
       // the words were sent and Omi could not watch them arrive.
-      case .pasteRequested, .insertionUncertain: return "Couldn't confirm it landed — check the editor"
+      case .pasteRequested, .insertionUncertain: return "Não foi possível confirmar se o texto chegou. Confira o editor"
       }
     }
 
     var journalAcknowledgement: String? {
       switch self {
       case .none: return nil
-      case .pasted(let text): return "Typed: \(text)"
-      case .pasteRequested(let text): return "Paste requested; check the editor: \(text)"
+      case .pasted(let text): return "Digitado: \(text)"
+      case .pasteRequested(let text): return "Colagem solicitada; confira o editor: \(text)"
       // A dictation that lands on the clipboard because the permission is off
       // reads as Omi failing. Say what to turn on, in the transcript the user
       // is already looking at — the status hint is gone a moment later, and
       // nothing else in the turn mentions Accessibility.
       case .copied(let text, .accessibilityDenied):
-        return "Copied to clipboard: \(text)\n\nTurn on Accessibility for this Omi app "
-          + "(System Settings → Privacy & Security → Accessibility) to have dictation "
-          + "paste at your cursor automatically."
-      case .copied(let text, .insertionUnavailable): return "Copied to clipboard: \(text)"
+        return "Copiado para a área de transferência: \(text)\n\nAtive a Acessibilidade para este app do Omi "
+          + "(Ajustes do Sistema → Privacidade e Segurança → Acessibilidade) para que o ditado "
+          + "cole no cursor automaticamente."
+      case .copied(let text, .insertionUnavailable): return "Copiado para a área de transferência: \(text)"
       case .insertionUncertain(let text):
-        return "Dictation insertion unconfirmed; check the editor: \(text)"
+        return "Inserção do ditado não confirmada; confira o editor: \(text)"
       }
     }
 

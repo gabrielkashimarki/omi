@@ -14,13 +14,13 @@ struct ChatCitationReference: Equatable, Sendable {
 
     var title: String {
       switch self {
-      case .conversation: return "Conversation"
-      case .memory: return "Memory"
-      case .task: return "Task"
-      case .goal: return "Goal"
+      case .conversation: return "Conversa"
+      case .memory: return "Memória"
+      case .task: return "Tarefa"
+      case .goal: return "Meta"
       case .screenshot: return "Rewind"
       case .web: return "Web"
-      case .unavailable: return "Source unavailable"
+      case .unavailable: return "Fonte indisponível"
       }
     }
 
@@ -84,7 +84,7 @@ struct ChatCitationReference: Equatable, Sendable {
 
   var displayPreview: String {
     let trimmed = preview.trimmingCharacters(in: .whitespacesAndNewlines)
-    return trimmed.isEmpty ? "Preview unavailable" : trimmed
+    return trimmed.isEmpty ? "Prévia indisponível" : trimmed
   }
 
   static func merging(_ lists: [ChatCitationReference]...) -> [ChatCitationReference] {
@@ -579,7 +579,7 @@ enum ChatCitationMarkup {
         ordinal: ordinal,
         kind: .web,
         sourceID: url.absoluteString,
-        title: url.host ?? "Web source",
+        title: url.host ?? "Fonte da web",
         preview: url.absoluteString,
         url: url)
     }

@@ -403,7 +403,7 @@ enum ExtensionCatalog {
         id: "\(repo)/\(slug)",
         name: slug.replacingOccurrences(of: "-", with: " ").capitalized,
         subtitle: repo,
-        detail: "Agent skill from \(repo).",
+        detail: "Skill de agente de \(repo).",
         iconURL: "https://github.com/\(owner).png?size=128",
         websiteURL: "https://github.com/\(repo)/tree/\(ref)/skills/\(slug)",
         publisher: owner,

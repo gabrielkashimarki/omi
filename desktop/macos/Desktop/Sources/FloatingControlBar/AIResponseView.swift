@@ -25,7 +25,7 @@ struct AIResponseView: View {
   /// in this same lane. Nil leaves the chip out entirely rather than rendering
   /// one that does nothing.
   var onAskFollowUp: ((String) -> Void)?
-  /// The "or hold ⌥ to ask aloud" hint, named for the shortcut actually bound.
+  /// The "ou segure ⌥ para perguntar falando" hint, named for the shortcut actually bound.
   /// Nil where push-to-talk is off or unavailable.
   var followUpVoiceHint: String?
 
@@ -169,11 +169,11 @@ struct AIResponseView: View {
         ProgressView()
           .scaleEffect(0.6)
           .frame(width: 16, height: 16)
-        Text("thinking")
+        Text("pensando")
           .scaledFont(size: OmiType.body)
           .foregroundColor(.secondary)
       } else {
-        Text("Omi says")
+        Text("Omi diz")
           .scaledFont(size: OmiType.body)
           .foregroundColor(.secondary)
       }
@@ -182,7 +182,7 @@ struct AIResponseView: View {
 
       if canClearVisibleConversation, let onClearVisibleConversation {
         Button(action: onClearVisibleConversation) {
-          Text("Clear")
+          Text("Limpar")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(.secondary)
             .padding(.horizontal, OmiSpacing.sm)
@@ -190,8 +190,8 @@ struct AIResponseView: View {
             .background(Capsule().fill(NotchGlass.ink(.w1)))
         }
         .buttonStyle(.plain)
-        .help("Clear this conversation")
-        .accessibilityLabel("Clear conversation")
+        .help("Limpar esta conversa")
+        .accessibilityLabel("Limpar conversa")
       }
     }
   }
@@ -403,7 +403,7 @@ struct AIResponseView: View {
       .background(NotchGlass.ink(.w1))
       .cornerRadius(OmiChrome.elementRadius)
       .contextMenu {
-        Button("Copy") {
+        Button("Copiar") {
           NSPasteboard.general.clearContents()
           NSPasteboard.general.setString(userInput, forType: .string)
         }
@@ -453,11 +453,11 @@ struct AIResponseView: View {
         .padding(.bottom, OmiSpacing.xs)
         .contextMenu {
           let finalOutput = message.copyableText
-          Button("Copy") {
+          Button("Copiar") {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(finalOutput, forType: .string)
           }
-          Button("Copy Question & Answer") {
+          Button("Copiar pergunta e resposta") {
             let combined = "Q: \(userInput)\n\nA: \(finalOutput)"
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(combined, forType: .string)
@@ -492,12 +492,12 @@ struct AIResponseView: View {
             .foregroundColor(showShareFeedback ? Ink.listeningGreen : NotchGlass.quiet)
         }
         .buttonStyle(.plain)
-        .help("Copy share link")
+        .help("Copiar link de compartilhamento")
         .disabled(isSharingLink)
 
         Button(action: { onOpenMainApp?() }) {
           HStack(spacing: OmiSpacing.xs) {
-            Text("Continue in Omi")
+            Text("Continuar no Omi")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(NotchGlass.ink(.w85))
             Spacer(minLength: 0)
@@ -512,7 +512,7 @@ struct AIResponseView: View {
           .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Open the Omi app to keep chatting")
+        .help("Abra o app do Omi para continuar a conversa")
       }
       .chatComposerShell(fill: NotchGlass.fill)
     }
@@ -524,7 +524,7 @@ struct AIResponseView: View {
         .scaledFont(size: OmiType.caption, weight: .semibold)
         .foregroundColor(.green)
 
-      Text("Share link copied to your clipboard")
+      Text("Link de compartilhamento copiado para a área de transferência")
         .scaledFont(size: OmiType.caption, weight: .medium)
         .foregroundColor(NotchGlass.primary)
 
@@ -560,7 +560,7 @@ struct AIResponseView: View {
 
   private func showShareSuccessFeedback() {
     shareFeedbackHideWorkItem?.cancel()
-    shareFeedbackMessage = "Share link copied to your clipboard"
+    shareFeedbackMessage = "Link de compartilhamento copiado para a área de transferência"
     OmiMotion.withGated {
       showShareFeedback = true
     }
@@ -662,7 +662,7 @@ struct MessageHoverOverlay<Content: View>: View {
               .foregroundColor(currentRating == 1 ? .green : .secondary)
           }
           .buttonStyle(.plain)
-          .help("Helpful response")
+          .help("Resposta útil")
 
           // Thumbs down
           Button(action: { [currentRating] in
@@ -680,7 +680,7 @@ struct MessageHoverOverlay<Content: View>: View {
               .foregroundColor(currentRating == -1 ? .red : .secondary)
           }
           .buttonStyle(.plain)
-          .help("Not helpful")
+          .help("Resposta não útil")
           // Sync the dedupe shadow to the live rating. The overlay is keyed
           // `.id(message.id)` so it re-mounts with lastSubmittedRating == nil,
           // while a restored/history message already carries a rating — without
@@ -699,7 +699,7 @@ struct MessageHoverOverlay<Content: View>: View {
               .foregroundColor(showCopied ? .green : .secondary)
           }
           .buttonStyle(.plain)
-          .help("Copy response")
+          .help("Copiar resposta")
 
           // Info (developer context)
           if message.metadata != nil {
@@ -709,7 +709,7 @@ struct MessageHoverOverlay<Content: View>: View {
                 .foregroundColor(NotchGlass.controlLabel(isActive: showInfoPopover))
             }
             .buttonStyle(.plain)
-            .help("View response context")
+            .help("Ver contexto da resposta")
             .popover(isPresented: $showInfoPopover, arrowEdge: .bottom) {
               MessageMetadataPopover(metadata: message.metadata!)
             }
@@ -717,7 +717,7 @@ struct MessageHoverOverlay<Content: View>: View {
         }
 
         if showRatingFeedback {
-          Text("Thank you")
+          Text("Obrigado")
             .scaledFont(size: OmiType.micro)
             .foregroundColor(.secondary)
             .transition(.opacity)
@@ -768,13 +768,13 @@ struct MessageMetadataPopover: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        Text("Response Context")
+        Text("Contexto da resposta")
           .font(.headline)
           .foregroundColor(.primary)
 
         if !metadata.toolNames.isEmpty {
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Tools used (\(metadata.toolNames.count))")
+            Text("Ferramentas usadas (\(metadata.toolNames.count))")
               .scaledFont(size: OmiType.caption, weight: .semibold)
               .foregroundColor(.primary)
             ForEach(Array(metadata.toolNames.enumerated()), id: \.offset) { _, tool in
@@ -788,11 +788,11 @@ struct MessageMetadataPopover: View {
         if let sql = metadata.sqlSummary {
           metadataRow(label: "SQL", value: sql)
         }
-        metadataRow(label: "Screenshot", value: metadata.screenshotSummary)
+        metadataRow(label: "Captura de tela", value: metadata.screenshotSummary)
 
         if !metadata.sourceOutcomes.isEmpty {
           Divider()
-          Text("Context admitted")
+          Text("Contexto admitido")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(.primary)
           ForEach(metadata.sourceOutcomes) { source in
@@ -801,15 +801,15 @@ struct MessageMetadataPopover: View {
         }
 
         if !metadata.modelsSummary.isEmpty {
-          metadataRow(label: "Model", value: metadata.modelsSummary)
+          metadataRow(label: "Modelo", value: metadata.modelsSummary)
         }
         if !metadata.providersSummary.isEmpty {
-          metadataRow(label: "Provider", value: metadata.providersSummary)
+          metadataRow(label: "Provedor", value: metadata.providersSummary)
         }
-        metadataRow(label: "History", value: metadata.historySummary)
-        metadataRow(label: "Offered", value: metadata.offeredToolsSummary)
+        metadataRow(label: "Histórico", value: metadata.historySummary)
+        metadataRow(label: "Oferecidas", value: metadata.offeredToolsSummary)
         if !metadata.pathSummary.isEmpty {
-          metadataRow(label: "Path", value: metadata.pathSummary)
+          metadataRow(label: "Caminho", value: metadata.pathSummary)
         }
       }
       .padding()

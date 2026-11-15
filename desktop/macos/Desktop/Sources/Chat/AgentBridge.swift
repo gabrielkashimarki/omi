@@ -2092,56 +2092,56 @@ enum BridgeError: LocalizedError {
     switch self {
     case .nodeNotFound:
       return AnalyticsManager.isDevBuild
-        ? "Node.js not found. Run ./run.sh to set up AI components."
-        : "Node.js not found. Please reinstall the app."
+        ? "Node.js não encontrado. Rode ./run.sh para configurar os componentes de IA."
+        : "Node.js não encontrado. Reinstale o app."
     case .bridgeScriptNotFound:
       return AnalyticsManager.isDevBuild
-        ? "AI components missing. Run ./run.sh to install the agent runtime."
-        : "AI components missing. Please reinstall the app."
+        ? "Componentes de IA ausentes. Rode ./run.sh para instalar o runtime do agente."
+        : "Componentes de IA ausentes. Reinstale o app."
     case .agentRuntimePayloadIncomplete(let missing):
       // Keep the classifier's own phrase in the string: this description is what
       // reaches `localizedDescription`, and surfaces re-classify it downstream.
       let base = Self.runtimeInstallIncompleteMessage
       guard AnalyticsManager.isDevBuild, !missing.isEmpty else { return base }
-      return "\(base) Missing: \(missing.joined(separator: ", ")). Rebuild with ./run.sh --full."
+      return "\(base) Ausentes: \(missing.joined(separator: ", ")). Recompile com ./run.sh --full."
     case .notRunning:
-      return "AI is not running. Try sending your message again."
+      return "A IA não está em execução. Tente enviar sua mensagem de novo."
     case .encodingError:
-      return "Failed to encode message"
+      return "Falha ao codificar a mensagem"
     case .timeout:
-      return "AI took too long to respond. Try again."
+      return "A IA demorou demais para responder. Tente de novo."
     case .processExited:
-      return "AI stopped unexpectedly. Try sending your message again."
+      return "A IA parou inesperadamente. Tente enviar sua mensagem de novo."
     case .outOfMemory:
-      return "Not enough memory for AI chat. Close some apps and try again."
+      return "Memória insuficiente para o chat de IA. Feche alguns apps e tente de novo."
     case .failedToStart:
-      return "AI couldn't start. Please try again."
+      return "A IA não conseguiu iniciar. Tente de novo."
     case .stopped:
-      return "Response stopped."
+      return "Resposta interrompida."
     case .restarting:
-      return "AI is restarting. Try sending your message again."
+      return "A IA está reiniciando. Tente enviar sua mensagem de novo."
     case .requestAlreadyActive:
-      return "A response is already running for this chat."
+      return "Já há uma resposta em andamento neste chat."
     case .authMissing:
-      return "Please sign in to use AI chat."
+      return "Entre na sua conta para usar o chat de IA."
     case .agentRuntimeFailure(let failure):
       return failure.displayMessage
     case .agentError(let msg):
       return Self.userFacingAgentErrorMessage(msg)
     case .quotaExceeded(let plan, let unit, let used, let limit, _):
       let limitStr: String = {
-        guard let limit = limit else { return "your monthly limit" }
+        guard let limit = limit else { return "seu limite mensal" }
         return unit == "cost_usd"
-          ? String(format: "$%.0f of monthly chat usage", limit)
-          : "\(Int(limit)) chat questions per month"
+          ? String(format: "US$%.0f de uso mensal do chat", limit)
+          : "\(Int(limit)) perguntas de chat por mês"
       }()
       let usedStr: String = {
         unit == "cost_usd"
-          ? String(format: "$%.2f used", used)
-          : "\(Int(used)) used"
+          ? String(format: "US$%.2f usados", used)
+          : "\(Int(used)) usadas"
       }()
       return
-        "You've hit your \(plan) plan limit (\(limitStr); \(usedStr)). Upgrade in Settings → Plan and Usage, or wait until the next reset."
+        "Você atingiu o limite de chat do seu plano \(plan) (\(limitStr); \(usedStr)). Faça upgrade em Ajustes → Plano e Uso, ou aguarde o próximo reinício."
     }
   }
 

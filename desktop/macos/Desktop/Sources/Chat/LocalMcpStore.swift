@@ -42,11 +42,11 @@ enum LocalMcpStore {
   static func addCommandServer(name: String, commandLine: String) throws {
     let slug = LocalSkillsStore.slugify(name)
     guard !slug.isEmpty else {
-      throw storeError("Server name must contain letters or numbers")
+      throw storeError("O nome do servidor deve conter letras ou números")
     }
     let parts = try splitCommandLine(commandLine)
     guard let command = parts.first, !command.isEmpty else {
-      throw storeError("Enter the command to run, e.g. npx @playwright/mcp@latest")
+      throw storeError("Informe o comando a executar, por exemplo npx @playwright/mcp@latest")
     }
     var servers = readServers()
     var entry: [String: Any] = ["command": command]
@@ -93,7 +93,7 @@ enum LocalMcpStore {
       }
     }
     guard quote == nil else {
-      throw storeError("The command has an unmatched quote")
+      throw storeError("O comando tem uma aspa sem par")
     }
     if inWord { parts.append(current) }
     return parts

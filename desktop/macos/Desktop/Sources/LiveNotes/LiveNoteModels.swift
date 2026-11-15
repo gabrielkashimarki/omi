@@ -109,13 +109,13 @@ enum LiveNoteError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .databaseNotInitialized:
-      return "Live notes database is not initialized"
+      return "O banco de dados das notas ao vivo não foi inicializado"
     case .sessionNotFound:
-      return "Recording session not found"
+      return "Sessão de gravação não encontrada"
     case .noteNotFound:
-      return "Note not found"
+      return "Nota não encontrada"
     case .generationFailed(let message):
-      return "Note generation failed: \(message)"
+      return "Falha ao gerar a nota: \(message)"
     }
   }
 }

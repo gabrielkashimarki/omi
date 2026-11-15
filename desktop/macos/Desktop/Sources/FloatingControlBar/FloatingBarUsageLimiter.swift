@@ -157,12 +157,12 @@ final class FloatingBarUsageLimiter: ObservableObject {
   /// Human-readable limit text for error messages.
   var limitDescription: String {
     guard let quota = serverQuota, let limit = quota.limit else {
-      return "your monthly free message limit"
+      return "seu limite mensal de mensagens gratuitas"
     }
     if quota.unit == "cost_usd" {
-      return String(format: "your $%.0f %@ monthly spend limit", limit, quota.plan)
+      return String(format: "seu limite mensal de gastos de US$%.0f do plano %@", limit, quota.plan)
     }
-    return "\(Int(limit)) \(quota.plan) messages this month"
+    return "\(Int(limit)) mensagens do plano \(quota.plan) neste mês"
   }
 
   /// Record a query. Call after successfully sending a query from the floating bar

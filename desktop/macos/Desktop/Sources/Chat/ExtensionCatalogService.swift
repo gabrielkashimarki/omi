@@ -21,8 +21,8 @@ enum ExtensionCatalogService {
 
     var errorDescription: String? {
       switch self {
-      case .unreachable: return "Could not reach the catalog. Check your connection and try again."
-      case .emptySkill: return "That skill's SKILL.md was empty."
+      case .unreachable: return "Não foi possível acessar o catálogo. Confira sua conexão e tente de novo."
+      case .emptySkill: return "O SKILL.md dessa skill estava vazio."
       }
     }
   }

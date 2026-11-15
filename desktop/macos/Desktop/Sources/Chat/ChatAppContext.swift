@@ -13,7 +13,7 @@ struct ChatAppContext: Equatable {
   init(appId: String, appName: String?, chatPrompt: String?) {
     self.appId = appId
     let trimmedName = appName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-    self.appName = trimmedName.isEmpty ? "Selected app" : trimmedName
+    self.appName = trimmedName.isEmpty ? "App selecionado" : trimmedName
     let trimmedPrompt = chatPrompt?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     self.chatPrompt = trimmedPrompt.isEmpty ? nil : trimmedPrompt
   }

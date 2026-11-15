@@ -8,7 +8,7 @@ enum PTTStatusBannerPresentation {
   }
 
   static func text(hint: String, hasQuestion: Bool) -> String {
-    showsRecovery(hint: hint, hasQuestion: hasQuestion) ? "Question kept" : hint
+    showsRecovery(hint: hint, hasQuestion: hasQuestion) ? "Pergunta guardada" : hint
   }
 }
 
@@ -32,16 +32,16 @@ struct PTTStatusBannerContent: View {
         .lineLimit(1)
       Spacer(minLength: 0)
       if showsRecovery {
-        Button("Review") { recovery.reviewInMainChat() }
-          .help("Review your offline question in Chat without sending it")
+        Button("Revisar") { recovery.reviewInMainChat() }
+          .help("Revise sua pergunta offline no Chat sem enviá-la")
           .accessibilityIdentifier("ptt_recover_question_review")
         Button {
           recovery.copyToClipboard()
         } label: {
           Image(systemName: "doc.on.doc")
         }
-        .help("Copy your offline question")
-        .accessibilityLabel("Copy offline question")
+        .help("Copiar sua pergunta offline")
+        .accessibilityLabel("Copiar pergunta offline")
         .accessibilityIdentifier("ptt_recover_question_copy")
       }
     }
@@ -57,13 +57,13 @@ struct PTTRecoveryMenuItems: View {
   @ObservedObject private var recovery = OfflinePTTQuestionRecovery.shared
 
   var body: some View {
-    Button("Undo Last Dictation") { manager.undoLastDictationAfterMenuTracking() }
+    Button("Desfazer último ditado") { manager.undoLastDictationAfterMenuTracking() }
       .disabled(!manager.canUndoLastDictation)
-      .help("Undo a recent dictation while its text and caret are unchanged")
+      .help("Desfaz um ditado recente enquanto o texto e o cursor não mudaram")
     if recovery.isAvailable {
-      Button("Review Offline Question") { recovery.reviewInMainChat() }
-      Button("Copy Offline Question") { recovery.copyToClipboard() }
-      Button("Dismiss Offline Question") { recovery.clear() }
+      Button("Revisar pergunta offline") { recovery.reviewInMainChat() }
+      Button("Copiar pergunta offline") { recovery.copyToClipboard() }
+      Button("Dispensar pergunta offline") { recovery.clear() }
       Divider()
     }
   }

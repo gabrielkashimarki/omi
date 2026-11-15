@@ -24,7 +24,7 @@ struct OmiThinkingMark: View {
         }
       }
       .accessibilityElement(children: .ignore)
-      .accessibilityLabel("Thinking")
+      .accessibilityLabel("Pensando")
   }
 
   private func omiMark(dotColors: [Color]) -> some View {

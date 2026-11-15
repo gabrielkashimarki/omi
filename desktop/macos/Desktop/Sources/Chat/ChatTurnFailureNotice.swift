@@ -33,7 +33,7 @@ struct ChatTurnFailureNotice: Equatable, Sendable {
   /// transcript cannot — `HTTP 402 status code (no body)` is what the reader
   /// would still be reading a month from now. The raw string keeps going to
   /// the local log; the row says the part a reader can act on.
-  static let unclassifiedText = "Omi couldn't answer this one. Try sending it again."
+  static let unclassifiedText = "O Omi não conseguiu responder desta vez. Tente enviar de novo."
 
   /// The marker for a turn that ended in a raw provider/transport error, or
   /// `nil` when the ending was a cancellation rather than a failure.

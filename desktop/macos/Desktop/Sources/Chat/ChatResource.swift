@@ -198,7 +198,7 @@ struct ChatResource: Identifiable, Equatable {
   static let messageMetadataResourcesKey = "resources"
 
   /// User-visible label when a persisted file path no longer resolves on disk.
-  static let unavailableOnDiskMessage = "Deleted or moved"
+  static let unavailableOnDiskMessage = "Apagado ou movido"
 
   static func encodeResourcesForPersistence(_ resources: [ChatResource]) -> String? {
     guard !resources.isEmpty else { return nil }
@@ -533,7 +533,7 @@ private struct ChatResourceCard: View {
       }
     }
     .contextMenu { actionMenu }
-    .help(resource.canOpen ? "Open \(resource.title)" : resource.title)
+    .help(resource.canOpen ? "Abrir \(resource.title)" : resource.title)
   }
 
   // MARK: Document tile
@@ -608,7 +608,7 @@ private struct ChatResourceCard: View {
       Image(systemName: "exclamationmark.triangle.fill")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(PageGlass.warning)
-        .help(resource.subtitle ?? "Unavailable")
+        .help(resource.subtitle ?? "Indisponível")
     default:
       if resource.canOpen {
         HStack(spacing: OmiSpacing.hairline) {
@@ -645,7 +645,7 @@ private struct ChatResourceCard: View {
         .contentShape(RoundedRectangle(cornerRadius: OmiChrome.badgeRadius, style: .continuous))
     }
     .buttonStyle(.plain)
-    .help(didCopyPath ? "Copied path" : "Copy path")
+    .help(didCopyPath ? "Caminho copiado" : "Copiar caminho")
     .opacity(isHovering || didCopyPath ? 1 : 0)
     .omiAnimation(.easeInOut(duration: 0.12), value: isHovering)
     .omiAnimation(.easeInOut(duration: 0.15), value: didCopyPath)
@@ -761,13 +761,13 @@ private struct ChatResourceCard: View {
   @ViewBuilder
   private var actionMenu: some View {
     if resource.canOpen {
-      Button("Open") { onOpen(resource) }
+      Button("Abrir") { onOpen(resource) }
     }
     if resource.canRevealInFinder {
-      Button("Reveal in Finder") { onReveal(resource) }
+      Button("Mostrar no Finder") { onReveal(resource) }
     }
     if let uri = resource.uri, !uri.isEmpty {
-      Button("Copy Path") { ChatResourceActions.copyPath(resource) }
+      Button("Copiar caminho") { ChatResourceActions.copyPath(resource) }
     }
   }
 
@@ -799,6 +799,6 @@ enum ChatResourceActions {
 
   @MainActor static func copyPath(_ resource: ChatResource) {
     guard let uri = resource.uri, !uri.isEmpty else { return }
-    OmiToastCenter.shared.copy(resource.fileURL?.path ?? uri, confirming: "Path copied")
+    OmiToastCenter.shared.copy(resource.fileURL?.path ?? uri, confirming: "Caminho copiado")
   }
 }

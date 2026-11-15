@@ -114,7 +114,7 @@ final class RealtimeOmniService: NSObject, @unchecked Sendable {
   func start() {
     guard let request = makeRequest(), let url = request.url else {
       let name = provider.displayName
-      notifyError("Could not build \(name) request URL")
+      notifyError("Não foi possível montar a URL de requisição de \(name)")
       return
     }
     log("RealtimeOmni: connecting \(provider.displayName) → \(url.host ?? "?")")

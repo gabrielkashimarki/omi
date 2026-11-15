@@ -29,32 +29,32 @@ enum ChatFeedbackReason: String, CaseIterable, Identifiable, Sendable {
   /// whole picker fits under a chat bubble without wrapping.
   var label: String {
     switch self {
-    case .incorrectOrHallucination: return "Incorrect"
-    case .notHelpfulOrIrrelevant: return "Not helpful"
-    case .didntFollowInstructions: return "Ignored instructions"
-    case .tooVerbose: return "Too long"
-    case .other: return "Other"
-    case .notAboutMe: return "Not about me"
-    case .alreadyDone: return "Already done"
-    case .wrongFacts: return "Wrong facts"
-    case .badTiming: return "Bad timing"
-    case .notUseful: return "Not useful"
+    case .incorrectOrHallucination: return "Incorreta"
+    case .notHelpfulOrIrrelevant: return "Não ajudou"
+    case .didntFollowInstructions: return "Ignorou instruções"
+    case .tooVerbose: return "Longa demais"
+    case .other: return "Outro"
+    case .notAboutMe: return "Não é sobre mim"
+    case .alreadyDone: return "Já feito"
+    case .wrongFacts: return "Fatos errados"
+    case .badTiming: return "Hora ruim"
+    case .notUseful: return "Não é útil"
     }
   }
 
   /// Hover help, spelling out the distinction the short label compresses.
   var help: String {
     switch self {
-    case .incorrectOrHallucination: return "The answer contained wrong or invented information"
-    case .notHelpfulOrIrrelevant: return "The answer didn't address what I asked"
-    case .didntFollowInstructions: return "The answer ignored instructions I gave"
-    case .tooVerbose: return "The answer was longer or wordier than it needed to be"
-    case .other: return "Something else"
-    case .notAboutMe: return "This notification wasn't relevant to me"
-    case .alreadyDone: return "I already took care of this"
-    case .wrongFacts: return "This notification got the facts wrong"
-    case .badTiming: return "This showed up at the wrong moment"
-    case .notUseful: return "This didn't help me"
+    case .incorrectOrHallucination: return "A resposta continha informações erradas ou inventadas"
+    case .notHelpfulOrIrrelevant: return "A resposta não tratou do que eu perguntei"
+    case .didntFollowInstructions: return "A resposta ignorou instruções que eu dei"
+    case .tooVerbose: return "A resposta foi mais longa ou prolixa do que precisava"
+    case .other: return "Outra coisa"
+    case .notAboutMe: return "Esta notificação não era relevante para mim"
+    case .alreadyDone: return "Eu já resolvi isso"
+    case .wrongFacts: return "Esta notificação errou os fatos"
+    case .badTiming: return "Isso apareceu na hora errada"
+    case .notUseful: return "Isso não me ajudou"
     }
   }
 

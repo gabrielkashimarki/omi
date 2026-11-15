@@ -109,28 +109,28 @@ extension ChatErrorState {
   var userFacingSummary: String {
     switch self {
     case .authRequired:
-      return "Your session expired. Sign in to continue."
+      return "Sua sessão expirou. Entre para continuar."
     case .timeout:
-      return "AI took too long to respond."
+      return "A IA demorou demais para responder."
     case .bridgeUnavailable(let reason):
       switch reason {
       case .failedToStart(let failure):
         switch failure {
-        case .handshakeTimedOut: return "AI took too long to start. Try again."
-        case .incompatibleHandshake: return "AI needs to restart before it can respond. Try again."
-        case .exitedDuringStartup, .launchFailed: return "AI couldn't start. Try again."
+        case .handshakeTimedOut: return "A IA demorou demais para iniciar. Tente de novo."
+        case .incompatibleHandshake: return "A IA precisa reiniciar antes de responder. Tente de novo."
+        case .exitedDuringStartup, .launchFailed: return "A IA não conseguiu iniciar. Tente de novo."
         }
       // Repairing the install is the only way out, so even the one-line
       // floating-bar summary has to say that rather than "not available".
       case .nodeMissing, .runtimeMissing:
-        return "AI components aren't installed."
+        return "Os componentes de IA não estão instalados."
       case .crashed, .unknown:
-        return "AI isn't available right now."
+        return "A IA não está disponível agora."
       }
     case .interrupted:
-      return "Response stopped."
+      return "Resposta interrompida."
     case .noDataFound:
-      return "No matching data found."
+      return "Nenhum dado correspondente encontrado."
     }
   }
 }

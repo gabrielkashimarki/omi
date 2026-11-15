@@ -20,12 +20,12 @@ extension LocalMcpStore {
   static func addRemoteServer(name: String, url: String, apiKey: String?) async throws -> RemoteAddResult {
     let slug = LocalSkillsStore.slugify(name)
     guard !slug.isEmpty else {
-      throw storeError("Server name must contain letters or numbers")
+      throw storeError("O nome do servidor deve conter letras ou números")
     }
     guard let serverURL = URL(string: url), let scheme = serverURL.scheme,
       ["http", "https"].contains(scheme), serverURL.host != nil
     else {
-      throw storeError("Enter the server's http(s) URL")
+      throw storeError("Informe a URL http(s) do servidor")
     }
 
     if let apiKey, !apiKey.isEmpty {
@@ -50,13 +50,13 @@ extension LocalMcpStore {
   /// since been revoked — could report "Needs sign-in" with nothing anywhere to act on it.
   static func signIn(name: String) async throws {
     guard let entry = readAllServers()[name] as? [String: Any] else {
-      throw storeError("That server is no longer configured")
+      throw storeError("Esse servidor não está mais configurado")
     }
     guard let url = entry["url"] as? String, let serverURL = URL(string: url) else {
-      throw storeError("Only remote servers sign in; a local command runs as you")
+      throw storeError("Só servidores remotos usam login; um comando local roda como você")
     }
     guard let meta = await discoverOAuthMetadata(serverURL: serverURL) else {
-      throw storeError("This server does not advertise OAuth. If it needs an API key, set one here instead.")
+      throw storeError("Este servidor não oferece OAuth. Se ele precisar de uma chave de API, defina uma aqui.")
     }
     let auth = try await runOAuthFlow(meta: meta)
     try upsertServer(name, entry: replacingOAuthCredentials(in: entry, with: auth))
@@ -88,10 +88,10 @@ extension LocalMcpStore {
   /// Replace the API key on a configured server, for a key that was mistyped or has been rotated.
   static func setAPIKey(name: String, apiKey: String) throws {
     guard var entry = readAllServers()[name] as? [String: Any] else {
-      throw storeError("That server is no longer configured")
+      throw storeError("Esse servidor não está mais configurado")
     }
     guard entry["url"] is String else {
-      throw storeError("Only remote servers take an API key")
+      throw storeError("Só servidores remotos aceitam chave de API")
     }
     entry = removingAuthorizationHeaders(from: entry)
     let trimmed = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -235,7 +235,7 @@ extension LocalMcpStore {
 
   private static func runOAuthFlow(meta: OAuthMeta) async throws -> [String: Any] {
     guard let registration = meta.registrationEndpoint else {
-      throw storeError("This server requires OAuth but does not support automatic client registration")
+      throw storeError("Este servidor exige OAuth mas não oferece registro automático de cliente")
     }
 
     let listener = try await LoopbackCallbackListener.start()
@@ -253,7 +253,7 @@ extension LocalMcpStore {
         "token_endpoint_auth_method": "none",
       ])
     guard let clientId = registered["client_id"] as? String else {
-      throw storeError("The server's OAuth registration did not return a client id")
+      throw storeError("O registro OAuth do servidor não retornou um client id")
     }
     let clientSecret = registered["client_secret"] as? String
 
@@ -263,7 +263,7 @@ extension LocalMcpStore {
     let challenge = Data(SHA256.hash(data: Data(verifier.utf8))).base64URLEncoded()
     let state = try randomURLSafeToken(byteCount: 16)
     guard var components = URLComponents(string: meta.authorizationEndpoint) else {
-      throw storeError("The server advertised an invalid authorization endpoint")
+      throw storeError("O servidor informou um endpoint de autorização inválido")
     }
     var query = [
       URLQueryItem(name: "response_type", value: "code"),
@@ -278,11 +278,11 @@ extension LocalMcpStore {
       query.append(URLQueryItem(name: "scope", value: scopes.joined(separator: " ")))
     }
     components.queryItems = (components.queryItems ?? []) + query
-    guard let authURL = components.url else { throw storeError("Invalid authorization URL") }
+    guard let authURL = components.url else { throw storeError("URL de autorização inválida") }
     _ = await MainActor.run { NSWorkspace.shared.open(authURL) }
 
     let callback = try await listener.waitForCode(timeoutSeconds: 240)
-    guard callback.state == state else { throw storeError("OAuth state mismatch; try again") }
+    guard callback.state == state else { throw storeError("O state do OAuth não confere; tente de novo") }
 
     var form = [
       "grant_type": "authorization_code",
@@ -295,7 +295,7 @@ extension LocalMcpStore {
     if let clientSecret { form["client_secret"] = clientSecret }
     let tokens = try await postForm(endpoint: meta.tokenEndpoint, form: form)
     guard let accessToken = tokens["access_token"] as? String else {
-      throw storeError("The server did not return an access token")
+      throw storeError("O servidor não retornou um token de acesso")
     }
 
     var auth: [String: Any] = [
@@ -314,7 +314,7 @@ extension LocalMcpStore {
   // MARK: - HTTP helpers
 
   private static func postJSON(endpoint: String, body: [String: Any]) async throws -> [String: Any] {
-    guard let url = URL(string: endpoint) else { throw storeError("Invalid endpoint: \(endpoint)") }
+    guard let url = URL(string: endpoint) else { throw storeError("Endpoint inválido: \(endpoint)") }
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -323,12 +323,12 @@ extension LocalMcpStore {
     let status = (response as? HTTPURLResponse)?.statusCode ?? 0
     guard (200..<300).contains(status),
       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-    else { throw storeError("Request to \(url.host ?? endpoint) failed (HTTP \(status))") }
+    else { throw storeError("A requisição para \(url.host ?? endpoint) falhou (HTTP \(status))") }
     return json
   }
 
   private static func postForm(endpoint: String, form: [String: String]) async throws -> [String: Any] {
-    guard let url = URL(string: endpoint) else { throw storeError("Invalid endpoint: \(endpoint)") }
+    guard let url = URL(string: endpoint) else { throw storeError("Endpoint inválido: \(endpoint)") }
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -340,7 +340,7 @@ extension LocalMcpStore {
     let status = (response as? HTTPURLResponse)?.statusCode ?? 0
     guard (200..<300).contains(status),
       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-    else { throw storeError("Token request failed (HTTP \(status))") }
+    else { throw storeError("A requisição do token falhou (HTTP \(status))") }
     return json
   }
 
@@ -358,7 +358,7 @@ extension LocalMcpStore {
   static func randomURLSafeToken(byteCount: Int) throws -> String {
     var bytes = [UInt8](repeating: 0, count: byteCount)
     guard SecRandomCopyBytes(kSecRandomDefault, byteCount, &bytes) == errSecSuccess else {
-      throw storeError("Could not generate secure random data for the sign-in request")
+      throw storeError("Não foi possível gerar dados aleatórios seguros para o pedido de login")
     }
     return Data(bytes).base64URLEncoded()
   }
@@ -397,7 +397,7 @@ final class LoopbackCallbackListener: @unchecked Sendable {
     // capture a partially initialized self.
     let fd = socket(AF_INET, SOCK_STREAM, 0)
     guard fd >= 0 else {
-      throw LocalMcpStore.storeError("Could not open a local socket for the OAuth redirect")
+      throw LocalMcpStore.storeError("Não foi possível abrir um socket local para o redirecionamento OAuth")
     }
     var reuse: Int32 = 1
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, socklen_t(MemoryLayout<Int32>.size))
@@ -415,7 +415,7 @@ final class LoopbackCallbackListener: @unchecked Sendable {
     }
     guard bound == 0, listen(fd, 1) == 0 else {
       close(fd)
-      throw LocalMcpStore.storeError("Could not open a local port for the OAuth redirect")
+      throw LocalMcpStore.storeError("Não foi possível abrir uma porta local para o redirecionamento OAuth")
     }
 
     var assigned = sockaddr_in()
@@ -426,7 +426,7 @@ final class LoopbackCallbackListener: @unchecked Sendable {
     let assignedPort = UInt16(bigEndian: assigned.sin_port)
     guard assignedPort != 0 else {
       close(fd)
-      throw LocalMcpStore.storeError("Could not open a local port for the OAuth redirect")
+      throw LocalMcpStore.storeError("Não foi possível abrir uma porta local para o redirecionamento OAuth")
     }
 
     descriptor = fd
@@ -444,7 +444,7 @@ final class LoopbackCallbackListener: @unchecked Sendable {
     let timeoutTask = Task { [weak self] in
       try? await Task.sleep(nanoseconds: UInt64(timeoutSeconds) * 1_000_000_000)
       guard !Task.isCancelled else { return }
-      self?.finish(.failure(LocalMcpStore.storeError("Timed out waiting for the browser to return")))
+      self?.finish(.failure(LocalMcpStore.storeError("Tempo esgotado esperando o retorno do navegador")))
     }
     defer { timeoutTask.cancel() }
     return try await withCheckedThrowingContinuation { continuation in
@@ -478,7 +478,7 @@ final class LoopbackCallbackListener: @unchecked Sendable {
       let wasStopped = stopped
       lock.unlock()
       if !wasStopped {
-        finish(.failure(LocalMcpStore.storeError("The OAuth redirect connection failed")))
+        finish(.failure(LocalMcpStore.storeError("A conexão do redirecionamento OAuth falhou")))
       }
       return
     }
@@ -496,7 +496,7 @@ final class LoopbackCallbackListener: @unchecked Sendable {
     }
 
     let body =
-      "You can close this window and return to Omi."
+      "Você pode fechar esta janela e voltar ao Omi."
     let response = """
       HTTP/1.1 200 OK\r
       Content-Type: text/plain; charset=utf-8\r
@@ -511,18 +511,18 @@ final class LoopbackCallbackListener: @unchecked Sendable {
       let target = text.split(separator: " ").dropFirst().first,
       let components = URLComponents(string: "http://127.0.0.1\(target)")
     else {
-      finish(.failure(LocalMcpStore.storeError("The OAuth redirect was malformed")))
+      finish(.failure(LocalMcpStore.storeError("O redirecionamento OAuth veio malformado")))
       return
     }
     let items = components.queryItems ?? []
     if let error = items.first(where: { $0.name == "error" })?.value {
-      finish(.failure(LocalMcpStore.storeError("The server refused authorization: \(error)")))
+      finish(.failure(LocalMcpStore.storeError("O servidor recusou a autorização: \(error)")))
       return
     }
     guard let code = items.first(where: { $0.name == "code" })?.value,
       let state = items.first(where: { $0.name == "state" })?.value
     else {
-      finish(.failure(LocalMcpStore.storeError("The OAuth redirect carried no authorization code")))
+      finish(.failure(LocalMcpStore.storeError("O redirecionamento OAuth não trouxe código de autorização")))
       return
     }
     finish(.success(Callback(code: code, state: state)))

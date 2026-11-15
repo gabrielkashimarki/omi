@@ -95,7 +95,7 @@ enum LocalSkillsStore {
     guard !slug.isEmpty else {
       throw NSError(
         domain: "LocalSkillsStore", code: 1,
-        userInfo: [NSLocalizedDescriptionKey: "Skill name must contain letters or numbers"])
+        userInfo: [NSLocalizedDescriptionKey: "O nome da skill deve conter letras ou números"])
     }
     let normalized = normalize(markdown: markdown, slug: slug)
     let fm = FileManager.default
@@ -123,7 +123,7 @@ enum LocalSkillsStore {
     guard !slug.isEmpty else {
       throw NSError(
         domain: "LocalSkillsStore", code: 1,
-        userInfo: [NSLocalizedDescriptionKey: "Skill name must contain letters or numbers"])
+        userInfo: [NSLocalizedDescriptionKey: "O nome da skill deve conter letras ou números"])
     }
     let fm = FileManager.default
     let destination = skillsDirURL.appendingPathComponent(slug, isDirectory: true)
@@ -242,15 +242,15 @@ enum LocalSkillsStore {
   static func validationError(forImportedMarkdown markdown: String) -> String? {
     let (meta, body) = splitFrontmatter(of: markdown)
     guard !meta.isEmpty else {
-      return "That file has no SKILL.md frontmatter. A skill starts with a --- block naming it."
+      return "Esse arquivo não tem frontmatter de SKILL.md. Uma skill começa com um bloco --- que dá nome a ela."
     }
     guard let description = frontmatterValue(meta, key: "description"),
       !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     else {
-      return "That file's frontmatter has no description. The assistant needs one to know when to load the skill."
+      return "O frontmatter desse arquivo não tem descrição. O assistente precisa dela para saber quando carregar a skill."
     }
     guard !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-      return "That file has frontmatter but no instructions under it."
+      return "Esse arquivo tem frontmatter, mas nenhuma instrução abaixo dele."
     }
     return nil
   }
@@ -260,7 +260,7 @@ enum LocalSkillsStore {
     var lines = ["name: \(slug)"]
     let description =
       frontmatterValue(meta, key: "description")
-      ?? firstProseLine(of: body) ?? "User-authored skill"
+      ?? firstProseLine(of: body) ?? "Skill criada pelo usuário"
     lines.append("description: \(description)")
     // Preserve author-written keys other than the two we own.
     for line in meta where !line.hasPrefix("name:") && !line.hasPrefix("description:") {

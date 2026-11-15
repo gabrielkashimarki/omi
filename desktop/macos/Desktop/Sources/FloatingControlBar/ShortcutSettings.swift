@@ -60,7 +60,7 @@ class ShortcutSettings: ObservableObject {
     var displayLabel: String {
       if modifierOnly {
         if requiresRightCommand {
-          return "Right Cmd"
+          return "Cmd direito"
         }
         switch modifiers {
         case [.option]:
@@ -195,7 +195,7 @@ class ShortcutSettings: ObservableObject {
       case 48:
         return "Tab"
       case 49:
-        return "Space"
+        return "Espaço"
       case 51:
         return "⌫"
       case 53:
@@ -231,7 +231,7 @@ class ShortcutSettings: ObservableObject {
       case 113:
         return "F15"
       case 114:
-        return "Help"
+        return "Ajuda"
       case 115:
         return "Home"
       case 116:
@@ -450,8 +450,8 @@ class ShortcutSettings: ObservableObject {
 
     var description: String {
       switch self {
-      case .live: return "Real-time transcription as you speak"
-      case .batch: return "Transcribe after recording for better accuracy"
+      case .live: return "Transcrição em tempo real enquanto você fala"
+      case .batch: return "Transcreve depois de gravar, para mais precisão"
       }
     }
   }
@@ -505,12 +505,12 @@ class ShortcutSettings: ObservableObject {
   static let voiceSpeedSteps: [Float] = [0.8, 1.0, 1.2, 1.4, 1.6, 2.0]
 
   static func voiceSpeedLabel(for speed: Float) -> String {
-    if speed <= 0.8 { return "Slow" }
+    if speed <= 0.8 { return "Lenta" }
     if speed <= 1.0 { return "Normal" }
-    if speed <= 1.2 { return "Fast" }
-    if speed <= 1.4 { return "Faster" }
-    if speed <= 1.6 { return "Very Fast" }
-    return "Maximum"
+    if speed <= 1.2 { return "Rápida" }
+    if speed <= 1.4 { return "Mais rápida" }
+    if speed <= 1.6 { return "Muito rápida" }
+    return "Máxima"
   }
 
   var hasAnyFloatingBarVoiceAnswersEnabled: Bool {

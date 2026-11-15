@@ -27,9 +27,9 @@ enum RealtimeOmniProvider: String, CaseIterable, Sendable {
 
   var subtitle: String {
     switch self {
-    case .auto: return "Daily-picks the best model by quality & speed"
-    case .geminiFlashLive: return "Google · native audio + vision, lowest cost"
-    case .gptRealtime2: return "OpenAI · GA speech-to-speech"
+    case .auto: return "Escolhe todo dia o melhor modelo por qualidade e velocidade"
+    case .geminiFlashLive: return "Google · áudio nativo + visão, menor custo"
+    case .gptRealtime2: return "OpenAI · fala para fala (disponibilidade geral)"
     }
   }
 

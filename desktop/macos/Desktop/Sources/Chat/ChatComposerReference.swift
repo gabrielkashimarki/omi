@@ -15,7 +15,7 @@ struct ChatComposerReference: Identifiable, Equatable, Sendable {
 
     var label: String {
       switch self {
-      case .conversation: return "Conversation"
+      case .conversation: return "Conversa"
       }
     }
   }

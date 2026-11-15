@@ -70,8 +70,8 @@ final class NotchMomentsCoordinator {
       baselineIds: sessionBaselineTaskIds,
       since: sessionStartedAt)
     guard newCount > 0 else { return }
-    let title = newCount == 1 ? "1 follow-up ready" : "\(newCount) follow-ups ready"
-    post(title: title, message: "Conversation ended", assistantId: NotchMoment.endAssistantId)
+    let title = newCount == 1 ? "1 acompanhamento pronto" : "\(newCount) acompanhamentos prontos"
+    post(title: title, message: "Conversa encerrada", assistantId: NotchMoment.endAssistantId)
   }
 
   /// Follow-ups a conversation actually produced: tasks whose id is new since the

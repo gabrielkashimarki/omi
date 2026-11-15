@@ -8,7 +8,7 @@ import AppKit
 /// driving the same preference and the same `show()` / `hide()` the Settings switch uses.
 enum FloatingBarMenuBarItem {
   static func title(isEnabled: Bool) -> String {
-    isEnabled ? "Hide Floating Bar" : "Show Floating Bar"
+    isEnabled ? "Ocultar barra flutuante" : "Mostrar barra flutuante"
   }
 
   /// A new menu item bound to the shared controller. Its title is re-read every time the menu

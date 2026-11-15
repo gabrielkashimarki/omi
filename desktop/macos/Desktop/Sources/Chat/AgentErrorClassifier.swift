@@ -40,15 +40,15 @@ enum AgentErrorClassifier {
   /// re-classify already-classified messages, so the phrase in the copy has to
   /// be the same phrase the rule matches.
   static let runtimeInstallIncompleteMessage =
-    "Omi's local AI runtime is not installed correctly, so chat can't start. "
-    + "Reinstall or update Omi to repair it."
+    "O runtime local de IA do Omi não está instalado corretamente, então o chat não consegue iniciar. "
+    + "Reinstale ou atualize o Omi para corrigir."
 
   /// A transport status identifies a billing rejection, not whose account
   /// paid for the request. BYOK and managed requests can share the same proxy.
   static let billingFailureMessage =
-    "The AI service declined this request for billing reasons. "
-    + "Check your provider and API key in Settings → AI & Automation. "
-    + "If they look correct, contact Omi Support. Resending the same message won't help."
+    "O serviço de IA recusou esta solicitação por motivos de cobrança. "
+    + "Confira seu provedor e sua chave de API em Ajustes → IA e Automação. "
+    + "Se estiverem corretos, fale com o suporte do Omi. Reenviar a mesma mensagem não vai resolver."
 
   /// Worker recycle rewrites `userMessage` to "send again" while leaving the
   /// provider's 402 on `technicalMessage`. Classify both or the billing rule
@@ -70,16 +70,18 @@ enum AgentErrorClassifier {
     // User pressed Stop — not a technical failure. Recognized so it is never
     // mislabeled as a retryable error (the #1 string in the live corpus, 616
     // events/30d); upstream telemetry should also split it from chat_agent_error.
-    if lower.hasPrefix("response stopped") {
+    if lower.hasPrefix("response stopped") || lower.hasPrefix("resposta interrompida") {
       return ClassifiedAgentError(
         code: .userInterrupted,
-        userMessage: "Response stopped.",
+        userMessage: "Resposta interrompida.",
         retryable: false)
     }
     // Surfaces classify displayed copy again. Recognize both the current
     // sentence and the old managed-lane wording before its "Plan and Usage"
     // advice can turn a billing rejection into a plan-limit diagnosis.
-    if lower.contains("declined this request for billing reasons") {
+    if lower.contains("declined this request for billing reasons")
+      || lower.contains("recusou esta solicitação por motivos de cobrança")
+    {
       return ClassifiedAgentError(
         code: .providerBillingExhausted,
         userMessage: billingFailureMessage,
@@ -89,11 +91,12 @@ enum AgentErrorClassifier {
     // the live corpus). Direct to upgrade/reset, never "try again".
     if lower.contains("free plan limit") || lower.contains("plan and usage")
       || (lower.contains("plan limit") && lower.contains("upgrade"))
+      || lower.contains("limite de chat do seu plano")
     {
       return ClassifiedAgentError(
         code: .planLimitReached,
         userMessage:
-          "You've reached your plan's chat limit. Upgrade in Settings → Plan and Usage, or wait until the next reset.",
+          "Você atingiu o limite de chat do seu plano. Faça upgrade em Ajustes → Plano e Uso, ou aguarde o próximo reinício.",
         retryable: false)
     }
     // Provider/mode configuration mismatch — retrying the same query cannot
@@ -102,11 +105,12 @@ enum AgentErrorClassifier {
       || lower.contains("can only use omi cloud routing")
       || lower.contains("provider mode is pinned")
       || (lower.contains("is not available") && lower.contains("make sure"))
+      || lower.contains("agente não está disponível na sua configuração atual")
     {
       return ClassifiedAgentError(
         code: .agentModeUnavailable,
         userMessage:
-          "This agent isn't available in your current setup. Open Settings → check your agent mode/provider, then try again.",
+          "Este agente não está disponível na sua configuração atual. Abra os Ajustes, confira o modo/provedor do agente e tente de novo.",
         retryable: false)
     }
 
@@ -118,6 +122,7 @@ enum AgentErrorClassifier {
     // claim. Also recognizes this classifier's own output so surfaces that
     // re-classify an already-classified message stay on the same code.
     if lower.contains("local ai runtime is not installed correctly")
+      || lower.contains("runtime local de ia do omi não está instalado corretamente")
       || lower.contains("extension path does not exist")
       || lower.contains("failed to load extension")
       || (lower.contains("unknown provider") && lower.contains("omi"))
@@ -154,8 +159,8 @@ enum AgentErrorClassifier {
       return ClassifiedAgentError(
         code: .upstreamProviderFailed,
         userMessage:
-          "Omi's AI service didn't respond. This is on our side, not your message. "
-          + "Try again in a moment.",
+          "O serviço de IA do Omi não respondeu. O problema é do nosso lado, não da sua mensagem. "
+          + "Tente de novo em instantes.",
         retryable: true)
     }
 
@@ -183,10 +188,10 @@ enum AgentErrorClassifier {
         userMessage: billingFailureMessage,
         retryable: false)
     }
-    if lower.contains("oauth callback timed out") {
+    if lower.contains("oauth callback timed out") || lower.contains("tempo esgotado no login") {
       return ClassifiedAgentError(
         code: .oauthTimeout,
-        userMessage: "Sign-in timed out. Open Settings and reconnect your account.",
+        userMessage: "Tempo esgotado no login. Abra os Ajustes e reconecte sua conta.",
         retryable: false)
     }
     // Only high-signal leak tokens belong here — providers say "leaked",
@@ -195,10 +200,12 @@ enum AgentErrorClassifier {
     // not leaks; classing them here both mislabels the user copy and gets the
     // event class already classified as expected ("ai service
     // authentication error"), hiding real forbidden-class bugs from triage.
-    if lower.contains("leaked") || lower.contains("invalid key") || lower.contains("has been disabled") {
+    if lower.contains("leaked") || lower.contains("invalid key") || lower.contains("has been disabled")
+      || lower.contains("erro de autenticação do serviço de ia")
+    {
       return ClassifiedAgentError(
         code: .credentialLeakSuspected,
-        userMessage: "AI service authentication error. Please update the app to the latest version.",
+        userMessage: "Erro de autenticação do serviço de IA. Atualize o app para a versão mais recente.",
         retryable: false)
     }
     if lower.contains("invalid_token") || lower.contains("authentication_error")
@@ -206,10 +213,11 @@ enum AgentErrorClassifier {
       || lower.contains("authentication required") || lower.contains("byok_validation_failed")
       || lower.contains("forbidden") || lower.contains("permission denied")
       || lower.contains("api key") || lower.contains("api_key")
+      || lower.contains("sua sessão de ia expirou")
     {
       return ClassifiedAgentError(
         code: .providerAuthExpired,
-        userMessage: "Your AI session expired. Reconnect your account in Settings, then try again.",
+        userMessage: "Sua sessão de IA expirou. Reconecte sua conta nos Ajustes e tente de novo.",
         retryable: false)
     }
     if lower.contains("connection error") || lower.contains("econnrefused") || lower.contains("etimedout")
@@ -217,31 +225,33 @@ enum AgentErrorClassifier {
     {
       return ClassifiedAgentError(
         code: .connectionFailed,
-        userMessage: "Couldn't reach the AI service — check your internet connection and try again.",
+        userMessage: "Não foi possível acessar o serviço de IA. Confira sua conexão com a internet e tente de novo.",
         retryable: true)
     }
     if lower.contains("length limit exceeded") || lower.contains("payload too large")
       || lower.range(of: #"\b413\b"#, options: .regularExpression) != nil
+      || lower.contains("grandes demais para enviar")
     {
       return ClassifiedAgentError(
         code: .payloadTooLarge,
         userMessage:
-          "That message or its attachments are too large to send. Try a smaller attachment or a shorter message.",
+          "Essa mensagem ou seus anexos são grandes demais para enviar. Tente um anexo menor ou uma mensagem mais curta.",
         retryable: false)
     }
     if lower.contains("process exited") || lower.contains("process not running") || lower.contains("terminated") {
       return ClassifiedAgentError(
         code: .runtimeCrashed,
-        userMessage: "The AI engine restarted unexpectedly. Try sending your message again.",
+        userMessage: "O motor de IA reiniciou inesperadamente. Tente enviar a mensagem de novo.",
         retryable: true)
     }
     if lower.contains("input_schema does not support") || lower.contains("tool_choice")
       || lower.contains("tool names must be unique") || lower.contains("tools must have unique names")
+      || lower.contains("uma ferramenta conectada está mal configurada")
     {
       return ClassifiedAgentError(
         code: .toolSchemaRejected,
         userMessage:
-          "A connected tool is misconfigured — this isn't caused by your message. Retrying won't help until the tool is fixed; the error has been recorded.",
+          "Uma ferramenta conectada está mal configurada. Isso não foi causado pela sua mensagem. Tentar de novo não vai ajudar até a ferramenta ser corrigida; o erro foi registrado.",
         retryable: false)
     }
     if lower.contains("rate limit") || lower.contains("quota") || lower.contains("resource exhausted")
@@ -249,7 +259,7 @@ enum AgentErrorClassifier {
     {
       return ClassifiedAgentError(
         code: .providerRateLimited,
-        userMessage: "AI service is busy. Please try again in a moment.",
+        userMessage: "O serviço de IA está ocupado. Tente de novo em instantes.",
         retryable: true)
     }
     if lower.contains("overloaded") || lower.contains("service unavailable")
@@ -258,22 +268,23 @@ enum AgentErrorClassifier {
     {
       return ClassifiedAgentError(
         code: .providerOverloaded,
-        userMessage: "AI service is temporarily unavailable. Please try again later.",
+        userMessage: "O serviço de IA está temporariamente indisponível. Tente de novo mais tarde.",
         retryable: true)
     }
     if lower.contains("transaction within a transaction") || lower.contains("database disk image")
       || lower.contains("database is locked") || lower.contains("no column named")
       || lower.contains("no such column") || lower.contains("no such table")
+      || lower.contains("erro de dados locais")
     {
       return ClassifiedAgentError(
         code: .localDataError,
-        userMessage: "Omi hit a local data error. Restarting the app usually fixes this — your data is safe.",
+        userMessage: "O Omi encontrou um erro de dados locais. Reiniciar o app costuma resolver; seus dados estão seguros.",
         retryable: false)
     }
 
     // Unknown: keep the original message when it exists (many provider errors
     // are already user-readable); only truly empty errors get the generic copy.
-    let fallback = rawMessage.isEmpty ? "Something went wrong. Please try again." : rawMessage
+    let fallback = rawMessage.isEmpty ? "Algo deu errado. Tente de novo." : rawMessage
     return ClassifiedAgentError(code: .unknown, userMessage: fallback, retryable: true)
   }
 }

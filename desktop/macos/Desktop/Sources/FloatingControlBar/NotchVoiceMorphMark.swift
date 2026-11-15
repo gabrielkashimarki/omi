@@ -25,21 +25,21 @@ enum NotchVoiceControlPresentation {
   }
 
   static func accessibilityLabel(isLocked _: Bool) -> String {
-    "Send voice message"
+    "Enviar mensagem de voz"
   }
 
   static func accessibilityValue(isLocked: Bool) -> String {
-    isLocked ? "Locked" : "Listening"
+    isLocked ? "Travado" : "Ouvindo"
   }
 
   static func stateLabel(isLocked: Bool) -> String {
-    isLocked ? "Locked listening" : "Listening"
+    isLocked ? "Ouvindo (travado)" : "Ouvindo"
   }
 
   static func accessibilityHint(isLocked: Bool) -> String {
     isLocked
-      ? "Tap to stop listening and send your voice message"
-      : "Tap to stop listening and send your voice message, or release the shortcut"
+      ? "Toque para parar de ouvir e enviar sua mensagem de voz"
+      : "Toque para parar de ouvir e enviar sua mensagem de voz, ou solte o atalho"
   }
 }
 
@@ -445,10 +445,10 @@ struct NotchVoiceMorphMark: View {
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(
       isDictating
-        ? "Dictating"
+        ? "Ditando"
         : isListening
           ? NotchVoiceControlPresentation.stateLabel(isLocked: isLocked)
-          : isSpeaking ? "Speaking" : isThinking ? "Thinking" : "Omi")
+          : isSpeaking ? "Falando" : isThinking ? "Pensando" : "Omi")
   }
 
   private func setMorphProgress(_ progress: CGFloat) {

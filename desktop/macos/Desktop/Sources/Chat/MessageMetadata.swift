@@ -108,22 +108,22 @@ struct MessageMetadata: Equatable {
   }
 
   var screenshotSummary: String {
-    guard hasScreenshot, let size = screenshotSizeBytes else { return "None" }
-    return "1 image (\(max(size, 0) / 1024) KB)"
+    guard hasScreenshot, let size = screenshotSizeBytes else { return "Nenhuma" }
+    return "1 imagem (\(max(size, 0) / 1024) KB)"
   }
 
   var historySummary: String {
     if totalTurnCount == 0 {
-      return "none"
+      return "nenhum"
     }
     if omittedTurnCount > 0 {
-      return "\(retainedTurnCount) of \(totalTurnCount) turns (\(omittedTurnCount) omitted)"
+      return "\(retainedTurnCount) de \(totalTurnCount) turnos (\(omittedTurnCount) omitidos)"
     }
-    return "\(retainedTurnCount) of \(totalTurnCount) turns"
+    return "\(retainedTurnCount) de \(totalTurnCount) turnos"
   }
 
   var offeredToolsSummary: String {
-    offeredToolCount == 1 ? "1 tool" : "\(offeredToolCount) tools"
+    offeredToolCount == 1 ? "1 ferramenta" : "\(offeredToolCount) ferramentas"
   }
 
   /// "Model" row: the observed served identities, comma-joined. Empty string
