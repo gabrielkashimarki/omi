@@ -25,7 +25,7 @@ enum ConversationSummarySelection {
     func appDisplayName(resolvedName: String?) -> String? {
       guard kind == .app else { return nil }
       let name = resolvedName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-      return name.isEmpty ? "Unknown App" : name
+      return name.isEmpty ? "App desconhecido" : name
     }
   }
 

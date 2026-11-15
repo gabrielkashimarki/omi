@@ -22,6 +22,15 @@ enum TaskCategory: String, CaseIterable {
     }
   }
 
+  var displayName: String {
+    switch self {
+    case .today: return "Hoje"
+    case .tomorrow: return "Amanhã"
+    case .later: return "Depois"
+    case .noDeadline: return "Sem prazo"
+    }
+  }
+
   var color: Color {
     switch self {
     case .today: return Ink.primary
@@ -39,13 +48,13 @@ struct TaskSortOrderSyncFailure: Equatable {
   var message: String {
     switch (storageErrorDescription != nil, backendErrorDescription != nil) {
     case (true, true):
-      return "Could not save task order to this Mac or Omi Cloud. Retry when your connection is available."
+      return "Não foi possível salvar a ordem das tarefas neste Mac nem na Omi Cloud. Tente de novo quando a conexão estiver disponível."
     case (true, false):
-      return "Could not save task order to this Mac. Retry to keep the order after restart."
+      return "Não foi possível salvar a ordem das tarefas neste Mac. Tente de novo para manter a ordem após reiniciar."
     case (false, true):
-      return "Task order was saved on this Mac, but not synced to Omi Cloud. Retry when your connection is available."
+      return "A ordem das tarefas foi salva neste Mac, mas não sincronizada com a Omi Cloud. Tente de novo quando a conexão estiver disponível."
     case (false, false):
-      return "Could not confirm task order sync. Retry when your connection is available."
+      return "Não foi possível confirmar a sincronização da ordem das tarefas. Tente de novo quando a conexão estiver disponível."
     }
   }
 }
@@ -120,35 +129,35 @@ enum TaskFilterTag: String, CaseIterable, Identifiable, Hashable {
 
   var displayName: String {
     switch self {
-    case .todo: return "To Do"
-    case .done: return "Done"
-    case .removedByAI: return "Removed by AI"
-    case .removedByMe: return "Removed by me"
-    case .last7Days: return "Last 7 days"
-    case .personal: return "Personal"
-    case .work: return "Work"
-    case .feature: return "Feature"
+    case .todo: return "A fazer"
+    case .done: return "Concluídas"
+    case .removedByAI: return "Removidas pela IA"
+    case .removedByMe: return "Removidas por mim"
+    case .last7Days: return "Últimos 7 dias"
+    case .personal: return "Pessoal"
+    case .work: return "Trabalho"
+    case .feature: return "Funcionalidade"
     case .bug: return "Bug"
-    case .code: return "Code"
-    case .research: return "Research"
-    case .communication: return "Communication"
-    case .finance: return "Finance"
-    case .health: return "Health"
-    case .other: return "Other"
-    case .sourceScreen: return "Screen"
+    case .code: return "Código"
+    case .research: return "Pesquisa"
+    case .communication: return "Comunicação"
+    case .finance: return "Finanças"
+    case .health: return "Saúde"
+    case .other: return "Outros"
+    case .sourceScreen: return "Tela"
     case .sourceOmi: return "OMI"
     case .sourceDesktop: return "Desktop"
     case .sourceManual: return "Manual"
     case .sourceOmiAnalytics: return "OMI Analytics"
-    case .priorityHigh: return "High"
-    case .priorityMedium: return "Medium"
-    case .priorityLow: return "Low"
-    case .originDirectRequest: return "Direct Request"
-    case .originSelfGenerated: return "Self-Generated"
-    case .originCalendarDriven: return "Calendar-Driven"
-    case .originReactive: return "Reactive"
-    case .originExternalSystem: return "External System"
-    case .originOther: return "Other Origin"
+    case .priorityHigh: return "Alta"
+    case .priorityMedium: return "Média"
+    case .priorityLow: return "Baixa"
+    case .originDirectRequest: return "Pedido direto"
+    case .originSelfGenerated: return "Gerada por conta própria"
+    case .originCalendarDriven: return "Guiada pela agenda"
+    case .originReactive: return "Reativa"
+    case .originExternalSystem: return "Sistema externo"
+    case .originOther: return "Outra origem"
     }
   }
 
@@ -3504,16 +3513,16 @@ struct TasksPage: View {
         QuerySearchBar(
           text: $viewModel.searchText,
           accessibilityID: "tasks-search-field",
-          placeholder: "Search tasks", searchSurface: .tasks
+          placeholder: "Buscar tarefas", searchSurface: .tasks
         )
 
         taskWorkspace
           .frame(maxWidth: .infinity, maxHeight: .infinity)
           .shellConfirmation(
             isPresented: $viewModel.isConfirmingBulkDelete,
-            title: "Delete \(viewModel.multiSelection.selectionCount) Tasks?",
-            message: "This permanently deletes the selected tasks. It can't be undone.",
-            confirmTitle: "Delete Tasks"
+            title: "Apagar \(viewModel.multiSelection.selectionCount) tarefas?",
+            message: "Isto apaga permanentemente as tarefas selecionadas. Não dá para desfazer.",
+            confirmTitle: "Apagar tarefas"
           ) {
             Task { await viewModel.deleteSelectedTasks() }
           }
@@ -3806,7 +3815,7 @@ struct TasksPage: View {
       // while the keyboard hint bar has its own reserved space above it.
       if viewModel.showUndoToast, let lastAction = viewModel.undoStack.last {
         UndoToast(
-          message: "Task deleted",
+          message: "Tarefa apagada",
           detail: lastAction.task.description,
           count: viewModel.undoStack.count,
           onUndo: { Task { await viewModel.undoLastDelete() } }
@@ -3916,8 +3925,8 @@ struct TasksPage: View {
 
   private var viewModeToggle: some View {
     HStack(spacing: 2) {
-      viewModeSegment(title: "Board", isSelected: tasksViewIsBoard) { tasksViewIsBoard = true }
-      viewModeSegment(title: "List", isSelected: !tasksViewIsBoard) { tasksViewIsBoard = false }
+      viewModeSegment(title: "Quadro", isSelected: tasksViewIsBoard) { tasksViewIsBoard = true }
+      viewModeSegment(title: "Lista", isSelected: !tasksViewIsBoard) { tasksViewIsBoard = false }
     }
     .padding(3)
     .background(RoundedRectangle(cornerRadius: OmiChrome.elementRadius).fill(Ink.rowFill))
@@ -3936,7 +3945,7 @@ struct TasksPage: View {
         )
     }
     .buttonStyle(.plain)
-    .help("\(title) view")
+    .help("Visualização \(title)")
   }
 
   // MARK: - Notion-style status board
@@ -3962,7 +3971,7 @@ struct TasksPage: View {
         Image(systemName: category.icon)
           .scaledFont(size: OmiType.caption)
           .foregroundColor(category.color)
-        Text(category.rawValue)
+        Text(category.displayName)
           .scaledFont(size: OmiType.caption, weight: .semibold)
           .foregroundColor(Ink.secondary)
         Text("\(tasks.count)")
@@ -3982,7 +3991,7 @@ struct TasksPage: View {
           .stroke(Ink.rowFillHover.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
           .frame(height: 44)
           .overlay(
-            Text("Nothing here")
+            Text("Nada aqui")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           )
@@ -4004,10 +4013,10 @@ struct TasksPage: View {
       viewModel.inlineCreateAfterTaskId = nil
       viewModel.isInlineCreating = true
     } label: {
-      PageQueryActionLabel(icon: "plus", title: "New Task", isPrimary: true)
+      PageQueryActionLabel(icon: "plus", title: "Nova tarefa", isPrimary: true)
     }
     .buttonStyle(.plain)
-    .help("New task (⌘N)")
+    .help("Nova tarefa (⌘N)")
     .accessibilityIdentifier("tasks-new-task")
   }
 
@@ -4018,26 +4027,26 @@ struct TasksPage: View {
       Button {
         viewModel.selectedTags = [.todo]
       } label: {
-        Label("To Do", systemImage: "circle")
+        Label("A fazer", systemImage: "circle")
       }
 
       Button {
         viewModel.selectedTags = [.done]
       } label: {
-        Label("Completed", systemImage: "checkmark.circle.fill")
+        Label("Concluídas", systemImage: "checkmark.circle.fill")
       }
     } label: {
       PageQueryControlLabel(
         icon: "checkmark.circle",
         dimension: nil,
-        value: viewModel.showCompleted ? "Completed" : "To Do",
+        value: viewModel.showCompleted ? "Concluídas" : "A fazer",
         isActive: viewModel.showCompleted
       )
     }
     .menuStyle(.button)
     .buttonStyle(.plain)
     .accessibilityIdentifier("tasks-status-filter")
-    .help("Filter tasks by status")
+    .help("Filtrar tarefas por status")
   }
 
   private var selectModeButton: some View {
@@ -4051,7 +4060,7 @@ struct TasksPage: View {
           systemName: viewModel.isMultiSelectMode ? "checkmark.circle" : "checkmark.circle.badge.questionmark"
         )
         .scaledFont(size: OmiType.caption)
-        Text(viewModel.isMultiSelectMode ? "Done" : "Select")
+        Text(viewModel.isMultiSelectMode ? "OK" : "Selecionar")
           .scaledFont(size: OmiType.body, weight: .medium)
       }
       .foregroundColor(viewModel.isMultiSelectMode ? Ink.primary : Ink.secondary)
@@ -4060,7 +4069,7 @@ struct TasksPage: View {
       .glassChip(isActive: viewModel.isMultiSelectMode)
     }
     .buttonStyle(.plain)
-    .help(viewModel.isMultiSelectMode ? "Exit selection" : "Select tasks for bulk actions")
+    .help(viewModel.isMultiSelectMode ? "Sair da seleção" : "Selecione tarefas para ações em lote")
     .accessibilityIdentifier("tasks-select-toggle")
   }
 
@@ -4084,8 +4093,8 @@ struct TasksPage: View {
           }
           Text(
             viewModel.isSelectingAllTasks
-              ? "Selecting…"
-              : (viewModel.allTasksInSelectionScopeSelected ? "Deselect All" : "Select All")
+              ? "Selecionando…"
+              : (viewModel.allTasksInSelectionScopeSelected ? "Desmarcar tudo" : "Selecionar tudo")
           )
           .scaledFont(size: OmiType.body, weight: .medium)
         }
@@ -4106,7 +4115,7 @@ struct TasksPage: View {
     Button {
       viewModel.isConfirmingBulkDelete = true
     } label: {
-      Label("Delete \(viewModel.multiSelection.selectionCount)", systemImage: "trash")
+      Label("Apagar \(viewModel.multiSelection.selectionCount)", systemImage: "trash")
     }
     .buttonStyle(OmiButtonStyle(.destructive, size: .compact))
     .disabled(viewModel.multiSelection.selectionCount == 0)
@@ -4114,11 +4123,11 @@ struct TasksPage: View {
 
   /// Leaves selection mode. "Done", as on Conversations; Esc does the same.
   private var cancelMultiSelectButton: some View {
-    Button("Done") {
+    Button("OK") {
       viewModel.toggleMultiSelectMode()
     }
     .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
-    .help("Exit selection (Esc)")
+    .help("Sair da seleção (Esc)")
   }
 
   private var tasksMoreMenu: some View {
@@ -4129,7 +4138,7 @@ struct TasksPage: View {
             viewModel.toggleMultiSelectMode()
           }
         } label: {
-          Label("Select Tasks", systemImage: "checkmark.circle")
+          Label("Selecionar tarefas", systemImage: "checkmark.circle")
         }
       }
 
@@ -4147,7 +4156,7 @@ struct TasksPage: View {
             }
           }
         } label: {
-          Label(showChatPanel ? "Close Task Assistant" : "Open Task Assistant", systemImage: "bubble.left")
+          Label(showChatPanel ? "Fechar assistente de tarefas" : "Abrir assistente de tarefas", systemImage: "bubble.left")
         }
       }
     }
@@ -4179,14 +4188,14 @@ struct TasksPage: View {
         )
     }
     .buttonStyle(.plain)
-    .help(showChatPanel ? "Close chat panel" : "Open task chat")
-    .accessibilityLabel(showChatPanel ? "Close task chat" : "Open task chat")
+    .help(showChatPanel ? "Fechar painel do chat" : "Abrir chat da tarefa")
+    .accessibilityLabel(showChatPanel ? "Fechar chat da tarefa" : "Abrir chat da tarefa")
   }
 
   // MARK: - Loading View
 
   private var loadingView: some View {
-    GlassLoadingState(label: "Loading tasks…")
+    GlassLoadingState(label: "Carregando tarefas…")
   }
 
   // MARK: - Error View
@@ -4225,8 +4234,8 @@ struct TasksPage: View {
 
   private func errorView(_: String) -> some View {
     GlassErrorState(
-      title: "Couldn't Load Tasks",
-      message: "Check your connection and try again.",
+      title: "Não foi possível carregar as tarefas",
+      message: "Verifique sua conexão e tente de novo.",
       retry: { Task { await viewModel.loadTasks() } }
     )
   }
@@ -4239,13 +4248,13 @@ struct TasksPage: View {
     let isSearchEmpty = !viewModel.normalizedSearchQuery.isEmpty
     return GlassEmptyState(
       systemImage: isSearchEmpty ? "magnifyingglass" : "tray",
-      title: isSearchEmpty ? "No Matching Tasks" : (viewModel.showCompleted ? "No Completed Tasks" : "All Caught Up"),
+      title: isSearchEmpty ? "Nenhuma tarefa correspondente" : (viewModel.showCompleted ? "Nenhuma tarefa concluída" : "Tudo em dia"),
       message: isSearchEmpty
-        ? "No \(viewModel.showCompleted ? "completed" : "to-do") tasks match “\(viewModel.normalizedSearchQuery)”"
-        : (viewModel.showCompleted ? "Tasks you complete will appear here" : "You have no tasks yet")
+        ? "Nenhuma tarefa \(viewModel.showCompleted ? "concluída" : "a fazer") corresponde a “\(viewModel.normalizedSearchQuery)”"
+        : (viewModel.showCompleted ? "As tarefas que você concluir vão aparecer aqui" : "Você ainda não tem tarefas")
     ) {
       if isSearchEmpty {
-        Button("Clear Search") { viewModel.searchText = "" }
+        Button("Limpar busca") { viewModel.searchText = "" }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
       }
     }
@@ -4710,7 +4719,7 @@ private struct TaskCategorySectionHeader: View {
           .scaledFont(size: OmiType.body)
           .foregroundColor(category.color)
 
-        Text(category.rawValue)
+        Text(category.displayName)
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -4737,7 +4746,7 @@ private struct TaskCategorySectionHeader: View {
             Button(role: .destructive) {
               confirmClearTodayDeadlines()
             } label: {
-              Label("Remove today from all…", systemImage: "calendar.badge.minus")
+              Label("Remover hoje de todas…", systemImage: "calendar.badge.minus")
             }
           } label: {
             Image(systemName: "ellipsis")
@@ -4749,8 +4758,8 @@ private struct TaskCategorySectionHeader: View {
           .menuStyle(.borderlessButton)
           .menuIndicator(.hidden)
           .fixedSize()
-          .help("More Today actions")
-          .accessibilityLabel("More Today actions")
+          .help("Mais ações de Hoje")
+          .accessibilityLabel("Mais ações de Hoje")
           .accessibilityIdentifier("tasks-today-actions")
         }
 
@@ -4812,11 +4821,11 @@ private struct TaskCategorySectionHeader: View {
 
   private func confirmClearTodayDeadlines() {
     let alert = NSAlert()
-    alert.messageText = "Clean today's tasks?"
-    alert.informativeText = "This will only remove deadlines"
+    alert.messageText = "Limpar as tarefas de hoje?"
+    alert.informativeText = "Isto só remove os prazos"
     alert.alertStyle = .warning
-    alert.addButton(withTitle: "Confirm")
-    alert.addButton(withTitle: "Cancel")
+    alert.addButton(withTitle: "Confirmar")
+    alert.addButton(withTitle: "Cancelar")
 
     let response = alert.runModal()
     guard response == .alertFirstButtonReturn else { return }
@@ -4988,7 +4997,7 @@ struct ChatSessionStatusIndicator: View {
           ProgressView()
             .controlSize(.small)
 
-          Text(streamingStatus ?? "Responding…")
+          Text(streamingStatus ?? "Respondendo…")
             .scaledFont(size: OmiType.micro, weight: .medium)
             .foregroundColor(Ink.secondary)
             .lineLimit(1)
@@ -5003,13 +5012,13 @@ struct ChatSessionStatusIndicator: View {
               .fill(Ink.primary)
               .frame(width: 8, height: 8)
 
-            Text("New reply")
+            Text("Nova resposta")
               .scaledFont(size: OmiType.micro, weight: .medium)
               .foregroundColor(Ink.primary)
           }
         }
         .buttonStyle(.plain)
-        .help("Open chat — new reply available")
+        .help("Abrir chat (há uma nova resposta)")
       }
     }
     // Subscribe to coordinator publishers to update task-local @State.
@@ -5059,7 +5068,7 @@ private struct TaskBoardCard: View {
               .foregroundColor(task.completed ? Ink.primary : Ink.secondary)
           }
           .buttonStyle(.plain)
-          .help(task.completed ? "Mark not done" : "Mark done")
+          .help(task.completed ? "Marcar como não concluída" : "Marcar como concluída")
 
           Text(task.description)
             .scaledFont(size: OmiType.body, weight: .medium)
@@ -5247,7 +5256,7 @@ struct TaskRow: View {
           } preview: {
             TaskDragPreviewSimple(taskId: task.id, description: task.description)
           }
-          .help("Drag to reorder")
+          .help("Arraste para reordenar")
       }
 
       swipeableContent
@@ -5350,7 +5359,7 @@ struct TaskRow: View {
         Image(systemName: "trash.fill")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
         if swipeOffset < -deleteThreshold {
-          Text("Release to delete")
+          Text("Solte para apagar")
             .scaledFont(size: OmiType.body, weight: .medium)
         }
       }
@@ -5368,7 +5377,7 @@ struct TaskRow: View {
         Image(systemName: "arrow.right.to.line")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
         if swipeOffset > indentThreshold {
-          Text("Release to indent")
+          Text("Solte para recuar")
             .scaledFont(size: OmiType.body, weight: .medium)
         }
       }
@@ -5387,7 +5396,7 @@ struct TaskRow: View {
       Spacer()
       HStack(spacing: OmiSpacing.sm) {
         if swipeOffset < -indentThreshold {
-          Text("Release to outdent")
+          Text("Solte para desfazer o recuo")
             .scaledFont(size: OmiType.body, weight: .medium)
         }
         Image(systemName: "arrow.left.to.line")
@@ -5544,7 +5553,7 @@ struct TaskRow: View {
           // Task title: edit mode shows TextField, view mode shows Text (tap to edit)
           if editingTaskId == task.id || isTextFieldFocused {
             // Editing: interactive TextField
-            TextField("Task description", text: $editText, axis: .vertical)
+            TextField("Descrição da tarefa", text: $editText, axis: .vertical)
               .textFieldStyle(.plain)
               .scaledFont(size: OmiType.body)
               .foregroundColor(task.completed ? Ink.secondary : Ink.primary)
@@ -5585,7 +5594,7 @@ struct TaskRow: View {
               // Editing highlight: background hugs text characters, dark page background
               .background(alignment: .topLeading) {
                 if isTextFieldFocused {
-                  Text(editText.isEmpty ? "Task description" : editText)
+                  Text(editText.isEmpty ? "Descrição da tarefa" : editText)
                     .scaledFont(size: OmiType.body)
                     .lineLimit(1...4)
                     .foregroundColor(.clear)
@@ -5599,7 +5608,7 @@ struct TaskRow: View {
           } else {
             // View mode: tapping on text starts editing; empty space just selects via outer gesture
             HStack(spacing: 0) {
-              Text(editText.isEmpty ? "Task description" : editText)
+              Text(editText.isEmpty ? "Descrição da tarefa" : editText)
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(task.completed ? Ink.secondary : Ink.primary)
                 .strikethrough(task.completed, color: Ink.secondary)
@@ -5642,13 +5651,13 @@ struct TaskRow: View {
                   HStack(spacing: OmiSpacing.hairline) {
                     Image(systemName: "bubble.left")
                       .scaledFont(size: OmiType.micro)
-                    Text("Open thread")
+                    Text("Abrir conversa")
                       .scaledFont(size: OmiType.micro, weight: .medium)
                   }
                   .foregroundColor(Ink.primary)
                 }
                 .buttonStyle(.plain)
-                .help("Resume this task's ongoing work")
+                .help("Retomar o trabalho em andamento desta tarefa")
               } else {
                 Button {
                   Task { await coordinator.openChat(for: task) }
@@ -5656,13 +5665,13 @@ struct TaskRow: View {
                   HStack(spacing: OmiSpacing.hairline) {
                     Image(systemName: "sparkles")
                       .scaledFont(size: OmiType.micro)
-                    Text("Work on this with Omi")
+                    Text("Trabalhar nisso com o Omi")
                       .scaledFont(size: OmiType.micro, weight: .medium)
                   }
                   .foregroundColor(Ink.primary)
                 }
                 .buttonStyle(.plain)
-                .help("Create ongoing work only when you choose")
+                .help("Cria trabalho em andamento só quando você escolher")
               }
             }
 
@@ -5701,7 +5710,7 @@ struct TaskRow: View {
               editDueDate = Date()
               showDatePicker = true
             } label: {
-              Label("Add due date…", systemImage: "calendar.badge.plus")
+              Label("Adicionar prazo…", systemImage: "calendar.badge.plus")
             }
           }
 
@@ -5711,7 +5720,7 @@ struct TaskRow: View {
                 onDecrementIndent?(task.id)
               }
             } label: {
-              Label("Decrease indent", systemImage: "arrow.left.to.line")
+              Label("Diminuir recuo", systemImage: "arrow.left.to.line")
             }
           }
 
@@ -5721,7 +5730,7 @@ struct TaskRow: View {
                 onIncrementIndent?(task.id)
               }
             } label: {
-              Label("Increase indent", systemImage: "arrow.right.to.line")
+              Label("Aumentar recuo", systemImage: "arrow.right.to.line")
             }
           }
 
@@ -5729,7 +5738,7 @@ struct TaskRow: View {
             Task { await copyShareLink() }
           } label: {
             Label(
-              isCopyingLink ? "Copying share link…" : "Copy share link",
+              isCopyingLink ? "Copiando link de compartilhamento…" : "Copiar link de compartilhamento",
               systemImage: isCopyingLink ? "arrow.triangle.2.circlepath" : "link")
           }
           .disabled(isCopyingLink)
@@ -5739,7 +5748,7 @@ struct TaskRow: View {
           Button(role: .destructive) {
             Task { await onDelete?(task) }
           } label: {
-            Label("Delete task", systemImage: "trash")
+            Label("Apagar tarefa", systemImage: "trash")
           }
         } label: {
           Image(systemName: "ellipsis")
@@ -5751,8 +5760,8 @@ struct TaskRow: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
-        .help("More actions for this task")
-        .accessibilityLabel("More actions for \(task.description)")
+        .help("Mais ações para esta tarefa")
+        .accessibilityLabel("Mais ações para \(task.description)")
         .accessibilityIdentifier("task-row-actions-\(task.id)")
         .padding(.trailing, OmiSpacing.xxs)
         .padding(.leading, OmiSpacing.sm)
@@ -5878,7 +5887,7 @@ struct TaskRow: View {
     HStack(spacing: OmiSpacing.xs) {
       Image(systemName: "checkmark")
         .scaledFont(size: OmiType.micro, weight: .bold)
-      Text("Sharing link copied")
+      Text("Link de compartilhamento copiado")
         .scaledFont(size: OmiType.caption, weight: .semibold)
     }
     .foregroundColor(Ink.primary)
@@ -5893,7 +5902,7 @@ struct TaskRow: View {
   private var dueDatePopover: some View {
     VStack(spacing: OmiSpacing.md) {
       DatePicker(
-        "Due Date",
+        "Prazo",
         selection: $editDueDate,
         displayedComponents: [.date, .hourAndMinute]
       )
@@ -5901,12 +5910,12 @@ struct TaskRow: View {
       .labelsHidden()
 
       HStack(spacing: OmiSpacing.sm) {
-        Button("Cancel") {
+        Button("Cancelar") {
           showDatePicker = false
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
 
-        Button("Save") {
+        Button("Salvar") {
           showDatePicker = false
           Task {
             await onUpdateDetails?(task, nil, editDueDate, nil, nil)
@@ -5922,29 +5931,29 @@ struct TaskRow: View {
   private var repeatPopover: some View {
     VStack(spacing: OmiSpacing.md) {
       HStack {
-        Text("Repeat")
+        Text("Repetir")
           .scaledFont(size: OmiType.body, weight: .medium)
           .foregroundColor(Ink.primary)
         Spacer()
       }
 
       Picker("", selection: $editRecurrenceRule) {
-        Text("Never").tag("")
-        Text("Daily").tag("daily")
-        Text("Weekdays").tag("weekdays")
-        Text("Weekly").tag("weekly")
-        Text("Every 2 Weeks").tag("biweekly")
-        Text("Monthly").tag("monthly")
+        Text("Nunca").tag("")
+        Text("Diariamente").tag("daily")
+        Text("Dias úteis").tag("weekdays")
+        Text("Semanalmente").tag("weekly")
+        Text("A cada 2 semanas").tag("biweekly")
+        Text("Mensalmente").tag("monthly")
       }
       .pickerStyle(.radioGroup)
 
       HStack(spacing: OmiSpacing.sm) {
-        Button("Cancel") {
+        Button("Cancelar") {
           showRepeatPicker = false
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
 
-        Button("Save") {
+        Button("Salvar") {
           showRepeatPicker = false
           let ruleToSave = editRecurrenceRule.isEmpty ? "" : editRecurrenceRule
           Task {
@@ -6028,9 +6037,9 @@ struct DueDateBadgeInteractive: View {
       formatter.unitsStyle = .short
       return formatter.localizedString(for: dueAt, relativeTo: now)
     } else if dueAt < startOfTomorrow {
-      return "Today"
+      return "Hoje"
     } else if dueAt < startOfDayAfterTomorrow {
-      return "Tomorrow"
+      return "Amanhã"
     } else if dueAt < endOfWeek {
       return calendar.weekdaySymbols[calendar.component(.weekday, from: dueAt) - 1]
     } else {
@@ -6155,7 +6164,7 @@ struct TagBadgeInteractive: View {
             }
           }
 
-          Button("Done") {
+          Button("OK") {
             showTagPicker = false
             onUpdateTags(Array(editingTags))
           }
@@ -6191,7 +6200,7 @@ struct SourceBadgeCompact: View {
 
 struct NewBadge: View {
   var body: some View {
-    Text("New")
+    Text("Novo")
       .scaledFont(size: OmiType.micro, weight: .semibold)
       .foregroundColor(Ink.surface)
       .padding(.horizontal, OmiSpacing.xs)
@@ -6231,7 +6240,7 @@ struct TaskCreateSheet: View {
     VStack(spacing: 0) {
       // Header
       HStack {
-        Text("New Task")
+        Text("Nova tarefa")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -6248,11 +6257,11 @@ struct TaskCreateSheet: View {
         VStack(spacing: OmiSpacing.xl) {
           // Description field
           VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-            Text("Description")
+            Text("Descrição")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(Ink.secondary)
 
-            TextField("What needs to be done?", text: $description, axis: .vertical)
+            TextField("O que precisa ser feito?", text: $description, axis: .vertical)
               .textFieldStyle(.plain)
               .scaledFont(size: OmiType.body)
               .lineLimit(3...6)
@@ -6270,7 +6279,7 @@ struct TaskCreateSheet: View {
           // Due date
           VStack(alignment: .leading, spacing: OmiSpacing.sm) {
             HStack {
-              Text("Due Date")
+              Text("Prazo")
                 .scaledFont(size: OmiType.body, weight: .medium)
                 .foregroundColor(Ink.secondary)
               Spacer()
@@ -6290,14 +6299,14 @@ struct TaskCreateSheet: View {
 
           // Priority
           VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-            Text("Priority")
+            Text("Prioridade")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(Ink.secondary)
             HStack(spacing: OmiSpacing.sm) {
-              createPriorityButton(label: "None", value: nil)
-              createPriorityButton(label: "Low", value: "low", color: Ink.secondary)
-              createPriorityButton(label: "Medium", value: "medium", color: Ink.secondary)
-              createPriorityButton(label: "High", value: "high", color: Ink.primary)
+              createPriorityButton(label: "Nenhuma", value: nil)
+              createPriorityButton(label: "Baixa", value: "low", color: Ink.secondary)
+              createPriorityButton(label: "Média", value: "medium", color: Ink.secondary)
+              createPriorityButton(label: "Alta", value: "high", color: Ink.primary)
             }
           }
 
@@ -6355,7 +6364,7 @@ struct TaskCreateSheet: View {
 
       // Footer
       HStack(spacing: OmiSpacing.md) {
-        Button("Cancel") { dismissSheet() }
+        Button("Cancelar") { dismissSheet() }
           .buttonStyle(OmiButtonStyle(.secondary))
 
         Button {
@@ -6364,7 +6373,7 @@ struct TaskCreateSheet: View {
           if isSaving {
             ProgressView().controlSize(.small).frame(width: 60)
           } else {
-            Text("Create").frame(width: 60)
+            Text("Criar").frame(width: 60)
           }
         }
         .buttonStyle(OmiButtonStyle(.primary))
@@ -6430,7 +6439,7 @@ struct InlineTaskCreationRow: View {
         .frame(width: 20, height: 20)
         .padding(.leading, OmiSpacing.md)
 
-      TextField("New task…", text: $text)
+      TextField("Nova tarefa…", text: $text)
         .textFieldStyle(.plain)
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.primary)
@@ -6452,7 +6461,7 @@ struct InlineTaskCreationRow: View {
           HStack(spacing: OmiSpacing.xs) {
             Image(systemName: "sun.max")
               .scaledFont(size: OmiType.caption)
-            Text("Today")
+            Text("Hoje")
               .scaledFont(size: OmiType.caption, weight: .medium)
           }
           .foregroundColor(Ink.primary)
@@ -6463,7 +6472,7 @@ struct InlineTaskCreationRow: View {
         .buttonStyle(.plain)
         .disabled(isTextEmpty)
         .opacity(isTextEmpty ? 0.4 : 1)
-        .help("Create task due today")
+        .help("Criar tarefa com prazo para hoje")
       }
     }
     .padding(.trailing, OmiSpacing.md)
@@ -6495,25 +6504,25 @@ struct KeyboardHintBar: View {
   var body: some View {
     HStack(spacing: OmiSpacing.lg) {
       if isInlineCreating {
-        keyboardHint("\u{21A9}", label: "Create")
-        keyboardHint("esc", label: "Cancel")
+        keyboardHint("\u{21A9}", label: "Criar")
+        keyboardHint("esc", label: "Cancelar")
       } else if isAnyTaskEditing {
-        keyboardHint("esc", label: "Save & exit")
+        keyboardHint("esc", label: "Salvar e sair")
       } else if hasSelection {
-        keyboardHint("\u{2191} \u{2193}", label: "Navigate")
-        keyboardHint("\u{21A9}", label: "New below")
-        keyboardHint("\u{21A9} \u{21A9}", label: "Edit")
-        keyboardHint("\u{2423}", label: "Done")
-        keyboardHint("esc", label: "Deselect")
-        keyboardHint("\u{2318}\u{232B}", label: "Delete")
-        keyboardHint("\u{21E5}", label: "Indent")
-        keyboardHint("\u{21E7} \u{21E5}", label: "Outdent")
+        keyboardHint("\u{2191} \u{2193}", label: "Navegar")
+        keyboardHint("\u{21A9}", label: "Nova abaixo")
+        keyboardHint("\u{21A9} \u{21A9}", label: "Editar")
+        keyboardHint("\u{2423}", label: "Concluir")
+        keyboardHint("esc", label: "Desmarcar")
+        keyboardHint("\u{2318}\u{232B}", label: "Apagar")
+        keyboardHint("\u{21E5}", label: "Recuar")
+        keyboardHint("\u{21E7} \u{21E5}", label: "Desfazer recuo")
       } else {
-        keyboardHint("\u{2191} \u{2193}", label: "Navigate")
-        keyboardHint("\u{2318}N", label: "New")
-        keyboardHint("\u{2318}\u{232B}", label: "Delete")
-        keyboardHint("\u{21E5}", label: "Indent")
-        keyboardHint("\u{21E7} \u{21E5}", label: "Outdent")
+        keyboardHint("\u{2191} \u{2193}", label: "Navegar")
+        keyboardHint("\u{2318}N", label: "Nova")
+        keyboardHint("\u{2318}\u{232B}", label: "Apagar")
+        keyboardHint("\u{21E5}", label: "Recuar")
+        keyboardHint("\u{21E7} \u{21E5}", label: "Desfazer recuo")
       }
     }
     .padding(.horizontal, OmiSpacing.lg)

@@ -30,7 +30,7 @@ struct AddMemorySheet: View {
     VStack(spacing: OmiSpacing.xl) {
       // Header with close button
       HStack {
-        Text("New Memory")
+        Text("Nova memória")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -49,7 +49,7 @@ struct AddMemorySheet: View {
       HStack(spacing: OmiSpacing.md) {
         // Cancel button
         Button(action: dismissSheet) {
-          Text("Cancel")
+          Text("Cancelar")
             .foregroundColor(Ink.secondary)
         }
 
@@ -58,7 +58,7 @@ struct AddMemorySheet: View {
         Button {
           Task { await viewModel.createMemory() }
         } label: {
-          Text("Save")
+          Text("Salvar")
             .scaledFont(size: OmiType.body, weight: .medium)
             .foregroundColor(viewModel.newMemoryText.isEmpty ? Ink.secondary : Ink.surface)
             .padding(.horizontal, OmiSpacing.xl)
@@ -108,7 +108,7 @@ struct EditMemorySheet: View {
     VStack(spacing: OmiSpacing.xl) {
       // Header with close button
       HStack {
-        Text("Edit Memory")
+        Text("Editar memória")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -127,7 +127,7 @@ struct EditMemorySheet: View {
       HStack(spacing: OmiSpacing.md) {
         // Cancel button
         Button(action: dismissSheet) {
-          Text("Cancel")
+          Text("Cancelar")
             .foregroundColor(Ink.secondary)
         }
 
@@ -136,7 +136,7 @@ struct EditMemorySheet: View {
         Button {
           Task { await viewModel.saveEditedMemory(memory) }
         } label: {
-          Text("Save")
+          Text("Salvar")
             .scaledFont(size: OmiType.body, weight: .medium)
             .foregroundColor(viewModel.editText.isEmpty ? Ink.secondary : Ink.surface)
             .padding(.horizontal, OmiSpacing.xl)

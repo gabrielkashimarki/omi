@@ -100,13 +100,13 @@ enum HomeStatusState: Equatable {
   var text: String {
     switch self {
     case .active:
-      return "On"
+      return "Ligado"
     case .armed:
-      return "Waiting"
+      return "Aguardando"
     case .inactive:
-      return "Off"
+      return "Desligado"
     case .blocked:
-      return "Blocked"
+      return "Bloqueado"
     }
   }
 

@@ -16,11 +16,11 @@ enum MemoryAtlasCluster: String, CaseIterable, Identifiable {
 
   var title: String {
     switch self {
-    case .person: return "People"
-    case .organization: return "Organizations"
-    case .place: return "Places"
-    case .thing: return "Things"
-    case .concept: return "Concepts"
+    case .person: return "Pessoas"
+    case .organization: return "Organizações"
+    case .place: return "Lugares"
+    case .thing: return "Coisas"
+    case .concept: return "Conceitos"
     }
   }
 

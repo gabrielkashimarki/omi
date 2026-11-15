@@ -93,8 +93,8 @@ struct HomeAskBarTrailingControls: View {
     }
     .buttonStyle(.plain)
     .disabled(!isArmed)
-    .help("Send")
-    .accessibilityLabel("Send message")
+    .help("Enviar")
+    .accessibilityLabel("Enviar mensagem")
   }
 
   private func stopButton(isStopping: Bool) -> some View {
@@ -118,8 +118,8 @@ struct HomeAskBarTrailingControls: View {
     }
     .buttonStyle(.plain)
     .disabled(isStopping)
-    .help("Stop")
-    .accessibilityLabel("Stop response")
+    .help("Parar")
+    .accessibilityLabel("Parar resposta")
   }
 }
 
@@ -135,7 +135,7 @@ struct HomeAskBarConnectButton: View {
         Image(systemName: "link")
           .scaledFont(size: OmiType.caption, weight: .semibold)
 
-        Text("Connect")
+        Text("Conectar")
           .scaledFont(size: OmiType.caption, weight: .semibold)
       }
       .foregroundStyle(isActive ? HomeAskBarPalette.primaryLabel : HomeAskBarPalette.secondaryLabel)
@@ -156,7 +156,7 @@ struct HomeAskBarConnectButton: View {
     }
     .buttonStyle(.plain)
     .onHover { isHovering = $0 }
-    .help("Connect apps and data")
-    .accessibilityLabel(isActive ? "Close connect" : "Connect")
+    .help("Conectar apps e dados")
+    .accessibilityLabel(isActive ? "Fechar conexões" : "Conectar")
   }
 }

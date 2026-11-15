@@ -215,8 +215,8 @@ struct ConversationDetailHeader<BannerInset: View, Recordings: View, Trailing: V
   private var actions: some View {
     HStack(spacing: OmiSpacing.xs) {
       if let onDiscussInChat {
-        OmiIconButton("bubble.left.and.bubble.right", help: "Discuss in Chat", action: onDiscussInChat)
-          .accessibilityLabel("Discuss this conversation in Chat")
+        OmiIconButton("bubble.left.and.bubble.right", help: "Discutir no Chat", action: onDiscussInChat)
+          .accessibilityLabel("Discutir esta conversa no Chat")
           // Preserve the capture archive's automation contract.
           .accessibilityIdentifier("chat-first-capture-discuss-\(conversation.id)")
       }
@@ -228,8 +228,8 @@ struct ConversationDetailHeader<BannerInset: View, Recordings: View, Trailing: V
           .foregroundColor(conversation.starred ? PageGlass.starred : Ink.secondary)
       }
       .buttonStyle(GlassIconButtonStyle(diameter: OmiIconButtonSize.regular.diameter, restsFilled: true))
-      .help(conversation.starred ? "Remove from Starred" : "Add to Starred")
-      .accessibilityLabel(conversation.starred ? "Remove from Starred" : "Add to Starred")
+      .help(conversation.starred ? "Remover dos favoritos" : "Adicionar aos favoritos")
+      .accessibilityLabel(conversation.starred ? "Remover dos favoritos" : "Adicionar aos favoritos")
       .accessibilityIdentifier("conversation-detail-star")
 
       ConversationShareLinkButton(
@@ -245,16 +245,16 @@ struct ConversationDetailHeader<BannerInset: View, Recordings: View, Trailing: V
   private var moreMenu: some View {
     OmiIconMenu(systemName: "ellipsis", help: "More actions") {
       Button(action: onCopyTranscript) {
-        Label("Copy Transcript", systemImage: "doc.on.doc")
+        Label("Copiar transcrição", systemImage: "doc.on.doc")
       }
       .disabled(!canCopyTranscript)
       if let onDraftFollowUp {
         Button(action: onDraftFollowUp) {
-          Label("Draft Follow-up…", systemImage: "square.and.pencil")
+          Label("Rascunhar follow-up…", systemImage: "square.and.pencil")
         }
       }
       Button(action: onRename) {
-        Label("Rename…", systemImage: "pencil")
+        Label("Renomear…", systemImage: "pencil")
       }
       if let onMoveToFolder, !folders.isEmpty {
         Menu {
@@ -262,7 +262,7 @@ struct ConversationDetailHeader<BannerInset: View, Recordings: View, Trailing: V
             Button {
               onMoveToFolder(nil)
             } label: {
-              Label("Remove from Folder", systemImage: "folder.badge.minus")
+              Label("Remover da pasta", systemImage: "folder.badge.minus")
             }
             Divider()
           }
@@ -279,12 +279,12 @@ struct ConversationDetailHeader<BannerInset: View, Recordings: View, Trailing: V
             .disabled(conversation.folderId == folder.id)
           }
         } label: {
-          Label("Move to Folder", systemImage: "folder")
+          Label("Mover para pasta", systemImage: "folder")
         }
       }
       Divider()
       Button(role: .destructive, action: onDelete) {
-        Label("Delete Conversation…", systemImage: "trash")
+        Label("Apagar conversa…", systemImage: "trash")
       }
     }
     .accessibilityIdentifier("conversation-detail-more")
@@ -301,8 +301,8 @@ struct ConversationDetailPaneSwitch: View {
 
   var body: some View {
     HStack(spacing: OmiSpacing.hairline) {
-      segment(.summary, title: "Summary", count: nil)
-      segment(.transcript, title: "Transcript", count: transcriptCount)
+      segment(.summary, title: "Resumo", count: nil)
+      segment(.transcript, title: "Transcrição", count: transcriptCount)
     }
     .padding(OmiSpacing.hairline)
     .glassChip()

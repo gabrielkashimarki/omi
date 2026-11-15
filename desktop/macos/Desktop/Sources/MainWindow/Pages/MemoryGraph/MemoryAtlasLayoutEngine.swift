@@ -430,10 +430,10 @@ enum MemoryAtlasLayoutEngine {
   /// One phrasing for "how big is this map", so the header and the timeline
   /// footer cannot describe the same thing in two different ways.
   static func countLabel(entities: Int, memories: Int? = nil, connections: Int) -> String {
-    let entityLabel = "\(entities) entit\(entities == 1 ? "y" : "ies")"
-    let connectionLabel = "\(connections) connection\(connections == 1 ? "" : "s")"
+    let entityLabel = "\(entities) \(entities == 1 ? "entidade" : "entidades")"
+    let connectionLabel = "\(connections) \(connections == 1 ? "conexão" : "conexões")"
     guard let memories else { return "\(entityLabel) · \(connectionLabel)" }
-    return "\(entityLabel) · \(memories) memor\(memories == 1 ? "y" : "ies") · \(connectionLabel)"
+    return "\(entityLabel) · \(memories) \(memories == 1 ? "memória" : "memórias") · \(connectionLabel)"
   }
 
   /// Whether the account holder's own connections should recede into the

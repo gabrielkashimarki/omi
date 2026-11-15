@@ -33,22 +33,22 @@ struct MemoryExportConnectionPresentation: Equatable {
       )
     }
     if status?.needsUpdate == true {
-      return MemoryExportConnectionPresentation(primaryActionTitle: "Update", completion: nil)
+      return MemoryExportConnectionPresentation(primaryActionTitle: "Atualizar", completion: nil)
     }
 
     let title: String
     if isRunning {
-      title = "Connecting…"
+      title = "Conectando…"
     } else {
       switch destination.mcpExecuteKind {
       case .directoryApp:
-        title = "Add Omi to ChatGPT"
+        title = "Adicionar o Omi ao ChatGPT"
       case .localAutonomous:
-        title = "Do it for me"
+        title = "Faça por mim"
       case .browserAutonomous:
-        title = accessibilityPreflightMissing ? "Grant Accessibility" : "Do it for me"
+        title = accessibilityPreflightMissing ? "Conceder Acessibilidade" : "Faça por mim"
       case .assisted:
-        title = destination.assistedOverlayHint != nil ? "Open & guide me" : "Open & copy key"
+        title = destination.assistedOverlayHint != nil ? "Abrir e me guiar" : "Abrir e copiar chave"
       }
     }
 
@@ -79,7 +79,7 @@ struct AgentConnectionTestResult: Sendable {
   let localToolCount: Int
 
   var summary: String {
-    "Connection looks good: Omi returned \(hostedMemoryCount) hosted memories, and Desktop shared \(localToolCount) local tools."
+    "Conexão ok: o Omi devolveu \(hostedMemoryCount) memórias hospedadas e o Desktop compartilhou \(localToolCount) ferramentas locais."
   }
 }
 
@@ -93,13 +93,13 @@ enum MemoryExportError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .noMemories:
-      return "There are no memories available to export yet."
+      return "Ainda não há memórias disponíveis para exportar."
     case .invalidNotionConfiguration:
-      return "Enter both a Notion integration token and a parent page ID."
+      return "Informe o token de integração do Notion e o ID da página pai."
     case .invalidNotionResponse:
-      return "Notion returned an unexpected response."
+      return "O Notion devolveu uma resposta inesperada."
     case .invalidObsidianVault:
-      return "Choose a valid Obsidian vault folder first."
+      return "Escolha primeiro uma pasta de cofre do Obsidian válida."
     case .requestFailed(let message):
       return message
     }

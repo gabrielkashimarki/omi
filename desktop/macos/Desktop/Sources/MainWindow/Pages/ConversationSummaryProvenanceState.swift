@@ -51,8 +51,8 @@ enum ConversationSummaryProvenanceState {
     /// can act on is *where* it ran.
     var label: String {
       switch self {
-      case .onDevice: return "Summarized on this Mac"
-      case .server: return "Summarized by Omi"
+      case .onDevice: return "Resumida neste Mac"
+      case .server: return "Resumida pelo Omi"
       }
     }
 
@@ -107,10 +107,10 @@ enum ConversationSummaryProvenanceState {
 
     var title: String {
       switch self {
-      case .pendingOnDevice: return "Summarizing on this Mac"
-      case .pendingServer: return "Summary not generated yet"
-      case .localProducedNothing: return "No summary for this conversation"
-      case .unavailable: return "No summary for this conversation"
+      case .pendingOnDevice: return "Resumindo neste Mac"
+      case .pendingServer: return "Resumo ainda não gerado"
+      case .localProducedNothing: return "Sem resumo para esta conversa"
+      case .unavailable: return "Sem resumo para esta conversa"
       }
     }
 
@@ -120,14 +120,14 @@ enum ConversationSummaryProvenanceState {
     var message: String {
       switch self {
       case .pendingOnDevice:
-        return "This conversation is being summarized on your Mac. The transcript is already saved below."
+        return "Esta conversa está sendo resumida no seu Mac. A transcrição já está salva abaixo."
       case .pendingServer:
-        return "The transcript is saved. The summary is generated the first time you open this conversation."
+        return "A transcrição está salva. O resumo é gerado na primeira vez que você abrir esta conversa."
       case .localProducedNothing:
         return
-          "Your Mac finished without producing a summary for this one. The full transcript is saved below and is searchable."
+          "Seu Mac terminou sem gerar um resumo desta conversa. A transcrição completa está salva abaixo e pode ser buscada."
       case .unavailable:
-        return "This conversation has no summary. The full transcript is saved below and is searchable."
+        return "Esta conversa não tem resumo. A transcrição completa está salva abaixo e pode ser buscada."
       }
     }
   }

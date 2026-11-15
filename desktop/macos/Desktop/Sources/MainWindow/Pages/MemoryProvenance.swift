@@ -36,7 +36,7 @@ enum MemoryProvenance {
     }
 
     if memory.manuallyAdded {
-      facts.append(MemoryProvenanceFact(icon: "hand.point.up.left", label: "Added by you"))
+      facts.append(MemoryProvenanceFact(icon: "hand.point.up.left", label: "Adicionada por você"))
     }
 
     if let micName = memory.inputDeviceName, !micName.isEmpty {
@@ -44,7 +44,7 @@ enum MemoryProvenance {
     }
 
     if let confidence = memory.confidenceString {
-      facts.append(MemoryProvenanceFact(icon: "gauge.medium", label: "\(confidence) confidence"))
+      facts.append(MemoryProvenanceFact(icon: "gauge.medium", label: "Confiança: \(confidence)"))
     }
 
     return facts

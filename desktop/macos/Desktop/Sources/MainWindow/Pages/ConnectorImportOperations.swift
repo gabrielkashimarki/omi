@@ -44,8 +44,8 @@ enum ConnectorImportOperations {
     case .imported(let memories, let failed, _):
       let message =
         failed > 0
-        ? "Imported \(memories.formatted()) memories from \(source.displayName); \(failed.formatted()) couldn't be saved. Import again to retry them."
-        : "Imported \(memories.formatted()) memories from \(source.displayName)."
+        ? "\(memories.formatted()) memórias importadas de \(source.displayName); \(failed.formatted()) não puderam ser salvas. Importe de novo para tentar outra vez."
+        : "\(memories.formatted()) memórias importadas de \(source.displayName)."
       return .success(
         SyncResult(sourceCount: nil, memoryCount: memories, newItems: memories),
         message: message
@@ -55,8 +55,8 @@ enum ConnectorImportOperations {
       // durable. Surfaces UI guidance as a failure but carries a distinct
       // bounded class so analytics can exclude it from the connect-failure rate.
       return .failure(
-        message: "No durable memories found in that text. "
-          + "Make sure you pasted \(source.displayName)'s full response, then import again.",
+        message: "Nenhuma memória duradoura encontrada nesse texto. "
+          + "Confirme que você colou a resposta completa de \(source.displayName) e importe de novo.",
         failureClass: .noContent
       )
     case .failed(let failure):
@@ -70,43 +70,43 @@ enum ConnectorImportOperations {
     switch failure {
     case .authentication:
       return .failure(
-        message: "Your session expired. Sign in again, then retry the import.",
+        message: "Sua sessão expirou. Entre de novo e tente a importação outra vez.",
         failureClass: .authentication)
     case .planRequired:
       return .failure(
-        message: "Memory extraction isn't available on your current plan.",
+        message: "A extração de memórias não está disponível no seu plano atual.",
         failureClass: .authorizationDenied)
     case .rateLimited:
       return .failure(
-        message: "Too many memory imports are running. Wait a minute, then try again.",
+        message: "Há importações de memórias demais em andamento. Espere um minuto e tente de novo.",
         failureClass: .rateLimit)
     case .network:
       return .failure(
-        message: "Omi couldn't reach the memory service. Check your connection, then try again.",
+        message: "O Omi não conseguiu acessar o serviço de memórias. Verifique sua conexão e tente de novo.",
         failureClass: .network)
     case .timeout:
       return .failure(
-        message: "Memory extraction took too long. Try the import again.",
+        message: "A extração de memórias demorou demais. Tente importar de novo.",
         failureClass: .timeout)
     case .server:
       return .failure(
-        message: "Omi's memory service is temporarily unavailable. Try again shortly.",
+        message: "O serviço de memórias do Omi está indisponível no momento. Tente de novo em instantes.",
         failureClass: .server)
     case .invalidResponse:
       return .failure(
-        message: "Omi couldn't read the extracted memories. Try the import again.",
+        message: "O Omi não conseguiu ler as memórias extraídas. Tente importar de novo.",
         failureClass: .invalidResponse)
     case .requestRejected:
       return .failure(
-        message: "The memory service rejected this import. Check the pasted text, then try again.",
+        message: "O serviço de memórias rejeitou esta importação. Confira o texto colado e tente de novo.",
         failureClass: .invalidResponse)
     case .saveFailed:
       return .failure(
-        message: "Memories were extracted, but Omi couldn't save them. Check your connection, then try again.",
+        message: "As memórias foram extraídas, mas o Omi não conseguiu salvá-las. Verifique sua conexão e tente de novo.",
         failureClass: .unknown)
     case .fixtureUnavailable:
       return .failure(
-        message: "This import test is only available in development builds.",
+        message: "Este teste de importação só está disponível em builds de desenvolvimento.",
         failureClass: .configuration)
     }
   }
@@ -120,15 +120,15 @@ enum ConnectorImportOperations {
         userInitiated: true
       )
       progress.update(
-        title: "Importing Gmail history",
-        detail: "Saving raw emails as memories and generating follow-up insights."
+        title: "Importando o histórico do Gmail",
+        detail: "Salvando e-mails brutos como memórias e gerando insights de acompanhamento."
       )
       let rawImport = await GmailReaderService.shared.saveAsMemories(emails: emails)
       let synthesis = await GmailReaderService.shared.synthesizeFromEmails(emails: emails)
       let memoryCount = rawImport.saved + synthesis.memories
       return .success(
         SyncResult(sourceCount: emails.count, memoryCount: memoryCount, newItems: emails.count),
-        message: "Imported \(emails.count.formatted()) emails and saved \(memoryCount.formatted()) memories."
+        message: "\(emails.count.formatted()) e-mails importados e \(memoryCount.formatted()) memórias salvas."
       )
     } catch let error as GmailReaderError {
       return .failure(message: error.localizedDescription, failureClass: Self.failureClass(for: error))
@@ -153,7 +153,7 @@ enum ConnectorImportOperations {
       return calendarDisconnectSuccess()
     } catch {
       return .failure(
-        message: "Couldn't disconnect Google Calendar. Check your connection and try again.",
+        message: "Não foi possível desconectar o Google Agenda. Verifique sua conexão e tente de novo.",
         failureClass: calendarDisconnectFailureClass(error))
     }
   }
@@ -161,7 +161,7 @@ enum ConnectorImportOperations {
   private static func calendarDisconnectSuccess() -> Outcome {
     .success(
       SyncResult(sourceCount: nil, memoryCount: nil, newItems: nil),
-      message: "Google Calendar disconnected. Imported memories remain in Omi."
+      message: "Google Agenda desconectado. As memórias importadas continuam no Omi."
     )
   }
 
@@ -197,18 +197,18 @@ enum ConnectorImportOperations {
       guard resp.success, let authUrl = resp.authUrl, let url = URL(string: authUrl) else {
         return .failure(
           message: resp.error == "x_oauth_not_configured"
-            ? "X connector isn't configured on the server yet."
-            : "Couldn't start the X connection."
+            ? "O conector do X ainda não está configurado no servidor."
+            : "Não foi possível iniciar a conexão com o X."
         )
       }
       guard NSWorkspace.shared.open(url) else {
         return .failure(
-          message: "Couldn't open the X authorization page. Check your default browser, then try again."
+          message: "Não foi possível abrir a página de autorização do X. Verifique seu navegador padrão e tente de novo."
         )
       }
       progress.update(
-        title: "Waiting for X authorization",
-        detail: "Approve access in your browser. This window updates automatically."
+        title: "Aguardando a autorização do X",
+        detail: "Aprove o acesso no seu navegador. Esta janela se atualiza sozinha."
       )
 
       // Phase 1: wait until the account is linked (callback completed).
@@ -221,7 +221,7 @@ enum ConnectorImportOperations {
         }
       }
       guard let linked else {
-        return .failure(message: "Didn't hear back from X. If you approved access, try again.")
+        return .failure(message: "Sem resposta do X. Se você aprovou o acesso, tente de novo.")
       }
 
       let handle = linked.handle ?? "you"
@@ -238,8 +238,8 @@ enum ConnectorImportOperations {
         memories = status?.memoryCount ?? memories
         importCompleted = status?.syncing == false || importCompleted
         progress.update(
-          title: "Importing your X data",
-          detail: "Saved \(posts.formatted()) posts · \(memories.formatted()) memories so far…"
+          title: "Importando seus dados do X",
+          detail: "\(posts.formatted()) posts · \(memories.formatted()) memórias salvos até agora…"
         )
         // Done once the backend clears the syncing flag, even if the account has no importable posts.
         if importCompleted { break }
@@ -265,14 +265,14 @@ enum ConnectorImportOperations {
     if posts > 0 {
       let memClause =
         memories > 0
-        ? " — \(memories.formatted()) memories added. View them in Memories."
-        : ". Extracted memories appear in Memories."
-      return "Imported \(posts.formatted()) posts from @\(handle)\(memClause)"
+        ? ". \(memories.formatted()) memórias adicionadas. Veja em Memórias."
+        : ". As memórias extraídas aparecem em Memórias."
+      return "\(posts.formatted()) posts importados de @\(handle)\(memClause)"
     }
     if importCompleted {
-      return "Connected to X as @\(handle). No posts or bookmarks were ready to import."
+      return "Conectado ao X como @\(handle). Nenhum post ou favorito estava pronto para importar."
     }
-    return "Connected to X as @\(handle). Import is still running; check back shortly."
+    return "Conectado ao X como @\(handle). A importação ainda está em andamento; volte em instantes."
   }
 
   private static func appURLScheme() -> String {
@@ -359,21 +359,21 @@ enum ConnectorImportOperations {
 
     guard NSWorkspace.shared.open(authURL) else {
       return .failure(
-        message: "Couldn't open the Google sign-in page. Check your default browser, then try again.",
+        message: "Não foi possível abrir a página de login do Google. Verifique seu navegador padrão e tente de novo.",
         failureClass: .noBrowser)
     }
 
     progress.update(
-      title: "Waiting for Google sign-in",
-      detail: "Approve calendar access in your browser. This window updates automatically."
+      title: "Aguardando o login do Google",
+      detail: "Aprove o acesso à agenda no seu navegador. Esta janela se atualiza sozinha."
     )
 
     for _ in 0..<60 {
       try? await Task.sleep(for: .seconds(2))
       guard await CalendarReaderService.shared.hasGoogleGrant() else { continue }
       progress.update(
-        title: "Importing calendar events",
-        detail: "Reading past events and upcoming commitments for memory extraction."
+        title: "Importando eventos da agenda",
+        detail: "Lendo eventos passados e compromissos futuros para extrair memórias."
       )
       do {
         let events =
@@ -385,13 +385,13 @@ enum ConnectorImportOperations {
         return await saveCalendarEvents(events, progress: progress)
       } catch {
         return .failure(
-          message: "Connected to Google, but reading your calendar failed. Try Sync now.",
+          message: "Conectado ao Google, mas a leitura da agenda falhou. Tente Sincronizar agora.",
           failureClass: IntegrationConnectTelemetry.ErrorClass.fromMessage(error.localizedDescription))
       }
     }
 
     return .failure(
-      message: "Didn't hear back from Google. If you approved access, try again.",
+      message: "Sem resposta do Google. Se você aprovou o acesso, tente de novo.",
       failureClass: .notSignedIn)
   }
 
@@ -401,15 +401,15 @@ enum ConnectorImportOperations {
     progress: ConnectorImportRunner.ProgressSink
   ) async -> Outcome {
     progress.update(
-      title: "Importing calendar events",
-      detail: "Saving events as memories and generating action-oriented summaries."
+      title: "Importando eventos da agenda",
+      detail: "Salvando eventos como memórias e gerando resumos voltados à ação."
     )
     let rawImport = await CalendarReaderService.shared.saveAsMemories(events: events, limit: 200)
     let synthesis = await CalendarReaderService.shared.synthesizeFromEvents(events: events)
     let memoryCount = rawImport.saved + synthesis.memories
     return .success(
       SyncResult(sourceCount: events.count, memoryCount: memoryCount, newItems: events.count),
-      message: "Read \(events.count.formatted()) calendar events and saved \(memoryCount.formatted()) memories."
+      message: "\(events.count.formatted()) eventos da agenda lidos e \(memoryCount.formatted()) memórias salvas."
     )
   }
 
@@ -439,8 +439,8 @@ enum ConnectorImportOperations {
   @MainActor
   private static func runAppleNotesImport(progress: ConnectorImportRunner.ProgressSink) async throws -> Outcome {
     progress.update(
-      title: "Importing Apple Notes",
-      detail: "Reading recent notes and turning useful content into memories."
+      title: "Importando o Apple Notes",
+      detail: "Lendo notas recentes e transformando conteúdo útil em memórias."
     )
     let notes = try await AppleNotesReaderService.shared.readRecentNotes(
       maxResults: 250,
@@ -451,7 +451,7 @@ enum ConnectorImportOperations {
     let memoryCount = rawImport.saved + synthesis.memories
     return .success(
       SyncResult(sourceCount: notes.count, memoryCount: memoryCount, newItems: notes.count),
-      message: "Imported \(notes.count.formatted()) notes and saved \(memoryCount.formatted()) memories."
+      message: "\(notes.count.formatted()) notas importadas e \(memoryCount.formatted()) memórias salvas."
     )
   }
 
@@ -483,26 +483,26 @@ enum ConnectorImportOperations {
   /// One-line user-facing summary for a completed scan. The scan outcome's
   /// `summaryText` is agent-facing context and must not be shown in the UI.
   static func localFilesStatusLine(indexedCount: Int, newItems: Int, deniedFolders: [String]) -> String {
-    var line = "Indexed \(indexedCount.formatted()) files"
+    var line = "\(indexedCount.formatted()) arquivos indexados"
     if newItems > 0 {
-      line += " (+\(newItems.formatted()) new)"
+      line += " (+\(newItems.formatted()) novos)"
     }
     line += "."
     if !deniedFolders.isEmpty {
-      line += " Some folders weren't scanned (\(folderList(deniedFolders))) — grant access and reindex."
+      line += " Algumas pastas não foram verificadas (\(folderList(deniedFolders))). Conceda acesso e reindexe."
     }
     return line
   }
 
   static func localFilesFailureLine(for outcome: ChatToolExecutor.LocalFileScanOutcome) -> String {
     guard outcome.didCompleteSuccessfully else {
-      return "Indexing couldn't complete. Try again."
+      return "Não foi possível concluir a indexação. Tente de novo."
     }
     guard !outcome.deniedUserFolders.isEmpty else {
-      return "Omi couldn't access your folders. Click Allow on the macOS permission dialogs, then reindex."
+      return "O Omi não conseguiu acessar suas pastas. Clique em Permitir nas janelas de permissão do macOS e reindexe."
     }
-    return "Omi couldn't access your folders (\(folderList(outcome.deniedUserFolders))). "
-      + "Click Allow on the macOS permission dialogs, then reindex."
+    return "O Omi não conseguiu acessar suas pastas (\(folderList(outcome.deniedUserFolders))). "
+      + "Clique em Permitir nas janelas de permissão do macOS e reindexe."
   }
 
   private static func folderList(_ folders: [String]) -> String {
@@ -530,8 +530,8 @@ enum ConnectorImportOperations {
       .appendingPathComponent("Library/Group Containers", isDirectory: true)
 
     let panel = NSOpenPanel()
-    panel.message = "Select your Apple Notes data folder to grant access."
-    panel.prompt = "Open"
+    panel.message = "Selecione a pasta de dados do Apple Notes para conceder acesso."
+    panel.prompt = "Abrir"
     panel.canChooseFiles = false
     panel.canChooseDirectories = true
     panel.allowsMultipleSelection = false

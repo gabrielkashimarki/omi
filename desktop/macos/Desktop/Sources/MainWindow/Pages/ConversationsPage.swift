@@ -144,9 +144,9 @@ struct ConversationsPage: View {
       .conversationRowPrompts(rowPrompts, appState: appState)
       .shellConfirmation(
         isPresented: $showMergeConfirmation,
-        title: "Merge \(mergeableSelectedIds.count) Conversations?",
-        message: "They become one conversation and the originals are deleted. This can't be undone.",
-        confirmTitle: "Merge"
+        title: "Mesclar \(mergeableSelectedIds.count) conversas?",
+        message: "Elas viram uma só conversa e as originais são apagadas. Não dá para desfazer.",
+        confirmTitle: "Mesclar"
       ) {
         Task { await performMerge() }
       }
@@ -284,7 +284,7 @@ struct ConversationsPage: View {
           QuerySearchBar(
             text: $searchQuery,
             accessibilityID: "conversations-search-field",
-            placeholder: "Search conversations",
+            placeholder: "Buscar conversas",
             searchSurface: .conversations
           )
           .onChange(of: searchQuery) { _, newValue in
@@ -346,7 +346,7 @@ struct ConversationsPage: View {
   }
 
   private var detailBackTitle: String {
-    returnsToOrigin ? (detailOrigin?.title ?? "Conversations") : "Conversations"
+    returnsToOrigin ? (detailOrigin?.title ?? "Conversas") : "Conversas"
   }
 
   /// Back from the detail: to the page it was opened from, else to the list.
@@ -592,7 +592,7 @@ struct ConversationsPage: View {
     } catch {
       guard RuntimeOwnerIdentity.isAuthorizationCurrent(owner) else { return }
       OmiToastCenter.shared.notice(
-        "Couldn't open the source conversation. Try again from Conversations.",
+        "Não foi possível abrir a conversa de origem. Tente de novo a partir de Conversas.",
         systemImage: "exclamationmark.triangle")
     }
   }
@@ -616,7 +616,7 @@ struct ConversationsPage: View {
             await appState.loadMoreConversations()
           }
         } label: {
-          Text("Load older conversations")
+          Text("Carregar conversas mais antigas")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.primary)
             .padding(.horizontal, OmiSpacing.lg)
@@ -680,7 +680,7 @@ struct ConversationsPage: View {
       HStack(spacing: OmiSpacing.xs) {
         Image(systemName: isMultiSelectMode ? "checkmark.circle" : "checkmark.circle.badge.questionmark")
           .scaledFont(size: OmiType.caption)
-        Text(isMultiSelectMode ? "Done" : "Select")
+        Text(isMultiSelectMode ? "OK" : "Selecionar")
           .scaledFont(size: OmiType.body, weight: .medium)
       }
       .foregroundColor(isMultiSelectMode ? Ink.primary : Ink.secondary)
@@ -689,7 +689,7 @@ struct ConversationsPage: View {
       .glassChip(isActive: isMultiSelectMode)
     }
     .buttonStyle(.plain)
-    .help(isMultiSelectMode ? "Exit selection (Esc)" : "Select conversations to merge")
+    .help(isMultiSelectMode ? "Sair da seleção (Esc)" : "Selecione conversas para mesclar")
     .accessibilityIdentifier("conversations-select-toggle")
   }
 
@@ -709,7 +709,7 @@ struct ConversationsPage: View {
       // local search is retained for the standalone conversations surface.
       if brainDestination == nil {
         OmiSearchField(
-          placeholder: "Search conversations",
+          placeholder: "Buscar conversas",
           text: $searchQuery,
           isLoading: isSearching,
           searchSurface: .conversations
@@ -777,7 +777,7 @@ struct ConversationsPage: View {
       if isSearching {
         VStack(spacing: OmiSpacing.md) {
           ProgressView()
-          Text("Searching…")
+          Text("Buscando…")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
         }
@@ -787,7 +787,7 @@ struct ConversationsPage: View {
           Image(systemName: "exclamationmark.triangle")
             .scaledFont(size: 32)
             .foregroundColor(Ink.secondary)
-          Text("Couldn't search conversations. Check your connection and try again.")
+          Text("Não foi possível buscar conversas. Verifique sua conexão e tente de novo.")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
             .multilineTextAlignment(.center)
@@ -799,13 +799,13 @@ struct ConversationsPage: View {
           Image(systemName: "magnifyingglass")
             .scaledFont(size: 32)
             .foregroundColor(Ink.secondary)
-          Text("No search results")
+          Text("Nenhum resultado")
             .scaledFont(size: OmiType.heading, weight: .semibold)
             .foregroundColor(Ink.secondary)
           Text(
             appState.hasActiveConversationFilters
-              ? "Nothing matches \(quotedSearchQuery) with your active filters."
-              : "Nothing matches \(quotedSearchQuery). Try a different term."
+              ? "Nada corresponde a \(quotedSearchQuery) com seus filtros ativos."
+              : "Nada corresponde a \(quotedSearchQuery). Tente outro termo."
           )
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
@@ -929,12 +929,12 @@ struct ConversationsPage: View {
 
   private var conversationFiltersMenu: some View {
     Menu {
-      Section("Collection") {
+      Section("Coleção") {
         Button {
           Task { await appState.setFolderFilter(nil) }
         } label: {
           HStack {
-            Label("All collections", systemImage: "tray.2")
+            Label("Todas as coleções", systemImage: "tray.2")
             Spacer()
             if appState.selectedFolderId == nil {
               Image(systemName: "checkmark")
@@ -961,11 +961,11 @@ struct ConversationsPage: View {
         }
       }
 
-      Section("Refine") {
+      Section("Refinar") {
         Button {
           Task { await appState.toggleDiscardedConversations() }
         } label: {
-          Text(appState.showDiscardedConversations ? "Hide Discarded" : "Show Discarded")
+          Text(appState.showDiscardedConversations ? "Ocultar descartadas" : "Mostrar descartadas")
         }
         .accessibilityIdentifier("conversations-show-discarded")
 
@@ -977,7 +977,7 @@ struct ConversationsPage: View {
           }
         } label: {
           Label(
-            appState.showStarredOnly ? "Remove Starred filter" : "Starred",
+            appState.showStarredOnly ? "Remover filtro de favoritas" : "Favoritas",
             systemImage: appState.showStarredOnly ? "star.fill" : "star")
         }
         .disabled(isFilteringStarred)
@@ -985,23 +985,23 @@ struct ConversationsPage: View {
         Button {
           showDatePicker = true
         } label: {
-          Label(appState.selectedDateFilter == nil ? "Date…" : "Change date…", systemImage: "calendar")
+          Label(appState.selectedDateFilter == nil ? "Data…" : "Mudar data…", systemImage: "calendar")
         }
       }
 
-      Section("Collections") {
+      Section("Coleções") {
         Button {
           showCreateFolderSheet = true
         } label: {
-          Label("New collection…", systemImage: "plus")
+          Label("Nova coleção…", systemImage: "plus")
         }
 
         if !appState.folders.isEmpty {
-          Menu("Manage collections") {
+          Menu("Gerenciar coleções") {
             ForEach(appState.folders) { folder in
               Menu(folder.name) {
-                Button("Edit…") { editingFolder = folder }
-                Button("Delete…", role: .destructive) { deletingFolder = folder }
+                Button("Editar…") { editingFolder = folder }
+                Button("Apagar…", role: .destructive) { deletingFolder = folder }
               }
             }
           }
@@ -1010,9 +1010,9 @@ struct ConversationsPage: View {
     } label: {
       PageQueryControlLabel(
         icon: "line.3.horizontal.decrease",
-        dimension: activeConversationFilterCount == 0 ? nil : "Filter",
+        dimension: activeConversationFilterCount == 0 ? nil : "Filtro",
         value: activeConversationFilterCount == 0
-          ? "Filter" : "\(activeConversationFilterCount)",
+          ? "Filtro" : "\(activeConversationFilterCount)",
         isActive: activeConversationFilterCount > 0,
         dimensionSeparator: " ·"
       )
@@ -1022,19 +1022,19 @@ struct ConversationsPage: View {
     .popover(isPresented: $showDatePicker) {
       datePickerPopover
     }
-    .help("Filter conversations by collection, starred status, date, or show discarded")
+    .help("Filtre conversas por coleção, favoritas, data ou mostre as descartadas")
     .accessibilityIdentifier("conversations-filter-menu")
   }
 
   private var conversationMoreMenu: some View {
-    PageMoreMenu(help: "More conversation actions", accessibilityIdentifier: "conversations-more-actions") {
+    PageMoreMenu(help: "Mais ações de conversa", accessibilityIdentifier: "conversations-more-actions") {
       if !appState.conversations.isEmpty {
         Button {
           OmiMotion.withGated(.easeInOut(duration: 0.2)) {
             isMultiSelectMode = true
           }
         } label: {
-          Label("Select Conversations", systemImage: "checkmark.circle")
+          Label("Selecionar conversas", systemImage: "checkmark.circle")
         }
       }
 
@@ -1042,7 +1042,7 @@ struct ConversationsPage: View {
         Button {
           appState.startTranscription()
         } label: {
-          Label("Start Recording", systemImage: "mic.fill")
+          Label("Iniciar gravação", systemImage: "mic.fill")
         }
       }
     }
@@ -1053,14 +1053,14 @@ struct ConversationsPage: View {
 
     if appState.showDiscardedConversations {
       filters.append(
-        PageActiveFilter(id: "discarded", title: "Including discarded") {
+        PageActiveFilter(id: "discarded", title: "Incluindo descartadas") {
           Task { await appState.toggleDiscardedConversations() }
         })
     }
 
     if appState.showStarredOnly {
       filters.append(
-        PageActiveFilter(id: "starred", title: "Starred") {
+        PageActiveFilter(id: "starred", title: "Favoritas") {
           Task { await appState.toggleStarredFilter() }
         })
     }
@@ -1090,8 +1090,8 @@ struct ConversationsPage: View {
   }
 
   private var selectedCollectionName: String {
-    guard let selectedFolderId = appState.selectedFolderId else { return "All" }
-    return appState.folders.first(where: { $0.id == selectedFolderId })?.name ?? "Selected"
+    guard let selectedFolderId = appState.selectedFolderId else { return "Todas" }
+    return appState.folders.first(where: { $0.id == selectedFolderId })?.name ?? "Selecionada"
   }
 
   private var filteredConversationsEmptyView: some View {
@@ -1100,11 +1100,11 @@ struct ConversationsPage: View {
         .scaledFont(size: 42)
         .foregroundColor(Ink.secondary)
 
-      Text("No matching conversations")
+      Text("Nenhuma conversa correspondente")
         .scaledFont(size: OmiType.heading, weight: .semibold)
         .foregroundColor(Ink.primary)
 
-      Text("Nothing matches \(activeConversationFilterDescription).")
+      Text("Nada corresponde a \(activeConversationFilterDescription).")
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
         .multilineTextAlignment(.center)
@@ -1112,7 +1112,7 @@ struct ConversationsPage: View {
       Button {
         Task { await appState.clearFilters() }
       } label: {
-        PageQueryActionLabel(icon: "xmark.circle", title: "Clear filters", isPrimary: true)
+        PageQueryActionLabel(icon: "xmark.circle", title: "Limpar filtros", isPrimary: true)
       }
       .buttonStyle(.plain)
     }
@@ -1125,10 +1125,10 @@ struct ConversationsPage: View {
 
   private var activeConversationFilterDescription: String {
     var filters: [String] = []
-    if appState.showStarredOnly { filters.append("Starred") }
-    if let date = appState.selectedDateFilter { filters.append("Date: \(formatFilterDate(date))") }
-    if appState.selectedFolderId != nil { filters.append("Collection: \(selectedCollectionName)") }
-    return filters.joined(separator: " and ")
+    if appState.showStarredOnly { filters.append("Favoritas") }
+    if let date = appState.selectedDateFilter { filters.append("Data: \(formatFilterDate(date))") }
+    if appState.selectedFolderId != nil { filters.append("Coleção: \(selectedCollectionName)") }
+    return filters.joined(separator: " e ")
   }
 
   private var quotedSearchQuery: String {
@@ -1139,7 +1139,7 @@ struct ConversationsPage: View {
   private var datePickerPopover: some View {
     VStack(spacing: OmiSpacing.md) {
       DatePicker(
-        "Select Date",
+        "Selecionar data",
         selection: Binding(
           get: { appState.selectedDateFilter ?? Date() },
           set: { newDate in
@@ -1193,7 +1193,7 @@ struct ConversationsPage: View {
           ConversationMergeSelection.allDisplayedSelected(
             displayedIds: displayedConversationIds,
             current: selectedConversationIds
-          ) ? "Deselect All" : "Select All"
+          ) ? "Desmarcar tudo" : "Selecionar tudo"
         )
         .scaledFont(size: OmiType.caption, weight: .medium)
         .foregroundColor(Ink.secondary)
@@ -1213,7 +1213,7 @@ struct ConversationsPage: View {
             Image(systemName: "arrow.triangle.merge")
               .scaledFont(size: OmiType.caption)
           }
-          Text("Merge")
+          Text("Mesclar")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
         .foregroundColor(

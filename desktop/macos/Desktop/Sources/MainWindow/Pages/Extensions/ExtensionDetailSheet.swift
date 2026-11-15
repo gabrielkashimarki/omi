@@ -79,13 +79,13 @@ struct ExtensionDetailSheet: View {
     case .skill(let source):
       let folder = "\(source.repo)/skills/\(source.slug)"
       guard source.files.count > 1 else { return "\(folder)  ·  SKILL.md" }
-      return "\(folder)  ·  SKILL.md and \(source.files.count - 1) bundled files"
+      return "\(folder)  ·  SKILL.md e \(source.files.count - 1) arquivos incluídos"
     }
   }
 
   private var installSummaryLabel: String {
-    if case .skill = entry.install { return "Source" }
-    if case .mcpStdio = entry.install { return "Runs on your Mac" }
+    if case .skill = entry.install { return "Fonte" }
+    if case .mcpStdio = entry.install { return "Executa no seu Mac" }
     return "Endpoint"
   }
 
@@ -122,16 +122,16 @@ struct ExtensionDetailSheet: View {
           }
           ForEach(requiredFields, id: \.self) { field in
             labelled(field) {
-              SecureField("Required", text: binding(for: field))
+              SecureField("Obrigatório", text: binding(for: field))
                 .textFieldStyle(.roundedBorder)
             }
           }
           if let website = entry.websiteURL, let url = URL(string: website) {
-            Link("Open publisher page", destination: url)
+            Link("Abrir página do publicador", destination: url)
               .scaledFont(size: OmiType.caption)
           }
           if case .mcpRemote = entry.install {
-            Text("After adding this server, finish any required sign-in in the next step")
+            Text("Depois de adicionar este servidor, conclua o login necessário na próxima etapa")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
               .fixedSize(horizontal: false, vertical: true)
@@ -149,10 +149,10 @@ struct ExtensionDetailSheet: View {
 
       HStack {
         Spacer()
-        Button(installation.phase == .skillInstalled ? "Done" : "Cancel", action: dismiss)
+        Button(installation.phase == .skillInstalled ? "OK" : "Cancelar", action: dismiss)
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         Button(action: install) {
-          ConnectionModalActionButton(title: installation.isInstalling ? "Installing…" : "Install")
+          ConnectionModalActionButton(title: installation.isInstalling ? "Instalando…" : "Instalar")
         }
         .buttonStyle(.plain)
         .disabled(!installation.canInstall)

@@ -60,10 +60,10 @@ struct ConnectDestinationSheet: View {
         HStack(alignment: .top, spacing: OmiSpacing.md) {
           ConnectorBrandIcon(brand: groupBrand, size: 48, cornerRadius: 13)
           VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-            Text("Connect \(groupName)")
+            Text("Conectar \(groupName)")
               .scaledFont(size: OmiType.heading, weight: .semibold)
               .foregroundColor(Ink.primary)
-            Text("Pick how to connect.")
+            Text("Escolha como conectar.")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -125,9 +125,9 @@ private struct ConnectOptionCard: View {
   private var optionLabel: String {
     switch destination {
     case .claudeCode: return "Claude Code"
-    case .claude: return "Claude (cloud)"
+    case .claude: return "Claude (nuvem)"
     case .codex: return "Codex"
-    case .chatgpt: return "ChatGPT (cloud)"
+    case .chatgpt: return "ChatGPT (nuvem)"
     default: return destination.title
     }
   }
@@ -135,7 +135,7 @@ private struct ConnectOptionCard: View {
   private var primaryLabel: String {
     let presentation = connectionPresentation
     _ = permissionRefreshID
-    return presentation.primaryActionTitle ?? "Connected"
+    return presentation.primaryActionTitle ?? "Conectado"
   }
 
   private var connectionPresentation: MemoryExportConnectionPresentation {
@@ -172,7 +172,7 @@ private struct ConnectOptionCard: View {
           // single-destination sheet uses, so the connect flow is consistent.
           Button(action: run) {
             ConnectionModalActionButton(
-              title: isRunning ? "Connecting…" : primaryLabel,
+              title: isRunning ? "Conectando…" : primaryLabel,
               isConnected: isConnected
             )
           }
@@ -184,12 +184,12 @@ private struct ConnectOptionCard: View {
         if let setup = destination.mcpSetup(key: mcpKey ?? "YOUR_OMI_KEY") {
           ManualInstallationDisclosure(
             isExpanded: $showManual,
-            title: destination == .chatgpt ? "Developer-mode fallback" : "Manual installation",
+            title: destination == .chatgpt ? "Alternativa do modo desenvolvedor" : "Instalação manual",
             fontSize: 12
           ) {
             VStack(alignment: .leading, spacing: OmiSpacing.sm) {
               if destination == .chatgpt {
-                Text("Use this only when your workspace requires a developer-mode custom app.")
+                Text("Use só quando seu workspace exigir um app personalizado em modo desenvolvedor.")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
                   .fixedSize(horizontal: false, vertical: true)
@@ -197,7 +197,7 @@ private struct ConnectOptionCard: View {
                 manualBlock(chatGPTDeveloperModeText)
               } else {
                 if destination.requiresHostedMCPKeyForSetup && mcpKey == nil {
-                  Button(isLoadingMCPKey ? "Generating…" : "Generate connection key", action: generateMCPKey)
+                  Button(isLoadingMCPKey ? "Gerando…" : "Gerar chave de conexão", action: generateMCPKey)
                     .buttonStyle(OmiButtonStyle(.primary, size: .compact))
                     .disabled(isLoadingMCPKey || isRunning)
                 }
@@ -212,10 +212,10 @@ private struct ConnectOptionCard: View {
                   manualBlock(
                     copyText, enabled: !destination.requiresHostedMCPKeyForSetup || mcpKey != nil)
                 } else {
-                  manualBlock("Server URL: \(setup.serverURL)", copy: setup.serverURL)
+                  manualBlock("URL do servidor: \(setup.serverURL)", copy: setup.serverURL)
                   if destination.requiresHostedMCPKeyForSetup {
                     manualBlock(
-                      "Key: \(mcpKey ?? "YOUR_OMI_KEY")", copy: mcpKey ?? "YOUR_OMI_KEY", enabled: mcpKey != nil)
+                      "Chave: \(mcpKey ?? "YOUR_OMI_KEY")", copy: mcpKey ?? "YOUR_OMI_KEY", enabled: mcpKey != nil)
                   }
                 }
               }
@@ -274,7 +274,7 @@ private struct ConnectOptionCard: View {
       do {
         mcpKey = try await MemoryExportService.shared.mcpKeyForLocalConnectorSetup()
       } catch {
-        resultMessage = .failure("Couldn't prepare your Omi key. Try again.")
+        resultMessage = .failure("Não foi possível preparar sua chave do Omi. Tente de novo.")
       }
     }
   }
@@ -287,7 +287,7 @@ private struct ConnectOptionCard: View {
         mcpKey = await MemoryExportService.shared.storedMCPKey()
         switch outcome.mode {
         case .autonomous:
-          resultMessage = .success("Omi is setting this up — follow along in the floating bar.")
+          resultMessage = .success("O Omi está configurando isso. Acompanhe na barra flutuante.")
         case .assisted:
           resultMessage = .success(outcome.taskTitle)
           // Assisted flow: the user pastes values by hand, so open the
@@ -331,7 +331,7 @@ private struct ConnectOptionCard: View {
         }
       }
       if destination.cloudOAuthClientID != nil {
-        Button(isDisconnecting ? "Disconnecting…" : "Disconnect") {
+        Button(isDisconnecting ? "Desconectando…" : "Desconectar") {
           disconnectCloudConnection()
         }
         .buttonStyle(.plain)
@@ -359,9 +359,9 @@ private struct ConnectOptionCard: View {
       do {
         statuses[destination] = try await MemoryExportService.shared
           .disconnectCloudOAuthConnection(for: destination)
-        resultMessage = .success("Disconnected from \(destination.title).")
+        resultMessage = .success("Desconectado de \(destination.title).")
       } catch {
-        resultMessage = .failure("Couldn't disconnect \(destination.title). Try again.")
+        resultMessage = .failure("Não foi possível desconectar de \(destination.title). Tente de novo.")
       }
       isDisconnecting = false
     }
@@ -371,22 +371,22 @@ private struct ConnectOptionCard: View {
     if let executorError = error as? MemoryExportExecutor.ExecutorError {
       switch executorError {
       case .browserSetupRequired:
-        return "Grant Accessibility, then try again."
+        return "Conceda Acessibilidade e tente de novo."
       case .unsupported:
-        return "\(optionLabel) setup isn't available yet."
+        return "A configuração de \(optionLabel) ainda não está disponível."
       }
     }
 
     if let connectorError = error as? MemoryBankConnector.ConnectError {
       switch connectorError {
       case .notInstalled:
-        return "\(optionLabel) isn't installed or available on this Mac."
+        return "\(optionLabel) não está instalado ou disponível neste Mac."
       case .invalidConfig:
-        return "Omi couldn't update \(optionLabel). Check its setup, then try again."
+        return "O Omi não conseguiu atualizar \(optionLabel). Confira a configuração e tente de novo."
       }
     }
 
-    return "Omi couldn't finish setup. Try again."
+    return "O Omi não conseguiu concluir a configuração. Tente de novo."
   }
 
   private var chatGPTDeveloperModeText: String {
@@ -417,9 +417,9 @@ private struct ConnectOptionCard: View {
       Button {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(copy ?? text, forType: .string)
-        resultMessage = .success("Copied.")
+        resultMessage = .success("Copiado.")
       } label: {
-        Text("Copy")
+        Text("Copiar")
           .scaledFont(size: OmiType.caption, weight: .semibold)
           .foregroundColor(Ink.surface)
           .padding(.horizontal, OmiSpacing.md)
@@ -452,7 +452,7 @@ struct ClaudeCodeRestartSubtitle: View {
         .foregroundColor(Ink.secondary)
         .fixedSize(horizontal: false, vertical: true)
       if !didStop && !pids.isEmpty {
-        Button("Restart \(pids.count) running session\(pids.count == 1 ? "" : "s")") {
+        Button("Reiniciar \(pids.count) \(pids.count == 1 ? "sessão em execução" : "sessões em execução")") {
           ClaudeCodeSessions.stop(pids)
           didStop = true
         }
@@ -498,7 +498,7 @@ struct DeveloperHomeLink: View {
   var body: some View {
     Button(action: { NSWorkspace.shared.open(DeveloperHomeLink.url) }) {
       HStack(spacing: OmiSpacing.xs) {
-        Text("Using another agent? Get a setup prompt or API key")
+        Text("Usa outro agente? Pegue um prompt de configuração ou uma chave de API")
           .scaledFont(size: OmiType.caption, weight: .medium)
         Image(systemName: "arrow.up.right")
           .scaledFont(size: OmiType.caption)

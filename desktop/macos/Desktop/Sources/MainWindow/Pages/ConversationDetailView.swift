@@ -72,7 +72,7 @@ struct ConversationDetailView: View {
   let conversation: ServerConversation
   let onBack: () -> Void
   /// Where Back returns to, named on the chip ("‹ Conversations", "‹ Memories", "‹ Activity").
-  var backTitle: String = "Conversations"
+  var backTitle: String = "Conversas"
   var folders: [Folder] = []
   var onMoveToFolder: ((String, String?) async -> Void)?
   var onDelete: (() -> Void)?
@@ -200,7 +200,7 @@ struct ConversationDetailView: View {
 
   /// "1 segment", "388 segments" — a badge says what it counts.
   nonisolated static func segmentCountLabel(_ count: Int) -> String {
-    count == 1 ? "1 segment" : "\(count) segments"
+    count == 1 ? "1 segmento" : "\(count) segmentos"
   }
 
   static func visiblePane(transcriptOpen: Bool) -> ConversationDetailPane {
@@ -231,11 +231,11 @@ struct ConversationDetailView: View {
       pageHeader
       if displayConversation.discarded {
         HStack(spacing: OmiSpacing.md) {
-          Text("Discarded · Hidden from your feed")
+          Text("Descartada · Oculta do seu feed")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
           Spacer()
-          Button(isReprocessing ? "Restoring…" : "Restore Conversation") {
+          Button(isReprocessing ? "Restaurando…" : "Restaurar conversa") {
             Task { await restoreConversation() }
           }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
@@ -247,10 +247,10 @@ struct ConversationDetailView: View {
       }
       if let retrySpeakerAssignment {
         HStack {
-          Text("Couldn't assign this speaker")
+          Text("Não foi possível atribuir este falante")
             .foregroundColor(Ink.errorRed)
           Spacer()
-          Button("Retry", action: retrySpeakerAssignment)
+          Button("Tentar de novo", action: retrySpeakerAssignment)
             .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         }
         .padding(.horizontal, OmiSpacing.xl)
@@ -261,9 +261,9 @@ struct ConversationDetailView: View {
       case .summary:
         if displayConversation.discarded {
           VStack(spacing: OmiSpacing.md) {
-            Text("Your audio and transcript stay available here. Restore this conversation to your feed.")
+            Text("Seu áudio e sua transcrição continuam disponíveis aqui. Restaure esta conversa para o seu feed.")
               .foregroundColor(Ink.secondary)
-            Button("View Transcript") { showTranscriptDrawer = true }
+            Button("Ver transcrição") { showTranscriptDrawer = true }
               .buttonStyle(OmiButtonStyle(.secondary))
               .accessibilityIdentifier("discarded-view-transcript")
           }
@@ -299,16 +299,16 @@ struct ConversationDetailView: View {
     }
     .shellConfirmation(
       isPresented: $showDeleteConfirmation,
-      title: "Delete Conversation?",
-      message: "This permanently deletes the conversation, its transcript and its summary.",
-      confirmTitle: "Delete"
+      title: "Apagar conversa?",
+      message: "Isto apaga permanentemente a conversa, a transcrição e o resumo.",
+      confirmTitle: "Apagar"
     ) {
       Task { await deleteConversation() }
     }
     .dismissableSheet(isPresented: $showEditDialog) {
       TextPromptSheet(
-        title: "Rename Conversation",
-        placeholder: "Title",
+        title: "Renomear conversa",
+        placeholder: "Título",
         text: $editedTitle,
         isBusy: isUpdatingTitle,
         onConfirm: {
@@ -326,7 +326,7 @@ struct ConversationDetailView: View {
           showTranscriptDrawer = true
         },
         onCopy: {
-          OmiToastCenter.shared.copy(followUpDraftText, confirming: "Draft copied")
+          OmiToastCenter.shared.copy(followUpDraftText, confirming: "Rascunho copiado")
           showFollowUpDraft = false
         },
         onClose: { showFollowUpDraft = false })
@@ -767,7 +767,7 @@ struct ConversationDetailView: View {
 
   private func copyTranscript() {
     guard let transcriptText else { return }
-    OmiToastCenter.shared.copy(transcriptText, confirming: "Transcript copied")
+    OmiToastCenter.shared.copy(transcriptText, confirming: "Transcrição copiada")
   }
 
   private func updateTitle() async {
@@ -1008,8 +1008,8 @@ struct ConversationDetailView: View {
     }
     .buttonStyle(GlassIconButtonStyle(diameter: OmiIconButtonSize.regular.diameter, restsFilled: true))
     .disabled(isBusy)
-    .help("Refresh transcript and re-sync it to the audio")
-    .accessibilityLabel("Refresh transcript and re-sync it to the audio")
+    .help("Atualizar a transcrição e ressincronizá-la com o áudio")
+    .accessibilityLabel("Atualizar a transcrição e ressincronizá-la com o áudio")
     .accessibilityIdentifier("conversation-detail-transcript-refresh")
   }
 
@@ -1024,17 +1024,17 @@ struct ConversationDetailView: View {
 
       if displayConversation.transcriptPresenceState == .lockedOrRedacted && !isLoadingConversation {
         GlassEmptyState(
-          systemImage: "lock", title: "Transcript locked",
-          message: "This transcript is available again once your subscription is active.")
+          systemImage: "lock", title: "Transcrição bloqueada",
+          message: "Esta transcrição volta a ficar disponível quando sua assinatura estiver ativa.")
       } else if displayConversation.transcriptSegments.isEmpty && !isLoadingConversation {
         GlassEmptyState(
-          systemImage: "text.quote", title: "No transcript",
-          message: "Nothing was transcribed for this conversation.")
+          systemImage: "text.quote", title: "Sem transcrição",
+          message: "Nada foi transcrito nesta conversa.")
       } else if isLoadingConversation {
         VStack(spacing: OmiSpacing.md) {
           ProgressView()
             .controlSize(.small)
-          Text("Loading transcript…")
+          Text("Carregando transcrição…")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
         }
@@ -1148,7 +1148,7 @@ struct ConversationDetailView: View {
         RoundedRectangle(cornerRadius: OmiChrome.smallControlRadius)
           .stroke(isPlaybackActive ? Ink.accent.opacity(0.45) : Color.clear, lineWidth: 1)
       )
-      .accessibilityValue(isPlaybackActive ? "Currently playing" : "")
+      .accessibilityValue(isPlaybackActive ? "Tocando agora" : "")
       .id(segmentID)
     }
   }
@@ -1271,7 +1271,7 @@ struct ConversationDetailView: View {
           _ = beginSpeakerAssignment(
             personId: retryID, isUser: isUser, segmentIndices: segmentIndices, newName: retryName)
         }
-        OmiToastCenter.shared.notice("Couldn't assign this speaker", systemImage: "exclamationmark.triangle")
+        OmiToastCenter.shared.notice("Não foi possível atribuir este falante", systemImage: "exclamationmark.triangle")
       }
     }
     speakerAssignmentTail = assignmentTask
@@ -1296,7 +1296,7 @@ struct ConversationDetailView: View {
     let primaryApp = selection.appId.flatMap { id in appProvider.apps.first { $0.id == id } }
 
     return VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      DetailSectionHeader(title: "Overview", systemImage: "text.alignleft") {
+      DetailSectionHeader(title: "Visão geral", systemImage: "text.alignleft") {
         // The selected summarization app owns this section; say which one.
         if let appName = selection.appDisplayName(resolvedName: primaryApp?.name) {
           Text(appName)
@@ -1308,12 +1308,12 @@ struct ConversationDetailView: View {
         }
         Button(action: { showAppSelector = true }) {
           DetailQuietButtonLabel(
-            title: selection.kind == .app ? "Change app" : "Summarize with an app",
+            title: selection.kind == .app ? "Trocar app" : "Resumir com um app",
             systemImage: "arrow.triangle.2.circlepath")
         }
         .buttonStyle(.plain)
         .disabled(isReprocessing)
-        .help("Choose the app that summarizes this conversation")
+        .help("Escolha o app que resume esta conversa")
       }
 
       // No `colorScheme` override here. This section used to force `.dark` so the markdown would
@@ -1349,12 +1349,12 @@ struct ConversationDetailView: View {
       let restored = try await appState.restoreConversation(conversation.id)
       guard isCurrentDetailRequest(generation) else { return }
       loadedConversation = restored
-      OmiToastCenter.shared.confirm("Conversation restored")
+      OmiToastCenter.shared.confirm("Conversa restaurada")
     } catch is CancellationError {
       // The account changed before the response arrived.
     } catch {
       guard isCurrentDetailRequest(generation) else { return }
-      OmiToastCenter.shared.notice("Couldn't restore conversation. Try again.", systemImage: "exclamationmark.triangle")
+      OmiToastCenter.shared.notice("Não foi possível restaurar a conversa. Tente de novo.", systemImage: "exclamationmark.triangle")
     }
   }
 

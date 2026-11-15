@@ -63,12 +63,12 @@ struct MemoryGraphPage: View {
           } label: {
             PageQueryActionLabel(
               icon: "arrow.clockwise",
-              title: viewModel.isRebuilding ? "Rebuilding…" : "Rebuild"
+              title: viewModel.isRebuilding ? "Reconstruindo…" : "Reconstruir"
             )
           }
           .buttonStyle(.plain)
           .disabled(viewModel.isRebuilding)
-          .help("Rebuild graph")
+          .help("Reconstruir grafo")
         }
         .padding(.horizontal, OmiSpacing.sm)
         .padding(.top, OmiSpacing.sm)
@@ -81,18 +81,18 @@ struct MemoryGraphPage: View {
           Image(systemName: "magnifyingglass")
             .scaledFont(size: OmiType.heading)
             .foregroundStyle(Ink.surface)
-          Text("No entities match \u{201c}\(trimmedSearchText)\u{201d}")
+          Text("Nenhuma entidade corresponde a \u{201c}\(trimmedSearchText)\u{201d}")
             .scaledFont(size: OmiType.body, weight: .semibold)
             .foregroundStyle(Ink.surface)
-          Text("Try a different search or clear the search above.")
+          Text("Tente outra busca ou limpe a busca acima.")
             .scaledFont(size: OmiType.caption)
             .foregroundStyle(Ink.surface.opacity(0.78))
         }
         .multilineTextAlignment(.center)
         .allowsHitTesting(false)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("No entities match \(trimmedSearchText)")
-        .accessibilityHint("Try a different search or clear the search above.")
+        .accessibilityLabel("Nenhuma entidade corresponde a \(trimmedSearchText)")
+        .accessibilityHint("Tente outra busca ou limpe a busca acima.")
       }
 
       // Exactly one status view: a single centered spinner while loading or
@@ -107,7 +107,7 @@ struct MemoryGraphPage: View {
           Image(systemName: "brain")
             .scaledFont(size: OmiType.heading)
             .foregroundColor(Ink.secondary)
-          Text("Your brain map appears once Omi has enough related memories to connect.")
+          Text("Seu mapa cerebral aparece quando o Omi tiver memórias relacionadas suficientes para conectar.")
             .scaledFont(size: 12.5)
             .foregroundColor(Ink.secondary)
             .multilineTextAlignment(.center)
@@ -146,7 +146,7 @@ struct MemoryGraphPage: View {
     }
 
     return HStack(spacing: OmiSpacing.sm) {
-      Text("Legend")
+      Text("Legenda")
         .scaledFont(size: OmiType.caption, weight: .semibold)
         .foregroundStyle(Ink.surface)
 
@@ -162,11 +162,11 @@ struct MemoryGraphPage: View {
       }
     }
     .accessibilityElement(children: .combine)
-    .accessibilityLabel("Brain Map legend")
+    .accessibilityLabel("Legenda do Mapa Cerebral")
     .accessibilityValue(
-      activeTypes.map { "\($0.displayName), color coded" }.joined(separator: "; ")
+      activeTypes.map { "\($0.displayName), com código de cor" }.joined(separator: "; ")
     )
-    .accessibilityHint("Legend only; these items are not interactive filters.")
+    .accessibilityHint("Apenas legenda; estes itens não são filtros interativos.")
   }
 }
 
@@ -1269,11 +1269,11 @@ extension KnowledgeGraphNodeType: CaseIterable {
 
   var displayName: String {
     switch self {
-    case .person: return "Person"
-    case .place: return "Place"
-    case .organization: return "Organization"
-    case .thing: return "Thing"
-    case .concept: return "Concept"
+    case .person: return "Pessoa"
+    case .place: return "Lugar"
+    case .organization: return "Organização"
+    case .thing: return "Coisa"
+    case .concept: return "Conceito"
     }
   }
 

@@ -26,14 +26,14 @@ enum MemoryExportCatalog {
           destination: .claude,
           title: "Claude / Claude Code",
           subtitle: nil,
-          description: "Claude Code (CLI) or Claude cloud — choose in setup."
+          description: "Claude Code (CLI) ou Claude na nuvem. Escolha na configuração."
         )
       case .chatgpt:
         return MemoryExportCatalogEntry(
           destination: .chatgpt,
           title: "ChatGPT / Codex",
-          subtitle: "ChatGPT app or Codex CLI",
-          description: "Add Omi in ChatGPT or connect Codex locally — choose in setup."
+          subtitle: "App do ChatGPT ou Codex CLI",
+          description: "Adicione o Omi no ChatGPT ou conecte o Codex localmente. Escolha na configuração."
         )
       default:
         return MemoryExportCatalogEntry(
@@ -68,7 +68,7 @@ enum MemoryExportCatalog {
 struct ExportsSection: View {
   let statuses: [MemoryExportDestination: MemoryExportStatus]
   var searchText = ""
-  var title = "Exports"
+  var title = "Exportações"
   var entriesOverride: [MemoryExportCatalogEntry]? = nil
   let onSelectDestination: (MemoryExportDestination) -> Void
 
@@ -117,7 +117,7 @@ struct ExportsSection: View {
         .foregroundColor(Ink.primary)
 
       if entries.isEmpty {
-        Text("No exports match “\(searchText.trimmingCharacters(in: .whitespacesAndNewlines))”.")
+        Text("Nenhuma exportação corresponde a “\(searchText.trimmingCharacters(in: .whitespacesAndNewlines))”.")
           .scaledFont(size: OmiType.body)
           .foregroundStyle(Ink.secondary)
           .padding(.vertical, OmiSpacing.md)
@@ -152,17 +152,17 @@ struct MemoryExportRow: View {
 
   private var actionTitle: String {
     if destination.supportsAgentSetup {
-      return showsConnectedState ? "Connected" : "Connect"
+      return showsConnectedState ? "Conectado" : "Conectar"
     }
     if destination.supportsMCP {
-      if status.needsUpdate { return "Update" }
-      return showsConnectedState ? "Connected" : "Connect"
+      if status.needsUpdate { return "Atualizar" }
+      return showsConnectedState ? "Conectado" : "Conectar"
     }
     switch destination {
     case .obsidian:
-      return status.isConfigured ? "Sync" : "Connect"
+      return status.isConfigured ? "Sincronizar" : "Conectar"
     case .notion, .chatgpt, .claude, .gemini, .agents, .claudeCode, .codex, .openclaw, .hermes:
-      return status.hasConnection ? "Open" : "Connect"
+      return status.hasConnection ? "Abrir" : "Conectar"
     }
   }
 
@@ -173,22 +173,22 @@ struct MemoryExportRow: View {
 
   private var statusPrimaryText: String {
     if status.exportedCount > 0 {
-      return "\(status.exportedCount.formatted()) memories exported"
+      return "\(status.exportedCount.formatted()) memórias exportadas"
     }
     if status.needsUpdate {
-      return "Needs update"
+      return "Precisa de atualização"
     }
-    return status.hasConnection ? "Connected" : "Not connected"
+    return status.hasConnection ? "Conectado" : "Não conectado"
   }
 
   private var rowSecondaryText: String {
     if status.needsUpdate, status.exportedCount == 0, !status.hasConnection {
-      return "Using the old endpoint — update to the new URL"
+      return "Usando o endpoint antigo. Atualize para a nova URL"
     }
     if status.exportedCount > 0 || status.hasConnection {
       if let lastExportedAt = status.lastExportedAt {
         let relative = RelativeDateTimeFormatter().localizedString(for: lastExportedAt, relativeTo: Date())
-        return "Exported \(relative)"
+        return "Exportado \(relative)"
       }
       if let detailText = status.detailText, !detailText.isEmpty {
         return detailText
@@ -288,7 +288,7 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
     do {
       mcpKey = try await MemoryExportService.shared.ensureMCPKey()
     } catch {
-      errorMessage = "Couldn't create an MCP key: \(error.localizedDescription)"
+      errorMessage = "Não foi possível criar uma chave MCP: \(error.localizedDescription)"
     }
   }
 
@@ -302,9 +302,9 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
       let key = try await MemoryExportService.shared.createNewMCPKey()
       _ = try LocalAgentAPISettings.createNewToken()
       mcpKey = key
-      statusMessage = "New key created. Copy the prompt again when you're ready."
+      statusMessage = "Nova chave criada. Copie o prompt de novo quando quiser."
     } catch {
-      errorMessage = "Couldn't create a new connection key: \(error.localizedDescription)"
+      errorMessage = "Não foi possível criar uma nova chave de conexão: \(error.localizedDescription)"
     }
   }
 
@@ -316,7 +316,7 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
 
     do {
       guard let key = await MemoryExportService.shared.storedMCPKey() else {
-        throw MemoryExportError.requestFailed("Copy the setup prompt before testing the connection.")
+        throw MemoryExportError.requestFailed("Copie o prompt de configuração antes de testar a conexão.")
       }
       let localToken = try LocalAgentAPISettings.enable()
       mcpKey = key
@@ -325,14 +325,14 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
         localToken: localToken)
       statusMessage = result.summary
     } catch {
-      errorMessage = "Omi couldn't test the connection: \(error.localizedDescription)"
+      errorMessage = "O Omi não conseguiu testar a conexão: \(error.localizedDescription)"
     }
   }
 
   func copyToPasteboard(_ text: String, label: String) {
     NSPasteboard.general.clearContents()
     NSPasteboard.general.setString(text, forType: .string)
-    statusMessage = "\(label) copied."
+    statusMessage = "\(label) copiado."
   }
 
   func copyAgentSetupPrompt() async -> MemoryExportStatus? {
@@ -350,12 +350,12 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
           hostedKey: key,
           localURL: LocalAgentAPISettings.serverURL,
           localToken: localToken),
-        label: "Agent prompt")
+        label: "Prompt do agente")
       statusMessage =
-        "Prompt copied. Only share it with an agent you trust; it includes Omi access keys."
+        "Prompt copiado. Compartilhe só com um agente de confiança: ele inclui chaves de acesso do Omi."
       return await MemoryExportService.shared.status(for: .agents)
     } catch {
-      errorMessage = "Couldn't create the prompt: \(error.localizedDescription)"
+      errorMessage = "Não foi possível criar o prompt: \(error.localizedDescription)"
       return nil
     }
   }
@@ -379,7 +379,7 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
       mcpKey = await MemoryExportService.shared.storedMCPKey()
       switch outcome.mode {
       case .autonomous:
-        statusMessage = "Omi is setting this up — follow along in the floating bar."
+        statusMessage = "O Omi está configurando isso. Acompanhe na barra flutuante."
       case .assisted:
         statusMessage = outcome.taskTitle
       case .completed:
@@ -401,14 +401,14 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
       switch destination {
       case .notion:
         if !NotionMCPConnector.shared.isConnected {
-          statusMessage = "Approve Omi in your browser…"
+          statusMessage = "Aprove o Omi no seu navegador…"
           try await NotionMCPConnector.shared.connect()
         }
         let result = try await MemoryExportService.shared.exportToNotion()
         await MainActor.run {
           openDestination(for: destination, url: result.destinationURL)
         }
-        statusMessage = "Wrote \(result.memoryCount.formatted()) memories into Notion."
+        statusMessage = "\(result.memoryCount.formatted()) memórias gravadas no Notion."
 
       case .obsidian:
         let vaultURL: URL
@@ -427,7 +427,7 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
           revealExportFile(from: result)
           openDestination(for: destination, url: result.destinationURL)
         }
-        statusMessage = "Wrote \(result.memoryCount.formatted()) memories into Obsidian."
+        statusMessage = "\(result.memoryCount.formatted()) memórias gravadas no Obsidian."
 
       case .chatgpt, .claude, .gemini:
         let result = try await MemoryExportService.shared.prepareManualExport(for: destination)
@@ -436,7 +436,7 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
           revealExportFile(from: result)
           openDestination(for: destination, url: result.destinationURL)
         }
-        statusMessage = "Memory pack ready for \(destination.title). Prompt and export copied."
+        statusMessage = "Pacote de memórias pronto para \(destination.title). Prompt e exportação copiados."
 
       case .agents, .claudeCode, .codex, .openclaw, .hermes:
         // MCP-only destinations have no memory-pack run step.
@@ -458,8 +458,8 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
 
   private func selectObsidianVault() -> URL? {
     let panel = NSOpenPanel()
-    panel.message = "Select your Obsidian vault."
-    panel.prompt = "Open"
+    panel.message = "Selecione seu cofre do Obsidian."
+    panel.prompt = "Abrir"
     panel.canChooseFiles = false
     panel.canChooseDirectories = true
     panel.allowsMultipleSelection = false
@@ -635,10 +635,10 @@ struct MemoryExportDestinationSheet: View {
       } else if destination.supportsMemoryPack {
         methodHeader(
           icon: "doc.on.clipboard.fill",
-          title: "Memory pack",
+          title: "Pacote de memórias",
           tag: "MANUAL",
           tagColor: Ink.secondary,
-          subtitle: "Copy a one-time snapshot and paste it in yourself. Won't update on its own."
+          subtitle: "Copie um retrato único e cole você mesmo. Não se atualiza sozinho."
         )
         packSection
         packActionButton
@@ -650,18 +650,18 @@ struct MemoryExportDestinationSheet: View {
   private var manualSetupDisclosure: some View {
     ManualInstallationDisclosure(
       isExpanded: $showManualSetup,
-      title: destination == .chatgpt ? "Developer-mode fallback" : "Manual installation",
+      title: destination == .chatgpt ? "Alternativa do modo desenvolvedor" : "Instalação manual",
       fontSize: 13
     ) {
       VStack(alignment: .leading, spacing: OmiSpacing.lg) {
         methodHeader(
           icon: "bolt.fill",
-          title: destination == .chatgpt ? "Custom ChatGPT app" : "Live connection",
-          tag: destination == .chatgpt ? "ADVANCED" : "AUTOMATIC",
+          title: destination == .chatgpt ? "App personalizado do ChatGPT" : "Conexão ao vivo",
+          tag: destination == .chatgpt ? "AVANÇADO" : "AUTOMÁTICO",
           tagColor: destination == .chatgpt ? Ink.secondary : Ink.listeningGreen,
           subtitle: destination == .chatgpt
-            ? "Use only when your workspace requires a developer-mode custom app."
-            : "Set it once — \(destination.title) reads your memories live and stays in sync."
+            ? "Use só quando seu workspace exigir um app personalizado em modo desenvolvedor."
+            : "Configure uma vez e \(destination.title) lê suas memórias ao vivo e fica sincronizado."
         )
         mcpSection
 
@@ -671,10 +671,10 @@ struct MemoryExportDestinationSheet: View {
             .padding(.vertical, OmiSpacing.hairline)
           methodHeader(
             icon: "doc.on.clipboard.fill",
-            title: "Memory pack",
+            title: "Pacote de memórias",
             tag: "MANUAL",
             tagColor: Ink.secondary,
-            subtitle: "Copy a one-time snapshot and paste it in yourself. Won't update on its own."
+            subtitle: "Copie um retrato único e cole você mesmo. Não se atualiza sozinho."
           )
           packSection
           packActionButton
@@ -689,12 +689,12 @@ struct MemoryExportDestinationSheet: View {
       agentSetupHeader
 
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        agentSetupBullet("Omi creates fresh connection keys for this prompt.")
+        agentSetupBullet("O Omi cria chaves de conexão novas para este prompt.")
         agentSetupBullet(
-          "Your agent can read synced memories and conversations, then use this Mac for screen history, screenshots, recaps, files, and tasks."
+          "Seu agente pode ler memórias e conversas sincronizadas e usar este Mac para histórico de tela, capturas de tela, resumos, arquivos e tarefas."
         )
         agentSetupBullet(
-          "The included Omi guide helps your agent choose the right context and ask before changing memories."
+          "O guia do Omi incluído ajuda o agente a escolher o contexto certo e a perguntar antes de alterar memórias."
         )
       }
 
@@ -718,7 +718,7 @@ struct MemoryExportDestinationSheet: View {
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         .disabled(model.isLoadingMCPKey || model.isTestingAgentConnection)
-        .help("Test hosted and local Omi access")
+        .help("Testar o acesso hospedado e local ao Omi")
 
         Button {
           Task {
@@ -730,7 +730,7 @@ struct MemoryExportDestinationSheet: View {
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         .disabled(model.isLoadingMCPKey || model.isTestingAgentConnection)
-        .help("Create fresh hosted and local connection keys")
+        .help("Criar novas chaves de conexão hospedadas e locais")
       }
     }
   }
@@ -738,7 +738,7 @@ struct MemoryExportDestinationSheet: View {
   private var agentSetupHeader: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.xs) {
       HStack(spacing: OmiSpacing.sm) {
-        Text("Let your agent do it")
+        Text("Deixe seu agente fazer")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Text("MCP + CLI")
@@ -749,7 +749,7 @@ struct MemoryExportDestinationSheet: View {
           .background(Capsule().fill(Ink.listeningGreen.opacity(0.15)))
       }
       Text(
-        "Copy one setup prompt for your agent. It connects Omi memories through MCP, turns on local Desktop access through the Omi CLI, and includes a short Omi guide the agent can keep."
+        "Copie um prompt de configuração para o seu agente. Ele conecta as memórias do Omi via MCP, ativa o acesso local ao Desktop pelo Omi CLI e inclui um guia curto do Omi que o agente pode guardar."
       )
       .scaledFont(size: OmiType.caption)
       .foregroundColor(Ink.secondary)
@@ -773,7 +773,7 @@ struct MemoryExportDestinationSheet: View {
   private var executeButtonTitle: String {
     let presentation = executePresentation
     _ = permissionRefreshID
-    return presentation.primaryActionTitle ?? "Connected"
+    return presentation.primaryActionTitle ?? "Conectado"
   }
 
   private var executePresentation: MemoryExportConnectionPresentation {
@@ -790,25 +790,25 @@ struct MemoryExportDestinationSheet: View {
     switch destination.mcpExecuteKind {
     case .directoryApp:
       return
-        "Open Omi’s approved ChatGPT listing, then add Omi and authorize it in ChatGPT. Omi checks the connection when you return."
+        "Abra a listagem aprovada do Omi no ChatGPT, adicione o Omi e autorize no ChatGPT. O Omi confere a conexão quando você voltar."
     case .localAutonomous:
       return
-        "Omi sets up \(destination.title) for you — it runs as an Omi task you can watch in the floating bar. If it gets stuck, use the manual steps below."
+        "O Omi configura \(destination.title) para você, como uma tarefa que dá para acompanhar na barra flutuante. Se travar, use os passos manuais abaixo."
     case .browserAutonomous:
       if MemoryExportExecutor.accessibilityPreflightMissing(for: destination) {
         return
-          "Omi needs Accessibility permission to use your signed-in browser for \(destination.title). If you prefer not to grant it, use the manual steps below."
+          "O Omi precisa da permissão de Acessibilidade para usar seu navegador com login ativo em \(destination.title). Se preferir não conceder, use os passos manuais abaixo."
       } else {
         return
-          "Omi uses your signed-in browser to set up \(destination.title). If sign-in or permissions block it, Omi will tell you exactly where it stopped."
+          "O Omi usa seu navegador com login ativo para configurar \(destination.title). Se o login ou as permissões bloquearem, o Omi diz exatamente onde parou."
       }
     case .assisted:
       if destination.assistedOverlayHint != nil {
         return
-          "Omi opens \(destination.title) and shows an on-screen card — copy each value with one click and paste it into the form."
+          "O Omi abre \(destination.title) e mostra um cartão na tela. Copie cada valor com um clique e cole no formulário."
       }
       return
-        "Omi opens \(destination.title) and copies your key, then you confirm the quick steps below."
+        "O Omi abre \(destination.title) e copia sua chave. Depois você confirma os passos rápidos abaixo."
     }
   }
 
@@ -822,10 +822,10 @@ struct MemoryExportDestinationSheet: View {
           Image(systemName: "sparkles")
             .scaledFont(size: OmiType.body, weight: .semibold)
             .foregroundColor(Ink.secondary)
-          Text(destination.mcpExecuteKind == .directoryApp ? "Connect in ChatGPT" : "Let Omi do it")
+          Text(destination.mcpExecuteKind == .directoryApp ? "Conectar no ChatGPT" : "Deixe o Omi fazer")
             .scaledFont(size: OmiType.subheading, weight: .semibold)
             .foregroundColor(Ink.primary)
-          Text(destination.mcpExecuteKind == .directoryApp ? "ONE CLICK" : "FASTEST")
+          Text(destination.mcpExecuteKind == .directoryApp ? "UM CLIQUE" : "MAIS RÁPIDO")
             .scaledFont(size: OmiType.micro, weight: .bold)
             .foregroundColor(Ink.listeningGreen)
             .padding(.horizontal, OmiSpacing.xs)
@@ -850,7 +850,7 @@ struct MemoryExportDestinationSheet: View {
           }
         } label: {
           ConnectionModalActionButton(
-            title: model.isExecuting ? "Starting Omi…" : executeButtonTitle,
+            title: model.isExecuting ? "Iniciando o Omi…" : executeButtonTitle,
             isConnected: isConnected
           )
         }
@@ -882,7 +882,7 @@ struct MemoryExportDestinationSheet: View {
         }
       }
       if destination.cloudOAuthClientID != nil {
-        Button(isDisconnecting ? "Disconnecting…" : "Disconnect") {
+        Button(isDisconnecting ? "Desconectando…" : "Desconectar") {
           disconnectCloudConnection()
         }
         .buttonStyle(.plain)
@@ -911,9 +911,9 @@ struct MemoryExportDestinationSheet: View {
       do {
         statuses[destination] = try await MemoryExportService.shared
           .disconnectCloudOAuthConnection(for: destination)
-        model.statusMessage = "Disconnected from \(destination.title)."
+        model.statusMessage = "Desconectado de \(destination.title)."
       } catch {
-        model.errorMessage = "Couldn't disconnect \(destination.title). Try again."
+        model.errorMessage = "Não foi possível desconectar de \(destination.title). Tente de novo."
       }
       isDisconnecting = false
     }
@@ -964,7 +964,7 @@ struct MemoryExportDestinationSheet: View {
         chatGPTDeveloperModeFields
       } else {
         mcpCodeRow(
-          label: "Server URL", value: MemoryExportDestination.mcpServerURL, copyLabel: "Server URL")
+          label: "URL do servidor", value: MemoryExportDestination.mcpServerURL, copyLabel: "URL do servidor")
 
         if destination.requiresHostedMCPKeyForSetup {
           mcpKeyRow
@@ -1004,7 +1004,7 @@ struct MemoryExportDestinationSheet: View {
   @ViewBuilder
   private var claudeConnectorFields: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
-      Text("Copy these fields into Claude's Add custom connector form.")
+      Text("Copie estes campos para o formulário \"Add custom connector\" do Claude.")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
         .fixedSize(horizontal: false, vertical: true)
@@ -1027,7 +1027,7 @@ struct MemoryExportDestinationSheet: View {
         value: destination.cloudOAuthClientID ?? "",
         copyLabel: "OAuth Client ID")
 
-      Text("Leave OAuth Client Secret blank.")
+      Text("Deixe o OAuth Client Secret em branco.")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
         .fixedSize(horizontal: false, vertical: true)
@@ -1037,7 +1037,7 @@ struct MemoryExportDestinationSheet: View {
   @ViewBuilder
   private var chatGPTDeveloperModeFields: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
-      Text("Copy these fields only when creating a ChatGPT developer-mode custom app.")
+      Text("Copie estes campos só ao criar um app personalizado do ChatGPT em modo desenvolvedor.")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
         .fixedSize(horizontal: false, vertical: true)
@@ -1058,7 +1058,7 @@ struct MemoryExportDestinationSheet: View {
         label: "OAuth Client ID",
         value: destination.cloudOAuthClientID ?? "",
         copyLabel: "OAuth Client ID")
-      Text("Leave OAuth Client Secret blank.")
+      Text("Deixe o OAuth Client Secret em branco.")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
       mcpCodeRow(
@@ -1079,9 +1079,9 @@ struct MemoryExportDestinationSheet: View {
   @ViewBuilder
   private var mcpKeyRow: some View {
     if let key = model.mcpKey {
-      mcpCodeRow(label: "Your key", value: key, copyLabel: "Key", secure: true)
+      mcpCodeRow(label: "Sua chave", value: key, copyLabel: "Chave", secure: true)
     } else {
-      Button(model.isLoadingMCPKey ? "Generating…" : "Generate connection key") {
+      Button(model.isLoadingMCPKey ? "Gerando…" : "Gerar chave de conexão") {
         Task { await model.generateMCPKey() }
       }
       .buttonStyle(OmiButtonStyle(.primary))
@@ -1103,7 +1103,7 @@ struct MemoryExportDestinationSheet: View {
           .lineLimit(1)
           .truncationMode(.middle)
           .frame(maxWidth: .infinity, alignment: .leading)
-        Button("Copy") { model.copyToPasteboard(value, label: copyLabel) }
+        Button("Copiar") { model.copyToPasteboard(value, label: copyLabel) }
           .buttonStyle(.plain)
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
@@ -1149,21 +1149,21 @@ struct MemoryExportDestinationSheet: View {
     case .notion:
       let notionConnected = NotionMCPConnector.shared.isConnected
       let notionSteps = [
-        "Click Connect and approve Omi in your browser",
-        "Omi creates an Omi Memories page in your workspace. Hit Sync anytime to refresh",
-        "Find the page in your Notion sidebar or search",
+        "Clique em Conectar e aprove o Omi no seu navegador",
+        "O Omi cria uma página Omi Memories no seu workspace. Clique em Sincronizar quando quiser atualizar",
+        "Encontre a página na barra lateral ou na busca do Notion",
       ]
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
         selectedLocationCard(
-          title: notionConnected ? "Connected to Notion" : "Not connected yet",
+          title: notionConnected ? "Conectado ao Notion" : "Ainda não conectado",
           value: notionConnected
             ? (NotionMCPConnector.shared.memoriesPageURL?.absoluteString
-              ?? "First Sync creates your Omi Memories page.")
-            : "One browser approval connects your workspace."
+              ?? "A primeira sincronização cria sua página Omi Memories.")
+            : "Uma aprovação no navegador conecta seu workspace."
         )
 
         if notionConnected {
-          Button("Disconnect") {
+          Button("Desconectar") {
             NotionMCPConnector.shared.disconnect()
             statuses[.notion] = nil
           }
@@ -1190,19 +1190,19 @@ struct MemoryExportDestinationSheet: View {
 
     case .obsidian:
       let obsidianSteps = [
-        "Choose your vault folder",
-        "Omi writes your memories to Omi/Memories.md and opens Obsidian. Hit Sync anytime to refresh",
-        "If Obsidian asks “Do you trust the author of this vault?”, pick either option. Omi only adds a Markdown note",
+        "Escolha a pasta do seu cofre",
+        "O Omi grava suas memórias em Omi/Memories.md e abre o Obsidian. Clique em Sincronizar quando quiser atualizar",
+        "Se o Obsidian perguntar “Do you trust the author of this vault?”, escolha qualquer opção. O Omi só adiciona uma nota Markdown",
       ]
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
         selectedLocationCard(
-          title: model.obsidianVaultPath.isEmpty ? "No vault selected yet" : "Selected vault",
+          title: model.obsidianVaultPath.isEmpty ? "Nenhum cofre selecionado ainda" : "Cofre selecionado",
           value: model.obsidianVaultPath.isEmpty
-            ? "Pick your Obsidian vault once, then Omi will keep refreshing `Omi/Memories.md`."
+            ? "Escolha seu cofre do Obsidian uma vez e o Omi mantém `Omi/Memories.md` atualizado."
             : model.obsidianVaultPath
         )
 
-        Button(model.obsidianVaultPath.isEmpty ? "Choose vault" : "Change vault") {
+        Button(model.obsidianVaultPath.isEmpty ? "Escolher cofre" : "Trocar cofre") {
           model.pickObsidianVault()
         }
         .buttonStyle(.plain)
@@ -1228,7 +1228,7 @@ struct MemoryExportDestinationSheet: View {
     case .chatgpt, .claude, .gemini:
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
         Text(
-          "Omi will generate a Markdown memory pack, copy the prompt and export together, reveal the file in Finder, and open \(destination.title)."
+          "O Omi vai gerar um pacote de memórias em Markdown, copiar o prompt e a exportação juntos, mostrar o arquivo no Finder e abrir \(destination.title)."
         )
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
@@ -1269,13 +1269,13 @@ struct MemoryExportDestinationSheet: View {
     switch destination {
     case .notion:
       return NotionMCPConnector.shared.isConnected
-        ? ("Sync", "Syncing…") : ("Connect", "Connecting…")
+        ? ("Sincronizar", "Sincronizando…") : ("Conectar", "Conectando…")
     case .obsidian:
-      return (model.obsidianVaultPath.isEmpty ? "Choose vault" : "Export", "Exporting…")
+      return (model.obsidianVaultPath.isEmpty ? "Escolher cofre" : "Exportar", "Exportando…")
     case .chatgpt, .claude, .gemini:
-      return ("Copy & open", "Preparing…")
+      return ("Copiar e abrir", "Preparando…")
     case .agents, .claudeCode, .codex, .openclaw, .hermes:
-      return ("Copy", "…")
+      return ("Copiar", "…")
     }
   }
 

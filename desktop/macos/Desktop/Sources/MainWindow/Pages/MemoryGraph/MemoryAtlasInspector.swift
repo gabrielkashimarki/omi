@@ -59,8 +59,8 @@ enum MemoryAtlasInspectorSubject: Equatable {
   /// Header for the section listing what this subject connects to.
   var relatedSectionTitle: String {
     switch self {
-    case .entity: return "Connections"
-    case .relationship: return "Between"
+    case .entity: return "Conexões"
+    case .relationship: return "Entre"
     }
   }
 }
@@ -114,7 +114,7 @@ struct MemoryAtlasDetailPanel: View {
             }
           }
 
-          section("From your memories") {
+          section("Das suas memórias") {
             evidenceSection
           }
         }
@@ -136,12 +136,12 @@ struct MemoryAtlasDetailPanel: View {
         ProgressView()
           .controlSize(.small)
           .tint(Ink.secondary)
-        Text("Reading your memories…")
+        Text("Lendo suas memórias…")
           .scaledFont(size: 11)
           .foregroundColor(Ink.secondary)
       }
     } else if evidence.isEmpty && unresolvedEvidenceCount == 0 {
-      Text("Still finding the memories this comes from.")
+      Text("Ainda localizando as memórias de onde isto vem.")
         .scaledFont(size: 11)
         .foregroundColor(Ink.secondary)
         .fixedSize(horizontal: false, vertical: true)
@@ -154,7 +154,7 @@ struct MemoryAtlasDetailPanel: View {
         // means the cited memory genuinely is not on this device — not that
         // the list simply had not paged far enough yet.
         Text(
-          "\(unresolvedEvidenceCount) cited memor\(unresolvedEvidenceCount == 1 ? "y" : "ies") could not be found on this device"
+          "\(unresolvedEvidenceCount) \(unresolvedEvidenceCount == 1 ? "memória citada não foi encontrada" : "memórias citadas não foram encontradas") neste dispositivo"
         )
         .scaledFont(size: 10)
         .foregroundColor(Ink.secondary)
@@ -174,7 +174,7 @@ struct MemoryAtlasDetailPanel: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Back to the previous entity")
+        .help("Voltar para a entidade anterior")
         .accessibilityIdentifier("memory_atlas_inspector_back")
       }
 
@@ -204,10 +204,10 @@ struct MemoryAtlasDetailPanel: View {
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
-      .help("Center the map on this entity")
+      .help("Centralizar o mapa nesta entidade")
       .accessibilityIdentifier("memory_atlas_focus_selection")
 
-      DismissButton(action: onClose, accessibilityLabel: "Clear Selection", size: .compact)
+      DismissButton(action: onClose, accessibilityLabel: "Limpar seleção", size: .compact)
         .accessibilityIdentifier("memory_atlas_clear_selection")
     }
     .padding(.horizontal, 16)
@@ -276,7 +276,7 @@ struct MemoryAtlasDetailPanel: View {
         hoveredRelatedID = nil
       }
     }
-    .help("Open \(row.otherLabel)")
+    .help("Abrir \(row.otherLabel)")
     .accessibilityIdentifier("memory_atlas_connection_row")
   }
 
@@ -301,7 +301,7 @@ struct MemoryAtlasDetailPanel: View {
           }
           Spacer(minLength: 4)
           HStack(spacing: 3) {
-            Text("Open")
+            Text("Abrir")
               .scaledFont(size: 9.5, weight: .medium)
             Image(systemName: "arrow.up.right")
               .scaledFont(size: 8, weight: .semibold)
@@ -326,7 +326,7 @@ struct MemoryAtlasDetailPanel: View {
         hoveredEvidenceID = nil
       }
     }
-    .help("Open this memory on the Memories page")
+    .help("Abrir esta memória na página Memórias")
     .accessibilityIdentifier("memory_atlas_evidence_row")
   }
 }

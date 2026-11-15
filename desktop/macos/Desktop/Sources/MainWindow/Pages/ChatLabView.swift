@@ -470,7 +470,7 @@ class ChatLabViewModel: ObservableObject {
   }
 
   private func callClaude(systemPrompt: String, userMessage: String) async -> (String, Int, String) {
-    guard !anthropicKey.isEmpty else { return ("No API key", 0, "") }
+    guard !anthropicKey.isEmpty else { return ("Sem chave de API", 0, "") }
 
     do {
       let url = URL(string: "https://api.anthropic.com/v1/messages")!
@@ -491,7 +491,7 @@ class ChatLabViewModel: ObservableObject {
       let (data, _) = try await URLSession.shared.data(for: request)
       let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
       let content = json?["content"] as? [[String: Any]]
-      let responseText = content?.first?["text"] as? String ?? "No response"
+      let responseText = content?.first?["text"] as? String ?? "Sem resposta"
 
       // Grade the response
       let (aiScore, aiComment) = await gradeResponse(question: userMessage, response: responseText)
@@ -499,7 +499,7 @@ class ChatLabViewModel: ObservableObject {
       return (responseText, aiScore, aiComment)
     } catch {
       log("ChatLab: Claude API error: \(error)")
-      return ("Error: \(error.localizedDescription)", 0, "")
+      return ("Erro: \(error.localizedDescription)", 0, "")
     }
   }
 
@@ -546,9 +546,9 @@ class ChatLabViewModel: ObservableObject {
         return (score, comment)
       }
 
-      return (0, "Failed to parse grade")
+      return (0, "Falha ao ler a nota")
     } catch {
-      return (0, "Grading error")
+      return (0, "Erro na avaliação")
     }
   }
 }
@@ -588,7 +588,7 @@ struct ChatLabView: View {
   private var promptHistorySection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
       HStack {
-        Text("Prompt Version History")
+        Text("Histórico de versões do prompt")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -603,7 +603,7 @@ struct ChatLabView: View {
             } else {
               Image(systemName: "arrow.clockwise").scaledFont(size: OmiType.caption)
             }
-            Text("Refresh").scaledFont(size: OmiType.caption, weight: .medium)
+            Text("Atualizar").scaledFont(size: OmiType.caption, weight: .medium)
           }
           .foregroundColor(Ink.secondary)
         }
@@ -614,14 +614,14 @@ struct ChatLabView: View {
         HStack {
           Spacer()
           ProgressView()
-          Text("Loading git history & ratings…")
+          Text("Carregando histórico do git e avaliações…")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
           Spacer()
         }
         .padding(.vertical, OmiSpacing.page)
       } else if vm.promptHistory.isEmpty {
-        Text("No prompt history found")
+        Text("Nenhum histórico de prompt encontrado")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
           .frame(maxWidth: .infinity)
@@ -631,15 +631,15 @@ struct ChatLabView: View {
         HStack(spacing: 0) {
           Text("V")
             .frame(width: 30, alignment: .center)
-          Text("Date")
+          Text("Data")
             .frame(width: 70, alignment: .leading)
-          Text("Change")
+          Text("Mudança")
             .frame(maxWidth: .infinity, alignment: .leading)
           Text("👍")
             .frame(width: 40, alignment: .center)
           Text("👎")
             .frame(width: 40, alignment: .center)
-          Text("Score")
+          Text("Nota")
             .frame(width: 60, alignment: .center)
         }
         .scaledFont(size: OmiType.caption, weight: .semibold)
@@ -718,7 +718,7 @@ struct ChatLabView: View {
                   .foregroundColor(Ink.secondary)
 
                 ScrollView {
-                  Text(entry.fullPrompt.isEmpty ? "Prompt not available" : entry.fullPrompt)
+                  Text(entry.fullPrompt.isEmpty ? "Prompt indisponível" : entry.fullPrompt)
                     .scaledFont(size: OmiType.caption)
                     .foregroundColor(Ink.secondary)
                     .textSelection(.enabled)
@@ -764,7 +764,7 @@ struct ChatLabView: View {
   private var promptEditorSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
       HStack {
-        Text("Prompt Editor")
+        Text("Editor de prompt")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -788,7 +788,7 @@ struct ChatLabView: View {
 
       // Anthropic API key (user must provide their own)
       VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-        Text("Anthropic API Key")
+        Text("Chave de API da Anthropic")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
 
@@ -800,7 +800,7 @@ struct ChatLabView: View {
           .glassField()
 
         if vm.userApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-          Text("Enter your own Anthropic API key to use ChatLab evaluation features.")
+          Text("Informe sua própria chave de API da Anthropic para usar os recursos de avaliação do ChatLab.")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(PageGlass.warning)
         }
@@ -808,7 +808,7 @@ struct ChatLabView: View {
 
       // Floating prefix
       VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-        Text("Floating Bar Prefix")
+        Text("Prefixo da barra flutuante")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
 
@@ -824,7 +824,7 @@ struct ChatLabView: View {
 
       // Main prompt
       VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-        Text("Main Prompt")
+        Text("Prompt principal")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
 
@@ -843,7 +843,7 @@ struct ChatLabView: View {
           HStack(spacing: OmiSpacing.xs) {
             Image(systemName: "square.and.arrow.down")
               .scaledFont(size: OmiType.caption)
-            Text("Save as New Version")
+            Text("Salvar como nova versão")
           }
         }
         .buttonStyle(OmiButtonStyle(.primary, size: .compact))
@@ -860,7 +860,7 @@ struct ChatLabView: View {
               Image(systemName: "sparkles")
                 .scaledFont(size: OmiType.caption)
             }
-            Text("Generate Next Version")
+            Text("Gerar próxima versão")
           }
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
@@ -869,15 +869,15 @@ struct ChatLabView: View {
     }
     .padding(OmiSpacing.xl)
     .glassCard()
-    .alert("Save as New Version", isPresented: $showSaveDialog) {
-      TextField("Version name", text: $newVersionName)
-      Button("Save") {
+    .alert("Salvar como nova versão", isPresented: $showSaveDialog) {
+      TextField("Nome da versão", text: $newVersionName)
+      Button("Salvar") {
         if !newVersionName.isEmpty {
           vm.saveAsNewVersion(name: newVersionName)
           newVersionName = ""
         }
       }
-      Button("Cancel", role: .cancel) { newVersionName = "" }
+      Button("Cancelar", role: .cancel) { newVersionName = "" }
     }
   }
 
@@ -886,7 +886,7 @@ struct ChatLabView: View {
   private var evaluationSection: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
       HStack {
-        Text("Evaluation")
+        Text("Avaliação")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -904,7 +904,7 @@ struct ChatLabView: View {
               Image(systemName: "play.fill")
                 .scaledFont(size: OmiType.caption)
             }
-            Text("Run All Questions")
+            Text("Executar todas as perguntas")
           }
         }
         // `disabled` is the whole "running" treatment now: the style dims a disabled button, so a
@@ -917,17 +917,17 @@ struct ChatLabView: View {
       VStack(spacing: 0) {
         // Header
         HStack {
-          Text("Question")
+          Text("Pergunta")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Ink.secondary)
             .frame(width: 200, alignment: .leading)
 
-          Text("Context")
+          Text("Contexto")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Ink.secondary)
             .frame(width: 80)
 
-          Text("Response")
+          Text("Resposta")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Ink.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -937,7 +937,7 @@ struct ChatLabView: View {
             .foregroundColor(Ink.secondary)
             .frame(width: 40)
 
-          Text("You")
+          Text("Você")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Ink.secondary)
             .frame(width: 80)
@@ -971,13 +971,13 @@ struct ChatLabView: View {
               if eval.isRunning {
                 HStack(spacing: OmiSpacing.xs) {
                   ProgressView().scaleEffect(0.6)
-                  Text("Running…")
+                  Text("Executando…")
                     .scaledFont(size: OmiType.caption)
                     .foregroundColor(Ink.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
               } else if eval.response.isEmpty {
-                Text("Not evaluated")
+                Text("Não avaliado")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
                   .frame(maxWidth: .infinity, alignment: .leading)
@@ -1034,7 +1034,7 @@ struct ChatLabView: View {
     Group {
       if vm.versions.count > 1 {
         VStack(alignment: .leading, spacing: OmiSpacing.md) {
-          Text("Version Comparison")
+          Text("Comparação de versões")
             .scaledFont(size: OmiType.heading, weight: .semibold)
             .foregroundColor(Ink.primary)
 
@@ -1055,7 +1055,7 @@ struct ChatLabView: View {
                       .foregroundColor(scoreColor(Int(v.avgAIScore)))
                   }
                   VStack(spacing: OmiSpacing.hairline) {
-                    Text("Human")
+                    Text("Humano")
                       .scaledFont(size: OmiType.micro)
                       .foregroundColor(Ink.secondary)
                     Text(String(format: "%.1f", v.avgHumanScore))
@@ -1152,7 +1152,7 @@ class ChatLabWindowManager {
       backing: .buffered,
       defer: false
     )
-    w.title = "Chat Lab — Prompt Iteration"
+    w.title = "Chat Lab (iteração de prompt)"
     w.contentView = hostingView
     // Transparent + light-pinned, or there is no glass: a window still painting its own
     // `backgroundColor` slips an opaque sheet between the desktop and the blur.

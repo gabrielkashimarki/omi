@@ -6,7 +6,7 @@ import SwiftUI
 
 enum AppsPageCategoryFilter {
   static let allCategoriesOptionId = ""
-  static let allCategoriesTitle = "All Categories"
+  static let allCategoriesTitle = "Todas as categorias"
 
   enum Selection: Equatable {
     case allCategories
@@ -396,15 +396,15 @@ struct AppsPage: View {
 
   private var searchPlaceholder: String {
     switch selectedSection {
-    case .mcp: return "Search MCP servers"
-    case .skills: return "Search skills"
+    case .mcp: return "Buscar servidores MCP"
+    case .skills: return "Buscar skills"
     case .apps: break
     }
     switch selectedKind {
-    case .all: return "Search apps, imports, and exports"
-    case .apps: return "Search apps"
-    case .imports: return "Search imports"
-    case .exports: return "Search exports"
+    case .all: return "Buscar apps, importações e exportações"
+    case .apps: return "Buscar apps"
+    case .imports: return "Buscar importações"
+    case .exports: return "Buscar exportações"
     }
   }
 
@@ -414,7 +414,7 @@ struct AppsPage: View {
 
     if appProvider.showInstalledOnly {
       filters.append(
-        PageActiveFilter(id: "installed", title: "Installed") {
+        PageActiveFilter(id: "installed", title: "Instalados") {
           setConnectionFilter(installedOnly: false)
         })
     }
@@ -442,7 +442,7 @@ struct AppsPage: View {
     } label: {
       PageQueryControlLabel(
         icon: selectedKind.icon,
-        dimension: "Kind",
+        dimension: "Tipo",
         value: selectedKind.rawValue,
         isActive: selectedKind != .all
       )
@@ -450,25 +450,25 @@ struct AppsPage: View {
     .menuStyle(.button)
     .buttonStyle(.plain)
     .accessibilityIdentifier("apps-kind-filter")
-    .help("Choose which app catalog to show")
+    .help("Escolha qual catálogo de apps mostrar")
   }
 
   private var appsFiltersMenu: some View {
     Menu {
-      Section("Connection") {
+      Section("Conexão") {
         Button {
           setConnectionFilter(installedOnly: false)
         } label: {
-          Label("All apps", systemImage: "square.grid.2x2")
+          Label("Todos os apps", systemImage: "square.grid.2x2")
         }
         Button {
           setConnectionFilter(installedOnly: true)
         } label: {
-          Label("Installed", systemImage: "checkmark.circle")
+          Label("Instalados", systemImage: "checkmark.circle")
         }
       }
 
-      Section("Category") {
+      Section("Categoria") {
         ForEach(AppsPageCategoryFilter.categoryDropdownOptions(categories: appProvider.categories)) { option in
           Button(option.title) {
             viewAllSection = nil
@@ -485,13 +485,13 @@ struct AppsPage: View {
 
       if !activeAppFilters.isEmpty {
         Divider()
-        Button("Clear all filters", action: clearAppFilters)
+        Button("Limpar todos os filtros", action: clearAppFilters)
       }
     } label: {
       PageQueryControlLabel(
         icon: "line.3.horizontal.decrease",
-        dimension: activeAppFilters.isEmpty ? nil : "Filter",
-        value: activeAppFilters.isEmpty ? "Filter" : "\(activeAppFilters.count)",
+        dimension: activeAppFilters.isEmpty ? nil : "Filtro",
+        value: activeAppFilters.isEmpty ? "Filtro" : "\(activeAppFilters.count)",
         isActive: !activeAppFilters.isEmpty,
         dimensionSeparator: " ·"
       )
@@ -499,14 +499,14 @@ struct AppsPage: View {
     .menuStyle(.button)
     .buttonStyle(.plain)
     .accessibilityIdentifier("apps-filter-menu")
-    .help("Filter apps by connection or category")
+    .help("Filtre apps por conexão ou categoria")
   }
 
   private var selectedCategoryTitle: String {
     guard let selectedCategory = appProvider.selectedCategory,
       let category = appProvider.categories.first(where: { $0.id == selectedCategory })
     else {
-      return "All"
+      return "Todas"
     }
     return category.title
   }
@@ -566,7 +566,7 @@ struct AppsPage: View {
           NSWorkspace.shared.open(url)
         }
       } label: {
-        Label("Build an app…", systemImage: "app.badge.fill")
+        Label("Criar um app…", systemImage: "app.badge.fill")
       }
     }
   }
@@ -633,7 +633,7 @@ struct AppsPage: View {
     case .empty:
       globalSearchEmptyState
     case .results(let total):
-      Text("Search Results (\(total))")
+      Text("Resultados da busca (\(total))")
         .scaledFont(size: OmiType.heading, weight: .semibold)
         .foregroundStyle(Ink.primary)
 
@@ -642,14 +642,14 @@ struct AppsPage: View {
           statusStore: connectorStatusStore,
           onSelectConnector: { connector in selectConnector(connector) },
           connectors: visibleImportConnectors,
-          title: "Imports (\(visibleImportConnectors.count))"
+          title: "Importações (\(visibleImportConnectors.count))"
         )
       }
 
       if !visibleExportEntries.isEmpty {
         ExportsSection(
           statuses: exportStatuses,
-          title: "Exports (\(visibleExportEntries.count))",
+          title: "Exportações (\(visibleExportEntries.count))",
           entriesOverride: visibleExportEntries
         ) { destination in
           selectDestination(destination)
@@ -699,7 +699,7 @@ struct AppsPage: View {
   private var marketplaceSections: some View {
     if !appProvider.popularApps.isEmpty {
       AppGridSection(
-        title: "Other",
+        title: "Outros",
         apps: Array(appProvider.popularApps.prefix(6)),
         appProvider: appProvider,
         onSelectApp: selectApp,
@@ -713,7 +713,7 @@ struct AppsPage: View {
 
     if !appProvider.integrationApps.isEmpty {
       AppGridSection(
-        title: "Integrations",
+        title: "Integrações",
         apps: Array(appProvider.integrationApps.prefix(6)),
         appProvider: appProvider,
         onSelectApp: selectApp,
@@ -727,7 +727,7 @@ struct AppsPage: View {
 
     if !appProvider.notificationApps.isEmpty {
       AppGridSection(
-        title: "Realtime Notifications",
+        title: "Notificações em tempo real",
         apps: Array(appProvider.notificationApps.prefix(6)),
         appProvider: appProvider,
         onSelectApp: selectApp,
@@ -795,22 +795,22 @@ struct AppsPage: View {
   }
 
   private var searchLoadingState: some View {
-    GlassLoadingState(label: "Searching apps, imports, and exports…", placement: .scrolling)
+    GlassLoadingState(label: "Buscando apps, importações e exportações…", placement: .scrolling)
   }
 
   private var searchFailureState: some View {
     GlassErrorState(
-      title: "Couldn't Finish Searching Apps", placement: .scrolling,
+      title: "Não foi possível concluir a busca de apps", placement: .scrolling,
       retry: { Task { await appProvider.searchApps() } })
   }
 
   private var globalSearchEmptyState: some View {
     GlassEmptyState(
       systemImage: "magnifyingglass",
-      title: "No results for “\(searchText.trimmingCharacters(in: .whitespacesAndNewlines))”",
+      title: "Nenhum resultado para “\(searchText.trimmingCharacters(in: .whitespacesAndNewlines))”",
       placement: .scrolling
     ) {
-      Button("Clear Search") { searchText = "" }
+      Button("Limpar busca") { searchText = "" }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
     }
   }
@@ -818,7 +818,7 @@ struct AppsPage: View {
   private var marketplaceSearchProgress: some View {
     HStack(spacing: OmiSpacing.sm) {
       ProgressView().controlSize(.small)
-      Text("Searching marketplace apps…")
+      Text("Buscando apps do marketplace…")
         .scaledFont(size: OmiType.caption)
         .foregroundStyle(Ink.secondary)
     }
@@ -826,7 +826,7 @@ struct AppsPage: View {
 
   private var marketplaceSearchFailure: some View {
     HStack(spacing: OmiSpacing.sm) {
-      Text("Marketplace apps couldn't be loaded.")
+      Text("Não foi possível carregar os apps do marketplace.")
         .scaledFont(size: OmiType.caption)
         .foregroundStyle(Ink.secondary)
       Button(GlassPageState.retryTitle) { Task { await appProvider.searchApps() } }
@@ -854,22 +854,22 @@ struct AppsPage: View {
     if let section = viewAllSection {
       let title =
         switch section {
-        case "featured": "Featured"
-        case "integrations": "Integrations"
-        case "notifications": "Realtime Notifications"
+        case "featured": "Em destaque"
+        case "integrations": "Integrações"
+        case "notifications": "Notificações em tempo real"
         default: "Apps"
         }
       return "\(title) (\(apps.count))"
     }
     if !searchText.isEmpty {
-      return "Search Results (\(apps.count))"
+      return "Resultados da busca (\(apps.count))"
     }
     if let categoryId = appProvider.selectedCategory,
       let category = appProvider.categories.first(where: { $0.id == categoryId })
     {
       return "\(category.title) (\(apps.count))"
     }
-    return "Results (\(apps.count))"
+    return "Resultados (\(apps.count))"
   }
 
   private var filteredAppsPresentation: AppsFilteredResultsPresentation {
@@ -887,12 +887,12 @@ struct AppsPage: View {
   private var filteredAppsContent: some View {
     switch filteredAppsPresentation {
     case .loading:
-      GlassLoadingState(label: "Searching…", placement: .scrolling)
+      GlassLoadingState(label: "Buscando…", placement: .scrolling)
     case .empty:
-      GlassEmptyState(systemImage: "magnifyingglass", title: "No Apps Found", placement: .scrolling)
+      GlassEmptyState(systemImage: "magnifyingglass", title: "Nenhum app encontrado", placement: .scrolling)
     case .failure:
       GlassErrorState(
-        title: "Couldn't Load Apps", placement: .scrolling,
+        title: "Não foi possível carregar os apps", placement: .scrolling,
         retry: { Task { await appProvider.searchApps() } })
     case .results:
       filteredAppsGrid
@@ -920,7 +920,7 @@ struct AppsPage: View {
         if appProvider.isLoadingMore {
           ProgressView()
             .controlSize(.small)
-          Text("Loading more…")
+          Text("Carregando mais…")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
         } else {
@@ -981,79 +981,79 @@ struct ImportConnector: Identifiable {
   static let all: [ImportConnector] = [
     ImportConnector(
       id: "calendar",
-      title: "Calendar",
+      title: "Agenda",
       subtitle: "Google Calendar",
-      description: "Import events and recurring routines.",
+      description: "Importe eventos e rotinas recorrentes.",
       brand: .calendar,
-      statusText: "Not connected",
+      statusText: "Não conectado",
       metricText: nil,
-      actionTitle: "Connect",
+      actionTitle: "Conectar",
       isConnected: false
     ),
     ImportConnector(
       id: "email",
-      title: "Email",
+      title: "E-mail",
       subtitle: "Gmail",
-      description: "Import email history and follow-ups.",
+      description: "Importe o histórico de e-mails e os follow-ups.",
       brand: .gmail,
-      statusText: "Not connected",
+      statusText: "Não conectado",
       metricText: nil,
-      actionTitle: "Connect",
+      actionTitle: "Conectar",
       isConnected: false
     ),
     ImportConnector(
       id: "local-files",
-      title: "Local files",
-      subtitle: "This Mac",
-      description: "Index documents, code, and working folders.",
+      title: "Arquivos locais",
+      subtitle: "Este Mac",
+      description: "Indexe documentos, código e pastas de trabalho.",
       brand: .localFiles,
-      statusText: "Not connected",
+      statusText: "Não conectado",
       metricText: nil,
-      actionTitle: "Connect",
+      actionTitle: "Conectar",
       isConnected: false
     ),
     ImportConnector(
       id: "apple-notes",
       title: "Apple Notes",
-      subtitle: "Private notes",
-      description: "Import your notes.",
+      subtitle: "Notas privadas",
+      description: "Importe suas notas.",
       brand: .appleNotes,
-      statusText: "Not connected",
+      statusText: "Não conectado",
       metricText: nil,
-      actionTitle: "Connect",
+      actionTitle: "Conectar",
       isConnected: false
     ),
     ImportConnector(
       id: "x",
       title: "X (Twitter)",
-      subtitle: "Your posts & bookmarks",
-      description: "Connect your X account so Omi learns from your tweets and bookmarks.",
+      subtitle: "Seus posts e favoritos",
+      description: "Conecte sua conta do X para o Omi aprender com seus tweets e favoritos.",
       brand: .x,
-      statusText: "Not connected",
+      statusText: "Não conectado",
       metricText: nil,
-      actionTitle: "Connect",
+      actionTitle: "Conectar",
       isConnected: false
     ),
     ImportConnector(
       id: "chatgpt",
       title: "ChatGPT",
-      subtitle: "Memory import",
-      description: "Paste a memory export into Omi.",
+      subtitle: "Importação de memórias",
+      description: "Cole uma exportação de memórias no Omi.",
       brand: .chatgpt,
-      statusText: "Optional",
+      statusText: "Opcional",
       metricText: nil,
-      actionTitle: "Connect",
+      actionTitle: "Conectar",
       isConnected: false
     ),
     ImportConnector(
       id: "claude",
       title: "Claude",
-      subtitle: "Memory import",
-      description: "Paste a memory export into Omi.",
+      subtitle: "Importação de memórias",
+      description: "Cole uma exportação de memórias no Omi.",
       brand: .claude,
-      statusText: "Optional",
+      statusText: "Opcional",
       metricText: nil,
-      actionTitle: "Connect",
+      actionTitle: "Conectar",
       isConnected: false
     ),
   ]
@@ -1112,9 +1112,9 @@ final class ImportConnectorStatusStore: ObservableObject {
     let isConnected = isConnected(connector: connector, metrics: metrics)
     let actionTitle: String
     if manualConnectorIDs.contains(connector.id) {
-      actionTitle = isConnected ? "Update" : "Connect"
+      actionTitle = isConnected ? "Atualizar" : "Conectar"
     } else {
-      actionTitle = isConnected ? "Sync now" : "Connect"
+      actionTitle = isConnected ? "Sincronizar agora" : "Conectar"
     }
 
     return Snapshot(
@@ -1266,11 +1266,11 @@ final class ImportConnectorStatusStore: ObservableObject {
     {
       var metrics = metricsByID["chatgpt"] ?? ConnectorMetrics()
       metrics.memoryCount = legacyChatGPTCount
-      metrics.availabilityText = "Imported during onboarding"
+      metrics.availabilityText = "Importado durante a configuração inicial"
       metricsByID["chatgpt"] = metrics
       defaults.set(legacyChatGPTCount, forKey: chatGPTMemoryCountKey)
       defaults.set(
-        "Imported during onboarding",
+        "Importado durante a configuração inicial",
         forKey: storageKey(prefix: availabilityTextKeyPrefix, connectorID: "chatgpt")
       )
     }
@@ -1281,11 +1281,11 @@ final class ImportConnectorStatusStore: ObservableObject {
     {
       var metrics = metricsByID["claude"] ?? ConnectorMetrics()
       metrics.memoryCount = legacyClaudeCount
-      metrics.availabilityText = "Imported during onboarding"
+      metrics.availabilityText = "Importado durante a configuração inicial"
       metricsByID["claude"] = metrics
       defaults.set(legacyClaudeCount, forKey: claudeMemoryCountKey)
       defaults.set(
-        "Imported during onboarding",
+        "Importado durante a configuração inicial",
         forKey: storageKey(prefix: availabilityTextKeyPrefix, connectorID: "claude")
       )
     }
@@ -1357,9 +1357,9 @@ final class ImportConnectorStatusStore: ObservableObject {
         )
       }
       if metrics.lastSyncedAt != nil || result.count > 0 {
-        metrics.availabilityText = "On-device index"
+        metrics.availabilityText = "Índice no dispositivo"
         defaults.set(
-          "On-device index",
+          "Índice no dispositivo",
           forKey: storageKey(prefix: availabilityTextKeyPrefix, connectorID: "local-files")
         )
       } else {
@@ -1422,13 +1422,13 @@ final class ImportConnectorStatusStore: ObservableObject {
     isConnected: Bool
   ) -> String {
     if connector.id == "apple-notes", metrics.requiresVerification {
-      return "Reconnect to verify access"
+      return "Reconecte para verificar o acesso"
     }
 
     if let sourceCount = metrics.sourceCount {
       if let memoryCount = metrics.memoryCount, memoryCount > 0 {
         return
-          "\(sourceCount.formatted()) \(sourceLabel(for: connector, count: sourceCount)) • \(memoryCount.formatted()) memories"
+          "\(sourceCount.formatted()) \(sourceLabel(for: connector, count: sourceCount)) • \(memoryCount.formatted()) memórias"
       }
       if isConnected || sourceCount > 0 {
         return "\(sourceCount.formatted()) \(sourceLabel(for: connector, count: sourceCount))"
@@ -1436,7 +1436,7 @@ final class ImportConnectorStatusStore: ObservableObject {
     }
 
     if let memoryCount = metrics.memoryCount, memoryCount > 0 {
-      return "\(memoryCount.formatted()) memories imported"
+      return "\(memoryCount.formatted()) memórias importadas"
     }
 
     if isConnected, let availabilityText = metrics.availabilityText {
@@ -1454,13 +1454,13 @@ final class ImportConnectorStatusStore: ObservableObject {
     if connector.id == "apple-notes", metrics.requiresVerification,
       let lastSyncedAt = metrics.lastSyncedAt
     {
-      return "Last imported \(relativeTimestamp(lastSyncedAt))"
+      return "Última importação \(relativeTimestamp(lastSyncedAt))"
     }
 
     if let lastSyncedAt = metrics.lastSyncedAt {
-      var text = "Synced \(relativeTimestamp(lastSyncedAt))"
+      var text = "Sincronizado \(relativeTimestamp(lastSyncedAt))"
       if let lastDeltaCount = metrics.lastDeltaCount, lastDeltaCount > 0 {
-        text += " • +\(lastDeltaCount.formatted()) new"
+        text += " • +\(lastDeltaCount.formatted()) novos"
       }
       return text
     }
@@ -1475,23 +1475,23 @@ final class ImportConnectorStatusStore: ObservableObject {
       return metricText
     }
 
-    return manualConnectorIDs.contains(connector.id) && isConnected ? "Imported earlier" : nil
+    return manualConnectorIDs.contains(connector.id) && isConnected ? "Importado antes" : nil
   }
 
   private func sourceLabel(for connector: ImportConnector, count: Int) -> String {
     switch connector.id {
     case "calendar":
-      return count == 1 ? "event" : "events"
+      return count == 1 ? "evento" : "eventos"
     case "email":
-      return count == 1 ? "email" : "emails"
+      return count == 1 ? "e-mail" : "e-mails"
     case "local-files":
-      return count == 1 ? "file indexed" : "files indexed"
+      return count == 1 ? "arquivo indexado" : "arquivos indexados"
     case "apple-notes":
-      return count == 1 ? "note" : "notes"
+      return count == 1 ? "nota" : "notas"
     case "x":
       return count == 1 ? "post" : "posts"
     default:
-      return count == 1 ? "item" : "items"
+      return count == 1 ? "item" : "itens"
     }
   }
 
@@ -1506,7 +1506,7 @@ struct ImportsSection: View {
   var connectors: [ImportConnector] = ImportConnector.all
   var searchText: String = ""
   var onClearSearch: (() -> Void)? = nil
-  var title = "Imports"
+  var title = "Importações"
 
   private var normalizedSearchText: String {
     searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1521,11 +1521,11 @@ struct ImportsSection: View {
       if connectors.isEmpty && !normalizedSearchText.isEmpty {
         GlassEmptyState(
           systemImage: "magnifyingglass",
-          title: "No imports match “\(normalizedSearchText)”",
+          title: "Nenhuma importação corresponde a “\(normalizedSearchText)”",
           placement: .scrolling
         ) {
           if let onClearSearch {
-            Button("Clear Search", action: onClearSearch)
+            Button("Limpar busca", action: onClearSearch)
               .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
           }
         }
@@ -1796,9 +1796,9 @@ struct ImportConnectorSheet: View {
     }
     .shellConfirmation(
       isPresented: $showingDisconnectConfirmation,
-      title: "Disconnect Google Calendar?",
-      message: "Omi will stop syncing and using your Google Calendar. Memories already imported into Omi will remain.",
-      confirmTitle: "Disconnect"
+      title: "Desconectar o Google Agenda?",
+      message: "O Omi vai parar de sincronizar e usar seu Google Agenda. As memórias já importadas continuam no Omi.",
+      confirmTitle: "Desconectar"
     ) {
       disconnectCalendar()
     }
@@ -1827,7 +1827,7 @@ struct ImportConnectorSheet: View {
         Button {
           beginCalendarDisconnectConfirmation()
         } label: {
-          Text("Disconnect…")
+          Text("Desconectar…")
         }
         .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         .disabled(isRunning || isDisconnecting)
@@ -1835,7 +1835,7 @@ struct ImportConnectorSheet: View {
       }
 
       if connector.id == "local-files" {
-        Text("Omi reads files on this Mac to learn about your work. Nothing is uploaded.")
+        Text("O Omi lê arquivos neste Mac para aprender sobre o seu trabalho. Nada é enviado.")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
       }
@@ -1844,14 +1844,14 @@ struct ImportConnectorSheet: View {
 
   private var memoryImportContent: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
-      Text("Open \(connector.title), paste the copied prompt, then drop the full response here.")
+      Text("Abra \(connector.title), cole o prompt copiado e depois solte a resposta completa aqui.")
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
 
       Button {
         openAndCopyPrompt(for: memorySource)
       } label: {
-        ConnectionModalActionButton(title: "Open \(connector.title) and Copy Prompt")
+        ConnectionModalActionButton(title: "Abrir \(connector.title) e copiar o prompt")
       }
       .buttonStyle(.plain)
 
@@ -1867,7 +1867,7 @@ struct ImportConnectorSheet: View {
           )
 
         if draftText.isEmpty {
-          Text("Paste the full \(connector.title) response here…")
+          Text("Cole aqui a resposta completa de \(connector.title)…")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
             .padding(.horizontal, draftFieldHorizontalInset)
@@ -1901,7 +1901,7 @@ struct ImportConnectorSheet: View {
         startMemoryLogImport()
       } label: {
         ConnectionModalActionButton(
-          title: isRunning ? "Importing…" : "Import \(connector.title)"
+          title: isRunning ? "Importando…" : "Importar \(connector.title)"
         )
       }
       .buttonStyle(.plain)
@@ -1916,17 +1916,17 @@ struct ImportConnectorSheet: View {
   private var primaryActionTitle: String {
     switch connector.id {
     case "calendar":
-      return isRunning ? "Importing…" : (calendarHasRevocableGrant ? "Sync now" : "Connect Calendar")
+      return isRunning ? "Importando…" : (calendarHasRevocableGrant ? "Sincronizar agora" : "Conectar Agenda")
     case "email":
-      return isRunning ? "Importing…" : (snapshot.isConnected ? "Sync now" : "Connect Gmail")
+      return isRunning ? "Importando…" : (snapshot.isConnected ? "Sincronizar agora" : "Conectar Gmail")
     case "apple-notes":
-      return isRunning ? "Importing…" : (snapshot.isConnected ? "Sync now" : "Connect Apple Notes")
+      return isRunning ? "Importando…" : (snapshot.isConnected ? "Sincronizar agora" : "Conectar Apple Notes")
     case "x":
-      return isRunning ? "Connecting…" : (snapshot.isConnected ? "Sync now" : "Connect X")
+      return isRunning ? "Conectando…" : (snapshot.isConnected ? "Sincronizar agora" : "Conectar X")
     case "local-files":
-      return isRunning ? "Reindexing…" : (snapshot.isConnected ? "Reindex Local Files" : "Index Local Files")
+      return isRunning ? "Reindexando…" : (snapshot.isConnected ? "Reindexar arquivos locais" : "Indexar arquivos locais")
     default:
-      return isRunning ? "Working…" : connector.actionTitle
+      return isRunning ? "Trabalhando…" : connector.actionTitle
     }
   }
 
@@ -1936,39 +1936,39 @@ struct ImportConnectorSheet: View {
     switch connector.id {
     case "calendar":
       startRun(
-        title: "Connecting to Calendar",
-        detail: "Reading your past and upcoming events."
+        title: "Conectando à Agenda",
+        detail: "Lendo seus eventos passados e futuros."
       ) { progress in
         await ConnectorImportOperations.importCalendar(progress: progress)
       }
     case "email":
       startRun(
-        title: "Connecting to Gmail",
-        detail: "Reading recent email history and follow-ups from the last year."
+        title: "Conectando ao Gmail",
+        detail: "Lendo o histórico recente de e-mails e os follow-ups do último ano."
       ) { progress in
         await ConnectorImportOperations.importGmail(progress: progress)
       }
     case "x":
       startRun(
-        title: "Connecting to X",
-        detail: "Opening x.com to authorize access to your posts and bookmarks.",
-        availabilityText: "Posts & bookmarks"
+        title: "Conectando ao X",
+        detail: "Abrindo x.com para autorizar o acesso aos seus posts e favoritos.",
+        availabilityText: "Posts e favoritos"
       ) { progress in
         await ConnectorImportOperations.connectX(progress: progress)
       }
     case "apple-notes":
       startRun(
-        title: "Connecting to Apple Notes",
-        detail: "Checking access and preparing to import recent notes.",
-        availabilityText: "Private notes accessible"
+        title: "Conectando ao Apple Notes",
+        detail: "Verificando o acesso e preparando a importação das notas recentes.",
+        availabilityText: "Notas privadas acessíveis"
       ) { progress in
         await ConnectorImportOperations.importAppleNotes(progress: progress)
       }
     case "local-files":
       startRun(
-        title: "Indexing local files",
-        detail: "Scanning your on-device files so Omi can use them in memory search.",
-        availabilityText: "On-device index"
+        title: "Indexando arquivos locais",
+        detail: "Verificando seus arquivos no dispositivo para o Omi usá-los na busca de memórias.",
+        availabilityText: "Índice no dispositivo"
       ) { _ in
         await ConnectorImportOperations.rescanLocalFiles()
       }
@@ -1982,7 +1982,7 @@ struct ImportConnectorSheet: View {
       let authorizationSnapshot = disconnectAuthorizationSnapshot,
       RuntimeOwnerIdentity.isAuthorizationCurrent(authorizationSnapshot)
     else {
-      disconnectErrorMessage = "Your account changed. Reopen Calendar and try again."
+      disconnectErrorMessage = "Sua conta mudou. Reabra a Agenda e tente de novo."
       return
     }
     isDisconnecting = true
@@ -2051,7 +2051,7 @@ struct ImportConnectorSheet: View {
 
   private func beginCalendarDisconnectConfirmation() {
     guard let authorizationSnapshot = RuntimeOwnerIdentity.captureAuthorizationSnapshot() else {
-      disconnectErrorMessage = "Your session changed. Sign in again before disconnecting Calendar."
+      disconnectErrorMessage = "Sua sessão mudou. Entre de novo antes de desconectar a Agenda."
       return
     }
     disconnectAuthorizationSnapshot = authorizationSnapshot
@@ -2099,9 +2099,9 @@ struct ImportConnectorSheet: View {
     draftFocused = false
     submittedDraft = trimmed
     startRun(
-      title: "Importing \(source.displayName)",
-      detail: "Extracting durable memories from the pasted conversation.",
-      availabilityText: "Imported manually"
+      title: "Importando \(source.displayName)",
+      detail: "Extraindo memórias duradouras da conversa colada.",
+      availabilityText: "Importado manualmente"
     ) { _ in
       await ConnectorImportOperations.importMemoryLog(text: trimmed, source: source)
     }
@@ -2172,11 +2172,11 @@ struct ImportConnectorSheet: View {
             .padding(.top, OmiSpacing.hairline)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Disconnecting Google Calendar")
+            Text("Desconectando o Google Agenda")
               .scaledFont(size: OmiType.caption, weight: .semibold)
               .foregroundColor(Ink.primary)
 
-            Text("Revoking Omi's future Calendar access. Imported memories will remain.")
+            Text("Revogando o acesso futuro do Omi à Agenda. As memórias importadas continuam.")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
               .fixedSize(horizontal: false, vertical: true)
@@ -2208,7 +2208,7 @@ struct ImportConnectorSheet: View {
               .foregroundColor(Ink.secondary)
               .fixedSize(horizontal: false, vertical: true)
 
-            Text("You can close this window now. Omi keeps importing in the background.")
+            Text("Você já pode fechar esta janela. O Omi continua importando em segundo plano.")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
               .fixedSize(horizontal: false, vertical: true)
@@ -2226,7 +2226,7 @@ struct ImportConnectorSheet: View {
     } else if snapshot.isConnected || snapshot.secondaryText != nil {
       statusCard {
         VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-          Text("Current import status")
+          Text("Status atual da importação")
             .scaledFont(size: OmiType.caption, weight: .semibold)
             .foregroundColor(Ink.secondary)
 
@@ -2245,7 +2245,7 @@ struct ImportConnectorSheet: View {
       }
     } else {
       Text(
-        "Start the import here. Once it starts, you can close this window and Omi keeps importing in the background."
+        "Inicie a importação aqui. Depois de iniciada, você pode fechar esta janela e o Omi continua importando em segundo plano."
       )
       .scaledFont(size: OmiType.caption)
       .foregroundColor(Ink.secondary)
@@ -2340,7 +2340,7 @@ struct HorizontalAppSection: View {
                     .scaledFont(size: 18, weight: .medium)
                     .foregroundColor(Ink.secondary)
                 }
-                Text("See more")
+                Text("Ver mais")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
               }
@@ -2358,7 +2358,7 @@ struct HorizontalAppSection: View {
                     .scaledFont(size: 18, weight: .medium)
                     .foregroundColor(Ink.secondary)
                 }
-                Text("View all")
+                Text("Ver tudo")
                   .scaledFont(size: OmiType.caption)
                   .foregroundColor(Ink.secondary)
               }
@@ -2395,7 +2395,7 @@ struct AppGridSection: View {
         if showSeeMore, let onSeeMore = onSeeMore {
           Button(action: onSeeMore) {
             HStack(spacing: OmiSpacing.xxs) {
-              Text("See all")
+              Text("Ver tudo")
                 .scaledFont(size: OmiType.body, weight: .medium)
               Image(systemName: "chevron.right")
                 .scaledFont(size: OmiType.micro, weight: .medium)
@@ -2615,7 +2615,7 @@ struct AppActionButton: View {
       }
     } label: {
       ZStack {
-        Text(app.enabled ? "Open" : "Install").opacity(isLoading ? 0 : 1)
+        Text(app.enabled ? "Abrir" : "Instalar").opacity(isLoading ? 0 : 1)
         if isLoading { ProgressView().controlSize(.small) }
       }
     }
@@ -2644,14 +2644,14 @@ struct AppFilterSheet: View {
     VStack(spacing: 0) {
       // Header
       HStack {
-        Text("Filters")
+        Text("Filtros")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
         Spacer()
 
         if hasActiveFilters {
-          Button("Clear All") {
+          Button("Limpar tudo") {
             appProvider.clearFilters()
             Task { await appProvider.searchApps() }
           }
@@ -2670,7 +2670,7 @@ struct AppFilterSheet: View {
         VStack(alignment: .leading, spacing: OmiSpacing.xxl) {
           // Categories
           VStack(alignment: .leading, spacing: OmiSpacing.md) {
-            Text("Category")
+            Text("Categoria")
               .scaledFont(size: OmiType.body, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -2693,7 +2693,7 @@ struct AppFilterSheet: View {
 
           // Capabilities
           VStack(alignment: .leading, spacing: OmiSpacing.md) {
-            Text("Capability")
+            Text("Capacidade")
               .scaledFont(size: OmiType.body, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -2716,11 +2716,11 @@ struct AppFilterSheet: View {
 
           // Other filters
           VStack(alignment: .leading, spacing: OmiSpacing.md) {
-            Text("Other")
+            Text("Outros")
               .scaledFont(size: OmiType.body, weight: .semibold)
               .foregroundColor(Ink.primary)
 
-            Toggle("Show installed only", isOn: $appProvider.showInstalledOnly)
+            Toggle("Mostrar só instalados", isOn: $appProvider.showInstalledOnly)
               .toggleStyle(OmiToggleStyle())
               .foregroundColor(Ink.secondary)
               .onChange(of: appProvider.showInstalledOnly) { _, _ in
@@ -2925,10 +2925,10 @@ struct AppDetailSheet: View {
                   } else if isSettingUp {
                     HStack(spacing: OmiSpacing.xs) {
                       ProgressView().controlSize(.small)
-                      Text("Setting up…")
+                      Text("Configurando…")
                     }
                   } else {
-                    Text(primaryAction == .open ? "Open" : primaryAction == .chat ? "Chat" : "Install")
+                    Text(primaryAction == .open ? "Abrir" : primaryAction == .chat ? "Chat" : "Instalar")
                   }
                 }
                 .buttonStyle(OmiButtonStyle(.primary))
@@ -2938,11 +2938,11 @@ struct AppDetailSheet: View {
               // Disable button shown only when app is enabled
               if isEnabled && !appProvider.isAppLoading(app.id) && !isSettingUp {
                 // Disabling is reversible, so it is not drawn as a delete (a red trash can).
-                Button("Disable") {
+                Button("Desativar") {
                   Task { await appProvider.toggleApp(app) }
                 }
                 .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
-                .help("Disable this app. You can enable it again any time.")
+                .help("Desativa este app. Você pode ativá-lo de novo quando quiser.")
               }
             }
           }
@@ -2952,7 +2952,7 @@ struct AppDetailSheet: View {
 
           // Description
           VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-            Text("About")
+            Text("Sobre")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -2990,7 +2990,7 @@ struct AppDetailSheet: View {
                       Text(step.name)
                         .scaledFont(size: OmiType.body, weight: .medium)
                         .foregroundColor(Ink.primary)
-                      Text(isSetupCompleted ? "Completed" : "Click to complete")
+                      Text(isSetupCompleted ? "Concluído" : "Clique para concluir")
                         .scaledFont(size: OmiType.caption)
                         .foregroundColor(isSetupCompleted ? Ink.listeningGreen : Ink.secondary)
                     }
@@ -3013,7 +3013,7 @@ struct AppDetailSheet: View {
           // Capabilities
           if !app.capabilities.isEmpty {
             VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-              Text("Capabilities")
+              Text("Capacidades")
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.primary)
 
@@ -3027,7 +3027,7 @@ struct AppDetailSheet: View {
 
           // Category
           VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-            Text("Category")
+            Text("Categoria")
               .scaledFont(size: OmiType.subheading, weight: .semibold)
               .foregroundColor(Ink.primary)
 
@@ -3042,7 +3042,7 @@ struct AppDetailSheet: View {
           // Add Review Section
           VStack(alignment: .leading, spacing: OmiSpacing.md) {
             HStack {
-              Text("Reviews")
+              Text("Avaliações")
                 .scaledFont(size: OmiType.subheading, weight: .semibold)
                 .foregroundColor(Ink.primary)
 
@@ -3053,7 +3053,7 @@ struct AppDetailSheet: View {
                   HStack(spacing: OmiSpacing.xxs) {
                     Image(systemName: "plus")
                       .scaledFont(size: OmiType.caption, weight: .medium)
-                    Text("Add Review")
+                    Text("Adicionar avaliação")
                       .scaledFont(size: OmiType.body, weight: .medium)
                   }
                   .foregroundColor(Ink.secondary)
@@ -3066,14 +3066,14 @@ struct AppDetailSheet: View {
             if let userReview = userReview {
               VStack(alignment: .leading, spacing: OmiSpacing.sm) {
                 HStack {
-                  Text("Your Review")
+                  Text("Sua avaliação")
                     .scaledFont(size: OmiType.body, weight: .medium)
                     .foregroundColor(Ink.primary)
 
                   Spacer()
 
                   Button(action: { showAddReview = true }) {
-                    Text("Edit")
+                    Text("Editar")
                       .scaledFont(size: OmiType.caption, weight: .medium)
                       .foregroundColor(Ink.secondary)
                   }
@@ -3091,7 +3091,7 @@ struct AppDetailSheet: View {
                 ReviewCard(review: review)
               }
             } else if userReview == nil && reviews.isEmpty {
-              Text("No reviews yet. Be the first to review this app.")
+              Text("Ainda sem avaliações. Seja o primeiro a avaliar este app.")
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
                 .padding(.vertical, OmiSpacing.sm)
@@ -3319,7 +3319,7 @@ struct AddReviewSheet: View {
 
         Spacer()
 
-        Text(existingReview != nil ? "Edit Review" : "Add Review")
+        Text(existingReview != nil ? "Editar avaliação" : "Adicionar avaliação")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -3365,7 +3365,7 @@ struct AddReviewSheet: View {
 
           // Star Rating Picker
           VStack(alignment: .leading, spacing: OmiSpacing.md) {
-            Text("Your Rating")
+            Text("Sua nota")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(Ink.primary)
 
@@ -3375,7 +3375,7 @@ struct AddReviewSheet: View {
           // Review Text
           VStack(alignment: .leading, spacing: OmiSpacing.md) {
             HStack {
-              Text("Your Review")
+              Text("Sua avaliação")
                 .scaledFont(size: OmiType.body, weight: .medium)
                 .foregroundColor(Ink.primary)
 
@@ -3406,7 +3406,7 @@ struct AddReviewSheet: View {
                 }
 
               if reviewText.isEmpty {
-                Text("Share your experience with this app…")
+                Text("Conte como foi sua experiência com este app…")
                   .scaledFont(size: OmiType.body)
                   .foregroundColor(Ink.secondary)
                   .padding(.leading, OmiSpacing.lg)
@@ -3433,7 +3433,7 @@ struct AddReviewSheet: View {
               if isSubmitting {
                 ProgressView().controlSize(.small)
               } else {
-                Text(existingReview != nil ? "Update Review" : "Submit Review")
+                Text(existingReview != nil ? "Atualizar avaliação" : "Enviar avaliação")
               }
             }
             .frame(maxWidth: .infinity)
@@ -3467,7 +3467,7 @@ struct AddReviewSheet: View {
         }
       } catch {
         await MainActor.run {
-          errorMessage = "Failed to submit review. Please try again."
+          errorMessage = "Falha ao enviar a avaliação. Tente de novo."
           isSubmitting = false
         }
       }
@@ -3530,11 +3530,11 @@ struct StarRatingPicker: View {
 
   private var ratingLabel: String {
     switch rating {
-    case 1: return "Poor"
-    case 2: return "Fair"
-    case 3: return "Good"
-    case 4: return "Very Good"
-    case 5: return "Excellent"
+    case 1: return "Ruim"
+    case 2: return "Regular"
+    case 3: return "Bom"
+    case 4: return "Muito bom"
+    case 5: return "Excelente"
     default: return ""
     }
   }
@@ -3602,7 +3602,7 @@ struct ReviewCard: View {
 
       if let response = review.response {
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Developer Response")
+          Text("Resposta do desenvolvedor")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.secondary)
 

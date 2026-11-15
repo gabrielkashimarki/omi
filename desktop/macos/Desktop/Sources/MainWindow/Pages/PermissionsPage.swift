@@ -124,7 +124,7 @@ struct PermissionsPage: View {
         }
 
         if hasGrantedPermissions {
-          SettingsGlassSection(title: hasActionablePermissions ? "Granted" : nil) {
+          SettingsGlassSection(title: hasActionablePermissions ? "Concedidas" : nil) {
             grantedList
           }
         }
@@ -321,7 +321,7 @@ private enum PermissionKind: String, Hashable {
   let icon: String
   let title: String
   let subtitle: String
-  var chipText: String = "Granted"
+  var chipText: String = "Concedida"
   var chipTint: Color = Ink.listeningGreen
   @ViewBuilder var trailing: () -> Trailing
 
@@ -337,7 +337,7 @@ private enum PermissionKind: String, Hashable {
 
 extension PermissionGrantedRow where Trailing == EmptyView {
   init(
-    icon: String, title: String, subtitle: String, chipText: String = "Granted", chipTint: Color = Ink.listeningGreen
+    icon: String, title: String, subtitle: String, chipText: String = "Concedida", chipTint: Color = Ink.listeningGreen
   ) {
     self.init(
       icon: icon, title: title, subtitle: subtitle, chipText: chipText, chipTint: chipTint,
@@ -386,7 +386,7 @@ extension PermissionGrantedRow where Trailing == EmptyView {
 struct MicrophonePermissionSection: View {
   @ObservedObject var appState: AppState
   @State private var isResetting = false
-  @State private var resetButtonText = "Reset & Restart"
+  @State private var resetButtonText = "Redefinir e reiniciar"
 
   // Check if permission was explicitly denied (not just "not determined")
   private var isPermissionDenied: Bool {
@@ -423,17 +423,17 @@ struct MicrophonePermissionSection: View {
     if appState.hasMicrophonePermission {
       PermissionGrantedRow(
         icon: "mic.fill",
-        title: "Microphone",
-        subtitle: "Required for voice recording and transcription")
+        title: "Microfone",
+        subtitle: "Necessário para gravação de voz e transcrição")
     } else {
       PermissionActionCard(
         symbol: isPermissionDenied ? "mic.slash.fill" : "mic.fill",
         iconColor: iconColor,
         iconBackground: iconBackgroundColor,
-        title: "Microphone",
+        title: "Microfone",
         description: isPermissionDenied
-          ? "Reset required to try again"
-          : "Required for voice recording and transcription",
+          ? "Redefinição necessária para tentar de novo"
+          : "Necessário para gravação de voz e transcrição",
         descriptionColor: Ink.secondary,
         borderColor: borderColor,
         fillColor: Ink.wash,
@@ -459,13 +459,13 @@ struct MicrophonePermissionSection: View {
   // dialog again after the user denied it. They must reset the permission first.
   private var deniedStateContent: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-      Text("Microphone access was previously denied. Reset the permission to try again:")
+      Text("O acesso ao microfone foi negado antes. Redefina a permissão para tentar de novo:")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
 
       // Option 1: Quick Reset
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        Text("Option 1: Quick Reset")
+        Text("Opção 1: redefinição rápida")
           .scaledFont(size: OmiType.body, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -497,7 +497,7 @@ struct MicrophonePermissionSection: View {
 
       // Option 2: Terminal
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        Text("Option 2: Reset via Terminal")
+        Text("Opção 2: redefinir pelo Terminal")
           .scaledFont(size: OmiType.body, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -505,7 +505,7 @@ struct MicrophonePermissionSection: View {
           HStack(spacing: OmiSpacing.sm) {
             Image(systemName: "terminal")
               .scaledFont(size: OmiType.body)
-            Text("Open Terminal")
+            Text("Abrir Terminal")
               .scaledFont(size: OmiType.body, weight: .semibold)
           }
           .foregroundColor(Ink.primary)
@@ -522,7 +522,7 @@ struct MicrophonePermissionSection: View {
 
       // Option 3: Manual
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
-        Text("Option 3: Manual")
+        Text("Opção 3: manual")
           .scaledFont(size: OmiType.body, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -533,7 +533,7 @@ struct MicrophonePermissionSection: View {
             .foregroundColor(Ink.secondary)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            Text("Open System Settings")
+            Text("Abrir Ajustes do Sistema")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
 
@@ -541,7 +541,7 @@ struct MicrophonePermissionSection: View {
               HStack(spacing: OmiSpacing.sm) {
                 Image(systemName: "gear")
                   .scaledFont(size: OmiType.body)
-                Text("Open Privacy Settings")
+                Text("Abrir Ajustes de Privacidade")
                   .scaledFont(size: OmiType.body, weight: .semibold)
               }
               .foregroundColor(Ink.primary)
@@ -563,7 +563,7 @@ struct MicrophonePermissionSection: View {
             .foregroundColor(Ink.secondary)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            Text("Find \"Omi\" and toggle it ON")
+            Text("Encontre \"Omi\" e ative")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
 
@@ -590,17 +590,17 @@ struct MicrophonePermissionSection: View {
   // Content for NOT DETERMINED state - shows normal grant flow
   private var notDeterminedStateContent: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-      Text("How to grant microphone access:")
+      Text("Como conceder acesso ao microfone:")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
 
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
-        instructionStep(number: 1, text: "Click \"Grant Access\" below - a system dialog will appear")
-        instructionStep(number: 2, text: "Click \"OK\" to allow microphone access")
+        instructionStep(number: 1, text: "Clique em \"Conceder acesso\" abaixo (vai aparecer uma janela do sistema)")
+        instructionStep(number: 2, text: "Clique em \"OK\" para permitir o acesso ao microfone")
         instructionStep(
           number: 3,
           text:
-            "If no dialog appears, find \"\(Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Omi")\" in Settings and enable it"
+            "Se nenhuma janela aparecer, encontre \"\(Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Omi")\" nos Ajustes e ative"
         )
       }
 
@@ -611,7 +611,7 @@ struct MicrophonePermissionSection: View {
         HStack(spacing: OmiSpacing.sm) {
           Image(systemName: "hand.tap.fill")
             .scaledFont(size: OmiType.body)
-          Text("Grant Access")
+          Text("Conceder acesso")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
         .foregroundColor(Ink.surface)
@@ -630,7 +630,7 @@ struct MicrophonePermissionSection: View {
 
   private func tryDirectReset() {
     isResetting = true
-    resetButtonText = "Resetting & Restarting…"
+    resetButtonText = "Redefinindo e reiniciando…"
 
     // Capture the main-actor `appState` reference while still on the main
     // actor; the reset runs off-main to avoid blocking the UI during the
@@ -644,10 +644,10 @@ struct MicrophonePermissionSection: View {
 
       if !success {
         DispatchQueue.main.async {
-          resetButtonText = "Failed - Try Option 2"
+          resetButtonText = "Falhou. Tente a Opção 2"
           DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             isResetting = false
-            resetButtonText = "Reset & Restart"
+            resetButtonText = "Redefinir e reiniciar"
           }
         }
       }
@@ -677,8 +677,8 @@ struct ScreenRecordingPermissionSection: View {
     if appState.hasScreenRecordingPermission && !appState.isScreenRecordingStale {
       PermissionGrantedRow(
         icon: "rectangle.inset.filled.and.person.filled",
-        title: "Screen Recording",
-        subtitle: "Lets Omi see your screen so it can pick up tasks and answer questions about what you're working on")
+        title: "Gravação de Tela",
+        subtitle: "Permite que o Omi veja sua tela para captar tarefas e responder perguntas sobre o que você está fazendo")
     } else {
       PermissionActionCard(
         symbol: appState.isScreenRecordingStale
@@ -687,10 +687,10 @@ struct ScreenRecordingPermissionSection: View {
           ? Ink.errorRed : Ink.secondary,
         iconBackground: appState.isScreenRecordingStale
           ? Ink.errorRed.opacity(0.15) : Ink.rowFill,
-        title: "Screen Recording",
+        title: "Gravação de Tela",
         description: appState.isScreenRecordingStale
-          ? "Permission needs re-enabling after app update"
-          : "Lets Omi see your screen so it can pick up tasks and answer questions about what you're working on",
+          ? "A permissão precisa ser reativada após atualizar o app"
+          : "Permite que o Omi veja sua tela para captar tarefas e responder perguntas sobre o que você está fazendo",
         descriptionColor: appState.isScreenRecordingStale ? Ink.errorRed : Ink.secondary,
         borderColor: appState.isScreenRecordingStale
           ? Ink.errorRed.opacity(0.5) : Ink.hairline,
@@ -698,7 +698,7 @@ struct ScreenRecordingPermissionSection: View {
         borderWidth: appState.isScreenRecordingStale ? 2 : 1,
         badge: {
           if appState.isScreenRecordingStale {
-            SettingsStatusChip(text: "Re-enable Required", tint: Ink.errorRed)
+            SettingsStatusChip(text: "Reativação necessária", tint: Ink.errorRed)
           } else {
             statusBadge(isGranted: false)
           }
@@ -718,7 +718,7 @@ struct ScreenRecordingPermissionSection: View {
   private var stalePermissionContent: some View {
     let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Omi"
     return VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-      Text("Screen recording needs to be re-enabled after an app update.")
+      Text("A gravação de tela precisa ser reativada após uma atualização do app.")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
 
@@ -732,7 +732,7 @@ struct ScreenRecordingPermissionSection: View {
             .background(Circle().fill(Ink.primary))
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            Text("Open Screen Recording settings")
+            Text("Abrir ajustes de Gravação de Tela")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
 
@@ -742,7 +742,7 @@ struct ScreenRecordingPermissionSection: View {
               HStack(spacing: OmiSpacing.xs) {
                 Image(systemName: "gear")
                   .scaledFont(size: OmiType.caption)
-                Text("Open Settings")
+                Text("Abrir Ajustes")
                   .scaledFont(size: OmiType.caption, weight: .semibold)
               }
               .foregroundColor(Ink.surface)
@@ -757,8 +757,8 @@ struct ScreenRecordingPermissionSection: View {
           }
         }
 
-        instructionStep(number: 2, text: "Find \"\(appName)\" in the Screen Recording list")
-        instructionStep(number: 3, text: "Click on \"\(appName)\", then click the minus (−) button to remove it")
+        instructionStep(number: 2, text: "Encontre \"\(appName)\" na lista de Gravação de Tela")
+        instructionStep(number: 3, text: "Clique em \"\(appName)\" e depois no botão menos (−) para removê-lo")
 
         // Step 4 — Grant button inline
         HStack(alignment: .top, spacing: OmiSpacing.md) {
@@ -769,7 +769,7 @@ struct ScreenRecordingPermissionSection: View {
             .background(Circle().fill(Ink.primary))
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            Text("Come back to Omi and grant the permission")
+            Text("Volte ao Omi e conceda a permissão")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
 
@@ -782,7 +782,7 @@ struct ScreenRecordingPermissionSection: View {
               HStack(spacing: OmiSpacing.xs) {
                 Image(systemName: "checkmark.shield")
                   .scaledFont(size: OmiType.caption)
-                Text("Grant")
+                Text("Conceder")
                   .scaledFont(size: OmiType.caption, weight: .semibold)
               }
               // The same fill as step 1's button above it, and not `Ink.listeningGreen`: the
@@ -808,15 +808,15 @@ struct ScreenRecordingPermissionSection: View {
   private var normalGrantContent: some View {
     let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Omi"
     return VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-      Text("How to grant screen recording access:")
+      Text("Como conceder acesso à gravação de tela:")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
 
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
-        instructionStep(number: 1, text: "Click \"Open Settings\" below - this will make Omi appear in the list")
-        instructionStep(number: 2, text: "Find \"\(appName)\" in the Screen Recording list")
-        instructionStep(number: 3, text: "Toggle the switch to enable screen recording")
-        instructionStep(number: 4, text: "Return to Omi - permission will update automatically")
+        instructionStep(number: 1, text: "Clique em \"Abrir Ajustes\" abaixo (isso faz o Omi aparecer na lista)")
+        instructionStep(number: 2, text: "Encontre \"\(appName)\" na lista de Gravação de Tela")
+        instructionStep(number: 3, text: "Ative o botão para habilitar a gravação de tela")
+        instructionStep(number: 4, text: "Volte ao Omi (a permissão será atualizada automaticamente)")
       }
 
       // Tutorial GIF
@@ -836,7 +836,7 @@ struct ScreenRecordingPermissionSection: View {
         HStack(spacing: OmiSpacing.sm) {
           Image(systemName: "gear")
             .scaledFont(size: OmiType.body)
-          Text("Open Settings")
+          Text("Abrir Ajustes")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
         .foregroundColor(Ink.surface)
@@ -912,7 +912,7 @@ struct SystemAudioPermissionSection: View {
         symbol: isGranted ? "speaker.wave.2.fill" : "speaker.slash.fill",
         iconColor: iconColor,
         iconBackground: iconBackgroundColor,
-        title: "System Audio",
+        title: "Áudio do Sistema",
         description: descriptionText,
         descriptionColor: status == .denied ? SettingsInk.notice : Ink.secondary,
         borderColor: borderColor,
@@ -923,14 +923,14 @@ struct SystemAudioPermissionSection: View {
     } else {
       PermissionGrantedRow(
         icon: "speaker.wave.2.fill",
-        title: "System Audio",
+        title: "Áudio do Sistema",
         subtitle: descriptionText,
         chipText: grantedChipText,
         chipTint: grantedChipTint
       ) {
         if status == .granted {
           PermissionCompactActionButton(
-            title: "Test Again",
+            title: "Testar de novo",
             systemImage: "speaker.wave.2.fill",
             isBusy: isTesting,
             action: testSystemAudioAccess)
@@ -942,9 +942,9 @@ struct SystemAudioPermissionSection: View {
   private var grantedChipText: String {
     switch status {
     case .granted: return PermissionsPageChrome.grantedStatusText
-    case .unsupported: return "Unsupported"
+    case .unsupported: return "Sem suporte"
     case .denied: return PermissionsPageChrome.missingStatusText
-    case .unknown: return "Unknown"
+    case .unknown: return "Desconhecida"
     }
   }
 
@@ -959,13 +959,13 @@ struct SystemAudioPermissionSection: View {
   private var descriptionText: String {
     switch status {
     case .granted:
-      return "Captures audio from calls, videos, and other apps"
+      return "Captura o áudio de chamadas, vídeos e outros apps"
     case .denied:
-      return "Access was not granted or the last system audio test failed"
+      return "O acesso não foi concedido ou o último teste de áudio do sistema falhou"
     case .unsupported:
-      return "Requires macOS 14.4 or later"
+      return "Requer macOS 14.4 ou posterior"
     case .unknown:
-      return "Test access to confirm Omi can capture audio from other apps"
+      return "Teste o acesso para confirmar que o Omi consegue capturar o áudio de outros apps"
     }
   }
 
@@ -975,27 +975,27 @@ struct SystemAudioPermissionSection: View {
       return SettingsStatusChip(text: PermissionsPageChrome.grantedStatusText, tint: Ink.listeningGreen)
     case .denied:
       return SettingsStatusChip(text: PermissionsPageChrome.missingStatusText, tint: SettingsInk.notice)
-    case .unsupported: return SettingsStatusChip(text: "Unsupported", tint: Ink.secondary)
-    case .unknown: return SettingsStatusChip(text: "Unknown", tint: Ink.secondary)
+    case .unsupported: return SettingsStatusChip(text: "Sem suporte", tint: Ink.secondary)
+    case .unknown: return SettingsStatusChip(text: "Desconhecida", tint: Ink.secondary)
     }
   }
 
   private var expandedContent: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
       if status == .unsupported {
-        Text("System audio capture requires macOS 14.4 or later.")
+        Text("A captura de áudio do sistema requer macOS 14.4 ou posterior.")
           .scaledFont(size: OmiType.body, weight: .medium)
           .foregroundColor(Ink.primary)
       } else {
-        Text("How to grant system audio access:")
+        Text("Como conceder acesso ao áudio do sistema:")
           .scaledFont(size: OmiType.body, weight: .medium)
           .foregroundColor(Ink.primary)
 
         VStack(alignment: .leading, spacing: OmiSpacing.md) {
-          neutralInstructionStep(number: 1, text: "Click Test Access below")
+          neutralInstructionStep(number: 1, text: "Clique em Testar acesso abaixo")
           neutralInstructionStep(
-            number: 2, text: "If System Settings opens, enable Omi under Screen & System Audio Recording")
-          neutralInstructionStep(number: 3, text: "Return to Omi and click Test Access again")
+            number: 2, text: "Se os Ajustes do Sistema abrirem, ative o Omi em Gravação de Tela e Áudio do Sistema")
+          neutralInstructionStep(number: 3, text: "Volte ao Omi e clique em Testar acesso de novo")
         }
       }
 
@@ -1008,7 +1008,7 @@ struct SystemAudioPermissionSection: View {
             Image(systemName: "speaker.wave.2.fill")
               .scaledFont(size: OmiType.body)
           }
-          Text("Test Access")
+          Text("Testar acesso")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
         .foregroundColor(Ink.primary)
@@ -1085,17 +1085,17 @@ struct NotificationPermissionSection: View {
     if appState.hasNotificationPermission {
       PermissionGrantedRow(
         icon: "bell.fill",
-        title: "Notifications",
-        subtitle: "Required for proactive assistant alerts")
+        title: "Notificações",
+        subtitle: "Necessário para os alertas proativos do assistente")
     } else {
       PermissionActionCard(
         symbol: isPermissionDenied ? "bell.slash.fill" : "bell.fill",
         iconColor: iconColor,
         iconBackground: iconBackgroundColor,
-        title: "Notifications",
+        title: "Notificações",
         description: isPermissionDenied
-          ? "Enable in System Settings to try again"
-          : "Required for proactive assistant alerts",
+          ? "Ative nos Ajustes do Sistema para tentar de novo"
+          : "Necessário para os alertas proativos do assistente",
         descriptionColor: Ink.secondary,
         borderColor: borderColor,
         fillColor: Ink.wash,
@@ -1119,14 +1119,14 @@ struct NotificationPermissionSection: View {
   // Content for DENIED state - shows settings instructions
   private var deniedStateContent: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-      Text("Notification access was previously denied. Enable it in System Settings:")
+      Text("O acesso às notificações foi negado antes. Ative nos Ajustes do Sistema:")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
 
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
-        instructionStep(number: 1, text: "Click \"Open Settings\" below")
-        instructionStep(number: 2, text: "Toggle \"Allow Notifications\" to ON")
-        instructionStep(number: 3, text: "Set notification style to \"Banners\" or \"Alerts\" (not \"None\")")
+        instructionStep(number: 1, text: "Clique em \"Abrir Ajustes\" abaixo")
+        instructionStep(number: 2, text: "Ative \"Permitir notificações\"")
+        instructionStep(number: 3, text: "Defina o estilo de notificação como \"Banners\" ou \"Alertas\" (não \"Nenhum\")")
       }
 
       Button(action: {
@@ -1135,7 +1135,7 @@ struct NotificationPermissionSection: View {
         HStack(spacing: OmiSpacing.sm) {
           Image(systemName: "gear")
             .scaledFont(size: OmiType.body)
-          Text("Open Settings")
+          Text("Abrir Ajustes")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
         .foregroundColor(Ink.surface)
@@ -1153,16 +1153,16 @@ struct NotificationPermissionSection: View {
   // Content for NOT DETERMINED state - shows normal grant flow
   private var notDeterminedStateContent: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-      Text("How to grant notification access:")
+      Text("Como conceder acesso às notificações:")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
 
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
-        instructionStep(number: 1, text: "Click \"Grant Access\" below - a system dialog will appear")
-        instructionStep(number: 2, text: "Click \"Allow\" to enable notifications")
+        instructionStep(number: 1, text: "Clique em \"Conceder acesso\" abaixo (vai aparecer uma janela do sistema)")
+        instructionStep(number: 2, text: "Clique em \"Permitir\" para ativar as notificações")
         instructionStep(
           number: 3,
-          text: "Tip: In System Settings > Notifications > Omi, set style to \"Banners\" to see visual alerts")
+          text: "Dica: em Ajustes do Sistema > Notificações > Omi, defina o estilo como \"Banners\" para ver alertas visuais")
       }
 
       Button(action: {
@@ -1172,7 +1172,7 @@ struct NotificationPermissionSection: View {
         HStack(spacing: OmiSpacing.sm) {
           Image(systemName: "hand.tap.fill")
             .scaledFont(size: OmiType.body)
-          Text("Grant Access")
+          Text("Conceder acesso")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
         .foregroundColor(Ink.surface)
@@ -1207,24 +1207,24 @@ struct AccessibilityPermissionSection: View {
     if appState.hasAccessibilityPermission && !appState.isAccessibilityBroken {
       PermissionGrantedRow(
         icon: "accessibility",
-        title: "Accessibility",
-        subtitle: "Lets Omi identify the document, page, or file you are working in")
+        title: "Acessibilidade",
+        subtitle: "Permite que o Omi identifique o documento, a página ou o arquivo em que você está trabalhando")
     } else {
       PermissionActionCard(
         symbol: appState.isAccessibilityBroken ? "exclamationmark.triangle.fill" : "accessibility",
         iconColor: appState.isAccessibilityBroken ? Ink.errorRed : Ink.secondary,
         iconBackground: appState.isAccessibilityBroken ? Ink.errorRed.opacity(0.15) : Ink.rowFill,
-        title: "Accessibility",
+        title: "Acessibilidade",
         description: appState.isAccessibilityBroken
-          ? "Permission needs re-enabling after app update"
-          : "Lets Omi identify the document, page, or file you are working in",
+          ? "A permissão precisa ser reativada após atualizar o app"
+          : "Permite que o Omi identifique o documento, a página ou o arquivo em que você está trabalhando",
         descriptionColor: appState.isAccessibilityBroken ? Ink.errorRed : Ink.secondary,
         borderColor: appState.isAccessibilityBroken ? Ink.errorRed.opacity(0.5) : Ink.hairline,
         fillColor: appState.isAccessibilityBroken ? Ink.errorRed.opacity(0.05) : Ink.wash,
         borderWidth: appState.isAccessibilityBroken ? 2 : 1,
         badge: {
           if appState.isAccessibilityBroken {
-            SettingsStatusChip(text: "Re-enable Required", tint: Ink.errorRed)
+            SettingsStatusChip(text: "Reativação necessária", tint: Ink.errorRed)
           } else {
             statusBadge(isGranted: false)
           }
@@ -1246,27 +1246,27 @@ struct AccessibilityPermissionSection: View {
 
   private var normalGrantContent: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-      Text("Without this, Omi can see that you were in an app, but not which page or file.")
+      Text("Sem isso, o Omi sabe que você estava em um app, mas não em qual página ou arquivo.")
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
         .fixedSize(horizontal: false, vertical: true)
 
-      Text("How to grant accessibility access:")
+      Text("Como conceder acesso de Acessibilidade:")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
 
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
-        instructionStep(number: 1, text: "Click \"Grant Access\" below")
-        instructionStep(number: 2, text: "Find \"\(appName)\" in the Accessibility list")
-        instructionStep(number: 3, text: "Toggle the switch to enable accessibility")
-        instructionStep(number: 4, text: "Return to Omi - permission will update automatically")
+        instructionStep(number: 1, text: "Clique em \"Conceder acesso\" abaixo")
+        instructionStep(number: 2, text: "Encontre \"\(appName)\" na lista de Acessibilidade")
+        instructionStep(number: 3, text: "Ative o botão para habilitar a acessibilidade")
+        instructionStep(number: 4, text: "Volte ao Omi (a permissão será atualizada automaticamente)")
       }
 
       Button(action: { appState.triggerAccessibilityPermission() }) {
         HStack(spacing: OmiSpacing.sm) {
           Image(systemName: "checkmark.shield")
             .scaledFont(size: OmiType.body)
-          Text("Grant Access")
+          Text("Conceder acesso")
             .scaledFont(size: OmiType.body, weight: .semibold)
         }
         .foregroundColor(Ink.surface)
@@ -1286,7 +1286,7 @@ struct AccessibilityPermissionSection: View {
   /// work. Removing the stale entry is what re-arms the grant against the new signature.
   private var brokenGrantContent: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-      Text("Accessibility looks enabled, but the permission stopped working after an app update.")
+      Text("A Acessibilidade parece ativada, mas a permissão parou de funcionar após uma atualização do app.")
         .scaledFont(size: OmiType.body, weight: .medium)
         .foregroundColor(Ink.primary)
         .fixedSize(horizontal: false, vertical: true)
@@ -1300,7 +1300,7 @@ struct AccessibilityPermissionSection: View {
             .background(Circle().fill(Ink.primary))
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            Text("Open Accessibility settings")
+            Text("Abrir ajustes de Acessibilidade")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
 
@@ -1308,7 +1308,7 @@ struct AccessibilityPermissionSection: View {
               HStack(spacing: OmiSpacing.xs) {
                 Image(systemName: "gear")
                   .scaledFont(size: OmiType.caption)
-                Text("Open Settings")
+                Text("Abrir Ajustes")
                   .scaledFont(size: OmiType.caption, weight: .semibold)
               }
               .foregroundColor(Ink.surface)
@@ -1324,10 +1324,10 @@ struct AccessibilityPermissionSection: View {
           }
         }
 
-        instructionStep(number: 2, text: "Find \"\(appName)\" in the Accessibility list")
+        instructionStep(number: 2, text: "Encontre \"\(appName)\" na lista de Acessibilidade")
         instructionStep(
-          number: 3, text: "Click on \"\(appName)\", then click the minus (\u{2212}) button to remove it")
-        instructionStep(number: 4, text: "Add \(appName) back with the plus (+) button and toggle it on")
+          number: 3, text: "Clique em \"\(appName)\" e depois no botão menos (\u{2212}) para removê-lo")
+        instructionStep(number: 4, text: "Adicione \(appName) de volta com o botão mais (+) e ative")
       }
     }
   }
@@ -1372,7 +1372,7 @@ struct AccessibilityPermissionSection: View {
               HStack(spacing: OmiSpacing.sm) {
                 Image(systemName: "gear")
                   .scaledFont(size: OmiType.body)
-                Text("Open Settings")
+                Text("Abrir Ajustes")
                   .scaledFont(size: OmiType.body, weight: .semibold)
               }
               .foregroundColor(Ink.surface)
@@ -1402,11 +1402,11 @@ struct BluetoothPermissionSection: View {
       granted: appState.hasBluetoothPermission,
       icon: "wave.3.right",
       title: "Bluetooth",
-      subtitle: "Needed to pair and record with an Omi device",
+      subtitle: "Necessário para parear e gravar com um dispositivo Omi",
       steps: [
-        "Click \"Open Settings\" below",
-        "Find \"\(AppBuild.displayName)\" in the Bluetooth list",
-        "Toggle the switch on, then return to Omi",
+        "Clique em \"Abrir Ajustes\" abaixo",
+        "Encontre \"\(AppBuild.displayName)\" na lista de Bluetooth",
+        "Ative o botão e volte ao Omi",
       ],
       openSettings: { appState.openBluetoothPreferences() },
       identifier: "permissions.bluetooth.open-settings")
@@ -1422,12 +1422,12 @@ struct FullDiskAccessPermissionSection: View {
     SupportingPermissionSection(
       granted: appState.hasFullDiskAccess,
       icon: "folder",
-      title: "Full Disk Access",
-      subtitle: "Lets Omi read Apple Notes and search your files when you ask",
+      title: "Acesso Total ao Disco",
+      subtitle: "Permite que o Omi leia o Apple Notes e busque nos seus arquivos quando você pedir",
       steps: [
-        "Click \"Open Settings\" below",
-        "Find \"\(AppBuild.displayName)\" in the Full Disk Access list",
-        "Toggle the switch on, then return to Omi",
+        "Clique em \"Abrir Ajustes\" abaixo",
+        "Encontre \"\(AppBuild.displayName)\" na lista de Acesso Total ao Disco",
+        "Ative o botão e volte ao Omi",
       ],
       openSettings: { appState.openFullDiskAccessPreferences() },
       identifier: "permissions.full-disk-access.open-settings")
@@ -1443,12 +1443,12 @@ struct AutomationPermissionSection: View {
     SupportingPermissionSection(
       granted: appState.hasAutomationPermission,
       icon: "gearshape.2",
-      title: "Automation",
-      subtitle: "Lets Omi see which app you're using",
+      title: "Automação",
+      subtitle: "Permite que o Omi veja qual app você está usando",
       steps: [
-        "Click \"Open Settings\" below",
-        "Find \"\(AppBuild.displayName)\" in the Automation list",
-        "Enable \"System Events\" beneath it, then return to Omi",
+        "Clique em \"Abrir Ajustes\" abaixo",
+        "Encontre \"\(AppBuild.displayName)\" na lista de Automação",
+        "Ative \"System Events\" logo abaixo e volte ao Omi",
       ],
       openSettings: { appState.openAutomationPreferences() },
       identifier: "permissions.automation.open-settings")

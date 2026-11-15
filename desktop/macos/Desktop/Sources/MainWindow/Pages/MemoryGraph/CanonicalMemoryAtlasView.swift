@@ -63,7 +63,7 @@ private struct CanonicalMemoryAtlasLoadGate<Content: View>: View {
         Image(systemName: "brain")
           .scaledFont(size: OmiType.heading)
           .foregroundColor(Ink.secondary)
-        Text("Your brain map appears once Omi has enough related memories to connect.")
+        Text("Seu mapa cerebral aparece quando o Omi tiver memórias relacionadas suficientes para conectar.")
           .scaledFont(size: 12.5)
           .foregroundColor(Ink.secondary)
           .multilineTextAlignment(.center)
@@ -364,7 +364,7 @@ private struct CanonicalMemoryAtlasSurface: View {
   }
 
   private var recentConnectionLabel: String {
-    recentConnectionCount > 99 ? "99+ new connections" : "\(recentConnectionCount) new connections"
+    recentConnectionCount > 99 ? "99+ novas conexões" : "\(recentConnectionCount) novas conexões"
   }
 
   private var searchBinding: Binding<String> {
@@ -669,13 +669,13 @@ private struct CanonicalMemoryAtlasSurface: View {
             .scaledFont(size: 12)
             .foregroundColor(Ink.secondary)
 
-          TextField("Search your entities", text: searchBinding)
+          TextField("Buscar suas entidades", text: searchBinding)
             .textFieldStyle(.plain)
             .focused($searchIsFocused)
             .scaledFont(size: 12)
             .foregroundColor(Ink.primary)
             .onSubmit { selectFirstSearchResult() }
-            .accessibilityLabel("Search entities")
+            .accessibilityLabel("Buscar entidades")
             .accessibilityIdentifier("memory_atlas_search")
 
           if !searchText.isEmpty {
@@ -707,10 +707,10 @@ private struct CanonicalMemoryAtlasSurface: View {
       // The legacy Brain Map carried a rebuild control; without it a thin or
       // stale server graph has no recovery path from inside the atlas.
       if let onRebuild {
-        PageMoreMenu(help: "More Brain Map actions", accessibilityIdentifier: "memory_atlas_more_actions") {
+        PageMoreMenu(help: "Mais ações do Mapa Cerebral", accessibilityIdentifier: "memory_atlas_more_actions") {
           Button(action: onRebuild) {
             Label(
-              isRebuilding ? "Rebuilding Brain Map…" : "Rebuild Brain Map…",
+              isRebuilding ? "Reconstruindo o Mapa Cerebral…" : "Reconstruir o Mapa Cerebral…",
               systemImage: "arrow.clockwise")
           }
           .disabled(isRebuilding)
@@ -720,7 +720,7 @@ private struct CanonicalMemoryAtlasSurface: View {
     .padding(.horizontal, compact ? 12 : 18)
     .frame(height: compact ? 40 : 44)
     .background(Color.clear)
-    .accessibilityHint("Press Command-F to search. Press Return to select the first visible result.")
+    .accessibilityHint("Pressione Command-F para buscar. Pressione Return para selecionar o primeiro resultado visível.")
   }
 
   private var hasNoSearchMatches: Bool {
@@ -735,12 +735,12 @@ private struct CanonicalMemoryAtlasSurface: View {
         .scaledFont(size: OmiType.heading)
         .foregroundStyle(Ink.surface)
       Text(
-        "No entities match \u{201c}\(searchText.trimmingCharacters(in: .whitespacesAndNewlines))\u{201d}"
+        "Nenhuma entidade corresponde a \u{201c}\(searchText.trimmingCharacters(in: .whitespacesAndNewlines))\u{201d}"
       )
       .scaledFont(size: OmiType.body, weight: .semibold)
       .foregroundStyle(Ink.surface)
       .multilineTextAlignment(.center)
-      Text("Try a different search or clear the search above.")
+      Text("Tente outra busca ou limpe a busca acima.")
         .scaledFont(size: OmiType.caption)
         .foregroundStyle(Ink.surface.opacity(0.78))
         .multilineTextAlignment(.center)
@@ -748,9 +748,9 @@ private struct CanonicalMemoryAtlasSurface: View {
     .padding(.horizontal, OmiSpacing.lg)
     .accessibilityElement(children: .combine)
     .accessibilityLabel(
-      "No entities match \(searchText.trimmingCharacters(in: .whitespacesAndNewlines))"
+      "Nenhuma entidade corresponde a \(searchText.trimmingCharacters(in: .whitespacesAndNewlines))"
     )
-    .accessibilityHint("Try a different search or clear the search above.")
+    .accessibilityHint("Tente outra busca ou limpe a busca acima.")
   }
 
   /// Which colour means which kind of entity.
@@ -763,7 +763,7 @@ private struct CanonicalMemoryAtlasSurface: View {
   /// without claiming a location for it.
   private var typeKey: some View {
     HStack(spacing: 11) {
-      Text("Legend")
+      Text("Legenda")
         .scaledFont(size: 10, weight: .semibold)
         .foregroundColor(Ink.primary)
 
@@ -779,11 +779,11 @@ private struct CanonicalMemoryAtlasSurface: View {
     // The key identifies the map's colors; it is intentionally not a filter. Naming that contract
     // keeps the dots from presenting a false affordance to pointer-free users.
     .accessibilityElement(children: .combine)
-    .accessibilityLabel("Brain Map legend")
+    .accessibilityLabel("Legenda do Mapa Cerebral")
     .accessibilityValue(
-      snapshot.activeClusters.map { "\($0.title), color coded" }.joined(separator: "; ")
+      snapshot.activeClusters.map { "\($0.title), com código de cor" }.joined(separator: "; ")
     )
-    .accessibilityHint("Legend only; these items are not interactive filters.")
+    .accessibilityHint("Apenas legenda; estes itens não são filtros interativos.")
     .accessibilityIdentifier("memory_atlas_type_key")
   }
 
@@ -962,11 +962,11 @@ private struct CanonicalMemoryAtlasSurface: View {
         enter: { enter(region) }
       )
       .position(x: region.rect.midX, y: region.rect.midY)
-      .help(enteredRegionID == region.regionID ? "Leave this neighbourhood" : "Go to \(region.caption)")
-      .accessibilityLabel("Neighbourhood around \(region.caption)")
+      .help(enteredRegionID == region.regionID ? "Sair desta vizinhança" : "Ir para \(region.caption)")
+      .accessibilityLabel("Vizinhança em torno de \(region.caption)")
       .accessibilityHint(
         enteredRegionID == region.regionID
-          ? "Returns to the whole map" : "Goes to this neighbourhood and names its entities"
+          ? "Volta ao mapa inteiro" : "Vai a esta vizinhança e nomeia suas entidades"
       )
       .accessibilityIdentifier("memory_atlas_neighbourhood_\(region.regionID)")
     }
@@ -1459,7 +1459,7 @@ private struct CanonicalMemoryAtlasSurface: View {
         id: "endpoint-\(endpoint.id)",
         otherNodeID: endpoint.id,
         otherLabel: endpoint.node.label,
-        relationship: endpoint.cluster?.title ?? "Entity",
+        relationship: endpoint.cluster?.title ?? "Entidade",
         accent: endpoint.cluster?.color ?? Ink.secondary
       )
     }
@@ -1566,14 +1566,14 @@ private struct CanonicalMemoryAtlasSurface: View {
       // evidence count rather than offering a jump that would leave the map.
       Text(
         evidenceIds.isEmpty
-          ? "Source details are still being linked"
-          : "\(evidenceIds.count) source memor\(evidenceIds.count == 1 ? "y" : "ies")"
+          ? "Os detalhes da fonte ainda estão sendo vinculados"
+          : "\(evidenceIds.count) \(evidenceIds.count == 1 ? "memória de origem" : "memórias de origem")"
       )
       .scaledFont(size: 10)
       .foregroundColor(Ink.secondary)
 
       DismissButton(
-        action: { clearSelection(resetCamera: true) }, accessibilityLabel: "Clear Selection", size: .compact
+        action: { clearSelection(resetCamera: true) }, accessibilityLabel: "Limpar seleção", size: .compact
       )
       .accessibilityIdentifier("memory_atlas_clear_selection")
     }
@@ -1616,8 +1616,8 @@ private struct CanonicalMemoryAtlasSurface: View {
           }
         }
         .buttonStyle(.plain)
-        .help(isTimePlaying ? "Pause" : "Play your memory forward")
-        .accessibilityLabel(isTimePlaying ? "Pause memory timeline" : "Play memory timeline")
+        .help(isTimePlaying ? "Pausar" : "Reproduzir suas memórias para a frente")
+        .accessibilityLabel(isTimePlaying ? "Pausar linha do tempo das memórias" : "Reproduzir linha do tempo das memórias")
         .accessibilityIdentifier("memory_atlas_timeline_play")
 
         Text(asOfLabel)
@@ -1643,7 +1643,7 @@ private struct CanonicalMemoryAtlasSurface: View {
 
         if timeCursor < 0.9995 {
           Button(action: jumpToNow) {
-            Text("Now")
+            Text("Agora")
               .scaledFont(size: 10, weight: .semibold)
               .foregroundColor(Ink.secondary)
               .padding(.horizontal, 8)
@@ -1664,7 +1664,7 @@ private struct CanonicalMemoryAtlasSurface: View {
 
         timelineTrack
 
-        Text(timeline?.hasChronologicalRange == true ? "Now" : "Imported")
+        Text(timeline?.hasChronologicalRange == true ? "Agora" : "Importadas")
           .scaledFont(size: 9)
           .foregroundColor(Ink.secondary)
           .lineLimit(1)
@@ -1693,9 +1693,9 @@ private struct CanonicalMemoryAtlasSurface: View {
     .frame(height: 20)
     .accessibilityIdentifier("memory_atlas_timeline_track")
     .accessibilityElement()
-    .accessibilityLabel("Memory timeline")
+    .accessibilityLabel("Linha do tempo das memórias")
     .accessibilityValue(asOfLabel)
-    .accessibilityHint("Adjust to replay the atlas over time")
+    .accessibilityHint("Ajuste para reproduzir o atlas ao longo do tempo")
     .accessibilityAdjustableAction { direction in
       let step = 0.05
       switch direction {
@@ -1752,15 +1752,15 @@ private struct CanonicalMemoryAtlasSurface: View {
   }
 
   private var asOfLabel: String {
-    guard let asOf = asOfDate else { return "Now — the whole map" }
-    guard MemoryAtlasPlayback.isCredible(asOf) else { return "Import replay" }
+    guard let asOf = asOfDate else { return "Agora: o mapa inteiro" }
+    guard MemoryAtlasPlayback.isCredible(asOf) else { return "Reprodução da importação" }
     let formatter = DateFormatter()
     formatter.dateStyle = .medium
     formatter.timeStyle = .none
     if timeline?.hasChronologicalRange == false {
-      return "Import replay · \(formatter.string(from: asOf))"
+      return "Reprodução da importação · \(formatter.string(from: asOf))"
     }
-    return "Replay · \(formatter.string(from: asOf))"
+    return "Reprodução · \(formatter.string(from: asOf))"
   }
 
   private func shortDate(_ date: Date?) -> String {
@@ -1855,7 +1855,7 @@ private struct CanonicalMemoryAtlasSurface: View {
         Image(systemName: "minus").frame(width: 28, height: 28)
       }
       .accessibilityIdentifier("memory_atlas_zoom_out")
-      .accessibilityLabel("Zoom out")
+      .accessibilityLabel("Diminuir zoom")
       Button {
         resetViewport()
       } label: {
@@ -1863,9 +1863,9 @@ private struct CanonicalMemoryAtlasSurface: View {
           .scaledFont(size: 9, weight: .medium)
           .frame(width: 40, height: 28)
       }
-      .help("Return to overview")
+      .help("Voltar à visão geral")
       .accessibilityIdentifier("memory_atlas_reset_viewport")
-      .accessibilityLabel("Reset Brain Map viewport")
+      .accessibilityLabel("Restaurar a visão do Mapa Cerebral")
       .accessibilityValue("\(Int(zoom * 100)) percent")
       Button {
         zoomIn()
@@ -1873,9 +1873,9 @@ private struct CanonicalMemoryAtlasSurface: View {
         Image(systemName: "plus").frame(width: 28, height: 28)
       }
       .disabled(zoom >= maximumZoom)
-      .help(compact ? "Open the Brain Map for deeper exploration" : "Zoom in (accelerates for large maps)")
+      .help(compact ? "Abrir o Mapa Cerebral para explorar mais a fundo" : "Aumentar zoom (acelera em mapas grandes)")
       .accessibilityIdentifier("memory_atlas_zoom_in")
-      .accessibilityLabel("Zoom in")
+      .accessibilityLabel("Aumentar zoom")
     }
     .scaledFont(size: 10)
     .foregroundColor(Ink.secondary)
@@ -1959,12 +1959,12 @@ private struct CanonicalMemoryAtlasSurface: View {
   }
 
   private var atlasLevelLabel: String {
-    if isFullyLabelledMode { return "All labelled" }
-    if isInspectMode { return "Inspect" }
-    if isFocusMode { return "Focus" }
-    if zoom < MemoryAtlasZoomPolicy.neighborhoodZoom { return "Overview" }
-    if zoom < 1.9 { return "Neighborhood" }
-    return "Detail"
+    if isFullyLabelledMode { return "Tudo rotulado" }
+    if isInspectMode { return "Inspecionar" }
+    if isFocusMode { return "Foco" }
+    if zoom < MemoryAtlasZoomPolicy.neighborhoodZoom { return "Visão geral" }
+    if zoom < 1.9 { return "Vizinhança" }
+    return "Detalhe"
   }
 
   private func point(for normalized: CGPoint, in size: CGSize) -> CGPoint {

@@ -2,10 +2,10 @@
 /// explicit prevents marketplace filters from looking like they also refine
 /// local imports and memory exports.
 enum AppsCatalogKind: String, CaseIterable, Identifiable {
-  case all = "All"
+  case all = "Todos"
   case apps = "Apps"
-  case imports = "Imports"
-  case exports = "Exports"
+  case imports = "Importações"
+  case exports = "Exportações"
 
   var id: String { rawValue }
 

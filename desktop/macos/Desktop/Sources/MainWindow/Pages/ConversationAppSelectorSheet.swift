@@ -21,7 +21,7 @@ struct AppSelectorSheet: View {
     VStack(spacing: 0) {
       // Header
       HStack {
-        Text("Select App")
+        Text("Selecionar app")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -39,9 +39,9 @@ struct AppSelectorSheet: View {
           Image(systemName: "magnifyingglass")
             .foregroundStyle(Ink.secondary)
             .accessibilityHidden(true)
-          TextField("Search installed apps", text: $picker.searchText)
+          TextField("Buscar apps instalados", text: $picker.searchText)
             .textFieldStyle(.plain)
-            .accessibilityLabel("Search installed summary apps")
+            .accessibilityLabel("Buscar apps de resumo instalados")
             .accessibilityIdentifier("summary-app-search")
         }
         .padding(OmiSpacing.md)
@@ -49,23 +49,23 @@ struct AppSelectorSheet: View {
 
       switch picker.phase {
       case .idle, .loading:
-        GlassLoadingState(label: "Loading installed summary apps…")
+        GlassLoadingState(label: "Carregando apps de resumo instalados…")
       case .failed:
-        GlassErrorState(title: "Couldn’t Load Apps", retry: { Task { await picker.load() } })
+        GlassErrorState(title: "Não foi possível carregar os apps", retry: { Task { await picker.load() } })
       case .ready where picker.apps.isEmpty:
         GlassEmptyState(
-          systemImage: "square.grid.2x2", title: "No Summary Apps Installed",
-          message: "Install a summary app to use it for this conversation"
+          systemImage: "square.grid.2x2", title: "Nenhum app de resumo instalado",
+          message: "Instale um app de resumo para usar nesta conversa"
         ) {
-          Button("Browse Apps", action: onBrowseApps)
+          Button("Explorar apps", action: onBrowseApps)
             .buttonStyle(OmiButtonStyle(.primary, size: .compact))
         }
       case .ready where picker.visibleApps.isEmpty:
         GlassEmptyState(
-          systemImage: "magnifyingglass", title: "No Apps Found",
-          message: "Try another name or author"
+          systemImage: "magnifyingglass", title: "Nenhum app encontrado",
+          message: "Tente outro nome ou autor"
         ) {
-          Button("Clear Search") { picker.searchText = "" }
+          Button("Limpar busca") { picker.searchText = "" }
             .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
         }
       case .ready:
@@ -131,7 +131,7 @@ struct AppSelectorRow: View {
               Image(systemName: "star.fill")
                 .scaledFont(size: OmiType.micro)
                 .foregroundColor(PageGlass.starred)
-              Text("Default")
+              Text("Padrão")
                 .scaledFont(size: OmiType.micro)
                 .foregroundColor(Ink.secondary)
             }
@@ -160,7 +160,7 @@ struct AppSelectorRow: View {
     .disabled(isLoading)
     .onHover { isHovering = $0 }
     .accessibilityValue(
-      [isSelected ? "Selected" : nil, isPreferred ? "Default" : nil]
+      [isSelected ? "Selecionado" : nil, isPreferred ? "Padrão" : nil]
         .compactMap { $0 }
         .joined(separator: ", ")
     )
@@ -172,7 +172,7 @@ struct AppSelectorRow: View {
           onSetPreferred()
         } label: {
           Label(
-            isPreferred ? "Default App" : "Set as Default",
+            isPreferred ? "App padrão" : "Definir como padrão",
             systemImage: isPreferred ? "star.fill" : "star"
           )
         }

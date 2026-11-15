@@ -9,7 +9,7 @@ struct ManualInstallationDisclosure<Content: View>: View {
 
   init(
     isExpanded: Binding<Bool>,
-    title: String = "Manual installation",
+    title: String = "Instalação manual",
     fontSize: CGFloat,
     @ViewBuilder content: @escaping () -> Content
   ) {
@@ -37,9 +37,9 @@ struct ManualInstallationDisclosure<Content: View>: View {
         .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
-      .help(isExpanded ? "Hide \(title.lowercased())" : "Show \(title.lowercased())")
+      .help(isExpanded ? "Ocultar \(title.lowercased())" : "Mostrar \(title.lowercased())")
       .accessibilityLabel(title)
-      .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+      .accessibilityValue(isExpanded ? "Expandido" : "Recolhido")
 
       if isExpanded {
         content()

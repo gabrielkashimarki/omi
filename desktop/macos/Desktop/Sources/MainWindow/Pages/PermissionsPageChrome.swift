@@ -14,8 +14,8 @@ enum PermissionNavSymbol {
 /// Granted rows are a compact status list, not empty disclosures. The success banner is the
 /// settled-state signal; the page title itself stays "Permissions" in both states.
 enum PermissionsPageChrome {
-  static let allGrantedMessage = "All permissions granted! Omi is ready to use."
-  static let headerTitle = "Permissions"
+  static let allGrantedMessage = "Todas as permissões concedidas! O Omi está pronto para usar."
+  static let headerTitle = "Permissões"
 
   /// Settled state keeps the green check. Missing grants do not wear a warning glyph here —
   /// that mark lives on the sidebar row instead.
@@ -26,8 +26,8 @@ enum PermissionsPageChrome {
   /// One status word for every missing grant. macOS still distinguishes *unanswered* from
   /// *refused* in the instructions (a refuse will not show the system prompt again), but the
   /// chip does not: "Denied" reads as a failure, and "Not Granted" is already the work to do.
-  static let missingStatusText = "Not Granted"
-  static let grantedStatusText = "Granted"
+  static let missingStatusText = "Não concedida"
+  static let grantedStatusText = "Concedida"
 
   static func statusChipText(granted: Bool) -> String {
     granted ? grantedStatusText : missingStatusText
@@ -81,7 +81,7 @@ enum PermissionsPageChrome {
     "Bluetooth", "Full Disk Access", "Automation",
   ]
 
-  static let supportingSectionTitle = "Optional"
+  static let supportingSectionTitle = "Opcional"
 
   /// Every permission the page can act on.
   static var actionableKinds: Set<String> { requiredKinds.union(supportingKinds) }

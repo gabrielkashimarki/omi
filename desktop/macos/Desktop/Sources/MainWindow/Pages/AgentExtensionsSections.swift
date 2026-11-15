@@ -22,16 +22,16 @@ struct McpServersSection: View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
       HStack {
         VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-          Text("MCP Servers")
+          Text("Servidores MCP")
             .scaledFont(size: OmiType.heading, weight: .semibold)
             .foregroundColor(Ink.primary)
-          Text("Connect remote MCP servers or local commands; their tools become available in chat")
+          Text("Conecte servidores MCP remotos ou comandos locais; as ferramentas ficam disponíveis no chat")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
         Spacer()
         Button(action: onAdd) {
-          ConnectionModalActionButton(title: "Add Server")
+          ConnectionModalActionButton(title: "Adicionar servidor")
         }
         .buttonStyle(.plain)
       }
@@ -40,8 +40,8 @@ struct McpServersSection: View {
         AgentExtensionEmptyCard(
           icon: "server.rack",
           text: searchText.isEmpty
-            ? "No servers yet. Add a remote URL, or a local command like npx @playwright/mcp@latest."
-            : "No installed server matches \(searchText).")
+            ? "Nenhum servidor ainda. Adicione uma URL remota ou um comando local, como npx @playwright/mcp@latest."
+            : "Nenhum servidor instalado corresponde a \(searchText).")
       } else {
         LazyVGrid(
           columns: [GridItem(.adaptive(minimum: 260), spacing: OmiSpacing.md)],
@@ -54,11 +54,11 @@ struct McpServersSection: View {
               icon: server.isCommand ? "terminal" : "server.rack",
               imageUrl: "",
               title: server.name,
-              subtitle: server.isCommand ? "Local command" : "Remote",
+              subtitle: server.isCommand ? "Comando local" : "Remoto",
               detail: status.detail ?? server.summary,
               statusText: status.label,
               statusActive: status.isHealthy,
-              actionTitle: status == .needsAuth ? "Sign In" : "Manage",
+              actionTitle: status == .needsAuth ? "Entrar" : "Gerenciar",
               actionIsSecondary: status != .needsAuth
             ) {
               onSelectLocal(server)
@@ -70,7 +70,7 @@ struct McpServersSection: View {
       ExtensionMarketplaceSection(
         entries: marketplaceEntries,
         isLoading: appProvider.isLoadingMcpCatalog,
-        loadingText: "Loading the MCP registry…",
+        loadingText: "Carregando o registro MCP…",
         icon: { $0.subtitle == "Remote" ? "server.rack" : "terminal" },
         onSelect: onSelectCatalogEntry
       )
@@ -119,13 +119,13 @@ struct SkillsSection: View {
           Text("Skills")
             .scaledFont(size: OmiType.heading, weight: .semibold)
             .foregroundColor(Ink.primary)
-          Text("Teach the assistant reusable instructions it loads when relevant")
+          Text("Ensine ao assistente instruções reutilizáveis que ele carrega quando relevantes")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
         Spacer()
         Button(action: onAdd) {
-          ConnectionModalActionButton(title: "Add Skill")
+          ConnectionModalActionButton(title: "Adicionar skill")
         }
         .buttonStyle(.plain)
       }
@@ -134,8 +134,8 @@ struct SkillsSection: View {
         AgentExtensionEmptyCard(
           icon: "graduationcap",
           text: searchText.isEmpty
-            ? "No skills yet. Paste or drop a SKILL.md, or write one from scratch."
-            : "No installed skill matches \(searchText).")
+            ? "Nenhuma skill ainda. Cole ou solte um SKILL.md, ou escreva uma do zero."
+            : "Nenhuma skill instalada corresponde a \(searchText).")
       } else {
         LazyVGrid(
           columns: [GridItem(.adaptive(minimum: 260), spacing: OmiSpacing.md)],
@@ -149,7 +149,7 @@ struct SkillsSection: View {
               title: skill.name,
               subtitle: "",
               detail: skill.description,
-              statusText: "Active in chat",
+              statusText: "Ativa no chat",
               statusActive: true
             ) {
               onSelect(skill)
@@ -161,7 +161,7 @@ struct SkillsSection: View {
       ExtensionMarketplaceSection(
         entries: marketplaceEntries,
         isLoading: appProvider.isLoadingSkillCatalog,
-        loadingText: "Loading skills…",
+        loadingText: "Carregando skills…",
         icon: { _ in "graduationcap" },
         onSelect: onSelectCatalogEntry
       )
@@ -227,9 +227,9 @@ struct ExtensionMarketplaceSection: View {
               title: entry.name,
               subtitle: entry.subtitle,
               detail: entry.detail,
-              statusText: entry.install.needsInput ? "Needs a key" : entry.publisher,
+              statusText: entry.install.needsInput ? "Precisa de uma chave" : entry.publisher,
               statusActive: false,
-              actionTitle: "View",
+              actionTitle: "Ver",
               actionIsSecondary: true
             ) {
               // A card press opens the detail sheet. Installing writes an executable command or a
@@ -361,7 +361,7 @@ struct AgentExtensionCard: View {
   let statusText: String
   let statusActive: Bool
   /// Trailing button label. Installed cards manage; marketplace cards install.
-  var actionTitle: String = "Manage"
+  var actionTitle: String = "Gerenciar"
   var actionIsSecondary: Bool = true
   let action: () -> Void
 
@@ -438,8 +438,8 @@ struct AddMcpServerSheet: View {
   }
 
   private enum Mode: String, CaseIterable, Identifiable {
-    case remote = "Remote URL"
-    case local = "Local Command"
+    case remote = "URL remota"
+    case local = "Comando local"
 
     var id: String { rawValue }
 
@@ -502,10 +502,10 @@ struct AddMcpServerSheet: View {
         .omiAnimation(.easeOut(duration: 0.15), value: mode)
 
       VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-        Text("Add MCP Server")
+        Text("Adicionar servidor MCP")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
-        Text("Its tools become available to the assistant in chat")
+        Text("As ferramentas ficam disponíveis para o assistente no chat")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
           .fixedSize(horizontal: false, vertical: true)
@@ -521,24 +521,24 @@ struct AddMcpServerSheet: View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
       modeChips
 
-      labeledField("Name", field: .name) {
-        TextField(mode == .remote ? "e.g. Linear" : "e.g. Playwright", text: $name)
+      labeledField("Nome", field: .name) {
+        TextField(mode == .remote ? "ex.: Linear" : "ex.: Playwright", text: $name)
       }
       .accessibilityIdentifier("add-mcp-name")
 
       if mode == .remote {
-        labeledField("Server URL", field: .url) {
+        labeledField("URL do servidor", field: .url) {
           TextField("https://mcp.example.com/mcp", text: $serverUrl)
         }
         .accessibilityIdentifier("add-mcp-url")
-        labeledField("API key", field: .key, hint: "Leave empty for public or OAuth servers") {
+        labeledField("Chave de API", field: .key, hint: "Deixe vazio para servidores públicos ou OAuth") {
           SecureField("", text: $apiKey)
         }
         .accessibilityIdentifier("add-mcp-api-key")
       } else {
         labeledField(
-          "Command", field: .command,
-          hint: "Runs on your Mac and is saved to ~/.omi/mcp.json."
+          "Comando", field: .command,
+          hint: "Executa no seu Mac e é salvo em ~/.omi/mcp.json."
         ) {
           TextField("npx @playwright/mcp@latest", text: $commandLine)
         }
@@ -580,7 +580,7 @@ struct AddMcpServerSheet: View {
     HStack(spacing: OmiSpacing.lg) {
       Spacer()
 
-      Button("Cancel", action: onDismiss)
+      Button("Cancelar", action: onDismiss)
         .buttonStyle(.plain)
         .scaledFont(size: OmiType.caption, weight: .medium)
         .foregroundColor(Ink.secondary)
@@ -588,7 +588,7 @@ struct AddMcpServerSheet: View {
       Button {
         Task { await submit() }
       } label: {
-        ConnectionModalActionButton(title: phase == .submitting ? "Connecting…" : "Connect")
+        ConnectionModalActionButton(title: phase == .submitting ? "Conectando…" : "Conectar")
           // The primitive has no disabled state of its own, and a live-looking button that does
           // nothing is worse than a dim one.
           .opacity(canSubmit && phase != .submitting ? 1 : 0.45)
@@ -623,8 +623,8 @@ struct AddMcpServerSheet: View {
   private var waitingContent: some View {
     statusCard(
       icon: { ProgressView().scaleEffect(0.6).frame(width: 20, height: 20) },
-      title: "Finish authorizing in your browser…",
-      detail: "This sheet updates automatically once the server is connected."
+      title: "Conclua a autorização no seu navegador…",
+      detail: "Esta janela se atualiza sozinha quando o servidor for conectado."
     )
   }
 
@@ -647,14 +647,14 @@ struct AddMcpServerSheet: View {
             .foregroundColor(Ink.primary)
             .frame(width: 20, height: 20)
         },
-        title: "Server saved to ~/.omi/mcp.json",
-        detail: "Its tools reach chat automatically — right away, or from your next message if Omi is still replying."
+        title: "Servidor salvo em ~/.omi/mcp.json",
+        detail: "As ferramentas chegam ao chat automaticamente, na hora ou a partir da sua próxima mensagem se o Omi ainda estiver respondendo."
       )
 
       HStack {
         Spacer()
         Button(action: onDismiss) {
-          ConnectionModalActionButton(title: "Done")
+          ConnectionModalActionButton(title: "OK")
         }
         .buttonStyle(.plain)
       }
@@ -779,10 +779,10 @@ struct SkillEditorSheet: View {
     VStack(alignment: .leading, spacing: OmiSpacing.lg) {
       HStack(alignment: .top) {
         VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text(editingSkill == nil ? "Add Skill" : "Edit Skill")
+          Text(editingSkill == nil ? "Adicionar skill" : "Editar skill")
             .scaledFont(size: OmiType.title, weight: .semibold)
             .foregroundColor(Ink.primary)
-          Text("The assistant reads the name and description, and loads the full instructions when relevant")
+          Text("O assistente lê o nome e a descrição e carrega as instruções completas quando relevantes")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
             .fixedSize(horizontal: false, vertical: true)
@@ -792,10 +792,10 @@ struct SkillEditorSheet: View {
       }
 
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("Name")
+        Text("Nome")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
-        TextField("e.g. Weekly Report Format", text: $title)
+        TextField("ex.: Formato do relatório semanal", text: $title)
           .textFieldStyle(.plain)
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.primary)
@@ -810,7 +810,7 @@ struct SkillEditorSheet: View {
 
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
         HStack {
-          Text("Instructions (Markdown)")
+          Text("Instruções (Markdown)")
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.secondary)
           Spacer()
@@ -819,7 +819,7 @@ struct SkillEditorSheet: View {
           } label: {
             HStack(spacing: OmiSpacing.xxs) {
               Image(systemName: "square.and.arrow.down")
-              Text("Import .md file")
+              Text("Importar arquivo .md")
             }
             .scaledFont(size: OmiType.caption, weight: .medium)
             .foregroundColor(Ink.secondary)
@@ -849,7 +849,7 @@ struct SkillEditorSheet: View {
         .onDrop(of: [UTType.fileURL], isTargeted: $isDropTargeted, perform: handleDrop)
         .overlay(alignment: .center) {
           if markdown.isEmpty {
-            Text("Paste your SKILL.md here, or drop a .md file")
+            Text("Cole seu SKILL.md aqui ou solte um arquivo .md")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
               .allowsHitTesting(false)
@@ -874,7 +874,7 @@ struct SkillEditorSheet: View {
               confirmingDelete = true
             }
           } label: {
-            Text(confirmingDelete ? "Confirm Delete" : "Delete")
+            Text(confirmingDelete ? "Confirmar exclusão" : "Apagar")
               .scaledFont(size: OmiType.caption, weight: .medium)
               .foregroundColor(Ink.errorRed)
               .padding(.horizontal, OmiSpacing.md)
@@ -896,7 +896,7 @@ struct SkillEditorSheet: View {
               .scaleEffect(0.7)
               .frame(width: 110, height: 32)
           } else {
-            Text("Save Skill")
+            Text("Salvar skill")
               .scaledFont(size: OmiType.body, weight: .semibold)
               .foregroundColor(Ink.surface)
               .frame(width: 110, height: 32)
@@ -948,7 +948,7 @@ struct SkillEditorSheet: View {
     guard let data = try? Data(contentsOf: url), data.count <= Self.maxSkillBytes,
       let text = String(data: data, encoding: .utf8)
     else {
-      errorMessage = "Could not read that file as text (max 128KB)."
+      errorMessage = "Não foi possível ler esse arquivo como texto (máx. 128 KB)."
       return
     }
     if let problem = LocalSkillsStore.validationError(forImportedMarkdown: text) {
@@ -967,7 +967,7 @@ struct SkillEditorSheet: View {
 
   private func save() async {
     guard markdown.utf8.count <= Self.maxSkillBytes else {
-      errorMessage = "Skill content is too large (max 128KB)."
+      errorMessage = "O conteúdo da skill é grande demais (máx. 128 KB)."
       return
     }
     isWorking = true
@@ -1020,7 +1020,7 @@ struct LocalMcpDetailSheet: View {
               .foregroundColor(Ink.primary)
             // "Local" here used to mean "configured locally", which read as a claim about where a
             // remote server runs.
-            Text(server.isCommand ? "Local command" : "Remote server")
+            Text(server.isCommand ? "Comando local" : "Servidor remoto")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           }
@@ -1047,7 +1047,7 @@ struct LocalMcpDetailSheet: View {
                 .foregroundColor(status.isHealthy ? Ink.primary : Ink.secondary)
               Spacer()
               Button(action: signIn) {
-                ConnectionModalActionButton(title: isSigningIn ? "Signing in…" : "Sign In")
+                ConnectionModalActionButton(title: isSigningIn ? "Entrando…" : "Entrar")
               }
               .buttonStyle(.plain)
               .disabled(isSigningIn)
@@ -1055,9 +1055,9 @@ struct LocalMcpDetailSheet: View {
             }
 
             HStack(spacing: OmiSpacing.sm) {
-              SecureField("Or paste an API key", text: $apiKey)
+              SecureField("Ou cole uma chave de API", text: $apiKey)
                 .textFieldStyle(.roundedBorder)
-              Button("Save Key", action: saveAPIKey)
+              Button("Salvar chave", action: saveAPIKey)
                 .buttonStyle(.plain)
                 .foregroundColor(Ink.secondary)
                 .disabled(apiKey.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -1080,7 +1080,7 @@ struct LocalMcpDetailSheet: View {
         }
 
         Text(
-          "Configured in ~/.omi/mcp.json. Changes reach chat automatically — right away, or from your next message if Omi is still replying."
+          "Configurado em ~/.omi/mcp.json. As mudanças chegam ao chat automaticamente, na hora ou a partir da sua próxima mensagem se o Omi ainda estiver respondendo."
         )
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
@@ -1099,7 +1099,7 @@ struct LocalMcpDetailSheet: View {
               confirmingDelete = true
             }
           } label: {
-            Text(confirmingDelete ? "Confirm Remove" : "Remove")
+            Text(confirmingDelete ? "Confirmar remoção" : "Remover")
               .scaledFont(size: OmiType.caption, weight: .medium)
               .foregroundColor(Ink.errorRed)
               .padding(.horizontal, OmiSpacing.md)
@@ -1126,7 +1126,7 @@ struct LocalMcpDetailSheet: View {
         try await LocalMcpStore.signIn(name: server.name)
         await appProvider.fetchUserExtensions()
         await appProvider.refreshMcpStatuses()
-        notice = "Signed in. Its tools reach chat automatically."
+        notice = "Login feito. As ferramentas chegam ao chat automaticamente."
       } catch {
         errorText = error.localizedDescription
       }
@@ -1143,7 +1143,7 @@ struct LocalMcpDetailSheet: View {
       Task {
         await appProvider.fetchUserExtensions()
         await appProvider.refreshMcpStatuses()
-        notice = "Key saved."
+        notice = "Chave salva."
       }
     } catch {
       errorText = error.localizedDescription

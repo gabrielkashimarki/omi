@@ -161,7 +161,7 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
     case .chatgpt: return "ChatGPT"
     case .claude: return "Claude"
     case .gemini: return "Gemini"
-    case .agents: return "AI Agents"
+    case .agents: return "Agentes de IA"
     case .claudeCode: return "Claude Code"
     case .codex: return "Codex"
     case .openclaw: return "OpenClaw"
@@ -171,36 +171,36 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
 
   var subtitle: String {
     switch self {
-    case .notion: return "Live page in your workspace"
-    case .obsidian: return "Choose once, refresh anytime"
-    case .chatgpt: return "Use your Omi context in every chat"
-    case .claude: return "Use your Omi context in every chat"
-    case .gemini: return "Prompt + memory pack"
-    case .agents: return "One prompt for your agent"
-    case .claudeCode: return "MCP + context skill"
-    case .codex: return "MCP + context skill"
-    case .openclaw: return "Memory bank for OpenClaw"
-    case .hermes: return "Memory bank for Hermes"
+    case .notion: return "Página ao vivo no seu workspace"
+    case .obsidian: return "Escolha uma vez, atualize quando quiser"
+    case .chatgpt: return "Use seu contexto do Omi em todo chat"
+    case .claude: return "Use seu contexto do Omi em todo chat"
+    case .gemini: return "Prompt + pacote de memórias"
+    case .agents: return "Um prompt para o seu agente"
+    case .claudeCode: return "MCP + skill de contexto"
+    case .codex: return "MCP + skill de contexto"
+    case .openclaw: return "Banco de memória para o OpenClaw"
+    case .hermes: return "Banco de memória para o Hermes"
     }
   }
 
   var description: String {
     switch self {
-    case .notion: return "Connect once and Omi keeps an Omi Memories page fresh in your workspace."
-    case .obsidian: return "Write Omi memories into your Obsidian vault."
+    case .notion: return "Conecte uma vez e o Omi mantém uma página Omi Memories atualizada no seu workspace."
+    case .obsidian: return "Grave as memórias do Omi no seu cofre do Obsidian."
     case .chatgpt:
       return
-        "Add Omi in ChatGPT once, then retrieve memories, conversations, people, commitments, and screen history with source evidence."
+        "Adicione o Omi no ChatGPT uma vez e recupere memórias, conversas, pessoas, compromissos e histórico de tela com evidência da fonte."
     case .claude:
-      return "Connect over MCP so Claude can retrieve your Omi context live with source evidence."
-    case .gemini: return "Copy the prompt and memory pack, then open Gemini."
-    case .agents: return "Give your agent one prompt that connects Omi memories and this Mac."
+      return "Conecte via MCP para o Claude recuperar seu contexto do Omi ao vivo, com evidência da fonte."
+    case .gemini: return "Copie o prompt e o pacote de memórias e abra o Gemini."
+    case .agents: return "Dê ao seu agente um prompt que conecta as memórias do Omi e este Mac."
     case .claudeCode:
-      return "Connect Omi MCP and install a skill that teaches Claude Code when to retrieve your context."
+      return "Conecte o MCP do Omi e instale uma skill que ensina o Claude Code a recuperar seu contexto."
     case .codex:
-      return "Connect Omi MCP and install a skill that teaches Codex when to retrieve your context."
-    case .openclaw: return "Wire Omi memory into OpenClaw so your agent reads your memories."
-    case .hermes: return "Wire Omi memory into Hermes so your agent reads your memories."
+      return "Conecte o MCP do Omi e instale uma skill que ensina o Codex a recuperar seu contexto."
+    case .openclaw: return "Ligue a memória do Omi ao OpenClaw para o seu agente ler suas memórias."
+    case .hermes: return "Ligue a memória do Omi ao Hermes para o seu agente ler suas memórias."
     }
   }
 
@@ -350,13 +350,13 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
         copyTitle: nil,
         copyText: nil,
         steps: [
-          "Open Claude → Customize → Connectors → Add custom connector",
-          "Copy Name and Remote MCP server URL into the first two Claude fields",
-          "Open Advanced settings, set OAuth Client ID “\(cloudOAuthClientID ?? "")”, and leave OAuth Client Secret blank",
-          "Click Add, then Connect. Syncs to Claude desktop + mobile automatically.",
+          "Abra Claude → Customize → Connectors → Add custom connector",
+          "Copie Name e Remote MCP server URL para os dois primeiros campos do Claude",
+          "Abra Advanced settings, defina OAuth Client ID “\(cloudOAuthClientID ?? "")” e deixe OAuth Client Secret em branco",
+          "Clique em Add e depois em Connect. Sincroniza com o Claude desktop e celular automaticamente.",
         ],
         openURL: URL(string: "https://claude.ai/customize/connectors?modal=add-custom-connector"),
-        openTitle: "Add Claude Connector"
+        openTitle: "Adicionar conector do Claude"
       )
     case .chatgpt:
       return MCPSetup(
@@ -364,23 +364,23 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
         copyTitle: nil,
         copyText: nil,
         steps: [
-          "Open ChatGPT → Settings → Apps → Advanced, then enable Developer mode",
-          "Click Create app, then fill the first visible fields: Name “Omi Memory”, Connection / server URL, and Authentication OAuth",
-          "Paste OAuth Client ID “\(cloudOAuthClientID ?? "")”, leave Client Secret blank, set token auth method “\(cloudTokenAuthMethod ?? "none")”, Auth URL, and Token URL",
-          "Click Create app, then Connect. Syncs to ChatGPT desktop + mobile automatically.",
+          "Abra ChatGPT → Settings → Apps → Advanced e ative o Developer mode",
+          "Clique em Create app e preencha os primeiros campos visíveis: Name “Omi Memory”, Connection / server URL e Authentication OAuth",
+          "Cole o OAuth Client ID “\(cloudOAuthClientID ?? "")”, deixe o Client Secret em branco e defina token auth method “\(cloudTokenAuthMethod ?? "none")”, Auth URL e Token URL",
+          "Clique em Create app e depois em Connect. Sincroniza com o ChatGPT desktop e celular automaticamente.",
         ],
         openURL: URL(string: "https://chatgpt.com/#settings/Connectors"),
-        openTitle: "Open ChatGPT"
+        openTitle: "Abrir o ChatGPT"
       )
     case .claudeCode:
       return MCPSetup(
         serverURL: url,
-        copyTitle: "Copy command",
+        copyTitle: "Copiar comando",
         copyText:
           "claude mcp add --scope user --transport http omi-memory \(url) --header \"Authorization: Bearer \(key)\"",
         steps: [
-          "Run the command below in your terminal",
-          "It registers Omi at user scope, so every Claude Code project reads your memories",
+          "Execute o comando abaixo no seu terminal",
+          "Ele registra o Omi no escopo de usuário, então todo projeto do Claude Code lê suas memórias",
         ],
         openURL: nil,
         openTitle: nil
@@ -388,15 +388,15 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
     case .codex:
       return MCPSetup(
         serverURL: url,
-        copyTitle: "Copy config",
+        copyTitle: "Copiar configuração",
         copyText: """
           [mcp_servers.omi-memory]
           command = "npx"
           args = ["-y", "mcp-remote", "\(url)", "--header", "Authorization: Bearer \(key)"]
           """,
         steps: [
-          "Add the block below to ~/.codex/config.toml",
-          "Restart Codex — it will read your Omi memories over MCP",
+          "Adicione o bloco abaixo em ~/.codex/config.toml",
+          "Reinicie o Codex e ele passa a ler suas memórias do Omi via MCP",
         ],
         openURL: nil,
         openTitle: nil
@@ -404,15 +404,15 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
     case .hermes:
       return MCPSetup(
         serverURL: url,
-        copyTitle: "Copy config",
+        copyTitle: "Copiar configuração",
         copyText: """
           omi-memory:
             command: npx
             args: ["-y", "mcp-remote", "\(url)", "--header", "Authorization: Bearer \(key)"]
           """,
         steps: [
-          "Add the block below under mcp_servers: in ~/.hermes/config.yaml",
-          "Restart Hermes — it reads your Omi memories over MCP and searches them first",
+          "Adicione o bloco abaixo em mcp_servers: no arquivo ~/.hermes/config.yaml",
+          "Reinicie o Hermes e ele lê suas memórias do Omi via MCP, buscando nelas primeiro",
         ],
         openURL: nil,
         openTitle: nil
@@ -422,15 +422,15 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
         #"{"enabled":true,"url":"\#(url)","transport":"streamable-http","headers":{"Authorization":"Bearer \#(key)"}}"#
       return MCPSetup(
         serverURL: url,
-        copyTitle: "Copy command",
+        copyTitle: "Copiar comando",
         copyText: """
           openclaw mcp set omi-memory \(Self.shellQuote(serverJSON))
           openclaw mcp reload
           """,
         steps: [
-          "Run the command below to add the Omi MCP server to ~/.openclaw/openclaw.json",
-          "Reload OpenClaw MCP so open sessions rebuild their tool list",
-          "Add a SOUL.md note asking OpenClaw to search Omi memory first",
+          "Execute o comando abaixo para adicionar o servidor MCP do Omi em ~/.openclaw/openclaw.json",
+          "Recarregue o MCP do OpenClaw para as sessões abertas refazerem a lista de ferramentas",
+          "Adicione uma nota ao SOUL.md pedindo ao OpenClaw para buscar primeiro na memória do Omi",
         ],
         openURL: nil,
         openTitle: nil
@@ -444,38 +444,38 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
     switch self {
     case .codex:
       return MCPSetupCompletionSummary(
-        title: "Setup complete",
-        subtitle: "Restart Codex to load Omi Memory."
+        title: "Configuração concluída",
+        subtitle: "Reinicie o Codex para carregar o Omi Memory."
       )
     case .claudeCode:
       return MCPSetupCompletionSummary(
-        title: "Setup complete",
-        subtitle: "Restart Claude Code to load Omi Memory."
+        title: "Configuração concluída",
+        subtitle: "Reinicie o Claude Code para carregar o Omi Memory."
       )
     case .hermes:
       return MCPSetupCompletionSummary(
-        title: "Setup complete",
-        subtitle: "Restart Hermes to load Omi Memory."
+        title: "Configuração concluída",
+        subtitle: "Reinicie o Hermes para carregar o Omi Memory."
       )
     case .openclaw:
       return MCPSetupCompletionSummary(
-        title: "Connected",
-        subtitle: "OpenClaw is ready to read Omi Memory."
+        title: "Conectado",
+        subtitle: "O OpenClaw está pronto para ler o Omi Memory."
       )
     case .chatgpt:
       return MCPSetupCompletionSummary(
-        title: "Authorized in ChatGPT",
-        subtitle: "ChatGPT can now use your Omi memories."
+        title: "Autorizado no ChatGPT",
+        subtitle: "O ChatGPT já pode usar suas memórias do Omi."
       )
     case .claude:
       return MCPSetupCompletionSummary(
-        title: "Connected",
-        subtitle: "\(title) can read Omi Memory."
+        title: "Conectado",
+        subtitle: "\(title) pode ler o Omi Memory."
       )
     case .notion, .obsidian, .gemini, .agents:
       return MCPSetupCompletionSummary(
-        title: "Setup complete",
-        subtitle: "\(title) is ready."
+        title: "Configuração concluída",
+        subtitle: "\(title) está pronto."
       )
     }
   }
@@ -657,7 +657,7 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
       return [
         CloudConnectorCopySection(
           id: "main_fields",
-          title: "Main fields",
+          title: "Campos principais",
           fields: [
             CloudConnectorCopyField(id: "name", label: "Name", value: "Omi Memory"),
             CloudConnectorCopyField(
@@ -679,7 +679,7 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
       return [
         CloudConnectorCopySection(
           id: "visible_fields",
-          title: "Main fields",
+          title: "Campos principais",
           fields: [
             CloudConnectorCopyField(id: "name", label: "Name", value: "Omi Memory"),
             CloudConnectorCopyField(
@@ -712,8 +712,8 @@ enum MemoryExportDestination: String, CaseIterable, Identifiable, Sendable {
     switch self {
     case .claude:
       return (
-        "Finish in Claude",
-        "Copy each value into the Add custom connector form, then click Add and Connect."
+        "Conclua no Claude",
+        "Copie cada valor para o formulário Add custom connector e clique em Add e Connect."
       )
     case .chatgpt:
       return nil

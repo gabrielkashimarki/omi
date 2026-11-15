@@ -36,7 +36,7 @@ struct ChatErrorCard: View {
         Spacer(minLength: 8)
 
         if let onDismiss = onDismiss {
-          DismissButton(action: onDismiss, accessibilityLabel: "Dismiss", size: .compact)
+          DismissButton(action: onDismiss, accessibilityLabel: "Dispensar", size: .compact)
         }
       }
 
@@ -56,7 +56,7 @@ struct ChatErrorCard: View {
         if !detailsBody.isEmpty {
           Button(action: { showDetails.toggle() }) {
             HStack(spacing: OmiSpacing.hairline) {
-              Text(showDetails ? "Hide details" : "Show details")
+              Text(showDetails ? "Ocultar detalhes" : "Mostrar detalhes")
                 .scaledFont(size: OmiType.caption)
               Image(systemName: showDetails ? "chevron.up" : "chevron.down")
                 .scaledFont(size: OmiType.micro)
@@ -125,75 +125,75 @@ struct ChatErrorCard: View {
   private var headline: String {
     switch state {
     case .authRequired:
-      return "Sign in to continue"
+      return "Entre para continuar"
     case .timeout(let toolName):
       if let toolName = toolName {
         return "\(toolName) timed out"
       }
-      return "AI took too long to respond"
+      return "A IA demorou demais para responder"
     case .bridgeUnavailable(let reason):
       switch reason {
       case .nodeMissing:
-        return "AI runtime missing"
+        return "Ambiente de execução da IA ausente"
       case .runtimeMissing:
-        return "AI components missing"
+        return "Componentes da IA ausentes"
       case .crashed:
-        return "AI stopped unexpectedly"
+        return "A IA parou inesperadamente"
       case .failedToStart:
-        return "AI couldn't start"
+        return "A IA não conseguiu iniciar"
       case .unknown:
-        return "AI isn't running"
+        return "A IA não está em execução"
       }
     case .interrupted:
-      return "Response stopped"
+      return "Resposta interrompida"
     case .noDataFound:
-      return "I didn't find anything"
+      return "Não encontrei nada"
     }
   }
 
   private var detail: String {
     switch state {
     case .authRequired:
-      return "Your session expired. Sign in again to keep chatting."
+      return "Sua sessão expirou. Entre de novo para continuar conversando."
     case .timeout:
-      return "Try again, or rephrase your question."
+      return "Tente de novo ou reformule a pergunta."
     case .bridgeUnavailable(let reason):
       switch reason {
       case .nodeMissing:
-        return "Node.js wasn't found. Install the runtime to keep using AI chat."
+        return "Node.js não foi encontrado. Instale o ambiente de execução para continuar usando o chat com IA."
       case .runtimeMissing:
-        return "The AI components aren't installed. Install them to keep chatting."
+        return "Os componentes da IA não estão instalados. Instale-os para continuar conversando."
       case .crashed:
-        return "The AI stopped mid-turn. Try again to start a fresh response."
+        return "A IA parou no meio da resposta. Tente de novo para começar uma resposta nova."
       case .failedToStart(let failure):
         switch failure {
         case .handshakeTimedOut:
-          return "The AI took too long to start. Try again to start a fresh response."
+          return "A IA demorou demais para iniciar. Tente de novo para começar uma resposta nova."
         case .incompatibleHandshake:
-          return "The AI needs to restart before it can respond. Try again."
+          return "A IA precisa reiniciar antes de responder. Tente de novo."
         case .exitedDuringStartup, .launchFailed:
-          return "The AI couldn't start. Try again to start a fresh response."
+          return "A IA não conseguiu iniciar. Tente de novo para começar uma resposta nova."
         }
       case .unknown:
-        return "The AI is not responding. Try again to start a fresh response."
+        return "A IA não está respondendo. Tente de novo para começar uma resposta nova."
       }
     case .interrupted:
-      return "Ask something new when you're ready."
+      return "Pergunte algo novo quando quiser."
     case .noDataFound:
-      return "Try a different question, or be more specific."
+      return "Tente outra pergunta ou seja mais específico."
     }
   }
 
   private var primaryCTATitle: String {
     switch state.primaryRecovery {
     case .retry:
-      return "Retry"
+      return "Tentar de novo"
     case .signIn:
-      return "Sign in"
+      return "Entrar"
     case .installRuntime:
-      return "Install runtime"
+      return "Instalar ambiente"
     case .dismiss:
-      return "Try a different question"
+      return "Tentar outra pergunta"
     }
   }
 
@@ -204,21 +204,21 @@ struct ChatErrorCard: View {
     switch state {
     case .timeout(let toolName):
       if let toolName = toolName {
-        return "Tool: \(toolName)"
+        return "Ferramenta: \(toolName)"
       }
       return ""
     case .bridgeUnavailable(let reason):
       switch reason {
       case .nodeMissing:
-        return "Cause: node binary not found on PATH."
+        return "Causa: binário do node não encontrado no PATH."
       case .runtimeMissing:
         // Covers both a missing bridge script and a bundle whose agent runtime
         // payload (e.g. pi-mono-extension) never made it into the install.
-        return "Cause: the local AI runtime is missing files on disk."
+        return "Causa: o ambiente local da IA está sem arquivos no disco."
       case .crashed:
-        return "Cause: bridge process exited."
+        return "Causa: o processo bridge foi encerrado."
       case .failedToStart(let failure):
-        return "Cause: bridge start failed (\(failure.rawValue))."
+        return "Causa: falha ao iniciar o bridge (\(failure.rawValue))."
       case .unknown:
         return ""
       }

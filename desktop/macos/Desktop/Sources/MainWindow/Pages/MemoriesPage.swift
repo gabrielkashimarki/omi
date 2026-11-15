@@ -25,9 +25,9 @@ enum MemoryTag: String, CaseIterable, Identifiable {
   var displayName: String {
     switch self {
     case .manual: return "Manual"
-    case .system: return "About You"
+    case .system: return "Sobre você"
     case .interesting: return "Insights"
-    case .workflow: return "Workflow"
+    case .workflow: return "Fluxo de trabalho"
     }
   }
 
@@ -68,19 +68,19 @@ enum MemoryLayerFilter: String, CaseIterable, Identifiable {
 
   var displayName: String {
     switch self {
-    case .defaultAccess: return "Default"
-    case .shortTerm: return "Short-term"
-    case .longTerm: return "Long-term"
-    case .archive: return "Archive"
+    case .defaultAccess: return "Padrão"
+    case .shortTerm: return "Curto prazo"
+    case .longTerm: return "Longo prazo"
+    case .archive: return "Arquivo"
     }
   }
 
   var description: String {
     switch self {
-    case .defaultAccess: return "Short-term + Long-term"
-    case .shortTerm: return "Recent memories, not yet confirmed as lasting"
-    case .longTerm: return "Stable memories"
-    case .archive: return "Explicit archive search"
+    case .defaultAccess: return "Curto prazo + longo prazo"
+    case .shortTerm: return "Memórias recentes, ainda não confirmadas como duradouras"
+    case .longTerm: return "Memórias estáveis"
+    case .archive: return "Busca explícita no arquivo"
     }
   }
 
@@ -1894,7 +1894,7 @@ class MemoriesViewModel: ObservableObject {
   func deleteMemories(scope: MemoryLayerScope? = nil, archiveAcknowledged: Bool = false) async {
     let scope = scope ?? currentBulkScope
     if scope.includesArchive && !archiveAcknowledged {
-      errorMessage = "Archive deletion requires explicit Archive confirmation."
+      errorMessage = "Apagar o arquivo exige confirmação explícita do Arquivo."
       return
     }
 
@@ -2085,7 +2085,7 @@ struct MemoriesPage: View {
           QuerySearchBar(
             text: $viewModel.searchText,
             accessibilityID: "memories-search-field",
-            placeholder: "Search memories", searchSurface: .memories
+            placeholder: "Buscar memórias", searchSurface: .memories
           )
         },
         content: { pageContent }
@@ -2190,11 +2190,11 @@ struct MemoriesPage: View {
     }
     .shellConfirmation(
       isPresented: $viewModel.showingDeleteAllConfirmation,
-      title: "Delete Default Memories?",
+      title: "Apagar as memórias padrão?",
       message: viewModel.canonicalLifecycleExposed
-        ? "This permanently deletes your Short-term and Long-term memories. Archive is not included."
-        : "This permanently deletes your default memories.",
-      confirmTitle: "Delete Memories"
+        ? "Isto apaga permanentemente suas memórias de curto e longo prazo. O arquivo não está incluído."
+        : "Isto apaga permanentemente suas memórias padrão.",
+      confirmTitle: "Apagar memórias"
     ) {
       Task { await viewModel.deleteMemories(scope: .defaultAccess) }
     }
@@ -2231,7 +2231,7 @@ struct MemoriesPage: View {
   @ViewBuilder
   private var undoDeleteToast: some View {
     if let memory = viewModel.pendingDeleteMemory {
-      UndoToast(message: "Memory deleted", detail: memory.content) {
+      UndoToast(message: "Memória apagada", detail: memory.content) {
         viewModel.undoDelete()
       }
       .padding(.horizontal, OmiSpacing.xxl)
@@ -2273,7 +2273,7 @@ struct MemoriesPage: View {
 
   private var searchField: some View {
     OmiSearchField(
-      placeholder: "Search memories",
+      placeholder: "Buscar memórias",
       text: $viewModel.searchText,
       isLoading: viewModel.isSearching || viewModel.isLoadingFiltered, searchSurface: .memories
     )
@@ -2290,17 +2290,17 @@ struct MemoriesPage: View {
       actions: {
         HStack(spacing: OmiSpacing.sm) {
           // `[More] [primary]`, the order every page's toolbar uses.
-          PageMoreMenu(help: "More memory actions", accessibilityIdentifier: "memories-more-actions") {
+          PageMoreMenu(help: "Mais ações de memória", accessibilityIdentifier: "memories-more-actions") {
             managementMenuItems
           }
 
           Button {
             viewModel.showingAddMemory = true
           } label: {
-            PageQueryActionLabel(icon: "plus", title: "New Memory", isPrimary: true)
+            PageQueryActionLabel(icon: "plus", title: "Nova memória", isPrimary: true)
           }
           .buttonStyle(.plain)
-          .help("New memory (⌘N)").keyboardShortcut("n", modifiers: .command)
+          .help("Nova memória (⌘N)").keyboardShortcut("n", modifiers: .command)
           .accessibilityIdentifier("memories-add-memory")
         }
       }
@@ -2311,7 +2311,7 @@ struct MemoriesPage: View {
   private var filterControls: some View {
     Menu {
       if viewModel.canonicalLifecycleExposed {
-        Section("Lifecycle") {
+        Section("Ciclo de vida") {
           ForEach(MemoryLayerFilter.allCases) { filter in
             Button {
               viewModel.selectedLayerFilter = filter
@@ -2328,17 +2328,17 @@ struct MemoriesPage: View {
         }
       }
 
-      Section("Source") {
+      Section("Origem") {
         Button {
           viewModel.filterThisDeviceOnly.toggle()
         } label: {
           Label(
-            viewModel.filterThisDeviceOnly ? "All devices" : "This device",
+            viewModel.filterThisDeviceOnly ? "Todos os dispositivos" : "Este dispositivo",
             systemImage: "desktopcomputer")
         }
       }
 
-      Section("Type") {
+      Section("Tipo") {
         Button {
           pendingSelectedTags = viewModel.selectedTags
           categorySearchText = ""
@@ -2348,20 +2348,20 @@ struct MemoriesPage: View {
           }
         } label: {
           Label(
-            viewModel.selectedTags.isEmpty ? "Choose types…" : "Change types…",
+            viewModel.selectedTags.isEmpty ? "Escolher tipos…" : "Mudar tipos…",
             systemImage: "tag")
         }
       }
 
       if memoryActiveFilterCount > 0 {
         Divider()
-        Button("Clear all filters", action: clearMemoryFilters)
+        Button("Limpar todos os filtros", action: clearMemoryFilters)
       }
     } label: {
       PageQueryControlLabel(
         icon: "line.3.horizontal.decrease",
-        dimension: memoryActiveFilterCount == 0 ? nil : "Filter",
-        value: memoryActiveFilterCount == 0 ? "Filter" : "\(memoryActiveFilterCount)",
+        dimension: memoryActiveFilterCount == 0 ? nil : "Filtro",
+        value: memoryActiveFilterCount == 0 ? "Filtro" : "\(memoryActiveFilterCount)",
         isActive: memoryActiveFilterCount > 0,
         dimensionSeparator: " ·")
     }
@@ -2370,7 +2370,7 @@ struct MemoriesPage: View {
     .popover(isPresented: $showCategoryFilter, arrowEdge: .bottom) {
       categoryFilterPopover
     }
-    .help("Filter memories by status, source, or type")
+    .help("Filtre memórias por status, origem ou tipo")
     .accessibilityIdentifier("memories-filter-menu")
   }
 
@@ -2396,7 +2396,7 @@ struct MemoriesPage: View {
     if viewModel.filterThisDeviceOnly {
       filters.append(
         PageActiveFilter(
-          id: "device", title: "This device",
+          id: "device", title: "Este dispositivo",
           onRemove: { viewModel.filterThisDeviceOnly = false }))
     }
 
@@ -2437,11 +2437,11 @@ struct MemoriesPage: View {
   /// Label for the category filter button
   private var categoryFilterLabel: String {
     if viewModel.selectedTags.isEmpty {
-      return "All"
+      return "Todos"
     } else if viewModel.selectedTags.count == 1 {
       return viewModel.selectedTags.first!.displayName
     } else {
-      return "\(viewModel.selectedTags.count) selected"
+      return "\(viewModel.selectedTags.count) selecionados"
     }
   }
 
@@ -2467,7 +2467,7 @@ struct MemoriesPage: View {
           .foregroundColor(Ink.secondary)
           .scaledFont(size: OmiType.caption)
 
-        TextField("Search categories…", text: $categorySearchText)
+        TextField("Buscar categorias…", text: $categorySearchText)
           .textFieldStyle(.plain)
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.primary)
@@ -2498,7 +2498,7 @@ struct MemoriesPage: View {
               Image(systemName: "tray.full")
                 .scaledFont(size: OmiType.caption)
                 .frame(width: 20)
-              Text("All")
+              Text("Todos")
                 .scaledFont(size: OmiType.body)
               Spacer()
               Text("\(viewModel.totalMemoriesCount)")
@@ -2580,10 +2580,10 @@ struct MemoriesPage: View {
 
       // Action buttons
       HStack(spacing: OmiSpacing.sm) {
-        Button("Clear") { pendingSelectedTags.removeAll() }
+        Button("Limpar") { pendingSelectedTags.removeAll() }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
 
-        Button("Apply") {
+        Button("Aplicar") {
           viewModel.selectedTags = pendingSelectedTags
           showCategoryFilter = false
         }
@@ -2602,18 +2602,18 @@ struct MemoriesPage: View {
     let bulkUnavailable =
       !viewModel.areBulkServerMutationsAvailable || viewModel.memories.isEmpty
       || viewModel.isBulkOperationInProgress
-    Section("Visibility") {
+    Section("Visibilidade") {
       Button {
         Task { await viewModel.makeMemoriesPrivate(scope: .defaultAccess) }
       } label: {
-        Label("Make Default Memories Private", systemImage: "lock")
+        Label("Tornar privadas as memórias padrão", systemImage: "lock")
       }
       .disabled(bulkUnavailable)
 
       Button {
         Task { await viewModel.makeMemoriesPublic(scope: .defaultAccess) }
       } label: {
-        Label("Make Default Memories Public", systemImage: "globe")
+        Label("Tornar públicas as memórias padrão", systemImage: "globe")
       }
       .disabled(bulkUnavailable)
     }
@@ -2623,7 +2623,7 @@ struct MemoriesPage: View {
     Button(role: .destructive) {
       viewModel.showingDeleteAllConfirmation = true
     } label: {
-      Label("Delete Default Memories…", systemImage: "trash")
+      Label("Apagar memórias padrão…", systemImage: "trash")
     }
     .disabled(
       !viewModel.isBulkDeletionAvailable || viewModel.memories.isEmpty || viewModel.isBulkOperationInProgress
@@ -2668,7 +2668,7 @@ struct MemoriesPage: View {
           HStack(spacing: OmiSpacing.sm) {
             ProgressView()
               .controlSize(.small)
-            Text("Loading more…")
+            Text("Carregando mais…")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -2684,7 +2684,7 @@ struct MemoriesPage: View {
             } label: {
               HStack(spacing: OmiSpacing.xs) {
                 Image(systemName: "arrow.down.circle")
-                Text("Load more memories")
+                Text("Carregar mais memórias")
               }
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(Ink.secondary)
@@ -2701,7 +2701,7 @@ struct MemoriesPage: View {
             } label: {
               HStack(spacing: OmiSpacing.xs) {
                 Image(systemName: "arrow.down.circle")
-                Text("Load more memories")
+                Text("Carregar mais memórias")
               }
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(Ink.secondary)
@@ -2761,13 +2761,13 @@ struct MemoriesPage: View {
   private var emptyState: some View {
     GlassEmptyState(
       systemImage: "brain.head.profile",
-      title: "No Memories Yet",
-      message: "Your memories and tips will appear here.\nMemories are extracted from your conversations."
+      title: "Nenhuma memória ainda",
+      message: "Suas memórias e dicas vão aparecer aqui.\nAs memórias são extraídas das suas conversas."
     ) {
       Button {
         viewModel.showingAddMemory = true
       } label: {
-        Label("New Memory", systemImage: "plus")
+        Label("Nova memória", systemImage: "plus")
       }
       .buttonStyle(OmiButtonStyle(.primary, size: .compact))
     }
@@ -2776,15 +2776,15 @@ struct MemoriesPage: View {
   private var noResultsView: some View {
     GlassEmptyState(
       systemImage: "magnifyingglass",
-      title: "No Matching Memories",
+      title: "Nenhuma memória correspondente",
       message: memoryNoResultsDescription
     ) {
       if !viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-        Button("Clear Search") { viewModel.searchText = "" }
+        Button("Limpar busca") { viewModel.searchText = "" }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
       }
       if hasActiveMemoryFilterScope {
-        Button("Clear Filters") { clearMemoryFilters() }
+        Button("Limpar filtros") { clearMemoryFilters() }
           .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
       }
     }
@@ -2800,22 +2800,22 @@ struct MemoriesPage: View {
   private var memoryNoResultsDescription: String {
     let hasSearch = !viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     if hasSearch && hasActiveMemoryFilterScope {
-      return "Nothing matches your search and active filters."
+      return "Nada corresponde à sua busca e aos filtros ativos."
     }
     if hasSearch {
-      return "Nothing matches your search. Try a different term."
+      return "Nada corresponde à sua busca. Tente outro termo."
     }
-    return "Nothing matches the selected filters."
+    return "Nada corresponde aos filtros selecionados."
   }
 
   private var loadingView: some View {
-    GlassLoadingState(label: "Loading memories…")
+    GlassLoadingState(label: "Carregando memórias…")
   }
 
   private func errorView(_: String) -> some View {
     GlassErrorState(
-      title: "Couldn't Load Memories",
-      message: "Check your connection and try again.",
+      title: "Não foi possível carregar as memórias",
+      message: "Verifique sua conexão e tente de novo.",
       retry: { Task { await viewModel.loadMemories() } }
     )
   }
@@ -2895,7 +2895,7 @@ private struct MemoryCardView: View {
         HStack(alignment: .top, spacing: OmiSpacing.sm) {
           Group {
             if memory.content.hasPrefix("[Protected") || memory.content.hasPrefix("[Encrypted") {
-              Text("Protected memory")
+              Text("Memória protegida")
                 .italic()
                 .foregroundColor(Ink.secondary)
             } else {
@@ -2932,7 +2932,7 @@ private struct MemoryCardView: View {
           }
 
           if let sourceName = memory.sourceName {
-            Text("From \(sourceName)")
+            Text("De \(sourceName)")
               .scaledFont(size: OmiType.micro)
               .foregroundColor(Ink.secondary)
               .lineLimit(1)
@@ -2974,17 +2974,17 @@ private struct MemoryCardView: View {
     }
     .contextMenu {
       Button(action: onTap) {
-        Label("Open", systemImage: "sidebar.right")
+        Label("Abrir", systemImage: "sidebar.right")
       }
       Button {
-        OmiToastCenter.shared.copy(memory.content, confirming: "Memory copied")
+        OmiToastCenter.shared.copy(memory.content, confirming: "Memória copiada")
       } label: {
-        Label("Copy Text", systemImage: "doc.on.doc")
+        Label("Copiar texto", systemImage: "doc.on.doc")
       }
       if let onDelete {
         Divider()
         Button(role: .destructive, action: onDelete) {
-          Label("Delete Memory", systemImage: "trash")
+          Label("Apagar memória", systemImage: "trash")
         }
       }
     }
@@ -3011,13 +3011,13 @@ private struct MemoryReviewControls: View {
         keep: true,
         symbol: verdict == true ? "hand.thumbsup.fill" : "hand.thumbsup",
         tint: verdict == true ? Ink.listeningGreen : Ink.secondary,
-        label: "Keep this memory"
+        label: "Manter esta memória"
       )
       reviewButton(
         keep: false,
         symbol: verdict == false ? "hand.thumbsdown.fill" : "hand.thumbsdown",
         tint: verdict == false ? Ink.errorRed : Ink.secondary,
-        label: "Reject this memory"
+        label: "Rejeitar esta memória"
       )
     }
     .opacity(isRevealed ? 1 : 0)
@@ -3101,7 +3101,7 @@ struct MemoryDetailPanel: View {
           }
 
           if let reasoning = memory.reasoning, !reasoning.isEmpty {
-            section(memory.isTip ? "Why this tip" : "Reasoning") {
+            section(memory.isTip ? "Por que esta dica" : "Raciocínio") {
               Text(reasoning)
                 .scaledFont(size: OmiType.body)
                 .foregroundColor(Ink.secondary)
@@ -3111,7 +3111,7 @@ struct MemoryDetailPanel: View {
           }
 
           if hasContext {
-            section("Context") {
+            section("Contexto") {
               VStack(alignment: .leading, spacing: OmiSpacing.xs) {
                 if let activity = memory.currentActivity, !activity.isEmpty {
                   contextLine("figure.walk", activity)
@@ -3133,7 +3133,7 @@ struct MemoryDetailPanel: View {
           if let conversationId = memory.conversationId {
             MemoryActionRow(
               icon: "bubble.left.and.bubble.right",
-              title: "View Source Conversation",
+              title: "Ver conversa de origem",
               iconColor: Ink.primary,
               textColor: Ink.primary,
               backgroundColor: Ink.rowFillHover,
@@ -3160,7 +3160,7 @@ struct MemoryDetailPanel: View {
   private var header: some View {
     HStack(spacing: OmiSpacing.sm) {
       if memory.isTip {
-        chip("Tips", icon: "lightbulb.fill", tint: Ink.secondary)
+        chip("Dicas", icon: "lightbulb.fill", tint: Ink.secondary)
         if let tipCategory = memory.tipCategory {
           chip(
             tipCategory.capitalized, icon: memory.tipCategoryIcon, tint: tagColorFor(tipCategory))
@@ -3174,7 +3174,7 @@ struct MemoryDetailPanel: View {
       }
 
       if memory.isPublic {
-        chip("Public", icon: "person.2.fill", tint: Ink.secondary)
+        chip("Pública", icon: "person.2.fill", tint: Ink.secondary)
       }
 
       Spacer(minLength: OmiSpacing.xs)
@@ -3186,20 +3186,20 @@ struct MemoryDetailPanel: View {
       // Publishing and deleting are both one-way-feeling acts, so neither gets
       // a control sitting under the cursor. A public memory feeds the user's
       // shareable persona; a switch beside a trash can made that a slip.
-      OmiIconMenu(systemName: "ellipsis", help: "Memory Actions") {
-        Button("Edit Text") {
+      OmiIconMenu(systemName: "ellipsis", help: "Ações da memória") {
+        Button("Editar texto") {
           editContentText = memory.content
           isEditingContent = true
         }
         if memory.isPublic {
-          Button("Make Private") {
+          Button("Tornar privada") {
             Task { await viewModel.toggleVisibility(memory) }
           }
         } else {
-          Button("Make Public…") { isConfirmingPublic = true }
+          Button("Tornar pública…") { isConfirmingPublic = true }
         }
         Divider()
-        Button("Delete Memory", role: .destructive) {
+        Button("Apagar memória", role: .destructive) {
           NSApp.keyWindow?.makeFirstResponder(nil)
           Task { @MainActor in
             try? await Task.sleep(nanoseconds: 100_000_000)
@@ -3216,10 +3216,10 @@ struct MemoryDetailPanel: View {
     .padding(.vertical, OmiSpacing.md)
     .shellConfirmation(
       isPresented: $isConfirmingPublic,
-      title: "Make This Memory Public?",
-      message: "Public memories build your shareable persona, so anyone you share it with can see "
-        + "what this memory says. Everything else stays private to you.",
-      confirmTitle: "Make Public",
+      title: "Tornar esta memória pública?",
+      message: "Memórias públicas formam sua persona compartilhável, então qualquer pessoa com quem você a compartilhar pode ver "
+        + "o que esta memória diz. Todo o resto continua privado.",
+      confirmTitle: "Tornar pública",
       isDestructive: false
     ) {
       Task { await viewModel.toggleVisibility(memory) }
@@ -3245,10 +3245,10 @@ struct MemoryDetailPanel: View {
           .frame(minHeight: 260)
 
         HStack(spacing: OmiSpacing.sm) {
-          Button("Cancel") { isEditingContent = false }
+          Button("Cancelar") { isEditingContent = false }
             .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
 
-          Button("Save") {
+          Button("Salvar") {
             viewModel.editText = editContentText
             Task {
               await viewModel.saveEditedMemory(memory)
@@ -3260,7 +3260,7 @@ struct MemoryDetailPanel: View {
         }
       }
     } else if memory.content.hasPrefix("[Protected") || memory.content.hasPrefix("[Encrypted") {
-      Text("Protected memory")
+      Text("Memória protegida")
         .italic()
         .scaledFont(size: OmiType.subheading)
         .foregroundColor(Ink.secondary)
@@ -3276,7 +3276,7 @@ struct MemoryDetailPanel: View {
           editContentText = memory.content
           isEditingContent = true
         }
-        .help("Click to edit")
+        .help("Clique para editar")
     }
   }
 
@@ -3289,7 +3289,7 @@ struct MemoryDetailPanel: View {
   /// longest values were the ones that got truncated. Chips wrap, stay on the
   /// left margin, and read in one pass.
   private var provenance: some View {
-    section("Where this came from") {
+    section("De onde veio") {
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
         if !provenanceFacts.isEmpty {
           FlowLayout(spacing: OmiSpacing.xxs) {

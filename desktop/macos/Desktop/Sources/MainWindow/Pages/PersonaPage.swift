@@ -83,9 +83,9 @@ struct PersonaPage: View {
     }
     .shellConfirmation(
       isPresented: $showingDeleteConfirmation,
-      title: "Delete Persona?",
-      message: "This permanently deletes your AI persona. It can't be undone.",
-      confirmTitle: "Delete"
+      title: "Apagar persona?",
+      message: "Isto apaga permanentemente sua persona de IA. Não dá para desfazer.",
+      confirmTitle: "Apagar"
     ) {
       Task { await deletePersona() }
     }
@@ -99,11 +99,11 @@ struct PersonaPage: View {
   private var header: some View {
     HStack {
       VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-        Text("AI Persona")
+        Text("Persona de IA")
           .scaledFont(size: OmiType.title, weight: .bold)
           .foregroundColor(Ink.primary)
 
-        Text("Create an AI clone of yourself that others can chat with")
+        Text("Crie um clone de IA seu para outras pessoas conversarem")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
@@ -120,8 +120,8 @@ struct PersonaPage: View {
         }
         .buttonStyle(.plain)
         .disabled(isLoading)
-        .help("Refresh Persona")
-        .accessibilityLabel("Refresh Persona")
+        .help("Atualizar persona")
+        .accessibilityLabel("Atualizar persona")
       }
     }
   }
@@ -129,12 +129,12 @@ struct PersonaPage: View {
   // MARK: - Loading & Error
 
   private var loadingView: some View {
-    GlassLoadingState(label: "Loading persona…", placement: .scrolling)
+    GlassLoadingState(label: "Carregando persona…", placement: .scrolling)
   }
 
   private func errorView(_ message: String) -> some View {
     GlassErrorState(
-      title: "Couldn't Load Persona", message: message, placement: .scrolling,
+      title: "Não foi possível carregar a persona", message: message, placement: .scrolling,
       retry: { Task { await loadPersona() } })
   }
 
@@ -154,12 +154,12 @@ struct PersonaPage: View {
       }
 
       VStack(spacing: OmiSpacing.sm) {
-        Text("No Persona Yet")
+        Text("Nenhuma persona ainda")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
         Text(
-          "Create an AI clone of yourself using your public memories. Others can then chat with your persona to learn about you."
+          "Crie um clone de IA seu usando suas memórias públicas. Assim, outras pessoas podem conversar com sua persona para conhecer você."
         )
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
@@ -170,7 +170,7 @@ struct PersonaPage: View {
       Button {
         showingCreateForm = true
       } label: {
-        Label("Create Persona", systemImage: "plus")
+        Label("Criar persona", systemImage: "plus")
       }
       .buttonStyle(OmiButtonStyle(.primary))
 
@@ -179,7 +179,7 @@ struct PersonaPage: View {
         Image(systemName: "info.circle")
           .scaledFont(size: OmiType.body)
 
-        Text("Make memories public in the Memories page to enhance your persona")
+        Text("Torne memórias públicas na página Memórias para melhorar sua persona")
           .scaledFont(size: OmiType.body)
       }
       .foregroundColor(Ink.secondary)
@@ -248,13 +248,13 @@ struct PersonaPage: View {
 
         // Actions
         HStack(spacing: OmiSpacing.md) {
-          OmiIconButton("pencil", help: "Edit Persona") {
+          OmiIconButton("pencil", help: "Editar persona") {
             editName = persona.name
             editDescription = persona.description
             isEditing = true
           }
 
-          OmiIconButton("trash", help: "Delete Persona…", isDestructive: true) {
+          OmiIconButton("trash", help: "Apagar persona…", isDestructive: true) {
             showingDeleteConfirmation = true
           }
         }
@@ -265,7 +265,7 @@ struct PersonaPage: View {
 
       // Description section
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
-        Text("Description")
+        Text("Descrição")
           .scaledFont(size: OmiType.body, weight: .semibold)
           .foregroundColor(Ink.secondary)
 
@@ -282,7 +282,7 @@ struct PersonaPage: View {
                 .stroke(Ink.hairline, lineWidth: 1)
             )
         } else {
-          Text(persona.description.isEmpty ? "No description yet" : persona.description)
+          Text(persona.description.isEmpty ? "Ainda sem descrição" : persona.description)
             .scaledFont(size: OmiType.body)
             .foregroundColor(persona.description.isEmpty ? Ink.secondary : Ink.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -295,14 +295,14 @@ struct PersonaPage: View {
       // Stats section
       HStack(spacing: OmiSpacing.lg) {
         statCard(
-          title: "Public Memories",
+          title: "Memórias públicas",
           value: "\(persona.publicMemoriesCount ?? 0)",
           icon: "brain.head.profile"
         )
 
         statCard(
-          title: "Persona Prompt",
-          value: persona.hasPrompt ? "Generated" : "Not Generated",
+          title: "Prompt da persona",
+          value: persona.hasPrompt ? "Gerado" : "Não gerado",
           icon: "text.bubble",
           isWarning: !persona.hasPrompt
         )
@@ -310,7 +310,7 @@ struct PersonaPage: View {
 
       // Actions section
       VStack(alignment: .leading, spacing: OmiSpacing.md) {
-        Text("Actions")
+        Text("Ações")
           .scaledFont(size: OmiType.body, weight: .semibold)
           .foregroundColor(Ink.secondary)
 
@@ -319,14 +319,14 @@ struct PersonaPage: View {
             Button {
               isEditing = false
             } label: {
-              Text("Cancel").frame(maxWidth: .infinity)
+              Text("Cancelar").frame(maxWidth: .infinity)
             }
             .buttonStyle(OmiButtonStyle(.secondary))
 
             Button {
               Task { await saveEdits() }
             } label: {
-              Text("Save Changes").frame(maxWidth: .infinity)
+              Text("Salvar alterações").frame(maxWidth: .infinity)
             }
             .buttonStyle(OmiButtonStyle(.primary))
           }
@@ -341,7 +341,7 @@ struct PersonaPage: View {
                 Image(systemName: "arrow.triangle.2.circlepath")
               }
 
-              Text(isRegenerating ? "Regenerating…" : "Regenerate from Memories")
+              Text(isRegenerating ? "Regenerando…" : "Regenerar a partir das memórias")
             }
             .frame(maxWidth: .infinity)
           }
@@ -392,7 +392,7 @@ struct PersonaPage: View {
         }
       } label: {
         HStack {
-          Text("Persona Prompt")
+          Text("Prompt da persona")
             .scaledFont(size: OmiType.body, weight: .semibold)
             .foregroundColor(Ink.secondary)
 
@@ -576,7 +576,7 @@ private struct CreatePersonaSheetContent: View {
     VStack(spacing: 0) {
       // Header
       HStack {
-        Text("Create AI Persona")
+        Text("Criar persona de IA")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -593,11 +593,11 @@ private struct CreatePersonaSheetContent: View {
       VStack(alignment: .leading, spacing: OmiSpacing.xl) {
         // Name field
         VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-          Text("Name")
+          Text("Nome")
             .scaledFont(size: OmiType.body, weight: .medium)
             .foregroundColor(Ink.secondary)
 
-          TextField("Your display name", text: $newPersonaName)
+          TextField("Seu nome de exibição", text: $newPersonaName)
             .textFieldStyle(.plain)
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.primary)
@@ -612,7 +612,7 @@ private struct CreatePersonaSheetContent: View {
 
         // Username field
         VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-          Text("Username (optional)")
+          Text("Nome de usuário (opcional)")
             .scaledFont(size: OmiType.body, weight: .medium)
             .foregroundColor(Ink.secondary)
 
@@ -621,7 +621,7 @@ private struct CreatePersonaSheetContent: View {
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
 
-            TextField("username", text: $newPersonaUsername)
+            TextField("nome de usuário", text: $newPersonaUsername)
               .textFieldStyle(.plain)
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.primary)
@@ -648,7 +648,7 @@ private struct CreatePersonaSheetContent: View {
               .stroke(Ink.hairline, lineWidth: 1)
           )
 
-          Text("3-30 characters, lowercase letters, numbers, and underscores only")
+          Text("3 a 30 caracteres: apenas letras minúsculas, números e sublinhados")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
@@ -658,7 +658,7 @@ private struct CreatePersonaSheetContent: View {
           Image(systemName: "info.circle")
             .scaledFont(size: OmiType.body)
 
-          Text("Your persona will be built from your public memories. Make more memories public to improve it.")
+          Text("Sua persona será criada a partir das suas memórias públicas. Torne mais memórias públicas para melhorá-la.")
             .scaledFont(size: OmiType.caption)
         }
         .foregroundColor(Ink.secondary)
@@ -693,7 +693,7 @@ private struct CreatePersonaSheetContent: View {
               ProgressView().controlSize(.small)
             }
 
-            Text(isCreating ? "Creating…" : "Create Persona")
+            Text(isCreating ? "Criando…" : "Criar persona")
           }
           .frame(maxWidth: .infinity)
         }
