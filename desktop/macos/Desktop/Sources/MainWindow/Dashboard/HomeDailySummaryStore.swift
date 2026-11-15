@@ -50,7 +50,16 @@ final class HomeDailySummaryStore: ObservableObject {
       guard let snapshot = RuntimeOwnerIdentity.captureAuthorizationSnapshot() else { return nil }
       return { RuntimeOwnerIdentity.isAuthorizationCurrent(snapshot) }
     },
-    fetch: @escaping Fetch = { limit in try await APIClient.shared.getDailySummaries(limit: limit) },
+    fetch: @escaping Fetch = { limit in
+      // Fork: o diário do vault entra por cima da nuvem; sem nuvem, o vault sozinho ainda serve.
+      do {
+        return DiarioVault.mesclar(nuvem: try await APIClient.shared.getDailySummaries(limit: limit), limite: limit)
+      } catch {
+        let vault = DiarioVault.mesclar(nuvem: [], limite: limit)
+        if vault.isEmpty { throw error }
+        return vault
+      }
+    },
     settingsHour: @escaping SettingsHour = {
       // The empty-state gate is only honest if it reads the hour the user actually chose.
       // A hardcoded default hid "Generate recap" until 22:00 for anyone on a different hour.
