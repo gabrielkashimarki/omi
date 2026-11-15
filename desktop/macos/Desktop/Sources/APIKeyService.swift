@@ -89,16 +89,16 @@ struct BYOKOwnerResetNotice: Codable, Equatable {
   let ownerUid: String
   let reason: BYOKOwnerResetReason
 
-  var title: String { "Re-add your custom API keys" }
+  var title: String { "Adicione de novo suas chaves de API personalizadas" }
 
   var message: String {
     switch reason {
     case .legacyUnownedKeys:
       return
-        "Omi cleared custom API keys saved before keys were linked to an account. This keeps them from being used by another account on this Mac. Add them again in Settings → Advanced → Developer Keys."
+        "O Omi apagou as chaves de API personalizadas salvas antes de as chaves serem vinculadas a uma conta. Assim elas não são usadas por outra conta neste Mac. Adicione-as de novo em Ajustes → Avançado → Chaves de desenvolvedor."
     case .differentOwner:
       return
-        "Omi cleared custom API keys saved by another account on this Mac. Add your keys in Settings → Advanced → Developer Keys."
+        "O Omi apagou as chaves de API personalizadas salvas por outra conta neste Mac. Adicione suas chaves em Ajustes → Avançado → Chaves de desenvolvedor."
     }
   }
 }

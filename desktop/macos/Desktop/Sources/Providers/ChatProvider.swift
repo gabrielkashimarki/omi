@@ -1759,7 +1759,7 @@ class ChatProvider: ObservableObject {
       currentError = card
       errorMessage = nil
     } else {
-      errorMessage = "AI not available: \(error.localizedDescription)"
+      errorMessage = "IA indisponível: \(error.localizedDescription)"
     }
   }
 
@@ -2247,7 +2247,7 @@ class ChatProvider: ObservableObject {
     } catch {
       guard preferenceChange == profilePreferenceChangeGeneration else { return }
       logError("Failed to configure future-session profile", error: error)
-      errorMessage = "Could not update AI provider preference. Try again."
+      errorMessage = "Não foi possível atualizar a preferência de provedor de IA. Tente de novo."
     }
   }
 
@@ -2263,7 +2263,7 @@ class ChatProvider: ObservableObject {
       logError("ChatProvider: Bridge supplied an invalid Claude OAuth URL")
       isClaudeAuthRequired = false
       claudeAuthLaunchRequested = false
-      errorMessage = "Unable to start Claude sign-in. Try again."
+      errorMessage = "Não foi possível iniciar o login no Claude. Tente de novo."
       return
     }
 
@@ -2282,7 +2282,7 @@ class ChatProvider: ObservableObject {
   func connectClaude() async {
     guard isUserClaudeMode else { return }
     guard await ensureBridgeStarted() else {
-      errorMessage = "Unable to start Claude sign-in. Try again."
+      errorMessage = "Não foi possível iniciar o login no Claude. Tente de novo."
       return
     }
     claudeConnectRequestedAt = Date()
@@ -3639,7 +3639,7 @@ class ChatProvider: ObservableObject {
   func addAttachments(_ attachments: [ChatAttachment]) {
     let room = max(0, kMaxChatAttachments - pendingAttachments.count)
     guard room > 0 else {
-      errorMessage = "You can only attach up to \(kMaxChatAttachments) files."
+      errorMessage = "Você só pode anexar até \(kMaxChatAttachments) arquivos."
       return
     }
     let toAdd = Array(attachments.prefix(room))
@@ -3771,7 +3771,7 @@ class ChatProvider: ObservableObject {
       return false
     }) {
       if DispatchTime.now().uptimeNanoseconds - start > timeoutNs {
-        errorMessage = "Attachment upload timed out."
+        errorMessage = "O envio do anexo expirou."
         return false
       }
       try? await Task.sleep(nanoseconds: 100_000_000)
@@ -3863,7 +3863,7 @@ class ChatProvider: ObservableObject {
       session = try await resolveKernelQuerySession(surface: surface, requestedModelProfile: nil)
     } catch {
       logError("Question-card session resolution failed", error: error)
-      errorMessage = "That suggestion is no longer available."
+      errorMessage = "Essa sugestão não está mais disponível."
       return
     }
     _ = await sendMessage(
@@ -4128,7 +4128,7 @@ class ChatProvider: ObservableObject {
       return nil
     }
     guard let capturedRuntimeOwnerID = runtimeOwnerId else {
-      errorMessage = "Sign in again to continue."
+      errorMessage = "Entre de novo para continuar."
       return nil
     }
 
@@ -4187,7 +4187,7 @@ class ChatProvider: ObservableObject {
       tracer?.end("bridge_ensure", metadata: ["error": "bridge_failed"])
       tracer?.finalize(tokenCount: 0, model: model ?? modelOverride)
       if currentError == nil, errorMessage?.isEmpty ?? true {
-        errorMessage = "AI not available"
+        errorMessage = "IA indisponível"
       }
       telemetryAttempt.fail(errorClass: .bridgeUnavailable)
       clearChatTelemetryState(for: sendGen)
@@ -4218,7 +4218,7 @@ class ChatProvider: ObservableObject {
         turnGeneration: sendGen,
         turnAcceptsResult: turnLifecycle.acceptsResult
       ) {
-        errorMessage = "Could not prepare this chat session. Try again."
+        errorMessage = "Não foi possível preparar esta sessão de chat. Tente de novo."
         telemetryAttempt.fail(errorClass: .sessionSetup)
       } else {
         telemetryAttempt.finish(
@@ -4255,7 +4255,7 @@ class ChatProvider: ObservableObject {
     }
     if turnUsesOmiAccount, usageLimiter.isLimitReached {
       log("ChatProvider: pinned Omi session blocked by free-tier monthly limit")
-      errorMessage = "You've reached \(usageLimiter.limitDescription). Upgrade to keep chatting."
+      errorMessage = "Você atingiu \(usageLimiter.limitDescription). Faça upgrade para continuar conversando."
       NotificationCenter.default.post(
         name: .showUsageLimitPopup,
         object: nil,
@@ -4420,7 +4420,7 @@ class ChatProvider: ObservableObject {
         return nil
       }
       if !ok {
-        errorMessage = "Some attachments failed to upload. Remove them and try again."
+        errorMessage = "Alguns anexos não foram enviados. Remova-os e tente de novo."
         tracer?.finalize(tokenCount: 0, model: model ?? modelOverride)
         telemetryAttempt.fail(errorClass: .attachmentUpload)
         clearChatTelemetryState(for: sendGen)
@@ -4449,7 +4449,7 @@ class ChatProvider: ObservableObject {
         questionContinuation.userTurnID == Self.messageIds(forAttemptId: turnAttemptId).user,
         questionContinuation.assistantTurnID == Self.messageIds(forAttemptId: turnAttemptId).assistant
       else {
-        errorMessage = "That suggestion is no longer available."
+        errorMessage = "Essa sugestão não está mais disponível."
         telemetryAttempt.fail(errorClass: .sessionSetup)
         clearChatTelemetryState(for: sendGen)
         releaseSendLock(sendGeneration: sendGen)
@@ -4464,7 +4464,7 @@ class ChatProvider: ObservableObject {
           ownerID: capturedRuntimeOwnerID
         )
       else {
-        errorMessage = "That suggestion is no longer available."
+        errorMessage = "Essa sugestão não está mais disponível."
         telemetryAttempt.fail(errorClass: .sessionSetup)
         clearChatTelemetryState(for: sendGen)
         releaseSendLock(sendGeneration: sendGen)
@@ -4491,7 +4491,7 @@ class ChatProvider: ObservableObject {
         await kernelTurnProjection.refresh(surface: resolvedSurface)
       } catch {
         logError("Question-card selection failed", error: error)
-        errorMessage = "That suggestion is no longer available."
+        errorMessage = "Essa sugestão não está mais disponível."
         telemetryAttempt.fail(errorClass: .sessionSetup)
         clearChatTelemetryState(for: sendGen)
         releaseSendLock(sendGeneration: sendGen)
@@ -4581,7 +4581,7 @@ class ChatProvider: ObservableObject {
       return nil
     }
     guard recordedExchange else {
-      errorMessage = "Could not save this message. Try again."
+      errorMessage = "Não foi possível salvar esta mensagem. Tente de novo."
       telemetryAttempt.fail(errorClass: .sessionSetup)
       clearChatTelemetryState(for: sendGen)
       releaseSendLock(sendGeneration: sendGen)
@@ -6586,7 +6586,7 @@ class ChatProvider: ObservableObject {
     let surface = AgentSurfaceReference.mainChat(chatId: runtimeChatId)
     AgentRuntimeStatusStore.shared.clear(surface: surface)
     guard await kernelTurnProjection.clear(surface: surface) else {
-      errorMessage = "Failed to clear chat"
+      errorMessage = "Falha ao limpar o chat"
       return
     }
     log("Cleared default chat messages")

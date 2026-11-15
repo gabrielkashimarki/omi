@@ -27,19 +27,19 @@ class SystemAudioCaptureService: @unchecked Sendable {
     var errorDescription: String? {
       switch self {
       case .tapCreationFailed(let status):
-        return "Failed to create process tap: \(status)"
+        return "Falha ao criar o process tap: \(status)"
       case .aggregateDeviceFailed(let status):
-        return "Failed to create aggregate device: \(status)"
+        return "Falha ao criar o dispositivo agregado: \(status)"
       case .ioProcCreationFailed(let status):
-        return "Failed to create IO proc: \(status)"
+        return "Falha ao criar o IO proc: \(status)"
       case .deviceStartFailed(let status):
-        return "Failed to start audio device: \(status)"
+        return "Falha ao iniciar o dispositivo de áudio: \(status)"
       case .formatError:
-        return "Failed to get audio format"
+        return "Falha ao obter o formato de áudio"
       case .converterCreationFailed:
-        return "Failed to create audio converter"
+        return "Falha ao criar o conversor de áudio"
       case .unsupportedOS:
-        return "System audio capture requires macOS 14.4 or later"
+        return "A captura do áudio do sistema exige macOS 14.4 ou posterior"
       }
     }
   }

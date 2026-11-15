@@ -10,13 +10,13 @@ enum DeviceOperationBrokerError: LocalizedError, Equatable, Sendable {
   var errorDescription: String? {
     switch self {
     case .operationAlreadyPending:
-      return "Another operation with the same identity is already pending"
+      return "Já existe outra operação igual em andamento"
     case .timedOut:
-      return "Operation timed out"
+      return "A operação expirou"
     case .cancelled:
-      return "Operation was cancelled"
+      return "A operação foi cancelada"
     case .disconnected:
-      return "Device disconnected before the operation completed"
+      return "O dispositivo desconectou antes de a operação terminar"
     case .failed(let reason):
       return reason
     }

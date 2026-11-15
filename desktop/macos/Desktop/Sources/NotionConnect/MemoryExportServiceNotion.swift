@@ -10,7 +10,7 @@ extension MemoryExportService {
     let markdown = buildMarkdownPack(memories: memories, destination: .notion)
     let pageURL = try await NotionMCPConnector.shared.syncMemories(markdown: markdown)
 
-    let detail = "Updated Notion page"
+    let detail = "Página do Notion atualizada"
     persistStatus(
       destination: .notion,
       exportedCount: memories.count,

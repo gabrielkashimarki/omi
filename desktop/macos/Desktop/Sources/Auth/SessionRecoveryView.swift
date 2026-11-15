@@ -20,12 +20,12 @@ struct SessionRecoveryView: View {
         .font(.system(size: 34, weight: .medium))
         .foregroundStyle(Ink.primary)
 
-      Text("We couldn't verify your session")
+      Text("Não conseguimos verificar sua sessão")
         .inkStyle(InkType.stepHeadline, color: Ink.primary)
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)
 
-      Text("Your local data and setup are safe. Check your connection and retry, or sign in again.")
+      Text("Seus dados locais e sua configuração estão seguros. Verifique sua conexão e tente de novo, ou entre outra vez.")
         .inkStyle(InkType.prose, color: Ink.secondary)
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)
@@ -46,14 +46,14 @@ struct SessionRecoveryView: View {
             ProgressView()
               .controlSize(.small)
           } else {
-            Text("Try Again")
+            Text("Tentar de novo")
           }
         }
         .buttonStyle(InkButtonStyle(kind: .primary))
         .disabled(isRetrying)
         .accessibilityIdentifier("auth_recovery_retry")
 
-        Button("Sign In Again") {
+        Button("Entrar de novo") {
           Task {
             await AuthService.shared.invalidateSession(reason: .manual)
           }

@@ -109,7 +109,7 @@ struct DesktopUpdatePolicyBanner: View {
         .frame(width: 22)
 
       VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-        Text(policy.title ?? "Update Omi")
+        Text(policy.title ?? "Atualizar o Omi")
           .scaledFont(size: OmiType.body, weight: .semibold)
           .foregroundColor(.white)
           .lineLimit(1)
@@ -148,7 +148,7 @@ struct DesktopUpdatePolicyBanner: View {
         .buttonStyle(.plain)
         .foregroundColor(.white.opacity(0.72))
         .frame(width: 24, height: 24)
-        .help("Dismiss")
+        .help("Dispensar")
       }
     }
     .padding(.horizontal, OmiSpacing.md)
@@ -174,10 +174,10 @@ struct DesktopRequiredUpdatePrompt: View {
         .foregroundColor(.white)
 
       VStack(spacing: OmiSpacing.sm) {
-        Text(policy.title ?? "Update Required")
+        Text(policy.title ?? "Atualização necessária")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(.white)
-        Text(policy.message ?? "Please install the latest Omi desktop app to continue.")
+        Text(policy.message ?? "Instale a versão mais recente do app Omi para desktop para continuar.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(.white.opacity(0.72))
           .multilineTextAlignment(.center)

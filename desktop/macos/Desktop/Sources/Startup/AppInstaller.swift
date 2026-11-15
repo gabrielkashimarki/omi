@@ -177,10 +177,10 @@ enum AppInstaller {
   private static func showManualInstallHint() {
     DispatchQueue.main.async {
       let alert = NSAlert()
-      alert.messageText = "Move Omi to Applications"
+      alert.messageText = "Mova o Omi para Aplicativos"
       alert.informativeText =
-        "omi is running from the installer image, so macOS permissions and updates won't work. "
-        + "Drag Omi to the Applications folder, then open it from there."
+        "O Omi está rodando a partir da imagem do instalador, então as permissões do macOS e as atualizações não vão funcionar. "
+        + "Arraste o Omi para a pasta Aplicativos e abra por lá."
       alert.alertStyle = .warning
       alert.addButton(withTitle: "OK")
       alert.runModal()

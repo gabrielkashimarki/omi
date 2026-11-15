@@ -40,13 +40,13 @@ struct SignInView: View {
 
       if introRevealed {
         Group {
-          Text("A second brain you trust\nmore than your first")
+          Text("Um segundo cérebro em que você confia\nmais do que no primeiro")
             .inkStyle(InkType.introHero, color: Ink.primary)
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.top, InkLayout.rhythm[0])
 
-          Text("It remembers every conversation — and does the follow-ups.")
+          Text("Ele lembra de cada conversa e cuida dos acompanhamentos.")
             .inkStyle(InkType.prose, color: Ink.secondary)
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
@@ -54,12 +54,12 @@ struct SignInView: View {
 
           VStack(spacing: InkLayout.rhythm[6]) {
             signInButton(
-              title: "Continue with Apple",
+              title: "Continuar com Apple",
               kind: .primary,
               leading: { Image(systemName: "applelogo").font(.system(size: 13)) },
               action: { signIn(apple: true) })
             signInButton(
-              title: "Continue with Google",
+              title: "Continuar com Google",
               kind: .secondary,
               leading: { GoogleLogo().frame(width: 15, height: 15) },
               action: { signIn(apple: false) })
@@ -78,7 +78,7 @@ struct SignInView: View {
               Button {
                 AuthService.shared.cancelSignIn()
               } label: {
-                Text("Cancel").inkStyle(InkType.statusLabel, color: Ink.secondary)
+                Text("Cancelar").inkStyle(InkType.statusLabel, color: Ink.secondary)
               }
               .buttonStyle(.plain)
             }
@@ -97,7 +97,7 @@ struct SignInView: View {
           }
 
           // `secondary` and not a fainter grey: glass carries two rungs, and the bottom one is this.
-          Text("open source · runs on your Mac · pause anytime")
+          Text("código aberto · roda no seu Mac · pause quando quiser")
             .inkStyle(InkType.statusLabel, color: Ink.secondary)
             .padding(.top, InkLayout.rhythm[0])
         }

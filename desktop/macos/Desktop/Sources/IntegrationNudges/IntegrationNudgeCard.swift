@@ -54,7 +54,7 @@ struct IntegrationNudgeCard: View {
       Button {
         FloatingControlBarManager.shared.openNotificationAsChat(notification)
       } label: {
-        Text("Connect")
+        Text("Conectar")
           .scaledFont(size: 12, weight: .semibold)
           .foregroundColor(.black)
           .padding(.horizontal, 11).padding(.vertical, 4)
@@ -68,7 +68,7 @@ struct IntegrationNudgeCard: View {
           telemetryID: entry.telemetryID, triggerID: triggerID)
         FloatingControlBarManager.shared.dismissCurrentNotification()
       } label: {
-        Text("Not Now").scaledFont(size: 12).foregroundColor(.white.opacity(0.55))
+        Text("Agora não").scaledFont(size: 12).foregroundColor(.white.opacity(0.55))
       }
       .buttonStyle(.plain)
 
@@ -77,10 +77,10 @@ struct IntegrationNudgeCard: View {
           telemetryID: entry.telemetryID, triggerID: triggerID)
         FloatingControlBarManager.shared.dismissCurrentNotification()
       } label: {
-        Text("Never").scaledFont(size: 12).foregroundColor(.white.opacity(0.35))
+        Text("Nunca").scaledFont(size: 12).foregroundColor(.white.opacity(0.35))
       }
       .buttonStyle(.plain)
-      .accessibilityLabel("Never suggest \(entry.displayName)")
+      .accessibilityLabel("Nunca sugerir \(entry.displayName)")
     }
     .padding(.top, 5)
   }

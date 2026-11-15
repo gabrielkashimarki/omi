@@ -12,8 +12,8 @@ enum AudioSource: String, CaseIterable {
 
   var displayName: String {
     switch self {
-    case .microphone: return "Microphone"
-    case .bleDevice: return "Wearable Device"
+    case .microphone: return "Microfone"
+    case .bleDevice: return "Dispositivo vestível"
     }
   }
 
@@ -208,7 +208,7 @@ final class AudioSourceManager: ObservableObject {
     case .microphone:
       return AudioCaptureService.getCurrentMicrophoneName() ?? "Microphone"
     case .bleDevice:
-      return deviceProvider.connectedDevice?.displayName ?? "Wearable Device"
+      return deviceProvider.connectedDevice?.displayName ?? "Dispositivo vestível"
     }
   }
 
@@ -420,7 +420,7 @@ final class AudioSourceManager: ObservableObject {
     if !isConnected && selectedSource == .bleDevice && isStreaming {
       // Device disconnected while streaming - fall back to microphone
       logger.warning("BLE device disconnected during streaming, falling back to microphone")
-      errorMessage = "Device disconnected. Switched to microphone."
+      errorMessage = "Dispositivo desconectado. Trocamos para o microfone."
 
       Task {
         try? await switchSource(to: .microphone)
@@ -454,13 +454,13 @@ enum AudioSourceError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .microphonePermissionDenied:
-      return "Microphone permission is required"
+      return "A permissão do microfone é necessária"
     case .deviceNotConnected:
-      return "No wearable device connected"
+      return "Nenhum dispositivo vestível conectado"
     case .codecNotSupported(let codec):
-      return "Audio codec not supported: \(codec)"
+      return "Codec de áudio não suportado: \(codec)"
     case .streamingFailed(let reason):
-      return "Audio streaming failed: \(reason)"
+      return "Falha no streaming de áudio: \(reason)"
     }
   }
 }

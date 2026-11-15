@@ -21,7 +21,7 @@ enum MemoryExportExecutor {
     case browserSetupRequired(String)
     var errorDescription: String? {
       switch self {
-      case .unsupported(let name): return "\(name) does not support an MCP execution task."
+      case .unsupported(let name): return "\(name) não suporta uma tarefa de execução MCP."
       case .browserSetupRequired(let message): return message
       }
     }
@@ -34,7 +34,7 @@ enum MemoryExportExecutor {
       }
       NSWorkspace.shared.open(directoryURL)
       return Outcome(
-        taskTitle: "Opened Omi in ChatGPT. Add Omi and authorize it there, then return to Omi.",
+        taskTitle: "Abri o Omi no ChatGPT. Adicione o Omi e autorize por lá, depois volte ao Omi.",
         mode: .assisted)
     }
 
@@ -49,7 +49,7 @@ enum MemoryExportExecutor {
       if canSkipLocalSetupWhenConfigMatches(destination),
         MemoryExportConnectionDetector.hasExistingConnection(for: destination, matchingKey: key)
       {
-        return Outcome(taskTitle: "\(destination.title) is already connected.", mode: .completed)
+        return Outcome(taskTitle: "\(destination.title) já está conectado.", mode: .completed)
       }
       let message = try MemoryBankConnector.connect(destination, key: key)
       await MemoryExportService.shared.markConnected(destination)
@@ -193,7 +193,7 @@ enum MemoryExportExecutor {
         }
         return Outcome(
           taskTitle:
-            "Claude connector form submitted. If Claude shows a final consent prompt, approve Omi Memory.",
+            "Formulário do conector do Claude enviado. Se o Claude mostrar um pedido final de consentimento, aprove o Omi Memory.",
           mode: .completed)
       }
       if cloudFormFillRequiresAccessibilityApproval(lastResult) {
@@ -273,43 +273,43 @@ enum MemoryExportExecutor {
 
   private static var cloudSetupNativeAutomationBlockedMessage: String {
     """
-    Omi opened Claude in your default browser, but Claude still needs one manual step.
+    O Omi abriu o Claude no seu navegador padrão, mas o Claude ainda precisa de um passo manual.
 
-    Finish the connector setup in the Claude window that is already open. If the connector form is filled, click Add. If Claude asks for permission, approve Omi Memory.
+    Termine a configuração do conector na janela do Claude que já está aberta. Se o formulário do conector estiver preenchido, clique em Add. Se o Claude pedir permissão, aprove Omi Memory.
 
-    If nothing is waiting in Claude, click "Do it for me" again or use the manual installation steps below.
+    Se nada estiver esperando no Claude, clique em "Faça por mim" de novo ou use os passos de instalação manual abaixo.
     """
   }
 
   private static var cloudSetupAccessibilityPermissionMessage: String {
     """
-    Omi needs Accessibility permission to finish Claude setup automatically.
+    O Omi precisa da permissão de Acessibilidade para terminar a configuração do Claude sozinho.
 
-    Approve Accessibility for this Omi app in System Settings, then click "Do it for me" again. If you do not want to grant it, use the manual installation steps below.
+    Aprove a Acessibilidade para este app Omi nos Ajustes do Sistema e clique em "Faça por mim" de novo. Se não quiser conceder, use os passos de instalação manual abaixo.
     """
   }
 
   private static var cloudSetupScreenRecordingPermissionMessage: String {
     """
-    Omi needs Screen Recording permission to finish Claude setup automatically.
+    O Omi precisa da permissão de Gravação de Tela para terminar a configuração do Claude sozinho.
 
-    I added the Claude connector, but Claude hides the final Connect button from Accessibility in this browser. Approve Screen Recording for this Omi app in System Settings, then click "Do it for me" again.
+    Adicionei o conector do Claude, mas o Claude esconde o botão final Connect da Acessibilidade neste navegador. Aprove a Gravação de Tela para este app Omi nos Ajustes do Sistema e clique em "Faça por mim" de novo.
     """
   }
 
   private static var cloudSetupManualClaudeConnectMessage: String {
     """
-    Claude is waiting for one final click.
+    O Claude está esperando um último clique.
 
-    I added the connector and pointed to the Connect button in your browser.
+    Adicionei o conector e apontei o botão Connect no seu navegador.
     """
   }
 
   private static var cloudSetupManualClaudeAddMessage: String {
     """
-    Claude is waiting for one click.
+    O Claude está esperando um clique.
 
-    I filled the connector form and pointed to the Add button in your browser.
+    Preenchi o formulário do conector e apontei o botão Add no seu navegador.
     """
   }
 
@@ -355,7 +355,7 @@ enum MemoryExportExecutor {
         title: hint.title, subtitle: hint.subtitle, sections: sections, near: nil)
       return Outcome(
         taskTitle:
-          "Opened \(destination.title) — copy each value from the on-screen card into the form.",
+          "Abri \(destination.title). Copie cada valor do cartão na tela para o formulário.",
         mode: .assisted)
     }
 
@@ -363,10 +363,10 @@ enum MemoryExportExecutor {
     NSPasteboard.general.setString(key, forType: .string)
 
     _ = await TasksStore.shared.createTask(
-      description: "Finish connecting \(destination.title) to Omi (page opened, key copied)",
+      description: "Terminar de conectar \(destination.title) ao Omi (página aberta, chave copiada)",
       dueAt: Date(), priority: "medium", tags: ["mcp-setup"])
     return Outcome(
-      taskTitle: "Opened \(destination.title) and copied your key — finish with the steps below.",
+      taskTitle: "Abri \(destination.title) e copiei sua chave. Conclua com os passos abaixo.",
       mode: .assisted)
   }
 
@@ -399,12 +399,12 @@ enum ClaudeCodeSessions {
 
   static func completionSubtitle(sessionCount: Int, didStop: Bool) -> String {
     if didStop {
-      return "Sessions stopped — run claude --continue in your terminal to pick up where you left off."
+      return "Sessões encerradas. Rode claude --continue no terminal para continuar de onde parou."
     }
     if sessionCount == 0 {
-      return "You're all set — Omi Memory loads automatically in your next Claude Code session."
+      return "Tudo pronto. O Omi Memory carrega automaticamente na sua próxima sessão do Claude Code."
     }
-    return "Restart Claude Code to load Omi Memory."
+    return "Reinicie o Claude Code para carregar o Omi Memory."
   }
 
   /// Current user's running Claude Code CLI processes.

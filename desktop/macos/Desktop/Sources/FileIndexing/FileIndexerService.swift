@@ -666,7 +666,7 @@ enum FileIndexerError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .databaseNotInitialized:
-      return "File indexer database is not initialized"
+      return "O banco de dados do indexador de arquivos não foi inicializado"
     }
   }
 }

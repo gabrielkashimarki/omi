@@ -36,9 +36,9 @@ final class NotionMCPConnector: @unchecked Sendable {
 
     var errorDescription: String? {
       switch self {
-      case .timedOut: return "Notion authorization timed out. Try again."
-      case .badResponse(let detail): return "Notion setup failed: \(detail)"
-      case .notConnected: return "Connect Notion first."
+      case .timedOut: return "A autorização do Notion expirou. Tente de novo."
+      case .badResponse(let detail): return "A configuração do Notion falhou: \(detail)"
+      case .notConnected: return "Conecte o Notion primeiro."
       }
     }
   }

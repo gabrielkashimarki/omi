@@ -62,7 +62,7 @@ final class IntegrationNudgeCoordinator {
   static let floatingBarPresenter: Presenter = { ownerID, match, onPresented, onDropped in
     NotificationService.shared.presentActionableProactiveNotification(
       ownerID: ownerID,
-      title: "Connect \(match.entry.displayName)",
+      title: "Conectar \(match.entry.displayName)",
       message: match.entry.pitch,
       assistantId: IntegrationNudgeCoordinator.assistantID,
       kind: .integration,

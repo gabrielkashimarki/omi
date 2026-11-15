@@ -87,7 +87,7 @@ struct BrowserExtensionSetup: View {
 
         if let onSkip = onSkip, phase == .welcome {
           Button(action: onSkip) {
-            Text("Skip for now")
+            Text("Pular por agora")
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.secondary)
           }
@@ -117,12 +117,12 @@ struct BrowserExtensionSetup: View {
         .scaledFont(size: 48)
         .foregroundColor(Ink.primary)
 
-      Text("Set up browser access")
+      Text("Configurar acesso ao navegador")
         .scaledFont(size: OmiType.heading, weight: .semibold)
         .foregroundColor(Ink.primary)
 
       Text(
-        "This lets the AI use your signed-in browser session — search the web, fill forms, and interact with sites on your behalf."
+        "Isso permite que a IA use a sessão do seu navegador, já conectada, para buscar na web, preencher formulários e interagir com sites por você."
       )
       .scaledFont(size: OmiType.body)
       .foregroundColor(Ink.secondary)
@@ -132,9 +132,9 @@ struct BrowserExtensionSetup: View {
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
         featureRow(
           icon: "checkmark.shield",
-          text: "Uses a browser extension (Chrome, Arc, or similar) to read pages you're signed in to")
-        featureRow(icon: "key", text: "One-time auth token setup")
-        featureRow(icon: "bolt", text: "No more Allow/Reject popups")
+          text: "Usa uma extensão do navegador (Chrome, Arc ou similar) para ler páginas em que você já está conectado")
+        featureRow(icon: "key", text: "Configuração única do token de autenticação")
+        featureRow(icon: "bolt", text: "Chega de pop-ups de Permitir/Recusar")
       }
       .padding(.horizontal, OmiSpacing.page)
       .padding(.top, OmiSpacing.sm)
@@ -153,7 +153,7 @@ struct BrowserExtensionSetup: View {
     HStack(spacing: OmiSpacing.lg) {
       // Left side: steps
       VStack(spacing: OmiSpacing.lg) {
-        Text("Connect the extension")
+        Text("Conectar a extensão")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -164,7 +164,7 @@ struct BrowserExtensionSetup: View {
           stepBadge("1", done: browserInstalled)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            Text(browserInstalled ? "\(selectedTarget.name) is installed" : "Install \(selectedTarget.name)")
+            Text(browserInstalled ? "\(selectedTarget.name) está instalado" : "Instalar \(selectedTarget.name)")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(browserInstalled ? Ink.secondary : Ink.primary)
 
@@ -178,7 +178,7 @@ struct BrowserExtensionSetup: View {
                 HStack(spacing: OmiSpacing.xxs) {
                   Image(systemName: "arrow.down.circle")
                     .scaledFont(size: OmiType.caption)
-                  Text("Download \(selectedTarget.name)")
+                  Text("Baixar \(selectedTarget.name)")
                     .scaledFont(size: OmiType.caption)
                 }
               }
@@ -194,7 +194,7 @@ struct BrowserExtensionSetup: View {
           stepBadge("2", done: extensionStepDone)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            Text("Install the Playwright MCP Bridge extension")
+            Text("Instale a extensão Playwright MCP Bridge")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(extensionStepDone ? Ink.secondary : Ink.primary)
 
@@ -207,7 +207,7 @@ struct BrowserExtensionSetup: View {
               HStack(spacing: OmiSpacing.xxs) {
                 Image(systemName: extensionStepDone ? "checkmark" : "arrow.up.right.square")
                   .scaledFont(size: OmiType.caption)
-                Text(extensionStepDone ? "Installed" : "Add Extension")
+                Text(extensionStepDone ? "Instalada" : "Adicionar extensão")
                   .scaledFont(size: OmiType.caption)
               }
             }
@@ -223,7 +223,7 @@ struct BrowserExtensionSetup: View {
           stepBadge("3", done: tokenStepDone)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            Text("Open the extension and copy the auth token")
+            Text("Abra a extensão e copie o token de autenticação")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(tokenStepDone ? Ink.secondary : Ink.primary)
 
@@ -238,7 +238,7 @@ struct BrowserExtensionSetup: View {
               HStack(spacing: OmiSpacing.xxs) {
                 Image(systemName: tokenStepDone ? "checkmark" : "key")
                   .scaledFont(size: OmiType.caption)
-                Text(tokenStepDone ? "Opened" : "Open Extension Settings")
+                Text(tokenStepDone ? "Aberto" : "Abrir ajustes da extensão")
                   .scaledFont(size: OmiType.caption)
               }
             }
@@ -254,11 +254,11 @@ struct BrowserExtensionSetup: View {
           stepBadge("4", done: isTokenValid)
 
           VStack(alignment: .leading, spacing: OmiSpacing.xs) {
-            Text("Paste it here")
+            Text("Cole aqui")
               .scaledFont(size: OmiType.body, weight: .medium)
               .foregroundColor(isTokenValid ? Ink.secondary : Ink.primary)
 
-            TextField("Paste token here…", text: $tokenInput)
+            TextField("Cole o token aqui…", text: $tokenInput)
               .textFieldStyle(.plain)
               .scaledFont(size: OmiType.body)
               .foregroundColor(Ink.primary)
@@ -312,7 +312,7 @@ struct BrowserExtensionSetup: View {
 
   private var browserPicker: some View {
     HStack(alignment: .center, spacing: OmiSpacing.sm) {
-      Text("Browser")
+      Text("Navegador")
         .scaledFont(size: OmiType.caption, weight: .medium)
         .foregroundColor(Ink.secondary)
 
@@ -334,7 +334,7 @@ struct BrowserExtensionSetup: View {
       if let defaultTarget = BrowserAutomationTargetResolver.defaultTarget(),
         defaultTarget.bundleIdentifier == selectedTarget.bundleIdentifier
       {
-        Text("Default")
+        Text("Padrão")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.listeningGreen)
       }
@@ -358,7 +358,7 @@ struct BrowserExtensionSetup: View {
           Image(systemName: "desktopcomputer")
             .scaledFont(size: OmiType.hero)
             .foregroundColor(Ink.secondary)
-          Text("Install \(selectedTarget.name) to get started")
+          Text("Instale o \(selectedTarget.name) para começar")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
             .multilineTextAlignment(.center)
@@ -380,11 +380,11 @@ struct BrowserExtensionSetup: View {
           .scaleEffect(1.5)
           .frame(height: 48)
 
-        Text("Testing connection…")
+        Text("Testando a conexão…")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
-        Text("Sending a test request to verify the extension is working.")
+        Text("Enviando uma requisição de teste para verificar se a extensão está funcionando.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
           .multilineTextAlignment(.center)
@@ -394,11 +394,11 @@ struct BrowserExtensionSetup: View {
           .scaledFont(size: 48)
           .foregroundColor(Ink.listeningGreen)
 
-        Text("Connected")
+        Text("Conectado")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
-        Text("The browser extension is working. The AI can now use \(selectedTarget.name).")
+        Text("A extensão do navegador está funcionando. A IA já pode usar o \(selectedTarget.name).")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
           .multilineTextAlignment(.center)
@@ -408,7 +408,7 @@ struct BrowserExtensionSetup: View {
           .scaledFont(size: 48)
           .foregroundColor(SettingsInk.notice)
 
-        Text("Connection failed")
+        Text("Falha na conexão")
           .scaledFont(size: OmiType.heading, weight: .semibold)
           .foregroundColor(Ink.primary)
 
@@ -418,7 +418,7 @@ struct BrowserExtensionSetup: View {
           .multilineTextAlignment(.center)
           .padding(.horizontal, OmiSpacing.page)
 
-        Text("Make sure \(selectedTarget.name) is open and the extension page shows \"Connected\".")
+        Text("Confira se o \(selectedTarget.name) está aberto e se a página da extensão mostra \"Connected\".")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
           .multilineTextAlignment(.center)
@@ -434,12 +434,12 @@ struct BrowserExtensionSetup: View {
         .scaledFont(size: 48)
         .foregroundColor(Ink.listeningGreen)
 
-      Text("All set")
+      Text("Tudo pronto")
         .scaledFont(size: OmiType.heading, weight: .semibold)
         .foregroundColor(Ink.primary)
 
       Text(
-        "Browser access is configured. The AI can now browse the web, fill forms, and interact with sites using your \(selectedTarget.name) sessions."
+        "O acesso ao navegador está configurado. A IA já pode navegar na web, preencher formulários e interagir com sites usando suas sessões do \(selectedTarget.name)."
       )
       .scaledFont(size: OmiType.body)
       .foregroundColor(Ink.secondary)
@@ -502,15 +502,15 @@ struct BrowserExtensionSetup: View {
   /// Returns an error message if invalid, nil if valid.
   static func validateToken(_ token: String) -> String? {
     if token.isEmpty {
-      return "Please paste the token from the extension page."
+      return "Cole o token da página da extensão."
     }
     if token.count < 20 {
-      return "Token is too short. Copy the full token from the extension page."
+      return "O token está curto demais. Copie o token completo da página da extensão."
     }
     // Extension tokens are base64url: alphanumeric + hyphen + underscore
     let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
     if token.unicodeScalars.contains(where: { !allowed.contains($0) }) {
-      return "Token contains invalid characters. Copy the token value only, not the surrounding text."
+      return "O token contém caracteres inválidos. Copie só o valor do token, sem o texto ao redor."
     }
     return nil
   }
@@ -573,15 +573,15 @@ struct BrowserExtensionSetup: View {
   private var primaryButtonTitle: String {
     switch phase {
     case .welcome:
-      return "Set Up"
+      return "Configurar"
     case .connect:
-      return "Continue"
+      return "Continuar"
     case .verify:
-      if isVerifying { return "Testing…" }
-      if verifySuccess { return "Continue" }
-      return "Try Again"
+      if isVerifying { return "Testando…" }
+      if verifySuccess { return "Continuar" }
+      return "Tentar de novo"
     case .done:
-      return "Done"
+      return "OK"
     }
   }
 
@@ -660,7 +660,7 @@ struct BrowserExtensionSetup: View {
             verifySuccess = true
             log("BrowserExtensionSetup: Connection test succeeded")
           } else {
-            verifyError = "Could not connect to the extension. Make sure \(selectedTarget.name) is open and try again."
+            verifyError = "Não foi possível conectar à extensão. Confira se o \(selectedTarget.name) está aberto e tente de novo."
             log("BrowserExtensionSetup: Connection test returned false")
           }
         }
@@ -670,7 +670,7 @@ struct BrowserExtensionSetup: View {
           let msg = error.localizedDescription
           if msg.contains("timeout") || msg.contains("Extension connection timeout") {
             verifyError =
-              "Connection timed out. Make sure \(selectedTarget.name) is running and the extension is installed, then try again."
+              "A conexão expirou. Confira se o \(selectedTarget.name) está aberto e se a extensão está instalada, e tente de novo."
           } else {
             verifyError = UserFacingErrorPresentation.message(for: error, while: .browserExtension)
           }

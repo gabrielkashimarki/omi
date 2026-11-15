@@ -23,9 +23,9 @@ struct AccountCutoverBlockingOverlay: View {
         severity: .required,
         maximumBuildNumber: nil,
         latestBuildNumber: nil,
-        title: "Update Required",
-        message: "Install the latest Omi desktop app to continue after account migration.",
-        ctaText: "Download latest",
+        title: "Atualização necessária",
+        message: "Instale a versão mais recente do app Omi para desktop para continuar após a migração da conta.",
+        ctaText: "Baixar a mais recente",
         downloadURL: DesktopUpdatePolicyResponse.stableManualDownloadURL.absoluteString,
         canDismiss: false
       )
@@ -37,10 +37,10 @@ struct AccountCutoverBlockingOverlay: View {
         severity: .required,
         maximumBuildNumber: nil,
         latestBuildNumber: nil,
-        title: "Migration in Progress",
+        title: "Migração em andamento",
         message: strandedNewData
-          ? "Your account is under maintenance. Some recent data may not appear until it's finished."
-          : "Your account is migrating. Product features are paused until migration finishes.",
+          ? "Sua conta está em manutenção. Alguns dados recentes podem não aparecer até terminar."
+          : "Sua conta está sendo migrada. Os recursos do produto ficam pausados até a migração terminar.",
         ctaText: "OK",
         downloadURL: DesktopUpdatePolicyResponse.stableManualDownloadURL.absoluteString,
         canDismiss: false

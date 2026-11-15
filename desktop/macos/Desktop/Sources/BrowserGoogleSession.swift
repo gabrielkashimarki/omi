@@ -505,11 +505,11 @@ enum BrowserPythonRunnerError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .pythonNotFound:
-      return "Python 3 not found. Install it via Homebrew: brew install python3"
+      return "Python 3 não encontrado. Instale pelo Homebrew: brew install python3"
     case .launchFailed(let message):
-      return "Failed to run Python: \(message)"
+      return "Falha ao executar o Python: \(message)"
     case .timedOut:
-      return "Python helper timed out"
+      return "O auxiliar em Python expirou"
     }
   }
 }

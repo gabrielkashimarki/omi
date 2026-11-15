@@ -19,18 +19,18 @@ enum AppleNotesReaderError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .userInitiatedReadRequired:
-      return "Apple Notes stays disconnected until you choose Connect or Import."
+      return "O Apple Notes continua desconectado até você escolher Conectar ou Importar."
     case .storeNotFound:
-      return "Apple Notes data store not found."
+      return "Dados do Apple Notes não encontrados."
     case .authorizationDenied:
       return
-        "Omi needs permission to read Apple Notes. Select the Apple Notes folder or grant Full Disk Access, then try again."
+        "O Omi precisa de permissão para ler o Apple Notes. Selecione a pasta do Apple Notes ou conceda Acesso Total ao Disco e tente de novo."
     case .invalidSelectedFolder:
-      return "Choose the Apple Notes folder named group.com.apple.notes."
+      return "Escolha a pasta do Apple Notes chamada group.com.apple.notes."
     case .schemaUnavailable:
-      return "Apple Notes data store could not be read because its database format was not recognized."
+      return "Não foi possível ler os dados do Apple Notes porque o formato do banco de dados não foi reconhecido."
     case .storeReadFailed(_, let reason):
-      return "Apple Notes data store could not be read: \(reason)"
+      return "Não foi possível ler os dados do Apple Notes: \(reason)"
     }
   }
 
@@ -85,7 +85,7 @@ enum AppleNotesReadOutcome: Equatable {
     }
 
     guard let error else {
-      return .error(message: "Apple Notes data store could not be read.", reasonCode: "unknown")
+      return .error(message: "Não foi possível ler os dados do Apple Notes.", reasonCode: "unknown")
     }
 
     let message = error.localizedDescription
@@ -157,7 +157,7 @@ actor AppleNotesReaderService {
   ) async -> AppleNotesConnectionStatus {
     guard userInitiated else {
       return .needsAccess(
-        message: "Choose Connect or Import to check Apple Notes access.",
+        message: "Escolha Conectar ou Importar para verificar o acesso ao Apple Notes.",
         reasonCode: "user_initiated_read_required"
       )
     }

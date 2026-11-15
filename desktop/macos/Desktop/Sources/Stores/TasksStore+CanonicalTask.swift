@@ -55,7 +55,7 @@ extension TasksStore {
       return hydratedTask
     } catch {
       guard isCurrent(lease) else { return nil }
-      self.error = "This task is no longer available."
+      self.error = "Esta tarefa não está mais disponível."
       logError("TasksStore: Failed to hydrate canonical task", error: error)
       return nil
     }

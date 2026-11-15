@@ -103,18 +103,18 @@ private struct WhatsNewToastCard: View {
 
       VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
         HStack(alignment: .top, spacing: OmiSpacing.sm) {
-          Text("Omi updated")
+          Text("Omi atualizado")
             .inkStyle(.rowCopy, color: Ink.primary)
           Spacer(minLength: 0)
           closeButton
         }
 
-        Text(version.isEmpty ? "A new version is installed" : "Now on version \(version)")
+        Text(version.isEmpty ? "Uma nova versão foi instalada" : "Agora na versão \(version)")
           // `secondary` and never the glance rung: this card is glass, which carries two rungs.
           .inkStyle(.statusLabel, color: Ink.secondary)
 
         HStack(spacing: OmiSpacing.xxs) {
-          Text("See what's new")
+          Text("Ver as novidades")
             .inkStyle(.statusLabel, color: Ink.accent)
           Image(systemName: "arrow.up.right")
             .scaledFont(size: OmiType.micro, weight: .semibold)
@@ -135,7 +135,7 @@ private struct WhatsNewToastCard: View {
     .pointingHandOnHover()
     .accessibilityElement(children: .combine)
     .accessibilityAddTraits(.isButton)
-    .accessibilityHint("Opens the release notes")
+    .accessibilityHint("Abre as notas da versão")
   }
 
   private var logo: some View {
@@ -153,6 +153,6 @@ private struct WhatsNewToastCard: View {
   }
 
   private var closeButton: some View {
-    DismissButton(action: onClose, showBackground: false, accessibilityLabel: "Dismiss", size: .compact)
+    DismissButton(action: onClose, showBackground: false, accessibilityLabel: "Dispensar", size: .compact)
   }
 }

@@ -521,23 +521,23 @@ enum WifiSyncServiceError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .deviceNotConnected:
-      return "Device not connected"
+      return "Dispositivo não conectado"
     case .notSupported:
-      return "Device does not support WiFi sync"
+      return "O dispositivo não suporta sincronização por WiFi"
     case .setupFailed(let reason):
-      return "WiFi setup failed: \(reason)"
+      return "Falha na configuração do WiFi: \(reason)"
     case .deviceFailed:
-      return "Device failed to start WiFi"
+      return "O dispositivo não conseguiu iniciar o WiFi"
     case .noDataToSync:
-      return "No data available to sync"
+      return "Nenhum dado disponível para sincronizar"
     case .commandFailed:
-      return "Failed to send command to device"
+      return "Falha ao enviar o comando ao dispositivo"
     case .connectionFailed:
-      return "Failed to connect to device WiFi"
+      return "Falha ao conectar ao WiFi do dispositivo"
     case .timeout:
-      return "Connection timed out"
+      return "A conexão expirou"
     case .transferFailed(let reason):
-      return "Transfer failed: \(reason)"
+      return "Falha na transferência: \(reason)"
     }
   }
 }

@@ -24,22 +24,22 @@ enum GmailReaderError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .noBrowserFound:
-      return "No browser with Gmail session found. Log into Gmail in Chrome, Arc, Brave, or Edge."
+      return "Nenhum navegador com sessão do Gmail encontrado. Entre no Gmail pelo Chrome, Arc, Brave ou Edge."
     case .noGmailCookies:
-      return "No Gmail session cookies found. Make sure you're logged into Gmail."
+      return "Nenhum cookie de sessão do Gmail encontrado. Confira se você está conectado ao Gmail."
     case .notSignedIn:
       return
-        "Not signed into Gmail in any browser. Open mail.google.com in Chrome, Arc, Brave, or Edge, sign in, then try again."
+        "Você não está conectado ao Gmail em nenhum navegador. Abra mail.google.com no Chrome, Arc, Brave ou Edge, entre na conta e tente de novo."
     case .sessionExpired:
-      return "Your Gmail session expired. Reload mail.google.com in your browser to refresh it, then try again."
+      return "Sua sessão do Gmail expirou. Recarregue mail.google.com no navegador para renová-la e tente de novo."
     case .cookieDecryptionFailed(let msg):
-      return "Cookie decryption failed: \(msg)"
+      return "Falha ao descriptografar os cookies: \(msg)"
     case .networkError(let msg):
-      return "Network error: \(msg)"
+      return "Erro de rede: \(msg)"
     case .authFailed:
-      return "Gmail authentication failed. Try refreshing your Gmail session in the browser."
+      return "A autenticação do Gmail falhou. Tente renovar a sessão do Gmail no navegador."
     case .pythonNotFound:
-      return "Python 3 not found. Install it via Homebrew: brew install python3"
+      return "Python 3 não encontrado. Instale pelo Homebrew: brew install python3"
     }
   }
 }
@@ -218,11 +218,11 @@ actor GmailReaderService {
     } catch let error as GmailReaderError {
       switch error {
       case .notSignedIn, .noBrowserFound, .noGmailCookies:
-        return .needsSignIn(message: error.errorDescription ?? "Sign into Gmail to connect.")
+        return .needsSignIn(message: error.errorDescription ?? "Entre no Gmail para conectar.")
       case .sessionExpired, .authFailed:
-        return .needsSignIn(message: error.errorDescription ?? "Your Gmail session expired.")
+        return .needsSignIn(message: error.errorDescription ?? "Sua sessão do Gmail expirou.")
       default:
-        return .error(message: error.errorDescription ?? "Couldn't verify the connection.")
+        return .error(message: error.errorDescription ?? "Não foi possível verificar a conexão.")
       }
     } catch {
       return .error(message: error.localizedDescription)

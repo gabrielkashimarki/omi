@@ -14,15 +14,15 @@ struct UsageLimitPopupView: View {
   let onBringYourOwnKeys: () -> Void
 
   private var headline: String {
-    "You've hit your monthly limit"
+    "Você atingiu o limite mensal"
   }
 
   private var body_text: String {
     switch reason {
     case "transcription":
-      return "You've hit your monthly limit. Upgrade to make sure your new recordings aren't lost."
+      return "Você atingiu o limite mensal. Faça upgrade para não perder suas novas gravações."
     case "chat", "floating_bar":
-      return "You've hit your monthly limit. Upgrade to keep chatting with Omi without restrictions."
+      return "Você atingiu o limite mensal. Faça upgrade para continuar conversando com o Omi sem restrições."
     default:
       // Covers "trial_expired" (menu-bar toggles in OmiApp.swift) and any
       // future caller. The previous default copy talked about recordings,
@@ -30,7 +30,7 @@ struct UsageLimitPopupView: View {
       // was never actually at risk — they were tripping a stale
       // isPaywalled flag (now self-healed by #7517) while at their chat
       // cap, and the recording-loss wording read as a data-loss threat.
-      return "You've hit your monthly limit. Upgrade to keep using Omi without restrictions."
+      return "Você atingiu o limite mensal. Faça upgrade para continuar usando o Omi sem restrições."
     }
   }
 
@@ -77,10 +77,10 @@ struct UsageLimitPopupView: View {
           VStack(spacing: OmiSpacing.sm) {
             // Stadium, not a rounded rectangle, and the label ladder inverted rather than an accent
             // fill — `InkButton` is the one action shape in this system.
-            InkButton("Upgrade", action: onUpgrade)
+            InkButton("Fazer upgrade", action: onUpgrade)
               .frame(maxWidth: .infinity)
 
-            InkButton("Bring your own keys", kind: .secondary, action: onBringYourOwnKeys)
+            InkButton("Usar suas próprias chaves", kind: .secondary, action: onBringYourOwnKeys)
               .frame(maxWidth: .infinity)
           }
           .padding(.horizontal, OmiSpacing.xxl)

@@ -184,7 +184,7 @@ final class StorageSyncService: ObservableObject {
 
     guard success else {
       await MainActor.run {
-        errorMessage = "Failed to start storage transfer"
+        errorMessage = "Falha ao iniciar a transferência de armazenamento"
         isSyncing = false
       }
       return
@@ -404,13 +404,13 @@ enum StorageSyncError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .deviceNotConnected:
-      return "Device not connected"
+      return "Dispositivo não conectado"
     case .noDataToSync:
-      return "No data available to sync"
+      return "Nenhum dado disponível para sincronizar"
     case .transferFailed(let reason):
-      return "Transfer failed: \(reason)"
+      return "Falha na transferência: \(reason)"
     case .timeout:
-      return "Transfer timed out"
+      return "A transferência expirou"
     }
   }
 }

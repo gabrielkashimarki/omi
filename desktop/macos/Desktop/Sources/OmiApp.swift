@@ -163,26 +163,26 @@ struct OMIApp: App {
     .defaultSize(width: defaultWindowSize.width, height: defaultWindowSize.height)
     .commands {
       CommandGroup(after: .textFormatting) {
-        Button("Increase Font Size") {
+        Button("Aumentar fonte") {
           let s = FontScaleSettings.shared
           s.scale = min(2.0, round((s.scale + 0.05) * 20) / 20)
         }
         .keyboardShortcut("+", modifiers: .command)
 
-        Button("Decrease Font Size") {
+        Button("Diminuir fonte") {
           let s = FontScaleSettings.shared
           s.scale = max(0.5, round((s.scale - 0.05) * 20) / 20)
         }
         .keyboardShortcut("-", modifiers: .command)
 
-        Button("Reset Font Size") {
+        Button("Restaurar fonte") {
           FontScaleSettings.shared.resetToDefault()
         }
         .keyboardShortcut("0", modifiers: .command)
 
         Divider()
 
-        Button("Reset Window Size") {
+        Button("Restaurar tamanho da janela") {
           resetWindowToDefaultSize()
         }
       }
@@ -191,14 +191,14 @@ struct OMIApp: App {
       CommandGroup(after: .sidebar) {
         Button("Chat") { Self.navigate(to: .dashboard) }
           .keyboardShortcut("1", modifiers: .command)
-        Button("Memories") { Self.navigate(to: .conversations, hub: .activity) }
+        Button("Memórias") { Self.navigate(to: .conversations, hub: .activity) }
           .keyboardShortcut("2", modifiers: .command)
-        Button("Tasks") { Self.navigate(to: .tasks) }
+        Button("Tarefas") { Self.navigate(to: .tasks) }
           .keyboardShortcut("3", modifiers: .command)
         Button("Apps") { Self.navigate(to: .apps) }
           .keyboardShortcut("4", modifiers: .command)
 
-        Menu("Go to in Memories") {
+        Menu("Ir para, em Memórias") {
           ForEach(Array(ActivityDestinationChip.allCases.enumerated()), id: \.element) { index, chip in
             Button(chip.title) { Self.navigate(to: .conversations, hub: chip.hubDestination) }
               .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: [.command, .option])
@@ -207,7 +207,7 @@ struct OMIApp: App {
 
         Divider()
 
-        Button("Settings") {
+        Button("Ajustes") {
           NotificationCenter.default.post(
             name: .navigateToSidebarItem, object: nil,
             userInfo: ["rawValue": SidebarNavItem.settings.rawValue])
@@ -216,7 +216,7 @@ struct OMIApp: App {
       }
 
       CommandGroup(after: .toolbar) {
-        Button("Refresh") {
+        Button("Atualizar") {
           NotificationCenter.default.post(name: .refreshAllData, object: nil)
         }
         .keyboardShortcut("r", modifiers: .command)
@@ -860,7 +860,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     let paywalled = AppState.isPaywalledEffective
     let screenCaptureItem = NSMenuItem()
     let screenCaptureView = makeToggleItemView(
-      title: "Screen Capture",
+      title: "Captura de Tela",
       iconName: "rectangle.dashed.badge.record",
       isOn: !paywalled && AssistantSettings.shared.screenAnalysisEnabled
         && ProactiveAssistantsPlugin.shared.isMonitoring,
@@ -871,7 +871,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     let audioRecordingItem = NSMenuItem()
     let audioRecordingView = makeToggleItemView(
-      title: "Audio Recording",
+      title: "Gravação de Áudio",
       iconName: "mic.fill",
       isOn: !paywalled && AssistantSettings.shared.audioRecordingMode != .off,
       action: #selector(audioRecordingToggled(_:))
@@ -883,23 +883,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     // No key equivalent: ⌘O here only worked with this menu open, yet read as the global shortcut.
     let openItem = NSMenuItem(
-      title: "Open \(displayName)", action: #selector(openOmiFromMenu), keyEquivalent: "")
+      title: "Abrir \(displayName)", action: #selector(openOmiFromMenu), keyEquivalent: "")
     openItem.target = self
     menu.addItem(openItem)
     menu.addItem(FloatingBarMenuBarItem.make())  // Show/Hide Floating Bar: the way back after Hide
 
-    let settingsItem = NSMenuItem(title: "Settings…", action: #selector(openSettingsFromMenu), keyEquivalent: "")
+    let settingsItem = NSMenuItem(title: "Ajustes…", action: #selector(openSettingsFromMenu), keyEquivalent: "")
     settingsItem.target = self
     menu.addItem(settingsItem)
     let undoDictationItem = NSMenuItem(
-      title: "Undo Last Dictation", action: #selector(undoLastDictationFromMenu), keyEquivalent: "")
+      title: "Desfazer último ditado", action: #selector(undoLastDictationFromMenu), keyEquivalent: "")
     undoDictationItem.target = self
     menu.addItem(undoDictationItem)
 
     menu.addItem(NSMenuItem.separator())
 
     let updatesItem = NSMenuItem(
-      title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
+      title: "Buscar atualizações…", action: #selector(checkForUpdates), keyEquivalent: "")
     updatesItem.target = self
     menu.addItem(updatesItem)
 
@@ -908,31 +908,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     // Sign out / User info
     if AuthState.shared.isSignedIn {
       if let email = AuthState.shared.userEmail {
-        let emailItem = NSMenuItem(title: "Signed in as \(email)", action: nil, keyEquivalent: "")
+        let emailItem = NSMenuItem(title: "Conectado como \(email)", action: nil, keyEquivalent: "")
         emailItem.isEnabled = false
         menu.addItem(emailItem)
         menu.addItem(NSMenuItem.separator())
       }
 
       let resetItem = NSMenuItem(
-        title: "Reset Onboarding…", action: #selector(resetOnboarding), keyEquivalent: "")
+        title: "Refazer introdução…", action: #selector(resetOnboarding), keyEquivalent: "")
       resetItem.target = self
       menu.addItem(resetItem)
 
       menu.addItem(NSMenuItem.separator())
 
       let reportItem = NSMenuItem(
-        title: "Report Issue…", action: #selector(reportIssue), keyEquivalent: "")
+        title: "Reportar problema…", action: #selector(reportIssue), keyEquivalent: "")
       reportItem.target = self
       menu.addItem(reportItem)
 
       menu.addItem(NSMenuItem.separator())
 
-      let signOutItem = NSMenuItem(title: "Sign Out", action: #selector(signOut), keyEquivalent: "")
+      let signOutItem = NSMenuItem(title: "Sair", action: #selector(signOut), keyEquivalent: "")
       signOutItem.target = self
       menu.addItem(signOutItem)
     } else {
-      let notSignedInItem = NSMenuItem(title: "Not signed in", action: nil, keyEquivalent: "")
+      let notSignedInItem = NSMenuItem(title: "Sem login", action: nil, keyEquivalent: "")
       notSignedInItem.isEnabled = false
       menu.addItem(notSignedInItem)
     }
@@ -940,7 +940,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     menu.addItem(NSMenuItem.separator())
 
     // Quit item
-    let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
+    let quitItem = NSMenuItem(title: "Sair do Omi", action: #selector(quitApp), keyEquivalent: "q")
     quitItem.target = self
     menu.addItem(quitItem)
 
@@ -1105,12 +1105,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     AnalyticsManager.shared.menuBarActionClicked(action: "reset_onboarding")
     // Settings asks the same question; the status menu has no shell window to draw it in.
     let alert = NSAlert()
-    alert.messageText = "Reset Onboarding?"
+    alert.messageText = "Refazer a introdução?"
     alert.informativeText =
-      "This will reset onboarding for this app build only, clear onboarding chat history, "
-      + "and restart the app without affecting the other installed build."
-    alert.addButton(withTitle: "Reset & Restart")
-    alert.addButton(withTitle: "Cancel")
+      "Isso refaz a introdução somente nesta versão do app, apaga o histórico do chat da introdução "
+      + "e reinicia o app sem afetar a outra versão instalada."
+    alert.addButton(withTitle: "Refazer e reiniciar")
+    alert.addButton(withTitle: "Cancelar")
     NSApp.activate(ignoringOtherApps: true)
     guard alert.runModal() == .alertFirstButtonReturn else { return }
     (AppState.current ?? AppState()).resetOnboardingAndRestart()

@@ -457,13 +457,13 @@ enum SubscriptionPlanType: Codable, Equatable, RawRepresentable {
   /// Copy that is safe to show when the backend sends a plan introduced after this build.
   var displayName: String {
     switch self {
-    case .basic: return "Free"
+    case .basic: return "Grátis"
     case .plus: return "Plus"
     case .unlimited: return "Neo"
     case .unlimitedV2: return "Omi Pro"
     case .architect, .pro: return "Architect"
     case .operator: return "Operator"
-    case .unknown: return "Plan unavailable"
+    case .unknown: return "Plano indisponível"
     }
   }
 

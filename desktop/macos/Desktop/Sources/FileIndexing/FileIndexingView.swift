@@ -13,7 +13,7 @@ struct FileIndexingView: View {
   @State private var scanningFolder: String = ""
   @State private var totalFilesScanned: Int = 0
   @State private var progress: Double = 0.0
-  @State private var statusText: String = "Scanning your files…"
+  @State private var statusText: String = "Examinando seus arquivos…"
   @State private var showInfoPopover: Bool = false
   @State private var chatMessages: [String] = []
   @State private var pipelineStarted = false
@@ -65,20 +65,20 @@ struct FileIndexingView: View {
       // Subtitle — folder being scanned or general message
       if !scanningFolder.isEmpty {
         Text(
-          "Scanning ~/\(scanningFolder)"
-            + (totalFilesScanned > 0 ? " · \(totalFilesScanned.formatted()) files found" : "")
+          "Examinando ~/\(scanningFolder)"
+            + (totalFilesScanned > 0 ? " · \(totalFilesScanned.formatted()) arquivos encontrados" : "")
         )
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
         .multilineTextAlignment(.center)
         .omiAnimation(.easeInOut(duration: 0.2), value: scanningFolder)
       } else if totalFilesScanned > 0 {
-        Text("\(totalFilesScanned.formatted()) files indexed")
+        Text("\(totalFilesScanned.formatted()) arquivos indexados")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
           .multilineTextAlignment(.center)
       } else {
-        Text("Your files are read on this Mac and aren't uploaded. Omi is open source.")
+        Text("Seus arquivos são lidos neste Mac e não são enviados. O Omi é de código aberto.")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
           .multilineTextAlignment(.center)
@@ -110,7 +110,7 @@ struct FileIndexingView: View {
 
       // Skip
       Button(action: skip) {
-        Text("Skip")
+        Text("Pular")
           .scaledFont(size: OmiType.body)
           .foregroundColor(Ink.secondary)
       }
@@ -126,7 +126,7 @@ struct FileIndexingView: View {
   private var infoPopoverContent: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
       HStack {
-        Text("Behind the scenes")
+        Text("Nos bastidores")
           .scaledFont(size: OmiType.body, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -137,14 +137,14 @@ struct FileIndexingView: View {
           Image(systemName: "folder")
             .scaledFont(size: OmiType.micro)
             .foregroundColor(Ink.secondary)
-          Text("Scanning ~/\(scanningFolder)")
+          Text("Examinando ~/\(scanningFolder)")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
         }
       }
 
       if totalFilesScanned > 0 {
-        Text("\(totalFilesScanned.formatted()) files indexed")
+        Text("\(totalFilesScanned.formatted()) arquivos indexados")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
       }
@@ -193,7 +193,7 @@ struct FileIndexingView: View {
           Image(systemName: "brain")
             .scaledFont(size: OmiType.hero)
             .foregroundColor(Ink.hairline)
-          Text("More connections appear as Omi learns about you")
+          Text("Mais conexões aparecem conforme o Omi aprende sobre você")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
             .multilineTextAlignment(.center)
@@ -203,7 +203,7 @@ struct FileIndexingView: View {
 
       // Floating title + continue button
       VStack {
-        Text("Here's what I know about you")
+        Text("Isto é o que sei sobre você")
           .font(.system(size: 22, weight: .bold))
           .foregroundColor(hasGraph ? Ink.glow : Ink.primary)
           // The shadows are how white type stays readable over a moving scene. Over the light
@@ -216,7 +216,7 @@ struct FileIndexingView: View {
         Spacer()
 
         Button(action: { onComplete(totalFilesScanned) }) {
-          Text("Continue")
+          Text("Continuar")
             .font(.system(size: 15, weight: .semibold))
             .foregroundColor(Ink.surface)
             .frame(maxWidth: 220)
@@ -315,13 +315,13 @@ struct FileIndexingView: View {
       await MainActor.run {
         totalFilesScanned = existingCount
         progress = 0.6
-        statusText = "Analyzing your files…"
+        statusText = "Analisando seus arquivos…"
       }
       return
     }
 
     await MainActor.run {
-      statusText = "Scanning your files…"
+      statusText = "Examinando seus arquivos…"
     }
 
     let home = FileManager.default.homeDirectoryForCurrentUser
@@ -366,7 +366,7 @@ struct FileIndexingView: View {
   /// Stage 2: AI exploration chat in background, progress 60% → 90%
   private func runAIExploration() async {
     await MainActor.run {
-      statusText = "Analyzing your files…"
+      statusText = "Analisando seus arquivos…"
     }
 
     // Start progress animation (ease-out curve over ~30s)
@@ -405,7 +405,7 @@ struct FileIndexingView: View {
   /// We poll the local SQLite briefly, then fall back to API if needed.
   private func runKnowledgeGraphBuild() async {
     await MainActor.run {
-      statusText = "Building your knowledge graph…"
+      statusText = "Montando seu grafo de conhecimento…"
       scanningFolder = ""
       progress = 0.92
     }
@@ -435,7 +435,7 @@ struct FileIndexingView: View {
 
         await MainActor.run {
           progress = 1.0
-          statusText = "Done"
+          statusText = "Pronto"
         }
         try? await Task.sleep(nanoseconds: 500_000_000)
         return
@@ -468,7 +468,7 @@ struct FileIndexingView: View {
 
     await MainActor.run {
       progress = 1.0
-      statusText = "Done"
+      statusText = "Pronto"
     }
 
     // Brief pause to show 100%
@@ -587,7 +587,7 @@ struct FileIndexingView: View {
 
     await MainActor.run {
       chatProvider.appendDiscoveryCard(
-        title: "Your Digital Profile",
+        title: "Seu perfil digital",
         summary: summary,
         fullText: fullText
       )

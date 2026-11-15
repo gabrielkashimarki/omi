@@ -7,7 +7,7 @@ class LaunchAtLoginManager: ObservableObject {
   static let shared = LaunchAtLoginManager()
 
   @Published private(set) var isEnabled: Bool = false
-  @Published private(set) var statusDescription: String = "Checking…"
+  @Published private(set) var statusDescription: String = "Verificando…"
 
   private init() {
     // Check current status on init
@@ -22,15 +22,15 @@ class LaunchAtLoginManager: ObservableObject {
       let description: String
       switch status {
       case .enabled:
-        description = "App will start when you log in"
+        description = "O app abrirá quando você entrar no Mac"
       case .notRegistered:
-        description = "App won't start automatically"
+        description = "O app não abrirá automaticamente"
       case .notFound:
-        description = "Login item not found"
+        description = "Item de login não encontrado"
       case .requiresApproval:
-        description = "Requires approval in System Settings"
+        description = "Requer aprovação em Ajustes do Sistema"
       @unknown default:
-        description = "Unknown status"
+        description = "Status desconhecido"
       }
       await MainActor.run {
         self.isEnabled = enabled

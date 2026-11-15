@@ -280,7 +280,7 @@ class AppProvider: ObservableObject {
       }
     } catch {
       logError("Failed to fetch apps", error: error)
-      errorMessage = "Failed to load apps: \(error.localizedDescription)"
+      errorMessage = "Falha ao carregar os apps: \(error.localizedDescription)"
     }
   }
 
@@ -341,7 +341,7 @@ class AppProvider: ObservableObject {
     } catch {
       guard currentFilterKey == cacheKey else { return }
       logError("Failed to search apps", error: error)
-      errorMessage = "Search failed: \(error.localizedDescription)"
+      errorMessage = "Falha na busca: \(error.localizedDescription)"
       hasMoreFilteredApps = false
       filteredAppsQueryState = .failed
     }
@@ -514,7 +514,7 @@ class AppProvider: ObservableObject {
       log("Toggled app \(app.id) to enabled=\(!app.enabled)")
     } catch {
       logError("Failed to toggle app", error: error)
-      errorMessage = "Failed to \(app.enabled ? "disable" : "enable") app"
+      errorMessage = "Falha ao \(app.enabled ? "desativar" : "ativar") o app"
     }
   }
 

@@ -219,9 +219,9 @@ final class CredentialHealthManager: ObservableObject {
     let message = payload?.preferredMessage ?? HTTPURLResponse.localizedString(forStatusCode: statusCode)
     switch statusCode {
     case 401:
-      return .requiresLogin(message: "Please sign in again to use voice responses.")
+      return .requiresLogin(message: "Entre de novo para usar as respostas por voz.")
     case 402:
-      return .paywalled(message: message.isEmpty ? "Upgrade or add BYOK keys to use voice responses." : message)
+      return .paywalled(message: message.isEmpty ? "Faça upgrade ou adicione suas próprias chaves para usar as respostas por voz." : message)
     case 403:
       return .byokMismatch(provider: nil, message: message.isEmpty ? "Revalidate your BYOK keys in Settings." : message)
     case 429:

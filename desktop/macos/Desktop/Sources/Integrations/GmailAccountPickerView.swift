@@ -11,22 +11,22 @@ struct GmailAccountPickerView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
       HStack {
-        Text("Gmail account")
+        Text("Conta do Gmail")
           .inkStyle(InkType.firstTitle, color: Ink.primary)
         Spacer()
-        Button("Cancel", action: onCancel)
+        Button("Cancelar", action: onCancel)
           .buttonStyle(.plain)
           .inkStyle(InkType.buttonLabel, color: Ink.secondary)
       }
 
       Button {
-        onSelect(nil, "Automatic")
+        onSelect(nil, "Automático")
       } label: {
         HStack {
           VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-            Text("Automatic")
+            Text("Automático")
               .inkStyle(InkType.rowCopy, color: Ink.primary)
-            Text("First readable browser account")
+            Text("Primeira conta legível do navegador")
               .inkStyle(InkType.statusLabel, color: Ink.secondary)
           }
           Spacer()
@@ -53,7 +53,7 @@ struct GmailAccountPickerView: View {
               VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
                 Text(account.browserName)
                   .inkStyle(InkType.rowCopy, color: Ink.primary)
-                Text(account.email ?? "Unknown account")
+                Text(account.email ?? "Conta desconhecida")
                   .inkStyle(InkType.statusLabel, color: Ink.secondary)
               }
               Spacer()

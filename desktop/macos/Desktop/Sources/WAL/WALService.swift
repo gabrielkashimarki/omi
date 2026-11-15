@@ -283,7 +283,7 @@ final class WALService: ObservableObject {
       directoryRecreateAttempts += 1
       let reason = error.localizedDescription
       persistenceState = .degraded(reason: reason)
-      errorMessage = "Audio backup storage unavailable. Recording continues locally in memory."
+      errorMessage = "Armazenamento do backup de áudio indisponível. A gravação continua localmente na memória."
       log(
         "WALService: failed to create WAL directory "
           + "(failure_class=wal_persistence_degraded recovery_action=recreate_directory "
@@ -668,7 +668,7 @@ final class WALService: ObservableObject {
     guard walDirectory != nil else {
       let reason = "wal_directory_unavailable"
       persistenceState = .degraded(reason: reason)
-      errorMessage = "Audio backup storage unavailable. Recording continues locally in memory."
+      errorMessage = "Armazenamento do backup de áudio indisponível. A gravação continua localmente na memória."
       log(
         "WALService: skipping WAL chunk — no directory "
           + "(failure_class=wal_persistence_degraded recovery_action=retain_frames recovery_result=degraded)")
@@ -735,7 +735,7 @@ final class WALService: ObservableObject {
       frameWriteTask = nil
       let reason = error.localizedDescription
       persistenceState = .degraded(reason: reason)
-      errorMessage = "Failed to save audio backup metadata. Audio remains recoverable."
+      errorMessage = "Falha ao salvar os metadados do backup de áudio. O áudio continua recuperável."
       DesktopDiagnosticsManager.shared.recordWalPersistenceDegraded(
         reason: reason,
         recoveryAction: "retain_batch",
@@ -958,7 +958,7 @@ final class WALService: ObservableObject {
   }
 
   private func recordFrameWriteFailure(walId: String, reason: String) {
-    errorMessage = "Failed to save audio backup. Recording continues in memory."
+    errorMessage = "Falha ao salvar o backup de áudio. A gravação continua na memória."
     persistenceState = .degraded(reason: reason)
     log(
       "WALService: frame write failed for \(walId) "
@@ -1254,13 +1254,13 @@ enum WALError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .fileNotFound:
-      return "WAL file not found"
+      return "Arquivo de backup de áudio não encontrado"
     case .noFramesToUpload:
-      return "No frames to upload"
+      return "Nenhum quadro de áudio para enviar"
     case .uploadFailed(let reason):
-      return "Upload failed: \(reason)"
+      return "Falha no envio: \(reason)"
     case .decodingFailed(let reason):
-      return "Decoding failed: \(reason)"
+      return "Falha na decodificação: \(reason)"
     }
   }
 }

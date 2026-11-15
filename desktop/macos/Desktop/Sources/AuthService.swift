@@ -2814,38 +2814,38 @@ enum AuthError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .invalidCredential:
-      return "Invalid Apple credential"
+      return "Credencial da Apple inválida"
     case .invalidNonce:
-      return "Invalid nonce - please try again"
+      return "Nonce inválido. Tente de novo."
     case .missingToken:
-      return "Missing identity token from Apple"
+      return "Token de identidade da Apple ausente"
     case .missingFirebaseApiKey:
       return
-        "Sign-in is not ready yet (Firebase API key unavailable). Please check your connection and try again in a moment."
+        "O login ainda não está pronto (chave de API do Firebase indisponível). Verifique sua conexão e tente de novo em instantes."
     case .notSignedIn:
-      return "User is not signed in"
+      return "Usuário sem login"
     case .invalidURL:
-      return "Invalid authentication URL"
+      return "URL de autenticação inválida"
     case .stateMismatch:
-      return "Security state mismatch - please try again"
+      return "Estado de segurança divergente. Tente de novo."
     case .timeout:
-      return "Authentication timed out - please try again"
+      return "A autenticação expirou. Tente de novo."
     case .invalidCallback:
-      return "Invalid authentication callback"
+      return "Callback de autenticação inválido"
     case .oauthError(let error):
-      return "Authentication error: \(error)"
+      return "Erro de autenticação: \(error)"
     case .missingCodeOrState:
-      return "Missing authentication code"
+      return "Código de autenticação ausente"
     case .invalidResponse:
-      return "Invalid server response"
+      return "Resposta do servidor inválida"
     case .tokenExchangeFailed(let code):
-      return "Token exchange failed with status \(code)"
+      return "A troca do token falhou com status \(code)"
     case .missingCustomToken:
-      return "Server did not return authentication token"
+      return "O servidor não devolveu o token de autenticação"
     case .keychainTokenStorageUnavailable:
-      return "Could not securely store sign-in tokens. Please try again."
+      return "Não foi possível guardar os tokens de login com segurança. Tente de novo."
     case .cancelled:
-      return "Sign in cancelled"
+      return "Login cancelado"
     case .invalidConfiguration:
       return "Local harness auth is misconfigured (Firebase auth emulator host missing)"
     case .userChangedDuringRequest:

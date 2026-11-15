@@ -135,9 +135,9 @@ enum GmailAccountProbe {
     var errorDescription: String? {
       switch self {
       case .noOutput:
-        return "Gmail account probe produced no output."
+        return "A verificação da conta do Gmail não devolveu nada."
       case .invalidOutput:
-        return "Gmail account probe returned unreadable output."
+        return "A verificação da conta do Gmail devolveu algo ilegível."
       }
     }
   }

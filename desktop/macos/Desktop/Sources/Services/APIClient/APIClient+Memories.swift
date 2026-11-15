@@ -11,7 +11,7 @@ enum MemoryCategory: String, Codable, CaseIterable {
 
   var displayName: String {
     switch self {
-    case .system: return "About You"
+    case .system: return "Sobre você"
     case .interesting: return "Insights"
     case .manual: return "Manual"
     case .workflow: return "Workflow"
@@ -61,9 +61,9 @@ enum MemoryLayer: String, Codable, CaseIterable, Identifiable {
 
   var displayName: String {
     switch self {
-    case .shortTerm: return "Short-term"
-    case .longTerm: return "Long-term"
-    case .archive: return "Archive"
+    case .shortTerm: return "Curto prazo"
+    case .longTerm: return "Longo prazo"
+    case .archive: return "Arquivo"
     }
   }
 
@@ -83,12 +83,12 @@ enum MemoryLayer: String, Codable, CaseIterable, Identifiable {
     switch self {
     case .shortTerm:
       return
-        "Recent things Omi noticed. They move to Long-term if they keep coming up, or fade if they don't."
+        "Coisas recentes que o Omi percebeu. Passam para Longo prazo se continuarem aparecendo, ou desaparecem se não."
     case .longTerm:
       return
-        "Lasting facts about you, your preferences, and your life."
+        "Fatos duradouros sobre você, suas preferências e sua vida."
     case .archive:
-      return "Aged-out long-term memories. Hidden by default; search Archive to find them."
+      return "Memórias de longo prazo antigas. Ficam ocultas por padrão; busque em Arquivo para encontrá-las."
     }
   }
 }

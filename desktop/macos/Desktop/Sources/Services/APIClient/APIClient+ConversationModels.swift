@@ -466,7 +466,7 @@ struct ServerConversation: Codable, Identifiable, Equatable {
   /// flat "Untitled Conversation" string. This getter stays for callers
   /// that need a single plain string (exports, log lines, copy-to-clipboard).
   var title: String {
-    structured.title.isEmpty ? "Untitled Conversation" : structured.title
+    structured.title.isEmpty ? "Conversa sem título" : structured.title
   }
 
   /// What a row/header should actually render for this conversation's state.
@@ -515,7 +515,7 @@ struct ServerConversation: Codable, Identifiable, Equatable {
   /// Never the pipeline status — that belongs in the badge.
   var provisionalTitle: String {
     ConversationProcessingProgress.provisionalTitle(from: transcriptSegments)
-      ?? "Recording at \(Self.provisionalTimeFormatter.string(from: startedAt ?? createdAt))"
+      ?? "Gravação às \(Self.provisionalTimeFormatter.string(from: startedAt ?? createdAt))"
   }
 
   /// True when `provisionalTitle` quotes the transcript rather than the clock.
@@ -537,9 +537,9 @@ struct ServerConversation: Codable, Identifiable, Equatable {
     // Matches the badge's waiting copy; rows/header that show the badge skip
     // the title text so the pill is not duplicated beside itself. Plain-string
     // callers (Spine tiles, link lists, accessibility) still get honest copy.
-    case .locked: return "Saved and waiting"
-    case .failed: return "Failed to process"
-    case .untitledRecoverable, .untitledEmpty: return "Untitled"
+    case .locked: return "Salva e aguardando"
+    case .failed: return "Falha ao processar"
+    case .untitledRecoverable, .untitledEmpty: return "Sem título"
     }
   }
 

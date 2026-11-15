@@ -33,7 +33,7 @@ class FeedbackWindow {
     let hostingController = NSHostingController(rootView: feedbackView.withFontScaling())
 
     let newWindow = NSWindow(contentViewController: hostingController)
-    newWindow.title = "Report Issue"
+    newWindow.title = "Reportar problema"
     newWindow.styleMask = [.titled, .closable, .fullSizeContentView]
     // Transparent, light-pinned, and shadowed by its own frame. Without the pin an `NSTextField`
     // inside this sheet resolves `labelColor` against the machine's appearance and renders near-white
@@ -84,14 +84,14 @@ struct FeedbackView: View {
           .scaledFont(size: 48)
           .foregroundColor(savedReportPath == nil ? Ink.errorRed : Ink.listeningGreen)
 
-          Text(savedReportPath == nil ? "Report not saved" : "Report saved on this Mac")
+          Text(savedReportPath == nil ? "Relatório não salvo" : "Relatório salvo neste Mac")
             .inkStyle(.firstTitle, color: Ink.primary)
 
           if let savedReportPath {
             Text(
               savedReportIncludesDiagnostics
-                ? "Your report was not uploaded. A copy (your note plus redacted diagnostics) is saved on this Mac at:\n\(savedReportPath)"
-                : "Your report was not uploaded. Your note was saved on this Mac at:\n\(savedReportPath)\n\nRedacted diagnostics could not be generated — use \"Save Diagnostics…\" to capture them."
+                ? "Seu relatório não foi enviado. Uma cópia (sua nota mais o diagnóstico sem dados sensíveis) foi salva neste Mac em:\n\(savedReportPath)"
+                : "Seu relatório não foi enviado. Sua nota foi salva neste Mac em:\n\(savedReportPath)\n\nNão foi possível gerar o diagnóstico sem dados sensíveis. Use \"Salvar diagnóstico…\" para capturá-lo."
             )
             .inkStyle(.prose, color: Ink.secondary)
             .textSelection(.enabled)
@@ -99,24 +99,24 @@ struct FeedbackView: View {
             // The form state below still holds the entered note: send the user
             // back to it rather than dead-ending them behind a Close button.
             Text(
-              "The report could not be written to disk. Your note is still in the form — go back, copy it somewhere safe, and use \"Save Diagnostics…\" to capture what you can."
+              "Não foi possível gravar o relatório no disco. Sua nota continua no formulário: volte, copie-a para um lugar seguro e use \"Salvar diagnóstico…\" para capturar o que der."
             )
             .inkStyle(.prose, color: Ink.secondary)
           }
 
           HStack {
             if savedReportPath == nil {
-              Button("Back to Report") {
+              Button("Voltar ao relatório") {
                 showSuccess = false
                 isSubmitting = false
               }
               .keyboardShortcut(.defaultAction)
 
-              Button("Close") {
+              Button("Fechar") {
                 onDismiss()
               }
             } else {
-              Button("Close") {
+              Button("Fechar") {
                 onDismiss()
               }
               .keyboardShortcut(.defaultAction)
@@ -126,11 +126,11 @@ struct FeedbackView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
       } else {
         // Form state
-        Text("Report an Issue")
+        Text("Reportar um problema")
           .inkStyle(.rowCopy, color: Ink.primary)
 
         Text(
-          "Redacted diagnostics will be included automatically. Notes, name, and email stay on this device for privacy; save a diagnostics file to share them manually."
+          "O diagnóstico sem dados sensíveis será incluído automaticamente. Notas, nome e e-mail ficam só neste dispositivo, por privacidade; salve um arquivo de diagnóstico para compartilhá-los manualmente."
         )
         .inkStyle(.statusLabel, color: Ink.secondary)
 
@@ -141,34 +141,34 @@ struct FeedbackView: View {
 
         HStack {
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Name (optional)")
+            Text("Nome (opcional)")
               .inkStyle(.statusLabel, color: Ink.secondary)
-            TextField("Your name", text: $name)
+            TextField("Seu nome", text: $name)
               .textFieldStyle(.roundedBorder)
           }
 
           VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Email")
+            Text("E-mail")
               .inkStyle(.statusLabel, color: Ink.secondary)
-            TextField("your@email.com", text: $email)
+            TextField("seu@email.com", text: $email)
               .textFieldStyle(.roundedBorder)
           }
         }
 
         HStack {
-          Button("Cancel") {
+          Button("Cancelar") {
             onDismiss()
           }
           .keyboardShortcut(.cancelAction)
 
-          Button("Save Diagnostics…") {
+          Button("Salvar diagnóstico…") {
             saveDiagnosticsLocally()
           }
-          .help("Save a redacted diagnostics report locally — works offline, nothing is uploaded.")
+          .help("Salva um relatório de diagnóstico sem dados sensíveis, localmente. Funciona offline e nada é enviado.")
 
           Spacer()
 
-          Button("Save Report") {
+          Button("Salvar relatório") {
             submitFeedback()
           }
           .keyboardShortcut(.defaultAction)
@@ -306,8 +306,8 @@ struct FeedbackView: View {
   /// bundles or without connectivity can still capture a report (BL-023 / SET-03).
   private func saveDiagnosticsLocally() {
     let panel = NSSavePanel()
-    panel.title = "Save Diagnostics"
-    panel.message = "Save a redacted diagnostics report you can share manually."
+    panel.title = "Salvar diagnóstico"
+    panel.message = "Salve um relatório de diagnóstico sem dados sensíveis para compartilhar manualmente."
     panel.nameFieldStringValue = "omi-diagnostics-\(Self.exportTimestamp()).txt"
     panel.allowedContentTypes = [.plainText]
     panel.canCreateDirectories = true

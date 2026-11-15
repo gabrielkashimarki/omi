@@ -85,8 +85,8 @@ final class TrialBannerService {
       showOnce(
         kind: .expired,
         ownerID: ownerID,
-        title: "Trial Ended",
-        message: "Your 3-day premium trial has ended. Upgrade to keep unlimited access or bring your own API keys.",
+        title: "Teste encerrado",
+        message: "Seu teste premium de 3 dias terminou. Faça upgrade para manter o acesso ilimitado ou use suas próprias chaves de API.",
         presenter: presenter)
       return
     }
@@ -96,15 +96,15 @@ final class TrialBannerService {
       showOnce(
         kind: .oneHour,
         ownerID: ownerID,
-        title: "Less than 1 hour left",
-        message: "Your premium trial expires soon. Upgrade now to keep unlimited listening & transcription.",
+        title: "Falta menos de 1 hora",
+        message: "Seu teste premium está acabando. Faça upgrade agora para manter a escuta e a transcrição ilimitadas.",
         presenter: presenter)
     } else if remaining <= 24 * 3600 {
       showOnce(
         kind: .twentyFourHours,
         ownerID: ownerID,
-        title: "Trial ending tomorrow",
-        message: "Your premium trial ends in less than 24 hours. Check out plans in Settings.",
+        title: "O teste termina amanhã",
+        message: "Seu teste premium termina em menos de 24 horas. Veja os planos em Ajustes.",
         presenter: presenter)
     }
   }

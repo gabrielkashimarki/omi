@@ -112,21 +112,21 @@ enum DeviceTransportError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .notConnected:
-      return "Device is not connected"
+      return "O dispositivo não está conectado"
     case .connectionFailed(let reason):
-      return "Connection failed: \(reason)"
+      return "Falha na conexão: \(reason)"
     case .serviceNotFound(let uuid):
-      return "Service not found: \(uuid.uuidString)"
+      return "Serviço não encontrado: \(uuid.uuidString)"
     case .characteristicNotFound(let uuid):
-      return "Characteristic not found: \(uuid.uuidString)"
+      return "Característica não encontrada: \(uuid.uuidString)"
     case .readFailed(let reason):
-      return "Read failed: \(reason)"
+      return "Falha na leitura: \(reason)"
     case .writeFailed(let reason):
-      return "Write failed: \(reason)"
+      return "Falha na escrita: \(reason)"
     case .timeout:
-      return "Operation timed out"
+      return "A operação expirou"
     case .disposed:
-      return "Transport has been disposed"
+      return "O transporte foi descartado"
     }
   }
 }

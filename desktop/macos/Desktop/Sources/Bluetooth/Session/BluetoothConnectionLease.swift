@@ -20,9 +20,9 @@ enum BluetoothConnectionLeaseError: LocalizedError, Equatable {
   var errorDescription: String? {
     switch self {
     case .leaseAlreadyActive:
-      return "A previous Bluetooth connection attempt is still draining"
+      return "Uma tentativa anterior de conexão Bluetooth ainda está sendo encerrada"
     case .centralUnavailable:
-      return "Bluetooth is not powered on"
+      return "O Bluetooth está desligado"
     }
   }
 }

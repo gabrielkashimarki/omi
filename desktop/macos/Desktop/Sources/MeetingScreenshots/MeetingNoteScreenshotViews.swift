@@ -188,11 +188,11 @@ struct MeetingNoteHeaderInset: View {
         }
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
-        .help(frame.caption.isEmpty ? "Screenshot from this meeting" : frame.caption)
+        .help(frame.caption.isEmpty ? "Captura de tela desta reunião" : frame.caption)
         .accessibilityLabel(
-          Text(frame.caption.isEmpty ? "Screenshot from this meeting" : frame.caption)
+          Text(frame.caption.isEmpty ? "Captura de tela desta reunião" : frame.caption)
         )
-        .accessibilityHint(Text("Opens this screenshot in Quick Look"))
+        .accessibilityHint(Text("Abre esta captura de tela no Quick Look"))
       case .failure:
         Color.clear
           .frame(width: Self.width, height: Self.height)
@@ -272,11 +272,11 @@ struct MeetingNoteScreenshotsSection: View {
     // Visible states carry the note's section spacing themselves; the hidden ones stay zero-height
     // so a note without screenshots has no gap where the strip would be.
     case .selecting:
-      label("Looking through what was on screen…")
+      label("Procurando o que estava na tela…")
         .padding(.top, OmiSpacing.xxl)
 
     case .judging(let candidates):
-      label("Reviewing \(candidates) moment\(candidates == 1 ? "" : "s")…")
+      label("Revisando \(candidates) momento\(candidates == 1 ? "" : "s")…")
         .padding(.top, OmiSpacing.xxl)
 
     case .noCapture:
@@ -295,7 +295,7 @@ struct MeetingNoteScreenshotsSection: View {
           Image(systemName: "photo.on.rectangle.angled")
             .scaledFont(size: OmiType.body)
             .foregroundColor(Ink.secondary)
-          Text("What was on screen")
+          Text("O que estava na tela")
             .scaledFont(size: OmiType.body, weight: .semibold)
             .foregroundColor(Ink.secondary)
           Spacer()
@@ -416,7 +416,7 @@ struct MeetingScreenshotTile: View {
           }
           .clipShape(shape)
           .overlay(shape.strokeBorder(isHovering ? Ink.hairline : Ink.separator, lineWidth: 1))
-        Text(frame.caption.isEmpty ? "Screenshot" : frame.caption)
+        Text(frame.caption.isEmpty ? "Captura de tela" : frame.caption)
           .inkStyle(.statusLabel, color: Ink.secondary)
           .lineLimit(1)
           .truncationMode(.tail)
@@ -426,18 +426,18 @@ struct MeetingScreenshotTile: View {
     }
     .buttonStyle(.plain)
     .onHover { isHovering = $0 }
-    .help(frame.caption.isEmpty ? "Screenshot from this meeting" : frame.caption)
+    .help(frame.caption.isEmpty ? "Captura de tela desta reunião" : frame.caption)
     .contextMenu {
       Button("Quick Look", action: onOpen)
       Divider()
-      Button("Delete Screenshot…", role: .destructive) { isConfirmingDelete = true }
+      Button("Apagar captura de tela…", role: .destructive) { isConfirmingDelete = true }
         .disabled(isDeleting)
     }
     .shellConfirmation(
       isPresented: $isConfirmingDelete,
-      title: "Delete Screenshot?",
-      message: "This removes the screenshot from this meeting's note. It can't be undone.",
-      confirmTitle: "Delete"
+      title: "Apagar a captura de tela?",
+      message: "Isso remove a captura de tela da nota desta reunião. Não dá para desfazer.",
+      confirmTitle: "Apagar"
     ) {
       isDeleting = true
       Task {
@@ -446,8 +446,8 @@ struct MeetingScreenshotTile: View {
       }
     }
     .accessibilityLabel(
-      Text(frame.caption.isEmpty ? "Screenshot from this meeting" : frame.caption)
+      Text(frame.caption.isEmpty ? "Captura de tela desta reunião" : frame.caption)
     )
-    .accessibilityHint(Text("Opens this screenshot in Quick Look"))
+    .accessibilityHint(Text("Abre esta captura de tela no Quick Look"))
   }
 }

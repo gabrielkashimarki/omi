@@ -56,13 +56,13 @@ class AudioCaptureService: @unchecked Sendable {
     var errorDescription: String? {
       switch self {
       case .noInputAvailable:
-        return "No audio input device available"
+        return "Nenhum dispositivo de entrada de áudio disponível"
       case .engineStartFailed(let error):
-        return "Failed to start audio engine: \(error.localizedDescription)"
+        return "Falha ao iniciar o motor de áudio: \(error.localizedDescription)"
       case .permissionDenied:
-        return "Microphone permission denied"
+        return "Permissão do microfone negada"
       case .converterCreationFailed:
-        return "Failed to create audio converter"
+        return "Falha ao criar o conversor de áudio"
       }
     }
   }

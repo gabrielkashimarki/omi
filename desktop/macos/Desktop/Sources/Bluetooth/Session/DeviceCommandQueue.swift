@@ -4,7 +4,7 @@ enum DeviceCommandQueueError: LocalizedError, Equatable {
   case closed
 
   var errorDescription: String? {
-    "The device command channel is closed"
+    "O canal de comandos do dispositivo está fechado"
   }
 }
 

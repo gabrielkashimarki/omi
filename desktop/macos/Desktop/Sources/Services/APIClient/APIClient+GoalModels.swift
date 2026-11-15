@@ -15,9 +15,9 @@ enum GoalType: String, Codable, CaseIterable {
 
   var displayName: String {
     switch self {
-    case .boolean: return "Done/Not Done"
-    case .scale: return "Scale"
-    case .numeric: return "Numeric"
+    case .boolean: return "Feito/Não feito"
+    case .scale: return "Escala"
+    case .numeric: return "Numérica"
     }
   }
 }

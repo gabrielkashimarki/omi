@@ -117,7 +117,7 @@ enum MemoryBankConnector {
       || executablePath(named: "claude", override: claudeCLIPathOverrideForTesting) != nil
     guard hasInstallEvidence else {
       throw ConnectError.notInstalled(
-        "Claude Code is not installed. Install it, then try again.")
+        "O Claude Code não está instalado. Instale e tente de novo.")
     }
 
     var root: [String: Any] = [:]
@@ -127,7 +127,7 @@ enum MemoryBankConnector {
         let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
       else {
         throw ConnectError.invalidConfig(
-          "Claude Code settings are invalid. Fix \(displayPath(for: config)), then try again.")
+          "As configurações do Claude Code são inválidas. Corrija \(displayPath(for: config)) e tente de novo.")
       }
       root = json
     }
@@ -137,7 +137,7 @@ enum MemoryBankConnector {
     if let existing = servers["omi-memory"] as? [String: Any],
       NSDictionary(dictionary: existing).isEqual(to: server)
     {
-      return "Claude Code is already connected."
+      return "O Claude Code já está conectado."
     }
 
     try backupClaudeCodeConfigIfNeeded(config)
@@ -150,9 +150,9 @@ enum MemoryBankConnector {
 
     guard MemoryExportConnectionDetector.hasExistingConnection(for: .claudeCode, matchingKey: key) else {
       throw ConnectError.invalidConfig(
-        "Claude Code settings were updated, but Omi could not verify the connection.")
+        "As configurações do Claude Code foram atualizadas, mas o Omi não conseguiu verificar a conexão.")
     }
-    return "Claude Code is now connected."
+    return "O Claude Code agora está conectado."
   }
 
   private static func claudeCodeMCPServer(key: String) -> [String: Any] {
@@ -209,7 +209,7 @@ enum MemoryBankConnector {
   private static func connectCodex(key: String) throws -> String {
     guard let cliPath = executablePath(named: "codex", override: codexCLIPathOverrideForTesting) else {
       throw ConnectError.notInstalled(
-        "Codex is not available. Install Codex or add the codex command to PATH, then try again.")
+        "O Codex não está disponível. Instale o Codex ou adicione o comando codex ao PATH e tente de novo.")
     }
 
     let codexHome = home.appendingPathComponent(".codex", isDirectory: true)
@@ -228,7 +228,7 @@ enum MemoryBankConnector {
           environment: processEnvironment(extra: ["CODEX_HOME": codexHome.path]))
       } catch {
         throw ConnectError.invalidConfig(
-          "Codex refused to remove the existing Omi entry: \(sanitizeCommandError(error.localizedDescription))")
+          "O Codex se recusou a remover a entrada existente do Omi: \(sanitizeCommandError(error.localizedDescription))")
       }
     }
     do {
@@ -246,18 +246,18 @@ enum MemoryBankConnector {
         try restoreCodexConfig(snapshot, at: config)
       } catch {
         throw ConnectError.invalidConfig(
-          "Codex rejected the connection update (\(addMessage)), and restoring the previous config failed: \(sanitizeCommandError(error.localizedDescription))"
+          "O Codex rejeitou a atualização da conexão (\(addMessage)) e a restauração da configuração anterior falhou: \(sanitizeCommandError(error.localizedDescription))"
         )
       }
       throw ConnectError.invalidConfig(
-        "Codex rejected the connection update: \(addMessage)")
+        "O Codex rejeitou a atualização da conexão: \(addMessage)")
     }
 
     guard MemoryExportConnectionDetector.hasExistingConnection(for: .codex, matchingKey: key) else {
       throw ConnectError.invalidConfig(
-        "Codex was updated, but Omi could not verify the connection.")
+        "O Codex foi atualizado, mas o Omi não conseguiu verificar a conexão.")
     }
-    return "Codex is now connected."
+    return "O Codex agora está conectado."
   }
 
   private struct CodexConfigSnapshot {
@@ -281,7 +281,7 @@ enum MemoryBankConnector {
     if exists {
       guard let read = try? Data(contentsOf: url) else {
         throw ConnectError.invalidConfig(
-          "Codex config exists but could not be read: \(displayPath(for: url)). Fix it, then try again.")
+          "A configuração do Codex existe, mas não foi possível lê-la: \(displayPath(for: url)). Corrija e tente de novo.")
       }
       data = read
     } else {
@@ -329,18 +329,18 @@ enum MemoryBankConnector {
     let config = home.appendingPathComponent(".openclaw/openclaw.json")
     guard fm.fileExists(atPath: config.path) else {
       throw ConnectError.notInstalled(
-        "OpenClaw not found locally (looked for ~/.openclaw/openclaw.json). Install OpenClaw, then try again.")
+        "OpenClaw não encontrado neste Mac (procurei em ~/.openclaw/openclaw.json). Instale o OpenClaw e tente de novo.")
     }
     guard let cliPath = openClawCLIPath() else {
       throw ConnectError.notInstalled(
-        "OpenClaw CLI not found locally. Install OpenClaw or add the openclaw command to PATH, then try again.")
+        "CLI do OpenClaw não encontrada neste Mac. Instale o OpenClaw ou adicione o comando openclaw ao PATH e tente de novo.")
     }
     let workspace =
       openClawConfiguredWorkspace(configURL: config, cliPath: cliPath)
       ?? home.appendingPathComponent(".openclaw/workspace")
     guard fm.fileExists(atPath: workspace.path) else {
       throw ConnectError.notInstalled(
-        "OpenClaw workspace not found (looked for \(displayPath(for: workspace))). Run OpenClaw setup, then try again.")
+        "Workspace do OpenClaw não encontrado (procurei em \(displayPath(for: workspace))). Execute a configuração do OpenClaw e tente de novo.")
     }
 
     let alreadyWired = try ensureOpenClawMCPConfig(configURL: config, key: key, cliPath: cliPath)
@@ -349,10 +349,10 @@ enum MemoryBankConnector {
 
     if alreadyWired {
       return noteAdded
-        ? "OpenClaw is now connected."
-        : "OpenClaw is already connected."
+        ? "O OpenClaw agora está conectado."
+        : "O OpenClaw já está conectado."
     }
-    return "OpenClaw is now connected."
+    return "O OpenClaw agora está conectado."
   }
 
   private static func reloadOpenClawMCP(cliPath: String, configURL: URL) throws {
@@ -365,7 +365,7 @@ enum MemoryBankConnector {
     } catch {
       let message = sanitizeCommandError(error.localizedDescription)
       throw ConnectError.invalidConfig(
-        "OpenClaw MCP config was updated, but OpenClaw rejected MCP reload for \(displayPath(for: configURL)): \(message)"
+        "A configuração MCP do OpenClaw foi atualizada, mas o OpenClaw rejeitou o recarregamento do MCP em \(displayPath(for: configURL)): \(message)"
       )
     }
   }
@@ -412,7 +412,7 @@ enum MemoryBankConnector {
 
     let serverData = try JSONSerialization.data(withJSONObject: server, options: [.withoutEscapingSlashes])
     guard let serverJSON = String(data: serverData, encoding: .utf8) else {
-      throw ConnectError.invalidConfig("Could not serialize OpenClaw MCP server config.")
+      throw ConnectError.invalidConfig("Não foi possível serializar a configuração do servidor MCP do OpenClaw.")
     }
     do {
       _ = try runOpenClawCLI(
@@ -424,7 +424,7 @@ enum MemoryBankConnector {
     } catch {
       let message = sanitizeCommandError(error.localizedDescription)
       throw ConnectError.invalidConfig(
-        "OpenClaw rejected the connection update: \(message)")
+        "O OpenClaw rejeitou a atualização da conexão: \(message)")
     }
   }
 
@@ -690,7 +690,7 @@ enum MemoryBankConnector {
     let hermesDir = home.appendingPathComponent(".hermes")
     guard hermesInstallIsPresent(hermesDir: hermesDir, fileManager: fm) else {
       throw ConnectError.notInstalled(
-        "Hermes not found locally (looked for ~/.hermes/config.yaml and Hermes install files). Install Hermes, then try again."
+        "Hermes não encontrado neste Mac (procurei em ~/.hermes/config.yaml e nos arquivos de instalação do Hermes). Instale o Hermes e tente de novo."
       )
     }
 
@@ -710,10 +710,10 @@ enum MemoryBankConnector {
 
     if alreadyWired {
       return noteAdded
-        ? "Hermes is now connected."
-        : "Hermes is already connected."
+        ? "O Hermes agora está conectado."
+        : "O Hermes já está conectado."
     }
-    return "Hermes is now connected."
+    return "O Hermes agora está conectado."
   }
 
   private static func hermesInstallIsPresent(hermesDir: URL, fileManager fm: FileManager) -> Bool {
@@ -813,7 +813,7 @@ enum MemoryBankConnector {
 
     if lines.contains(where: { $0.trimmingCharacters(in: .whitespaces).hasPrefix("mcp_servers:") }) {
       throw ConnectError.invalidConfig(
-        "Hermes config has an indented mcp_servers section; expected top-level mcp_servers in \(displayPath(for: configURL))."
+        "A configuração do Hermes tem a seção mcp_servers indentada; esperava mcp_servers no nível raiz em \(displayPath(for: configURL))."
       )
     }
 

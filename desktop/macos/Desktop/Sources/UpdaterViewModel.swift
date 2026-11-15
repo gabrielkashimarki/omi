@@ -9,15 +9,15 @@ enum UpdateChannel: String, CaseIterable {
 
   var displayName: String {
     switch self {
-    case .stable: return "Stable"
+    case .stable: return "Estável"
     case .beta: return "Beta"
     }
   }
 
   var description: String {
     switch self {
-    case .stable: return "Recommended for most users"
-    case .beta: return "Early access to new features"
+    case .stable: return "Recomendado para a maioria dos usuários"
+    case .beta: return "Acesso antecipado a novos recursos"
     }
   }
 
@@ -79,32 +79,32 @@ struct UpdateFailureDiagnostics: Equatable, Sendable {
   var userMessage: String {
     if isRecoverableLaunchLocation {
       return
-        "Omi cannot update from its current location. Move it to Applications, reopen it, then check again."
+        "O Omi não consegue se atualizar a partir da pasta atual. Mova-o para Aplicativos, abra de novo e busque atualizações outra vez."
     }
 
     switch reason {
     case .appcastRetrieval:
       return
-        "Omi could not retrieve update information. You can try again or download the latest version manually."
+        "O Omi não conseguiu obter as informações de atualização. Tente de novo ou baixe a versão mais recente manualmente."
     case .download:
       return
-        "Omi found an update but could not download it. You can try again or download the latest version manually."
+        "O Omi encontrou uma atualização, mas não conseguiu baixá-la. Tente de novo ou baixe a versão mais recente manualmente."
     case .signature:
-      return "Omi could not verify the downloaded update. Download the latest version manually."
+      return "O Omi não conseguiu verificar a atualização baixada. Baixe a versão mais recente manualmente."
     case .network:
       return
-        "Omi could not reach the update server. Check your connection or download the latest version manually."
+        "O Omi não conseguiu acessar o servidor de atualizações. Verifique sua conexão ou baixe a versão mais recente manualmente."
     case .installerLaunch:
       return
-        "Omi downloaded an update but could not start the installer. Try again or download the latest version manually."
+        "O Omi baixou uma atualização, mas não conseguiu iniciar o instalador. Tente de novo ou baixe a versão mais recente manualmente."
     case .noUpdate:
-      return "Omi is up to date."
+      return "O Omi está atualizado."
     case .unknown:
       return
-        "Omi could not complete the update check. You can try again or download the latest version manually."
+        "O Omi não conseguiu concluir a busca por atualizações. Tente de novo ou baixe a versão mais recente manualmente."
     case .readOnlyLocation, .downloadsLocation, .temporaryLocation:
       return
-        "Omi cannot update from its current location. Move it to Applications, reopen it, then check again."
+        "O Omi não consegue se atualizar a partir da pasta atual. Mova-o para Aplicativos, abra de novo e busque atualizações outra vez."
     }
   }
 

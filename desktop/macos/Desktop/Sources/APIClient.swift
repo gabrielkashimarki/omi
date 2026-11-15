@@ -286,11 +286,11 @@ actor APIClient {
     guard !base.isEmpty else {
       throw CredentialHealthError.backendTransient(
         statusCode: nil,
-        message: "Desktop backend URL is not configured.")
+        message: "A URL do servidor do desktop não está configurada.")
     }
     let normalized = base.hasSuffix("/") ? base : base + "/"
     guard let url = URL(string: normalized + "v2/realtime/session") else {
-      throw CredentialHealthError.backendTransient(statusCode: nil, message: "Invalid desktop backend URL.")
+      throw CredentialHealthError.backendTransient(statusCode: nil, message: "URL do servidor do desktop inválida.")
     }
 
     let providerType = CredentialHealthManager.realtimeProvider(from: provider)
@@ -348,7 +348,7 @@ actor APIClient {
           authPolicy: authPolicy
         )
       else {
-        throw CredentialHealthError.requiresLogin(message: "Please sign in again to use voice responses.")
+        throw CredentialHealthError.requiresLogin(message: "Entre de novo para usar as respostas por voz.")
       }
       do {
         let token = try await performRealtimeMintRequest(
@@ -371,7 +371,7 @@ actor APIClient {
       await invalidateSessionAfterUnauthorized(
         endpoint: endpointLabel(for: request),
         signOutOn401: authPolicy.signOutOn401)
-      throw CredentialHealthError.requiresLogin(message: "Please sign in again to use voice responses.")
+      throw CredentialHealthError.requiresLogin(message: "Entre de novo para usar as respostas por voz.")
     }
 
     guard (200...299).contains(httpResponse.statusCode) else {
@@ -390,7 +390,7 @@ actor APIClient {
     let resp = try decoder.decode(Resp.self, from: data)
     guard !resp.token.isEmpty else {
       throw CredentialHealthError.backendTransient(
-        statusCode: httpResponse.statusCode, message: "Realtime token was empty.")
+        statusCode: httpResponse.statusCode, message: "O token de tempo real veio vazio.")
     }
     return resp.token
   }

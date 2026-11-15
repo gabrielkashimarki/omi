@@ -248,7 +248,7 @@ struct RemotePromptBar: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Dismiss prompt")
+        .accessibilityLabel("Dispensar aviso")
       }
       .padding(.horizontal, OmiSpacing.xl)
       .padding(.vertical, OmiSpacing.md)
@@ -284,7 +284,7 @@ struct RemotePromptBar: View {
             hoveredStar = star - 1
           }
         }
-        .accessibilityLabel("Answer \(star)")
+        .accessibilityLabel("Responder \(star)")
       }
     }
   }

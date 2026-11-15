@@ -328,21 +328,21 @@ enum APIError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .invalidResponse:
-      return "Invalid response from server"
+      return "Resposta do servidor inválida"
     case .unauthorized:
-      return "Unauthorized - please sign in again"
+      return "Não autorizado. Entre de novo."
     case .httpError(let statusCode, let detail):
       if let detail { return detail }
-      return "HTTP error: \(statusCode)"
+      return "Erro HTTP: \(statusCode)"
     case .decodingError(let error):
-      return "Failed to decode response: \(error.localizedDescription)"
+      return "Falha ao decodificar a resposta: \(error.localizedDescription)"
     case .unsupportedTierScopedBulkMutation(let operation):
       return "Layer-scoped bulk memory \(operation) is not supported yet."
     case .syncRateLimited(let retryAfterSeconds):
       if let retryAfterSeconds {
-        return "Sync rate limited (retry after \(retryAfterSeconds)s)"
+        return "Sincronização limitada (tente de novo em \(retryAfterSeconds)s)"
       }
-      return "Sync rate limited"
+      return "Sincronização limitada"
     case .syncUploadRejected(let reason):
       return reason
     case .accountCutoverOfflineQueueBlocked:

@@ -82,13 +82,13 @@ class TranscriptionService: @unchecked Sendable {
       case .missingBackendURL:
         return "Python backend URL not configured (OMI_PYTHON_API_URL or api.omi.me)"
       case .connectionFailed(let error):
-        return "Connection failed: \(error.localizedDescription)"
+        return "Falha na conexão: \(error.localizedDescription)"
       case .invalidResponse:
-        return "Invalid response from backend"
+        return "Resposta do servidor inválida"
       case .payloadTooLarge:
-        return "Recording too long — keep it under 5 minutes"
+        return "Gravação longa demais. Mantenha em menos de 5 minutos"
       case .webSocketError(let message):
-        return "WebSocket error: \(message)"
+        return "Erro de WebSocket: \(message)"
       }
     }
   }

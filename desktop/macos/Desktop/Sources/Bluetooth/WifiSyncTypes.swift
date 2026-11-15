@@ -79,7 +79,7 @@ struct WifiSyncSetupResult {
   static func timeout() -> WifiSyncSetupResult {
     WifiSyncSetupResult(
       success: false,
-      errorMessage: "Device did not respond - please try again"
+      errorMessage: "O dispositivo não respondeu. Tente de novo."
     )
   }
 
@@ -87,7 +87,7 @@ struct WifiSyncSetupResult {
   static func connectionFailed() -> WifiSyncSetupResult {
     WifiSyncSetupResult(
       success: false,
-      errorMessage: "Failed to communicate with device"
+      errorMessage: "Falha ao se comunicar com o dispositivo"
     )
   }
 }
@@ -124,15 +124,15 @@ struct WifiCredentialsValidator {
   /// Validates SSID and returns error message if invalid, nil if valid
   static func validateSsid(_ ssid: String) -> String? {
     if ssid.isEmpty {
-      return "Network name is required"
+      return "O nome da rede é obrigatório"
     }
     if ssid.count > maxSsidLength {
-      return "Network name must be at most \(maxSsidLength) characters"
+      return "O nome da rede deve ter no máximo \(maxSsidLength) caracteres"
     }
     // Check byte length (UTF-8 encoded)
     let byteLength = ssid.utf8.count
     if byteLength > maxSsidLength {
-      return "Network name is too long"
+      return "O nome da rede é longo demais"
     }
     return nil
   }
@@ -140,18 +140,18 @@ struct WifiCredentialsValidator {
   /// Validates password and returns error message if invalid, nil if valid
   static func validatePassword(_ password: String) -> String? {
     if password.isEmpty {
-      return "Password is required"
+      return "A senha é obrigatória"
     }
     if password.count < minPasswordLength {
-      return "Password must be at least \(minPasswordLength) characters"
+      return "A senha deve ter pelo menos \(minPasswordLength) caracteres"
     }
     if password.count > maxPasswordLength {
-      return "Password must be at most \(maxPasswordLength) characters"
+      return "A senha deve ter no máximo \(maxPasswordLength) caracteres"
     }
     // Check byte length (UTF-8 encoded)
     let byteLength = password.utf8.count
     if byteLength > maxPasswordLength {
-      return "Password is too long"
+      return "A senha é longa demais"
     }
     return nil
   }

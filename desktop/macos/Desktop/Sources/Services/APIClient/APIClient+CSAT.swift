@@ -26,10 +26,10 @@ struct CsatConfig: Codable, Equatable {
   /// PostHog kill switch still applies on top of it.
   static let fallback = CsatConfig(
     enabled: true,
-    title: "How would you rate Omi Desktop?",
+    title: "Como você avalia o Omi Desktop?",
     body: "",
-    thankYouText: "Thank you!",
-    referCtaText: "Enjoying Omi? Give a friend a free month.",
+    thankYouText: "Obrigado!",
+    referCtaText: "Gostando do Omi? Dê um mês grátis a um amigo.",
     questionThreshold: 3,
     commentMaxScore: 3,
     revision: 0

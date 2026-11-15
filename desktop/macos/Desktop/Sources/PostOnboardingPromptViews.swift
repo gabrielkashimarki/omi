@@ -76,7 +76,7 @@ struct TryAskingPopupView: View {
       HStack(spacing: OmiSpacing.sm) {
         Image(systemName: "checkmark.circle.fill")
           .font(.system(size: 11, weight: .semibold))
-        Text("You're set up")
+        Text("Tudo configurado")
           .font(.system(size: 12, weight: .semibold))
       }
       .foregroundColor(Ink.secondary)
@@ -87,7 +87,7 @@ struct TryAskingPopupView: View {
           .fill(Ink.rowFill)
       )
 
-      Text("How would you like to use Omi first?")
+      Text("Como você quer usar o Omi primeiro?")
         .inkStyle(.stepHeadline, color: Ink.primary)
         .fixedSize(horizontal: false, vertical: true)
 
@@ -103,19 +103,19 @@ struct TryAskingPopupView: View {
         Button {
           onTry(selected)
         } label: {
-          Text("Try it now")
+          Text("Testar agora")
         }
         .buttonStyle(OmiButtonStyle(.primary))
         .accessibilityIdentifier("first_use_popup_try")
 
-        Text("Opens \(selected.siteName).")
+        Text("Abre \(selected.siteName).")
           .font(.system(size: 12))
           .foregroundColor(Ink.secondary)
           .fixedSize(horizontal: false, vertical: true)
 
         if !openShortcutKeys.isEmpty {
           HStack(spacing: OmiSpacing.xs) {
-            Text("Bring me back anytime with")
+            Text("Me traga de volta quando quiser com")
               .font(.system(size: 12))
               .foregroundColor(Ink.secondary)
               .lineLimit(1)
@@ -218,11 +218,11 @@ struct PromptSuggestionBanner: View {
     VStack(alignment: .leading, spacing: OmiSpacing.md) {
       Button(action: onOpen) {
         VStack(alignment: .leading, spacing: OmiSpacing.md) {
-          Text("Next step → Ask Omi")
+          Text("Próximo passo → Perguntar ao Omi")
             .inkStyle(.firstTitle, color: bannerPrimaryText)
 
           Text(
-            "Use your real screen and your existing context to get value quickly. Tap to open a few suggested questions."
+            "Use sua tela real e o contexto que você já tem para ter valor rápido. Toque para abrir algumas perguntas sugeridas."
           )
           .font(.system(size: 14, weight: .medium))
           .foregroundColor(bannerSecondaryText)

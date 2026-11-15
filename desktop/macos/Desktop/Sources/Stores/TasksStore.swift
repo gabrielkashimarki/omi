@@ -3462,7 +3462,7 @@ class TasksStore: ObservableObject {
       if let updatedTask {
         replaceTaskInMemory(updatedTask, originalTask: task)
       } else if remoteFailureBehavior == .rollbackForChatFirst {
-        error = "Could not verify the task update locally."
+        error = "Não foi possível verificar a atualização da tarefa localmente."
         return .localWriteFailed
       }
     } catch {

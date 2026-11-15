@@ -8,9 +8,9 @@ extension APIClient {
     var errorDescription: String? {
       switch self {
       case .incompleteExport:
-        return "The export download did not finish completely. Please try again."
+        return "O download da exportação não foi concluído. Tente de novo."
       case .unexpectedContentType:
-        return "The export response was not valid JSON."
+        return "A resposta da exportação não era um JSON válido."
       }
     }
   }

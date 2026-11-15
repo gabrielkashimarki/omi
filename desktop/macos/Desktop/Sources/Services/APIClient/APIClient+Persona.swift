@@ -121,9 +121,9 @@ struct Persona: Codable, Identifiable {
   /// Status display text
   var statusText: String {
     switch status {
-    case "approved": return "Active"
-    case "under-review": return "Pending Review"
-    case "rejected": return "Rejected"
+    case "approved": return "Ativa"
+    case "under-review": return "Em análise"
+    case "rejected": return "Rejeitada"
     default: return status.capitalized
     }
   }

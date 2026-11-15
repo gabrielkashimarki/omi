@@ -119,8 +119,8 @@ final class CloudConnectorGuidanceOverlay {
       )
     else {
       presentInstructionCard(
-        title: "Finish in Claude",
-        subtitle: "Click \(actionLabel) in the connector window to continue.",
+        title: "Conclua no Claude",
+        subtitle: "Clique em \(actionLabel) na janela do conector para continuar.",
         near: windowFrame
       )
       return
@@ -407,11 +407,11 @@ final class CloudConnectorGuidanceOverlay {
   }
 
   static func dragInstructionText(appName: String) -> String {
-    "Drag \(appName) into the app list"
+    "Arraste o \(appName) para a lista de apps"
   }
 
   static func dragInstructionAccessibilityText(appName: String) -> String {
-    "Press and drag \(appName) into the privacy permission app list, then release"
+    "Pressione e arraste o \(appName) para a lista de apps de permissão de privacidade e solte"
   }
 
   static func dragToGrantAutomationState(
@@ -765,7 +765,7 @@ private struct CloudConnectorCardHeaderView: View {
 
       Spacer(minLength: 0)
 
-      DismissButton(action: onDismiss, accessibilityLabel: "Dismiss", size: .compact)
+      DismissButton(action: onDismiss, accessibilityLabel: "Dispensar", size: .compact)
     }
   }
 }
@@ -1131,8 +1131,8 @@ private struct CloudConnectorFieldCopyCardView: View {
       .contentShape(Capsule())
     }
     .buttonStyle(.plain)
-    .help(copiedFieldID == field.id ? "Copied \(field.label)" : "Copy \(field.label)")
-    .accessibilityLabel(copiedFieldID == field.id ? "Copied \(field.label)" : "Copy \(field.label)")
+    .help(copiedFieldID == field.id ? "Copiado: \(field.label)" : "Copiar \(field.label)")
+    .accessibilityLabel(copiedFieldID == field.id ? "Copiado: \(field.label)" : "Copiar \(field.label)")
   }
 
   private func copy(_ field: CloudConnectorCopyField) {
@@ -1206,10 +1206,10 @@ private struct CloudConnectorGuidanceView: View {
       SpatialOverlayAccentIcon(systemName: arrowIcon, diameter: 34)
 
       VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-        Text("Finish in Claude")
+        Text("Conclua no Claude")
           .scaledFont(size: OmiType.body, weight: .semibold)
           .foregroundColor(Ink.primary)
-        Text("Click the \(actionLabel) button.")
+        Text("Clique no botão \(actionLabel).")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
       }

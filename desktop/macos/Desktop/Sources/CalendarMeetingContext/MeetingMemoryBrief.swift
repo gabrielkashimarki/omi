@@ -42,9 +42,9 @@ struct MeetingMemoryBriefFact: Equatable, Identifiable {
 
     var label: String {
       switch self {
-      case .decision: return "Decided"
-      case .followUp: return "Last recorded follow-up"
-      case .openQuestion: return "Open question last time"
+      case .decision: return "Decidido"
+      case .followUp: return "Último acompanhamento registrado"
+      case .openQuestion: return "Pergunta em aberto da última vez"
       }
     }
   }
@@ -321,6 +321,6 @@ enum MeetingFollowUpDraftComposer {
 
     let bulletList = actions.map { "- \($0)" }.joined(separator: "\n")
     return
-      "Thanks for the conversation. Here are the follow-ups I noted:\n\n\(bulletList)\n\nPlease let me know if I missed anything."
+      "Obrigado pela conversa. Estes são os próximos passos que anotei:\n\n\(bulletList)\n\nMe avise se esqueci de algo."
   }
 }

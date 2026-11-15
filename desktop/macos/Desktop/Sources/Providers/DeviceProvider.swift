@@ -278,7 +278,7 @@ final class DeviceProvider: ObservableObject {
     initializeBluetoothBindingsIfNeeded()
 
     guard bluetoothState == .poweredOn else {
-      errorMessage = "Bluetooth is not available"
+      errorMessage = "Bluetooth indisponível"
       return
     }
 
@@ -344,7 +344,7 @@ final class DeviceProvider: ObservableObject {
       logger.debug("Connection attempt for \(device.displayName) was superseded")
     } catch {
       logger.error("Failed to connect to \(device.displayName): \(error.localizedDescription)")
-      errorMessage = "Failed to connect: \(error.localizedDescription)"
+      errorMessage = "Falha ao conectar: \(error.localizedDescription)"
     }
   }
 
@@ -451,8 +451,8 @@ final class DeviceProvider: ObservableObject {
 
     // Send low battery notification
     let content = UNMutableNotificationContent()
-    content.title = "Low Battery Alert"
-    content.body = "Your Omi device is running low on battery. Time for a recharge! 🔋"
+    content.title = "Alerta de bateria fraca"
+    content.body = "A bateria do seu dispositivo Omi está acabando. Hora de recarregar! 🔋"
     content.sound = .default
 
     let request = UNNotificationRequest(
@@ -552,8 +552,8 @@ final class DeviceProvider: ObservableObject {
 
   private func sendDisconnectNotification() {
     let content = UNMutableNotificationContent()
-    content.title = "Your Omi Device Disconnected"
-    content.body = "Please reconnect to continue using your Omi."
+    content.title = "Seu dispositivo Omi foi desconectado"
+    content.body = "Reconecte para continuar usando o Omi."
     content.sound = .default
 
     let request = UNNotificationRequest(
@@ -569,8 +569,8 @@ final class DeviceProvider: ObservableObject {
     logger.warning("Fall detected! Magnitude: \(data.magnitude)")
 
     let content = UNMutableNotificationContent()
-    content.title = "Fall Detected"
-    content.body = "A potential fall was detected by your Omi device."
+    content.title = "Queda detectada"
+    content.body = "Seu dispositivo Omi detectou uma possível queda."
     content.sound = .default
 
     let request = UNNotificationRequest(

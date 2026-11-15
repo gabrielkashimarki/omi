@@ -52,20 +52,20 @@ enum CalendarReaderError: LocalizedError, Equatable {
   var errorDescription: String? {
     switch self {
     case .noBrowserFound:
-      return "No supported browser found. Open Google Calendar in Chrome, Arc, Brave, or Edge, then try again."
+      return "Nenhum navegador compatível encontrado. Abra o Google Agenda no Chrome, Arc, Brave ou Edge e tente de novo."
     case .notSignedIn:
       return
-        "Not signed into Google in any browser. Open calendar.google.com in Chrome, Arc, Brave, or Edge, sign in, then try again."
+        "Você não está conectado ao Google em nenhum navegador. Abra calendar.google.com no Chrome, Arc, Brave ou Edge, entre na conta e tente de novo."
     case .sessionExpired:
-      return "Your Google session expired. Reload calendar.google.com in your browser to refresh it, then try again."
+      return "Sua sessão do Google expirou. Recarregue calendar.google.com no navegador para renová-la e tente de novo."
     case .cookieDecryptionFailed(let msg):
-      return "Couldn't read your browser session: \(msg)"
+      return "Não foi possível ler a sessão do seu navegador: \(msg)"
     case .networkError(let msg):
-      return "Couldn't reach Google Calendar: \(msg)"
+      return "Não foi possível acessar o Google Agenda: \(msg)"
     case .configurationError(let msg):
-      return "Couldn't use Google Calendar: \(msg)"
+      return "Não foi possível usar o Google Agenda: \(msg)"
     case .pythonNotFound:
-      return "Python 3 not found. Install it via Homebrew: brew install python3"
+      return "Python 3 não encontrado. Instale pelo Homebrew: brew install python3"
     }
   }
 }
@@ -320,11 +320,11 @@ actor CalendarReaderService {
     } catch let error as CalendarReaderError {
       switch error {
       case .notSignedIn, .noBrowserFound:
-        return .needsSignIn(message: error.errorDescription ?? "Sign into Google to connect.")
+        return .needsSignIn(message: error.errorDescription ?? "Entre no Google para conectar.")
       case .sessionExpired:
-        return .needsSignIn(message: error.errorDescription ?? "Your Google session expired.")
+        return .needsSignIn(message: error.errorDescription ?? "Sua sessão do Google expirou.")
       default:
-        return .error(message: error.errorDescription ?? "Couldn't verify the connection.")
+        return .error(message: error.errorDescription ?? "Não foi possível verificar a conexão.")
       }
     } catch {
       return .error(message: error.localizedDescription)

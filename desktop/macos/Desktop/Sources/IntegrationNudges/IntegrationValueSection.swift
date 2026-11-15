@@ -14,7 +14,7 @@ struct IntegrationValueSection: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      Text("What you get")
+      Text("O que você ganha")
         .scaledFont(size: OmiType.caption, weight: .semibold)
         .foregroundColor(Ink.secondary)
         .textCase(.uppercase)

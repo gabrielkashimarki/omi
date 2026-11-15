@@ -436,7 +436,7 @@ extension APIClient {
       if detail?.hasPrefix("OpenAI TTS request failed:") == true {
         throw CredentialHealthError.providerQuota(
           provider: .openai,
-          message: "OpenAI voice quota was exceeded. Voice responses are using fallback."
+          message: "A cota de voz da OpenAI foi excedida. As respostas por voz estão usando a alternativa."
         )
       }
       throw APIError.httpError(statusCode: httpResponse.statusCode, detail: detail)
@@ -501,7 +501,7 @@ extension APIClient {
             if detail?.hasPrefix("OpenAI TTS request failed:") == true {
               throw CredentialHealthError.providerQuota(
                 provider: .openai,
-                message: "OpenAI voice quota was exceeded. Voice responses are using fallback."
+                message: "A cota de voz da OpenAI foi excedida. As respostas por voz estão usando a alternativa."
               )
             }
             throw APIError.httpError(statusCode: httpResponse.statusCode, detail: detail)

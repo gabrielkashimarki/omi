@@ -159,13 +159,13 @@ enum IntegrationNudgeCatalog {
       route: .importConnector("calendar"),
       displayName: "Google Calendar",
       brand: .calendar,
-      pitch: "Omi can see your meetings before they happen, and remember what came out of them.",
+      pitch: "O Omi vê suas reuniões antes de acontecerem e lembra do que saiu delas.",
       useCases: [
-        "Walk into a call already briefed on who you're meeting and what you last discussed.",
-        "Ask \"what did I agree to in Monday's standup?\" and get the answer with the meeting attached.",
-        "Omi sees your real meetings and plans around them.",
+        "Entre numa chamada já sabendo com quem vai falar e o que discutiram da última vez.",
+        "Pergunte \"o que combinei na daily de segunda?\" e receba a resposta com a reunião anexada.",
+        "O Omi enxerga suas reuniões reais e se organiza em torno delas.",
       ],
-      dataScope: "Reads event titles, times, and attendees from your calendar.",
+      dataScope: "Lê títulos, horários e participantes dos eventos da sua agenda.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "calendar_app",
@@ -182,13 +182,13 @@ enum IntegrationNudgeCatalog {
       route: .importConnector("email"),
       displayName: "Gmail",
       brand: .gmail,
-      pitch: "Omi can read your inbox, so it knows what you owe people and what they owe you.",
+      pitch: "O Omi pode ler sua caixa de entrada e saber o que você deve às pessoas e o que elas devem a você.",
       useCases: [
-        "Ask \"what am I waiting on from Sarah?\" and get the thread, not a search box.",
-        "Surface follow-ups you promised in an email and never wrote down anywhere else.",
-        "Give Omi the history behind a name so a new thread doesn't start from zero.",
+        "Pergunte \"o que estou esperando da Sarah?\" e receba a conversa, não uma caixa de busca.",
+        "Traga à tona acompanhamentos que você prometeu num e-mail e nunca anotou em outro lugar.",
+        "Dê ao Omi o histórico por trás de um nome para que uma nova conversa não comece do zero.",
       ],
-      dataScope: "Reads your Gmail messages. Omi never sends mail on your behalf.",
+      dataScope: "Lê suas mensagens do Gmail. O Omi nunca envia e-mails em seu nome.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "gmail_web",
@@ -207,15 +207,15 @@ enum IntegrationNudgeCatalog {
 
     IntegrationNudgeCatalogEntry(
       route: .importConnector("local-files"),
-      displayName: "Local Files",
+      displayName: "Arquivos locais",
       brand: .localFiles,
-      pitch: "Omi can index the documents and code you actually work in, without any of it leaving your Mac.",
+      pitch: "O Omi pode indexar os documentos e o código em que você realmente trabalha, sem que nada saia do seu Mac.",
       useCases: [
-        "Find a spec or contract by what it said, not by where you filed it.",
-        "Get answers that cite your own files instead of guessing at them.",
-        "Keep the whole index on-device — nothing is uploaded.",
+        "Encontre uma especificação ou um contrato pelo que ele dizia, não pelo lugar onde você o guardou.",
+        "Receba respostas que citam seus próprios arquivos em vez de adivinhar.",
+        "Mantenha todo o índice no dispositivo: nada é enviado.",
       ],
-      dataScope: "Indexes the folders you pick, on-device.",
+      dataScope: "Indexa as pastas que você escolher, no dispositivo.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "finder",
@@ -228,13 +228,13 @@ enum IntegrationNudgeCatalog {
       route: .importConnector("apple-notes"),
       displayName: "Apple Notes",
       brand: .appleNotes,
-      pitch: "Omi can search your Apple Notes.",
+      pitch: "O Omi pode buscar nas suas notas do Apple Notes.",
       useCases: [
-        "Find a note by describing it, even without the exact words.",
-        "Let Omi connect something you wrote in March to the conversation you're having today.",
-        "Stop re-explaining context you already captured once.",
+        "Encontre uma nota descrevendo-a, mesmo sem as palavras exatas.",
+        "Deixe o Omi ligar algo que você escreveu em março à conversa que você está tendo hoje.",
+        "Pare de explicar de novo um contexto que você já registrou uma vez.",
       ],
-      dataScope: "Reads the text of your local Apple Notes.",
+      dataScope: "Lê o texto das suas notas locais do Apple Notes.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "apple_notes_app",
@@ -247,13 +247,13 @@ enum IntegrationNudgeCatalog {
       route: .importConnector("x"),
       displayName: "X",
       brand: .x,
-      pitch: "Omi can learn from what you post, bookmark, and like on X.",
+      pitch: "O Omi pode aprender com o que você posta, salva e curte no X.",
       useCases: [
-        "Ask \"what was that thread I bookmarked about pricing?\" and get it back.",
-        "Turn a year of bookmarks into something you can actually search.",
-        "Let Omi use what you've publicly said as context for how you think.",
+        "Pergunte \"qual era aquele thread que salvei sobre preços?\" e receba de volta.",
+        "Transforme um ano de itens salvos em algo em que você consegue buscar.",
+        "Deixe o Omi usar o que você já disse publicamente como contexto de como você pensa.",
       ],
-      dataScope: "Reads your own posts, bookmarks, and likes.",
+      dataScope: "Lê seus próprios posts, itens salvos e curtidas.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "x_web",
@@ -271,13 +271,13 @@ enum IntegrationNudgeCatalog {
       route: .importConnector("chatgpt"),
       displayName: "ChatGPT",
       brand: .chatgpt,
-      pitch: "Bring what ChatGPT already knows about you into Omi.",
+      pitch: "Traga para o Omi o que o ChatGPT já sabe sobre você.",
       useCases: [
-        "Start Omi with the preferences and history you spent a year teaching ChatGPT.",
-        "Keep one memory instead of splitting it across two apps.",
-        "Import once. Omi adds new memories from your conversations after that.",
+        "Comece o Omi com as preferências e o histórico que você passou um ano ensinando ao ChatGPT.",
+        "Mantenha uma só memória em vez de dividi-la entre dois apps.",
+        "Importe uma vez. Depois disso, o Omi adiciona novas memórias das suas conversas.",
       ],
-      dataScope: "You paste a ChatGPT memory export. Omi never signs in to your ChatGPT account.",
+      dataScope: "Você cola uma exportação de memória do ChatGPT. O Omi nunca entra na sua conta do ChatGPT.",
       triggers: []
     ),
 
@@ -285,13 +285,13 @@ enum IntegrationNudgeCatalog {
       route: .importConnector("claude"),
       displayName: "Claude",
       brand: .claude,
-      pitch: "Bring what Claude already knows about you into Omi.",
+      pitch: "Traga para o Omi o que o Claude já sabe sobre você.",
       useCases: [
-        "Start Omi with the context you've already built up in Claude.",
-        "Keep one memory instead of splitting it across two apps.",
-        "Import once. Omi adds new memories from your conversations after that.",
+        "Comece o Omi com o contexto que você já construiu no Claude.",
+        "Mantenha uma só memória em vez de dividi-la entre dois apps.",
+        "Importe uma vez. Depois disso, o Omi adiciona novas memórias das suas conversas.",
       ],
-      dataScope: "You paste a Claude memory export. Omi never signs in to your Claude account.",
+      dataScope: "Você cola uma exportação de memória do Claude. O Omi nunca entra na sua conta do Claude.",
       triggers: []
     ),
 
@@ -301,13 +301,13 @@ enum IntegrationNudgeCatalog {
       route: .exportDestination("chatgpt"),
       displayName: "ChatGPT",
       brand: .chatgpt,
-      pitch: "Give ChatGPT everything Omi remembers about you.",
+      pitch: "Dê ao ChatGPT tudo o que o Omi lembra sobre você.",
       useCases: [
-        "Open a new ChatGPT conversation that already knows your projects and people.",
-        "Stop pasting the same paragraph of background into every chat.",
-        "Ask ChatGPT about something you said out loud last week.",
+        "Abra uma nova conversa no ChatGPT que já conhece seus projetos e suas pessoas.",
+        "Pare de colar o mesmo parágrafo de contexto em todo chat.",
+        "Pergunte ao ChatGPT sobre algo que você disse em voz alta na semana passada.",
       ],
-      dataScope: "Lets ChatGPT query your Omi memories and conversations. Revocable any time.",
+      dataScope: "Permite que o ChatGPT consulte suas memórias e conversas do Omi. Revogável a qualquer momento.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "chatgpt_app",
@@ -324,13 +324,13 @@ enum IntegrationNudgeCatalog {
       route: .exportDestination("claude"),
       displayName: "Claude",
       brand: .claude,
-      pitch: "Give Claude everything Omi remembers about you.",
+      pitch: "Dê ao Claude tudo o que o Omi lembra sobre você.",
       useCases: [
-        "Start a Claude conversation that already has your context loaded.",
-        "Ask Claude to draft something in your voice, from your own history.",
-        "Skip the re-briefing at the start of every new chat.",
+        "Comece uma conversa no Claude que já tem seu contexto carregado.",
+        "Peça ao Claude para redigir algo no seu estilo, a partir do seu próprio histórico.",
+        "Pule o novo briefing no início de cada chat.",
       ],
-      dataScope: "Lets Claude query your Omi memories and conversations. Revocable any time.",
+      dataScope: "Permite que o Claude consulte suas memórias e conversas do Omi. Revogável a qualquer momento.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "claude_app",
@@ -347,13 +347,13 @@ enum IntegrationNudgeCatalog {
       route: .exportDestination("gemini"),
       displayName: "Gemini",
       brand: .gemini,
-      pitch: "Give Gemini everything Omi remembers about you.",
+      pitch: "Dê ao Gemini tudo o que o Omi lembra sobre você.",
       useCases: [
-        "Ask Gemini about your own week, not just the public internet.",
-        "Carry your Omi context into Google's tools without copy-pasting it.",
-        "Keep one memory across the assistants you actually use.",
+        "Pergunte ao Gemini sobre a sua semana, não só sobre a internet pública.",
+        "Leve seu contexto do Omi para as ferramentas do Google sem copiar e colar.",
+        "Mantenha uma só memória entre os assistentes que você realmente usa.",
       ],
-      dataScope: "Lets Gemini query your Omi memories and conversations. Revocable any time.",
+      dataScope: "Permite que o Gemini consulte suas memórias e conversas do Omi. Revogável a qualquer momento.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "gemini_web",
@@ -366,13 +366,13 @@ enum IntegrationNudgeCatalog {
       route: .exportDestination("notion"),
       displayName: "Notion",
       brand: .notion,
-      pitch: "Omi can write what it learns into the Notion workspace you already keep.",
+      pitch: "O Omi pode escrever o que aprende no workspace do Notion que você já mantém.",
       useCases: [
-        "Land meeting notes and takeaways where your team already looks for them.",
-        "Stop re-typing decisions from a conversation into a doc.",
-        "Keep one workspace as the record instead of two half-records.",
+        "Leve notas e conclusões de reuniões para onde sua equipe já procura.",
+        "Pare de redigitar num documento as decisões de uma conversa.",
+        "Mantenha um workspace como registro em vez de dois registros pela metade.",
       ],
-      dataScope: "Writes Omi memories into the Notion workspace you authorize.",
+      dataScope: "Grava memórias do Omi no workspace do Notion que você autorizar.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "notion_app",
@@ -385,13 +385,13 @@ enum IntegrationNudgeCatalog {
       route: .exportDestination("obsidian"),
       displayName: "Obsidian",
       brand: .obsidian,
-      pitch: "Omi can drop what it learns straight into your Obsidian vault.",
+      pitch: "O Omi pode colocar o que aprende direto no seu cofre do Obsidian.",
       useCases: [
-        "Get conversations and memories as notes in the vault you already link from.",
-        "Keep everything local and plain-text, the way the vault already is.",
-        "Let your daily notes fill themselves in from what you actually did.",
+        "Receba conversas e memórias como notas no cofre a partir do qual você já faz links.",
+        "Mantenha tudo local e em texto simples, como o cofre já é.",
+        "Deixe suas notas diárias se preencherem sozinhas com o que você realmente fez.",
       ],
-      dataScope: "Writes Omi memories into the vault folder you choose, on-device.",
+      dataScope: "Grava memórias do Omi na pasta do cofre que você escolher, no dispositivo.",
       triggers: [
         IntegrationNudgeTrigger(
           id: "obsidian_app",
@@ -409,13 +409,13 @@ enum IntegrationNudgeCatalog {
       route: .exportDestination("claudeCode"),
       displayName: "Claude Code",
       brand: .claudeCode,
-      pitch: "Give Claude Code your Omi memory, so it codes with your context.",
+      pitch: "Dê ao Claude Code sua memória do Omi, para ele programar com o seu contexto.",
       useCases: [
-        "Let the agent read decisions you made out loud, not just what's in the repo.",
-        "Skip explaining the same project background at the start of every session.",
-        "Keep one memory across your editor and your assistant.",
+        "Deixe o agente ler decisões que você tomou em voz alta, não só o que está no repositório.",
+        "Pule a explicação do mesmo contexto do projeto no início de cada sessão.",
+        "Mantenha uma só memória entre seu editor e seu assistente.",
       ],
-      dataScope: "Adds Omi as an MCP server in your Claude Code config.",
+      dataScope: "Adiciona o Omi como servidor MCP na configuração do Claude Code.",
       triggers: []
     ),
 
@@ -423,13 +423,13 @@ enum IntegrationNudgeCatalog {
       route: .exportDestination("codex"),
       displayName: "Codex",
       brand: .codex,
-      pitch: "Give Codex your Omi memory, so it codes with your context.",
+      pitch: "Dê ao Codex sua memória do Omi, para ele programar com o seu contexto.",
       useCases: [
-        "Let the agent read decisions you made out loud, not just what's in the repo.",
-        "Skip re-describing the project at the start of every session.",
-        "Keep one memory across your editor and your assistant.",
+        "Deixe o agente ler decisões que você tomou em voz alta, não só o que está no repositório.",
+        "Pule a descrição do projeto no início de cada sessão.",
+        "Mantenha uma só memória entre seu editor e seu assistente.",
       ],
-      dataScope: "Adds Omi as an MCP server in your Codex config.",
+      dataScope: "Adiciona o Omi como servidor MCP na configuração do Codex.",
       triggers: []
     ),
 
@@ -437,13 +437,13 @@ enum IntegrationNudgeCatalog {
       route: .exportDestination("openclaw"),
       displayName: "OpenClaw",
       brand: .openclaw,
-      pitch: "Give OpenClaw your Omi memory, so its agents work from your context.",
+      pitch: "Dê ao OpenClaw sua memória do Omi, para os agentes dele trabalharem com o seu contexto.",
       useCases: [
-        "Its agents start with what Omi already knows about you.",
-        "Hand off work without writing a brief first.",
-        "Keep one memory across every agent you run.",
+        "Os agentes dele começam com o que o Omi já sabe sobre você.",
+        "Passe trabalho adiante sem precisar escrever um briefing antes.",
+        "Mantenha uma só memória entre todos os agentes que você usa.",
       ],
-      dataScope: "Adds Omi as an MCP server in your OpenClaw config.",
+      dataScope: "Adiciona o Omi como servidor MCP na configuração do OpenClaw.",
       triggers: []
     ),
 
@@ -451,27 +451,27 @@ enum IntegrationNudgeCatalog {
       route: .exportDestination("hermes"),
       displayName: "Hermes",
       brand: .hermes,
-      pitch: "Give Hermes your Omi memory, so its agents work from your context.",
+      pitch: "Dê ao Hermes sua memória do Omi, para os agentes dele trabalharem com o seu contexto.",
       useCases: [
-        "Its agents start with what Omi already knows about you.",
-        "Hand off work without writing a brief first.",
-        "Keep one memory across every agent you run.",
+        "Os agentes dele começam com o que o Omi já sabe sobre você.",
+        "Passe trabalho adiante sem precisar escrever um briefing antes.",
+        "Mantenha uma só memória entre todos os agentes que você usa.",
       ],
-      dataScope: "Adds Omi as an MCP server in your Hermes config.",
+      dataScope: "Adiciona o Omi como servidor MCP na configuração do Hermes.",
       triggers: []
     ),
 
     IntegrationNudgeCatalogEntry(
       route: .exportDestination("agents"),
-      displayName: "Agents",
+      displayName: "Agentes",
       brand: .agents,
-      pitch: "Give your own agents the same memory Omi has.",
+      pitch: "Dê aos seus próprios agentes a mesma memória que o Omi tem.",
       useCases: [
-        "Connect any MCP-compatible agent to your Omi memory.",
-        "Agents start from your history instead of from scratch.",
-        "Revoke access from one place when you're done.",
+        "Conecte qualquer agente compatível com MCP à sua memória do Omi.",
+        "Os agentes partem do seu histórico em vez de começar do zero.",
+        "Revogue o acesso em um só lugar quando terminar.",
       ],
-      dataScope: "Exposes your Omi memory over MCP to the agent you authorize.",
+      dataScope: "Expõe sua memória do Omi via MCP ao agente que você autorizar.",
       triggers: []
     ),
   ]

@@ -24,7 +24,7 @@ struct AIProvider: Identifiable {
   static let piMono = AIProvider(
     id: "piMono",
     displayName: "Omi AI",
-    tagline: "Built-in AI assistant (built with pi.dev)",
+    tagline: "Assistente de IA integrado (feito com pi.dev)",
     attributionURL: nil,
     sfSymbol: "",
     logoResource: nil,
@@ -34,7 +34,7 @@ struct AIProvider: Identifiable {
   static let claude = AIProvider(
     id: "claude",
     displayName: "Claude",
-    tagline: "Your Claude Pro/Max subscription",
+    tagline: "Sua assinatura Claude Pro/Max",
     attributionURL: URL(string: "https://claude.ai"),
     sfSymbol: "",
     logoResource: nil,
@@ -44,7 +44,7 @@ struct AIProvider: Identifiable {
   static let hermes = AIProvider(
     id: "hermes",
     displayName: "Hermes",
-    tagline: "Local Hermes Agent via ACP",
+    tagline: "Agente Hermes local via ACP",
     attributionURL: nil,
     sfSymbol: "",
     logoResource: "hermes_logo",
@@ -54,7 +54,7 @@ struct AIProvider: Identifiable {
   static let openClaw = AIProvider(
     id: "openclaw",
     displayName: "OpenClaw",
-    tagline: "Local OpenClaw agent",
+    tagline: "Agente OpenClaw local",
     attributionURL: nil,
     sfSymbol: "",
     logoResource: "openclaw_logo",

@@ -26,9 +26,9 @@ enum ConversationProcessingProgress {
   static let derivedSettleGrace: TimeInterval = 45
 
   /// First-run title-pass failure is recoverable, not a prior retry.
-  static let untitledRecoverableBadgeText = "Title didn't generate"
+  static let untitledRecoverableBadgeText = "Título não gerado"
   static let untitledRecoverableBadgeHelp =
-    "The transcript was saved, but Omi couldn't write a title. Try Reprocess."
+    "A transcrição foi salva, mas o Omi não conseguiu escrever um título. Tente Reprocessar."
 
   /// Whether the row should show "Adding memories & tasks…" after status
   /// flips to completed. Requires a real title — a completed untitled row

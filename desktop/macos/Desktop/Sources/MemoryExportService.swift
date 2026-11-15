@@ -198,7 +198,7 @@ actor MemoryExportService {
 
     for grant in activeGrants {
       guard let grantID = grant.id, !grantID.isEmpty else {
-        throw MemoryExportError.requestFailed("Omi could not identify the (destination.title) authorization.")
+        throw MemoryExportError.requestFailed("O Omi não conseguiu identificar a autorização de (destination.title).")
       }
       let escapedGrantID = grantID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? grantID
       try await apiClient.delete(
@@ -280,7 +280,7 @@ actor MemoryExportService {
     let key = try await createMCPKey()
     guard currentAuthUserId() == ownerUserId else {
       throw MemoryExportError.requestFailed(
-        "Signed-in Omi account changed while preparing the connection key.")
+        "A conta do Omi conectada mudou durante a preparação da chave de conexão.")
     }
     storeMCPKey(key, ownerUserId: ownerUserId)
     return key
@@ -295,7 +295,7 @@ actor MemoryExportService {
       let key = try await task.value
       guard currentAuthUserId() == ownerUserId else {
         throw MemoryExportError.requestFailed(
-          "Signed-in Omi account changed while preparing the connection key.")
+          "A conta do Omi conectada mudou durante a preparação da chave de conexão.")
       }
       storeMCPKey(key, ownerUserId: ownerUserId)
       if mcpKeyCreationTask?.id == id {
@@ -318,7 +318,7 @@ actor MemoryExportService {
 
   private func requireCurrentAuthUserId() throws -> String {
     guard let userId = currentAuthUserId() else {
-      throw MemoryExportError.requestFailed("Sign in to Omi before creating a connection key.")
+      throw MemoryExportError.requestFailed("Entre no Omi antes de criar uma chave de conexão.")
     }
     return userId
   }
@@ -370,7 +370,7 @@ actor MemoryExportService {
 
   private func testHostedMCPMemoryCount(key: String) async throws -> Int {
     guard let url = URL(string: MemoryExportDestination.mcpServerURL) else {
-      throw MemoryExportError.requestFailed("Hosted MCP URL is invalid.")
+      throw MemoryExportError.requestFailed("A URL do MCP hospedado é inválida.")
     }
 
     let requestBody: [String: Any] = [
@@ -391,7 +391,7 @@ actor MemoryExportService {
 
     let (data, response) = try await URLSession.shared.data(for: request)
     guard let httpResponse = response as? HTTPURLResponse else {
-      throw MemoryExportError.requestFailed("Hosted MCP returned an invalid response.")
+      throw MemoryExportError.requestFailed("O MCP hospedado devolveu uma resposta inválida.")
     }
     return try Self.parseHostedMCPMemoryCount(data: data, statusCode: httpResponse.statusCode)
   }
@@ -402,23 +402,23 @@ actor MemoryExportService {
   /// serialized ``{"error": ...}`` text block as the fallback.
   static func parseHostedMCPMemoryCount(data: Data, statusCode: Int) throws -> Int {
     guard (200...299).contains(statusCode) else {
-      throw MemoryExportError.requestFailed("Hosted MCP returned HTTP \(statusCode).")
+      throw MemoryExportError.requestFailed("O MCP hospedado devolveu HTTP \(statusCode).")
     }
 
     let rpc = try JSONSerialization.jsonObject(with: data) as? [String: Any]
     if let error = rpc?["error"] as? [String: Any],
       let message = error["message"] as? String
     {
-      throw MemoryExportError.requestFailed("Hosted MCP failed: \(message)")
+      throw MemoryExportError.requestFailed("Falha no MCP hospedado: \(message)")
     }
     guard let result = rpc?["result"] as? [String: Any] else {
-      throw MemoryExportError.requestFailed("Hosted MCP did not return memory data.")
+      throw MemoryExportError.requestFailed("O MCP hospedado não devolveu dados de memória.")
     }
     let content = result["content"] as? [[String: Any]]
     let text = content?.first?["text"] as? String
     if result["isError"] as? Bool == true {
       throw MemoryExportError.requestFailed(
-        "Hosted MCP failed: \(hostedMCPToolErrorMessage(result: result, text: text))")
+        "Falha no MCP hospedado: \(hostedMCPToolErrorMessage(result: result, text: text))")
     }
     guard
       let text,
@@ -426,7 +426,7 @@ actor MemoryExportService {
       let payload = try JSONSerialization.jsonObject(with: textData) as? [String: Any],
       let memories = payload["memories"] as? [Any]
     else {
-      throw MemoryExportError.requestFailed("Hosted MCP did not return memory data.")
+      throw MemoryExportError.requestFailed("O MCP hospedado não devolveu dados de memória.")
     }
 
     return memories.count
@@ -455,7 +455,7 @@ actor MemoryExportService {
 
   private func testLocalAgentToolCount(token: String) async throws -> Int {
     guard let url = URL(string: "\(LocalAgentAPISettings.serverURL)/v1/local/tools") else {
-      throw MemoryExportError.requestFailed("Local Omi Desktop URL is invalid.")
+      throw MemoryExportError.requestFailed("A URL do Omi Desktop local é inválida.")
     }
 
     var request = URLRequest(url: url)
@@ -464,18 +464,18 @@ actor MemoryExportService {
 
     let (data, response) = try await URLSession.shared.data(for: request)
     guard let httpResponse = response as? HTTPURLResponse else {
-      throw MemoryExportError.requestFailed("Local Omi Desktop returned an invalid response.")
+      throw MemoryExportError.requestFailed("O Omi Desktop local devolveu uma resposta inválida.")
     }
     guard (200...299).contains(httpResponse.statusCode) else {
       throw MemoryExportError.requestFailed(
-        "Local Omi Desktop returned HTTP \(httpResponse.statusCode).")
+        "O Omi Desktop local devolveu HTTP \(httpResponse.statusCode).")
     }
 
     guard
       let payload = try JSONSerialization.jsonObject(with: data) as? [String: Any],
       let tools = payload["tools"] as? [Any]
     else {
-      throw MemoryExportError.requestFailed("Local Omi Desktop did not return tools.")
+      throw MemoryExportError.requestFailed("O Omi Desktop local não devolveu ferramentas.")
     }
 
     return tools.count
@@ -553,7 +553,7 @@ actor MemoryExportService {
     defaults.set(sanitizedToken, forKey: MemoryExportDestination.notion.notionTokenKey)
     defaults.set(sanitizedParentPageID, forKey: MemoryExportDestination.notion.notionParentPageKey)
 
-    let detail = "Exported to Notion"
+    let detail = "Exportado para o Notion"
     persistStatus(
       destination: .notion,
       exportedCount: memories.count,
@@ -590,7 +590,7 @@ actor MemoryExportService {
 
     defaults.set(path, forKey: MemoryExportDestination.obsidian.obsidianVaultPathKey)
 
-    let detail = "Updated Obsidian vault"
+    let detail = "Cofre do Obsidian atualizado"
     persistStatus(
       destination: .obsidian,
       exportedCount: memories.count,
@@ -624,7 +624,7 @@ actor MemoryExportService {
     let markdown = buildMarkdownPack(memories: memories, destination: destination)
     try markdown.write(to: fileURL, atomically: true, encoding: .utf8)
 
-    let detail = "Memory pack ready"
+    let detail = "Pacote de memórias pronto"
     persistStatus(
       destination: destination,
       exportedCount: memories.count,
@@ -702,7 +702,7 @@ actor MemoryExportService {
       // cursor; an export cannot claim completeness from it.
       if page.truncated {
         throw MemoryExportError.requestFailed(
-          "Memory export stopped because the server returned a truncated list.")
+          "A exportação de memórias parou porque o servidor devolveu uma lista truncada.")
       }
       result.append(contentsOf: page.memories)
       guard let nextCursor = page.nextCursor, !nextCursor.isEmpty else {
@@ -712,7 +712,7 @@ actor MemoryExportService {
       // pin export in an infinite loop.
       if !seenCursors.insert(nextCursor).inserted {
         throw MemoryExportError.requestFailed(
-          "Memory export stopped because the server repeated a continuation token.")
+          "A exportação de memórias parou porque o servidor repetiu um token de continuação.")
       }
       cursor = nextCursor
     }
@@ -842,7 +842,7 @@ actor MemoryExportService {
 
   private func validateNotionResponse(data: Data, response: URLResponse) throws {
     guard let httpResponse = response as? HTTPURLResponse else {
-      throw MemoryExportError.requestFailed("Notion did not return a valid HTTP response.")
+      throw MemoryExportError.requestFailed("O Notion não devolveu uma resposta HTTP válida.")
     }
 
     guard (200..<300).contains(httpResponse.statusCode) else {
@@ -854,7 +854,7 @@ actor MemoryExportService {
       } else {
         message = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
       }
-      throw MemoryExportError.requestFailed("Notion export failed: \(message)")
+      throw MemoryExportError.requestFailed("Falha na exportação para o Notion: \(message)")
     }
   }
 

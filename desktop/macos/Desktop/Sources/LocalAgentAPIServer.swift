@@ -8,7 +8,7 @@ enum LocalAgentAPIError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .tokenStorageUnavailable:
-      return "Couldn't save the local agent token securely."
+      return "Não foi possível guardar o token do agente local com segurança."
     }
   }
 }

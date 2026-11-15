@@ -483,7 +483,7 @@ struct RatingPromptBar: View {
               hoveredStar = star - 1
             }
           }
-          .accessibilityLabel("Rate \(star) star\(star == 1 ? "" : "s")")
+          .accessibilityLabel("Avaliar com \(star) estrela\(star == 1 ? "" : "s")")
         }
       }
 
@@ -501,7 +501,7 @@ struct RatingPromptBar: View {
         Text(manager.config.referCtaText)
           .font(.system(size: 13))
           .foregroundColor(.secondary)
-        Button("Refer a friend") {
+        Button("Indicar um amigo") {
           manager.referFriend()
         }
         .buttonStyle(
@@ -519,11 +519,11 @@ struct RatingPromptBar: View {
   /// still dismisses forever. No rating is persisted while this is showing.
   private var commentContent: some View {
     barChrome {
-      Text("Tell us more (optional)")
+      Text("Conte mais (opcional)")
         .font(.system(size: 13, weight: .medium))
         .foregroundColor(.primary)
 
-      TextField("What can we improve?", text: $commentDraft)
+      TextField("O que podemos melhorar?", text: $commentDraft)
         .textFieldStyle(.plain)
         .font(.system(size: 13))
         .foregroundColor(Ink.primary)
@@ -539,9 +539,9 @@ struct RatingPromptBar: View {
             commentDraft = String(newValue.prefix(500))
           }
         }
-        .accessibilityLabel("Rating comment")
+        .accessibilityLabel("Comentário da avaliação")
 
-      Button("Send") {
+      Button("Enviar") {
         manager.submitPendingComment(commentDraft)
       }
       .buttonStyle(
@@ -549,7 +549,7 @@ struct RatingPromptBar: View {
           RatingPromptButtonStyle.referralKind,
           size: RatingPromptButtonStyle.referralSize))
 
-      Button("Skip") {
+      Button("Pular") {
         manager.skipPendingComment()
       }
       .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
@@ -571,7 +571,7 @@ struct RatingPromptBar: View {
         .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
-    .accessibilityLabel("Dismiss rating prompt")
+    .accessibilityLabel("Dispensar pedido de avaliação")
   }
 
   private func barChrome<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {

@@ -79,7 +79,7 @@ extension AppState {
     // For BLE device, check if device is connected
     if effectiveSource == .bleDevice {
       guard DeviceProvider.shared.isConnected else {
-        showAlert(title: "Device Not Connected", message: "Please connect a wearable device first.")
+        showAlert(title: "Dispositivo não conectado", message: "Conecte um dispositivo vestível primeiro.")
         return
       }
     } else {
@@ -434,7 +434,7 @@ extension AppState {
         stage: "startup"
       )
       showAlert(
-        title: "Couldn't Start Transcription",
+        title: "Não foi possível iniciar a transcrição",
         message: UserFacingErrorPresentation.message(for: error, while: .transcription)
       )
     }
@@ -793,10 +793,10 @@ extension AppState {
       outcome: .degraded,
       extra: ["status": String(describing: AudioCaptureService.authorizationStatus())])
     showAlert(
-      title: "Omi Needs Microphone Access",
+      title: "O Omi precisa de acesso ao microfone",
       message:
-        "macOS is not letting Omi hear the microphone. Enable Omi under "
-        + "System Settings → Privacy & Security → Microphone, then start recording again."
+        "O macOS não está deixando o Omi ouvir o microfone. Ative o Omi em "
+        + "Ajustes do Sistema → Privacidade e Segurança → Microfone e comece a gravar de novo."
     ) {
       // Pause before the hand-off. NSWorkspace.open can return while Omi is
       // still the active app, and a queued alert must not attach a sheet that

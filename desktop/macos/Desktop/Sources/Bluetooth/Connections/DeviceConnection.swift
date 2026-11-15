@@ -15,13 +15,13 @@ enum DeviceConnectionError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .alreadyConnected:
-      return "This connection session has already started"
+      return "Esta sessão de conexão já foi iniciada"
     case .connectionFailed(let reason):
-      return "Connection failed: \(reason)"
+      return "Falha na conexão: \(reason)"
     case .notConnected:
-      return "Device is not connected"
+      return "O dispositivo não está conectado"
     case .operationFailed(let reason):
-      return "Operation failed: \(reason)"
+      return "Falha na operação: \(reason)"
     }
   }
 }

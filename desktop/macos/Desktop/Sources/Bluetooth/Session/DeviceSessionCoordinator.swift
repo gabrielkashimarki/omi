@@ -59,11 +59,11 @@ enum DeviceSessionCoordinatorError: LocalizedError, Equatable {
   var errorDescription: String? {
     switch self {
     case .connectionAlreadyActive:
-      return "A device connection is already active"
+      return "Já existe uma conexão de dispositivo ativa"
     case .connectionUnavailable:
-      return "The device is not currently available over Bluetooth"
+      return "O dispositivo não está disponível por Bluetooth no momento"
     case .superseded:
-      return "The device connection was superseded"
+      return "A conexão do dispositivo foi substituída"
     }
   }
 }

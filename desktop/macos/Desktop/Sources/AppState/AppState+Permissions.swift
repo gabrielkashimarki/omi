@@ -1050,9 +1050,9 @@ extension AppState {
 
   func showPermissionAlert() {
     let alert = NSAlert()
-    alert.messageText = "Permission Required"
+    alert.messageText = "Permissão necessária"
     alert.informativeText =
-      "Screen Recording permission is needed.\n\nClick 'Grant Screen Permission' in the menu, then add this app and restart."
+      "A permissão de Gravação de Tela é necessária.\n\nClique em 'Conceder permissão de tela' no menu, adicione este app e reinicie."
     alert.alertStyle = .warning
     alert.addButton(withTitle: "OK")
     alert.runModal()

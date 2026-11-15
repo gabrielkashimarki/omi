@@ -424,12 +424,12 @@ package enum WifiStatus: Int {
 
   package var displayName: String {
     switch self {
-    case .off: return "Off"
-    case .shutdown: return "Shutting down"
-    case .on: return "Starting"
-    case .connecting: return "Connecting"
-    case .connected: return "Connected"
-    case .tcpConnected: return "Transferring"
+    case .off: return "Desligado"
+    case .shutdown: return "Desligando"
+    case .on: return "Iniciando"
+    case .connecting: return "Conectando"
+    case .connected: return "Conectado"
+    case .tcpConnected: return "Transferindo"
     }
   }
 

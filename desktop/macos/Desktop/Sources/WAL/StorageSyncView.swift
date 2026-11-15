@@ -23,14 +23,14 @@ struct StorageSyncView: View {
           .scaledFont(size: OmiType.subheading)
           .foregroundColor(Ink.primary)
 
-        Text("Storage Sync")
+        Text("Sincronização de armazenamento")
           .scaledFont(size: OmiType.body, weight: .semibold)
 
         Spacer()
 
         // Pending count badge
         if walService.pendingWals.count > 0 {
-          Text("\(walService.pendingWals.count) pending")
+          Text("\(walService.pendingWals.count) pendentes")
             .scaledFont(size: OmiType.caption)
             .foregroundColor(Ink.secondary)
             .padding(.horizontal, OmiSpacing.sm)
@@ -98,7 +98,7 @@ struct StorageSyncView: View {
             Circle()
               .fill(Ink.listeningGreen)
               .frame(width: 6, height: 6)
-            Text("Connected")
+            Text("Conectado")
               .scaledFont(size: OmiType.caption)
               .foregroundColor(Ink.secondary)
           }
@@ -126,7 +126,7 @@ struct StorageSyncView: View {
         .scaledFont(size: OmiType.heading)
         .foregroundColor(Ink.secondary)
 
-      Text("No device connected")
+      Text("Nenhum dispositivo conectado")
         .scaledFont(size: OmiType.body)
         .foregroundColor(Ink.secondary)
 
@@ -157,7 +157,7 @@ struct StorageSyncView: View {
         Text(formatBytes(progress.downloadedBytes))
           .scaledFont(size: OmiType.caption, weight: .medium)
 
-        Text("of \(formatBytes(progress.totalBytes))")
+        Text("de \(formatBytes(progress.totalBytes))")
           .scaledFont(size: OmiType.caption)
           .foregroundColor(Ink.secondary)
 
@@ -201,13 +201,13 @@ struct StorageSyncView: View {
       Image(systemName: "exclamationmark.triangle.fill")
         .foregroundColor(SettingsInk.notice)
 
-      Text("Storage sync couldn't finish. Try again.")
+      Text("A sincronização de armazenamento não terminou. Tente de novo.")
         .scaledFont(size: OmiType.caption)
         .foregroundColor(Ink.secondary)
 
       Spacer()
 
-      Button("Dismiss") {
+      Button("Dispensar") {
         storageSyncService.errorMessage = nil
         wifiSyncService.errorMessage = nil
       }
@@ -231,7 +231,7 @@ struct StorageSyncView: View {
       }) {
         HStack(spacing: OmiSpacing.xs) {
           Image(systemName: "antenna.radiowaves.left.and.right")
-          Text("BLE Sync")
+          Text("Sincronização BLE")
         }
         .scaledFont(size: OmiType.caption, weight: .medium)
         .padding(.horizontal, OmiSpacing.md)
@@ -251,7 +251,7 @@ struct StorageSyncView: View {
       }) {
         HStack(spacing: OmiSpacing.xs) {
           Image(systemName: "wifi")
-          Text("WiFi Sync")
+          Text("Sincronização WiFi")
         }
         .scaledFont(size: OmiType.caption, weight: .medium)
         .padding(.horizontal, OmiSpacing.md)
@@ -290,7 +290,7 @@ struct StorageSyncView: View {
     VStack(spacing: OmiSpacing.xl) {
       // Header
       HStack {
-        Text("WiFi Sync Setup")
+        Text("Configurar sincronização WiFi")
           .scaledFont(size: OmiType.subheading, weight: .semibold)
           .foregroundColor(Ink.primary)
         Spacer()
@@ -298,33 +298,33 @@ struct StorageSyncView: View {
       }
 
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        Text("Network Name (SSID)")
+        Text("Nome da rede (SSID)")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
 
-        TextField("Enter WiFi network name", text: $wifiSsid)
+        TextField("Digite o nome da rede WiFi", text: $wifiSsid)
           .textFieldStyle(.roundedBorder)
       }
 
       VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-        Text("Password")
+        Text("Senha")
           .scaledFont(size: OmiType.caption, weight: .medium)
           .foregroundColor(Ink.secondary)
 
-        SecureField("Enter WiFi password", text: $wifiPassword)
+        SecureField("Digite a senha do WiFi", text: $wifiPassword)
           .textFieldStyle(.roundedBorder)
       }
 
       Spacer()
 
       HStack(spacing: OmiSpacing.md) {
-        Button("Cancel") {
+        Button("Cancelar") {
           showWifiSetup = false
         }
         .buttonStyle(.plain)
         .foregroundColor(Ink.secondary)
 
-        Button("Start Sync") {
+        Button("Iniciar sincronização") {
           showWifiSetup = false
           Task {
             await startWifiSync()
