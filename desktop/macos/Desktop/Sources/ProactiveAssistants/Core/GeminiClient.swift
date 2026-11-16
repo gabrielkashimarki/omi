@@ -742,18 +742,20 @@ actor GeminiClient {
     systemPrompt: String,
     maxRetries: Int = 2,
     timeout: TimeInterval = 100,
-    thinkingBudget: Int = 0
+    thinkingBudget: Int = 0,
+    image: (data: Data, mimeType: String)? = nil
   ) async throws -> String {
     try await Self.enforceManagedProactivity()
     var lastError: Error?
+    // Imagem opcional (copiloto de reunião: "explicar a tela"), mandada junto do texto.
+    var parts = [GeminiRequest.Part(text: prompt)]
+    if let image { parts.append(GeminiRequest.Part(mimeType: image.mimeType, data: image.data.base64EncodedString())) }
 
     for attempt in 0...maxRetries {
       do {
         let request = GeminiRequest(
           contents: [
-            GeminiRequest.Content(parts: [
-              GeminiRequest.Part(text: prompt)
-            ])
+            GeminiRequest.Content(parts: parts)
           ],
           systemInstruction: GeminiRequest.SystemInstruction(
             parts: [GeminiRequest.SystemInstruction.TextPart(text: systemPrompt)]

@@ -159,6 +159,7 @@ extension AppState {
       },
       onConfirmedChange: { [weak self] active in
         Self.noteMeetingContext(active: active)
+        Task { @MainActor in MeetingCopilot.shared.meetingChanged(active) }
         let endedAt = active ? nil : self?.meetingDetector?.lastMeetingEndedAt
         Task { @MainActor in await self?.handleMeetingObservation(active: active, endedAt: endedAt) }
       },
