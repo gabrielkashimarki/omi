@@ -8,7 +8,7 @@ import Foundation
 final class MeetingCopilotVoice {
   static let shared = MeetingCopilotVoice()
   private static let mutedKey = "meetingCopilotMuted"
-  private static let model = "gemini-3.8-flash-tts"
+  private nonisolated static let model = "gemini-3.8-flash-tts"
   private var player: AVAudioPlayer?
   private var speaking: Task<Void, Never>?
 
