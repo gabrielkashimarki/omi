@@ -15,9 +15,9 @@ rm -rf "$DEST"; mkdir -p "$DEST/ui"
 cp "$SRC/atticus.py" "$SRC/VERSION" "$DEST/"
 cp "$SRC"/ui/*.html "$SRC"/ui/*.js "$DEST/ui/"
 mv "$STAGE/Atticus" "$DEST/Atticus"
-# Com o certificado local "Atticus Local Signing" (criado pelo build.sh do Atticus), o macOS mantém
+# Com o certificado local "Omi Fork Local Signing", o macOS mantém
 # Acessibilidade e Gravação de Tela entre atualizações; ad hoc pede tudo de novo a cada troca.
-ID=$(security find-identity -p codesigning | awk '/Atticus Local Signing/{print $2; exit}')
+ID=$(security find-identity -p codesigning | awk '/Omi Fork Local Signing/{print $2; exit}')
 codesign -s "${ID:--}" --force "$DEST/Atticus"
 codesign -s "${ID:--}" --force --deep "$APP"
 echo "Atticus $(cat "$SRC/VERSION") embutido em $DEST"
