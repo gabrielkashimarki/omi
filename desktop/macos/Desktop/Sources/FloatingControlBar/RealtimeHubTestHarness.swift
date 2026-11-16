@@ -164,6 +164,7 @@ final class RealtimeHubTestHarness: NSObject, RealtimeHubSessionDelegate {
     case .screenshot: stub = "Screen captured."
     case .reportScreenObservation: stub = "Screen observation accepted."
     case .pointClick: stub = "Clicked."
+    case .mexerNoMac: stub = "Abri o Safari."
     case .perguntarCerebro: stub = "2026-10-22: primeiro lote do réveillon a R$ 1.000."
     case .none: stub = "ok"
     }

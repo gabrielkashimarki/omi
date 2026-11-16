@@ -865,6 +865,22 @@ const swiftToolSurfacePatches: Record<string, OmiToolSurfacePatch> = {
       ),
     },
   },
+  mexer_no_mac: {
+    surfaces: ["realtime_voice"],
+    capabilityDoc: doc(
+      "Mexer no Mac",
+      "Operate the user's Mac through the embedded Atticus engine: open apps, click, type, read windows, run multi-step tasks.",
+      [
+        "Use when the user asks to do something on the Mac: open an app or site, click, type, fill, send, organize windows or files.",
+        "Pass the full request in Portuguese, as the user said it.",
+      ],
+    ),
+    executor: { kind: "swiftTool", executorName: "realtimeHub" },
+    voice: {
+      realtimeDescription:
+        "Do something on the user's Mac through the Atticus engine (open apps or sites, click, type, fill forms, read the screen, multi-step tasks). Call it whenever the user asks you to act on the Mac. Pass the complete request in Portuguese as `pedido`. It can take up to a couple of minutes; say one short line that you are doing it, then wait. Report back only what the returned text says happened.",
+    },
+  },
   perguntar_cerebro: {
     surfaces: ["realtime_voice"],
     capabilityDoc: doc(
@@ -1926,6 +1942,25 @@ const swiftToolManifestDrafts: OmiToolManifestEntryDraft[] = [
     adapters: {},
   },
   // Fork: ferramentas de voz que chamam o MCP "brain" do ~/.omi/mcp.json e o Claude Code local.
+  {
+    name: "mexer_no_mac",
+    label: "Mexer no Mac",
+    description: "Executa no Mac, pelo motor do Atticus embutido, pedidos como abrir app, clicar, digitar e tarefas de vários passos.",
+    promptSnippet: "mexer_no_mac - Faz coisas no Mac pelo motor do Atticus",
+    latency: "async background",
+    inputSchema: schema(
+      {
+        pedido: { type: "string", description: "Pedido completo, em português, como o usuário falou." },
+      },
+      ["pedido"],
+    ),
+    annotations: openWorldWrite,
+    timeoutClass: "long",
+    executor: { kind: "swiftTool", executorName: "realtimeHub" },
+    intendedForAgents: true,
+    runtimePreconditions: ["Realtime voice only; requires the Atticus engine in Contents/Resources/atticus."],
+    adapters: {},
+  },
   {
     name: "perguntar_cerebro",
     label: "Perguntar ao Cérebro",
