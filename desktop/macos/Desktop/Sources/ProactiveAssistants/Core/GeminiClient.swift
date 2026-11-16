@@ -416,6 +416,34 @@ actor GeminiClient {
     URL(string: "\(Self.proxyBaseURL)v1/proxy/gemini/models/\(modelOverride ?? model):\(action)")!
   }
 
+  /// Endpoint público do Gemini, usado quando o usuário cadastrou a própria chave.
+  static let directBaseURL = "https://generativelanguage.googleapis.com/v1beta/models/"
+
+  /// Monta a requisição POST de uma ação do modelo. Com a chave própria do Gemini
+  /// cadastrada, fala direto com o Google (nossa cota, sem passar pelo servidor do Omi);
+  /// sem ela, segue pelo proxy do Omi com o token do Firebase.
+  private func modelRequest(
+    action: String,
+    modelOverride: String? = nil,
+    direct: Bool = true,
+    authorization: () async throws -> String
+  ) async throws -> URLRequest {
+    let name = modelOverride ?? model
+    let key = direct ? await MainActor.run { APIKeyService.shared.effectiveGeminiKey } : nil
+    var request: URLRequest
+    if let key {
+      request = URLRequest(url: URL(string: "\(Self.directBaseURL)\(name):\(action)")!)
+      // Cabeçalho em vez de ?key= para a chave nunca aparecer em log de URL.
+      request.setValue(key, forHTTPHeaderField: "x-goog-api-key")
+    } else {
+      request = URLRequest(url: proxyURL(action: action, modelOverride: name))
+      request.applyGeminiProxyHeaders(lane: lane, workload: workload, authorization: try await authorization())
+    }
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    return request
+  }
+
   /// Log the raw API error message for debugging and throw a sanitized error.
   /// The `errorDescription` on GeminiClientError is user-friendly; this log preserves the raw detail.
   private func throwAPIError(_ rawMessage: String) throws -> Never {
@@ -666,15 +694,7 @@ actor GeminiClient {
           return try JSONEncoder().encode(request)
         }
 
-        let url = proxyURL(action: "generateContent")
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.applyGeminiProxyHeaders(
-          lane: lane,
-          workload: workload,
-          authorization: try await authHeader()
-        )
+        var urlRequest = try await modelRequest(action: "generateContent") { try await self.authHeader() }
         urlRequest.timeoutInterval = 100
         urlRequest.httpBody = requestBody
 
@@ -746,15 +766,7 @@ actor GeminiClient {
           )
         )
 
-        let url = proxyURL(action: "generateContent")
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.applyGeminiProxyHeaders(
-          lane: lane,
-          workload: workload,
-          authorization: try await authHeader()
-        )
+        var urlRequest = try await modelRequest(action: "generateContent") { try await self.authHeader() }
         urlRequest.timeoutInterval = timeout
         urlRequest.httpBody = try JSONEncoder().encode(request)
 
@@ -823,15 +835,7 @@ actor GeminiClient {
           )
         )
 
-        let url = proxyURL(action: "generateContent")
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.applyGeminiProxyHeaders(
-          lane: lane,
-          workload: workload,
-          authorization: try await authHeader()
-        )
+        var urlRequest = try await modelRequest(action: "generateContent") { try await self.authHeader() }
         urlRequest.timeoutInterval = 100
         urlRequest.httpBody = try JSONEncoder().encode(request)
 
@@ -1143,17 +1147,13 @@ extension GeminiClient {
             return try JSONEncoder().encode(request)
           }
 
-          let url = proxyURL(action: "generateContent", modelOverride: activeModel)
-          var urlRequest = URLRequest(url: url)
-          urlRequest.httpMethod = "POST"
-          urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-          let header: String
-          if let toolLoopTransport {
-            header = try await toolLoopTransport.authHeader(authorization)
-          } else {
-            header = try await authHeader(authorization: authorization)
+          // Transporte injetado (agente) sempre vai pelo proxy; ele é quem autoriza a chamada.
+          var urlRequest = try await modelRequest(
+            action: "generateContent", modelOverride: activeModel, direct: toolLoopTransport == nil
+          ) {
+            if let toolLoopTransport { return try await toolLoopTransport.authHeader(authorization) }
+            return try await self.authHeader(authorization: authorization)
           }
-          urlRequest.applyGeminiProxyHeaders(lane: lane, workload: workload, authorization: header)
           urlRequest.timeoutInterval = 100
           urlRequest.httpBody = requestBody
 
