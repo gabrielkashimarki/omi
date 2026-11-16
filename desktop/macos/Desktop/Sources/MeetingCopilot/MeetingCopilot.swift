@@ -12,7 +12,7 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
   static let shared = MeetingCopilot()
   private static let enabledKey = "meetingCopilotEnabled"
   // ponytail: modelo fixo; vira ajuste quando o flash não bastar
-  private static let answerModel = "gemini-2.5-flash"
+  private static let answerModel = "gemini-3.8-flash"
 
   private var panel: CopilotPanel?
   private var web: WKWebView?

@@ -8,7 +8,7 @@ import Foundation
 final class MeetingCopilotVoice {
   static let shared = MeetingCopilotVoice()
   private static let mutedKey = "meetingCopilotMuted"
-  private static let model = "gemini-2.5-flash-preview-tts"
+  private static let model = "gemini-3.8-flash-tts"
   private var player: AVAudioPlayer?
   private var speaking: Task<Void, Never>?
 
@@ -30,9 +30,9 @@ final class MeetingCopilotVoice {
     stop()
     speaking = Task { [weak self] in
       do {
-        let pcm = try await Self.synthesize(line, key: key)
+        let audio = try await Self.synthesize(line, key: key)
         guard let self, !Task.isCancelled, !self.muted else { return }
-        let player = try AVAudioPlayer(data: Self.wav(pcm))
+        let player = try AVAudioPlayer(data: audio)
         self.player = player
         player.play()
       } catch is CancellationError {
@@ -51,7 +51,7 @@ final class MeetingCopilotVoice {
     player = nil
   }
 
-  /// PCM 16 bits, 24 kHz, mono, como o Gemini devolve.
+  /// Áudio pronto para tocar (WAV).
   private nonisolated static func synthesize(_ text: String, key: String) async throws -> Data {
     var request = URLRequest(url: URL(string: "\(GeminiClient.directBaseURL)\(model):generateContent")!)
     request.httpMethod = "POST"
@@ -74,7 +74,8 @@ final class MeetingCopilotVoice {
       let inline = parts.compactMap({ $0["inlineData"] as? [String: Any] }).first,
       let base64 = inline["data"] as? String, let pcm = Data(base64Encoded: base64), !pcm.isEmpty
     else { throw URLError(.badServerResponse) }
-    return pcm
+    // O TTS 3.8 já devolve WAV; o 2.5 devolvia PCM cru.
+    return (inline["mimeType"] as? String)?.contains("wav") == true ? pcm : wav(pcm)
   }
 
   private nonisolated static func wav(_ pcm: Data, rate: UInt32 = 24_000) -> Data {
