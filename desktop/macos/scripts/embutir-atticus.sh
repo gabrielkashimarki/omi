@@ -1,6 +1,8 @@
 #!/bin/bash
 # Fork: embute o motor do Atticus (~/atticus-mac) dentro do Omi Fork.app instalado, em
-# Contents/Resources/atticus, e reassina o app (ad hoc, como o resto do fork).
+# Contents/Resources/atticus, e reassina o app com o certificado local "Omi Fork Local Signing"
+# (ad hoc se ele não existir). Assinatura fixa entre builds: o "Permitir Sempre" das chaves e a
+# Gravação de Tela continuam valendo depois de trocar o binário.
 # Uso: embutir-atticus.sh [caminho do Omi Fork.app] [caminho do atticus-mac]
 set -euo pipefail
 APP="${1:-$HOME/Applications/Omi Fork.app}"
@@ -8,6 +10,8 @@ SRC="${2:-$HOME/atticus-mac}"
 DEST="$APP/Contents/Resources/atticus"
 [ -f "$SRC/Atticus.swift" ] || { echo "Não achei $SRC/Atticus.swift"; exit 1; }
 [ -d "$APP/Contents" ] || { echo "Não achei $APP"; exit 1; }
+IDENT="${OMI_FORK_SIGN:-Omi Fork Local Signing}"
+security find-identity -p codesigning | grep -q "\"$IDENT\"" || { echo "Sem o certificado $IDENT, assinando ad hoc"; IDENT=-; }
 STAGE=$(mktemp -d); trap 'rm -rf "$STAGE"' EXIT
 # erro de compilação não pode deixar o app pela metade
 swiftc -O -target "$(uname -m)-apple-macos26.0" "$SRC/Atticus.swift" -o "$STAGE/Atticus"
@@ -25,6 +29,6 @@ assert "const maps = {" in s, "i18n.js do Atticus mudou de formato"
 open(js, "w", encoding="utf-8").write(s.replace("const maps = {", 'const maps = {\n  "pt": ' + pt + ",", 1))
 PY
 mv "$STAGE/Atticus" "$DEST/Atticus"
-codesign -s - --force "$DEST/Atticus"
-codesign -s - --force --deep "$APP"
+codesign -s "$IDENT" --force "$DEST/Atticus"
+codesign -s "$IDENT" --force --deep "$APP"
 echo "Atticus $(cat "$SRC/VERSION") embutido em $DEST"
