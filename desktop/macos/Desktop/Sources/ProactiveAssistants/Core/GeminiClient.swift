@@ -419,6 +419,14 @@ actor GeminiClient {
   /// Endpoint público do Gemini, usado quando o usuário cadastrou a própria chave.
   static let directBaseURL = "https://generativelanguage.googleapis.com/v1beta/models/"
 
+  /// O Google fechou a família 2.5 para chaves novas (404 "no longer available to new users");
+  /// o proxy do Omi ainda aceita esses nomes, a chamada direta não. Testado em 16/11/2026.
+  static let directModelAliases = [
+    "gemini-2.5-flash": "gemini-flash-latest",
+    "gemini-2.5-flash-lite": "gemini-flash-lite-latest",
+    "gemini-2.5-pro": "gemini-3.1-pro-preview",
+  ]
+
   /// Monta a requisição POST de uma ação do modelo. Com a chave própria do Gemini
   /// cadastrada, fala direto com o Google (nossa cota, sem passar pelo servidor do Omi);
   /// sem ela, segue pelo proxy do Omi com o token do Firebase.
@@ -432,7 +440,8 @@ actor GeminiClient {
     let key = direct ? await MainActor.run { APIKeyService.shared.effectiveGeminiKey } : nil
     var request: URLRequest
     if let key {
-      request = URLRequest(url: URL(string: "\(Self.directBaseURL)\(name):\(action)")!)
+      let directName = Self.directModelAliases[name] ?? name
+      request = URLRequest(url: URL(string: "\(Self.directBaseURL)\(directName):\(action)")!)
       // Cabeçalho em vez de ?key= para a chave nunca aparecer em log de URL.
       request.setValue(key, forHTTPHeaderField: "x-goog-api-key")
     } else {
