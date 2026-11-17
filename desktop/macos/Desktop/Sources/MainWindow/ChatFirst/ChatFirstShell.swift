@@ -85,7 +85,7 @@ struct ChatFirstShell: View {
     case .cerebro:
       JarvisEmBreve(titulo: "Cérebro", texto: "As asserções por cliente e camada chegam na fase 4.")
     case .estatisticas:
-      JarvisEmBreve(titulo: "Estatísticas", texto: "Em construção.")
+      JarvisEstatisticasPagina()
     case .sessoes:
       JarvisEmBreve(titulo: "Sessões", texto: "As sessões dos agentes aparecem aqui.")
     default:
