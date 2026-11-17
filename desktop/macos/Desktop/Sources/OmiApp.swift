@@ -541,6 +541,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     // Called synchronously on main thread to ensure status item is created before app finishes launching
     Task { @MainActor in
       self.setupMenuBar()
+      // Fork: mãos do Jarvis (WebSocket /jarvis/mac), aberto enquanto o app roda
+      JarvisMac.shared.ligar()
     }
 
     // Periodic health check: verify menu bar icon is still visible every 30 seconds.
