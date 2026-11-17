@@ -88,7 +88,8 @@ enum JarvisMaos {
       return NSWorkspace.shared.open(url) ? ok("Abri \(url.absoluteString).") : falha("Não consegui abrir \(url).")
     case .digitar(let texto):
       guard AXIsProcessTrusted() else {
-        return falha("O Omi Fork não tem permissão de Acessibilidade para digitar. O Gabriel precisa liberar nos Ajustes.")
+        return falha(
+          "O Omi Fork não tem permissão de Acessibilidade para digitar. O Gabriel precisa liberar nos Ajustes.")
       }
       digitar(texto)
       return ok("Digitei \(texto.count) caracteres no app da frente.")
@@ -144,7 +145,8 @@ enum JarvisMaos {
     else { return falha("O motor do Atticus não está embutido neste app.") }
     let (saida, codigo) = await rodar(bin, ["--hands"] + args)
     let texto = String(saida.suffix(2000))
-    return codigo == 0 ? ok(texto.isEmpty ? "Feito." : texto) : falha(texto.isEmpty ? "Atticus saiu com \(codigo)." : texto)
+    return codigo == 0
+      ? ok(texto.isEmpty ? "Feito." : texto) : falha(texto.isEmpty ? "Atticus saiu com \(codigo)." : texto)
   }
 
   private static func rodar(_ bin: URL, _ args: [String]) async -> (String, Int32) {

@@ -6,7 +6,8 @@ final class JarvisTests: XCTestCase {
   // MARK: - NDJSON do /jarvis
 
   func testLeCadaLinhaDoNDJSON() {
-    XCTAssertEqual(JarvisCliente.ler(#"{"passo": "mcp__jarvis__listar_demandas"}"#), .passo("mcp__jarvis__listar_demandas"))
+    XCTAssertEqual(
+      JarvisCliente.ler(#"{"passo": "mcp__jarvis__listar_demandas"}"#), .passo("mcp__jarvis__listar_demandas"))
     XCTAssertEqual(
       JarvisCliente.ler(#"{"confirmar": {"id": "a1", "resumo": "Mandar WhatsApp", "fala": "Posso mandar?"}}"#),
       .confirmar(id: "a1", resumo: "Mandar WhatsApp", fala: "Posso mandar?"))
@@ -35,7 +36,8 @@ final class JarvisTests: XCTestCase {
 
   func testPassoLegivel() {
     XCTAssertEqual(JarvisCliente.passoLegivel("mcp__cerebro__buscar_contexto"), "buscando no Cérebro")
-    XCTAssertEqual(JarvisCliente.passoLegivel("mcp__composio__COMPOSIO_SEARCH_TOOLS"), "consultando Gmail, Agenda ou Drive")
+    XCTAssertEqual(
+      JarvisCliente.passoLegivel("mcp__composio__COMPOSIO_SEARCH_TOOLS"), "consultando Gmail, Agenda ou Drive")
     XCTAssertEqual(JarvisCliente.passoLegivel("nova_ferramenta"), "nova ferramenta")
   }
 
@@ -73,7 +75,10 @@ final class JarvisTests: XCTestCase {
   func testAcumuladorJuntaFinaisEParciais() {
     var a = JarvisLegenda.Acumulador()
     func r(_ texto: String, final: Bool = false, fala: Bool = false) -> [String: Any] {
-      ["type": "Results", "is_final": final, "speech_final": fala, "channel": ["alternatives": [["transcript": texto]]]]
+      [
+        "type": "Results", "is_final": final, "speech_final": fala,
+        "channel": ["alternatives": [["transcript": texto]]],
+      ]
     }
     XCTAssertEqual(a.receber(r("quantas"))?.texto, "quantas")
     XCTAssertEqual(a.receber(r("quantas demandas", final: true))?.terminou, false)
@@ -145,7 +150,8 @@ final class JarvisTests: XCTestCase {
     let pasta = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     try FileManager.default.createDirectory(at: pasta, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: pasta) }
-    let aiff = pasta.appendingPathComponent("a.aiff"), wav = pasta.appendingPathComponent("a.wav")
+    let aiff = pasta.appendingPathComponent("a.aiff")
+    let wav = pasta.appendingPathComponent("a.wav")
     for (bin, args) in [
       ("/usr/bin/say", ["-v", voz, texto, "-o", aiff.path]),
       ("/usr/bin/afconvert", ["-f", "WAVE", "-d", "LEI16@16000", "-c", "1", aiff.path, wav.path]),

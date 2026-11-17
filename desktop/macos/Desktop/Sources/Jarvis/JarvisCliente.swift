@@ -72,7 +72,8 @@ enum JarvisCliente {
     case "Bash": return "rodando no terminal"
     case "WebSearch", "WebFetch": return "procurando na web"
     default:
-      return nome.hasPrefix("COMPOSIO") ? "consultando Gmail, Agenda ou Drive" : nome.replacingOccurrences(of: "_", with: " ")
+      return nome.hasPrefix("COMPOSIO")
+        ? "consultando Gmail, Agenda ou Drive" : nome.replacingOccurrences(of: "_", with: " ")
     }
   }
 

@@ -240,7 +240,10 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     Task {
       guard let itens = try? await JarvisCliente.historico() else { return }
       let linhas: [[String: Any]] = itens.map { m in
-        ["papel": m.papel, "texto": m.texto, "detalhe": m.detalhe, "quando": (m.quando?.timeIntervalSince1970 ?? 0) * 1000]
+        [
+          "papel": m.papel, "texto": m.texto, "detalhe": m.detalhe,
+          "quando": (m.quando?.timeIntervalSince1970 ?? 0) * 1000,
+        ]
       }
       chamar("historico", linhas)
     }
@@ -269,7 +272,8 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
       return
     }
     let args: [Any] = [valor]
-    guard JSONSerialization.isValidJSONObject(args), let dados = try? JSONSerialization.data(withJSONObject: args) else {
+    guard JSONSerialization.isValidJSONObject(args), let dados = try? JSONSerialization.data(withJSONObject: args)
+    else {
       return
     }
     alvo.evaluateJavaScript("window.jarvis?.\(funcao)(...\(String(decoding: dados, as: UTF8.self)))")
