@@ -27,15 +27,34 @@ enum MeetingCopilotPrompt {
     let at: Date
     let mine: Bool
     let text: String
+    var who: String? = nil  // nome de quem falou, quando vem da extensão de reuniões
+  }
+
+  static let catchUp = "O que eu perdi?"
+  static let explainScreen = "Explique o que está na tela compartilhada."
+
+  /// Os atalhos do `meeting.html` mandam a pergunta em inglês, e ela aparece no cartão: vira português.
+  static func portuguese(_ text: String) -> String {
+    switch text {
+    case "What did I miss?": return catchUp
+    case "Explain what is on the shared screen.": return explainScreen
+    default:
+      guard text.hasPrefix("Context: "), let split = text.range(of: "\nQuestion: ") else { return text }
+      let context = text[text.index(text.startIndex, offsetBy: 9)..<split.lowerBound]
+      return "Contexto: \(context)\nPergunta: \(text[split.upperBound...])"
+    }
   }
 
   /// Monta o pedido: briefing, últimos 3 min de transcrição (2 min no "o que perdi") e a candidata.
   /// A transcrição vai dentro de tag porque é fala de terceiros, nunca instrução.
   static func request(question: String, brief: String, transcript: [Line], manual: Bool, now: Date = Date()) -> String {
-    let window: TimeInterval = question == "What did I miss?" ? 120 : 180
+    let window: TimeInterval = question == catchUp ? 120 : 180
     let rows = transcript.filter { now.timeIntervalSince($0.at) <= window && $0.at <= now }
-    var said = rows.map { "[\(Int(now.timeIntervalSince($0.at)))s ago] \($0.mine ? "You: " : "")\($0.text)" }
-      .joined(separator: "\n")
+    var said: String = rows.map { (row: Line) -> String in
+      let who = row.mine ? "You: " : row.who.map { "\($0): " } ?? ""
+      return "[\(Int(now.timeIntervalSince(row.at)))s ago] \(who)\(row.text)"
+    }
+    .joined(separator: "\n")
     let mode = manual ? "\nMode: manual ask." : "\nMode: automatic candidate."
     let briefText = String(brief.prefix(briefLimit))
     let candidate = String(question.prefix(1500))

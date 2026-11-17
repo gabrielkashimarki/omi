@@ -32,6 +32,11 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
   private var askedSegments: Set<String> = []
   private var settle: DispatchWorkItem?
 
+  // Reunião da extensão no servidor: enquanto houver, a transcrição com nomes vem de lá
+  private var server: MeetingCopilotServer.Meeting?
+  private var serverAfter: Int?
+  private var serverPoll: Task<Void, Never>?
+
   // Contexto e o que fica salvo na conversa do Omi
   private var notes = ""
   private var memoryBrief = ""
@@ -124,6 +129,7 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     clock = nil
     subscriptions.removeAll()
     settle?.cancel()
+    serverPoll?.cancel()
     MeetingCopilotVoice.shared.stop()
     if let dragMonitor { NSEvent.removeMonitor(dragMonitor) }
     dragMonitor = nil
@@ -144,6 +150,8 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     memoryBrief = ""
     savedNoteId = nil
     answers = []
+    server = nil
+    serverAfter = nil
     minimized = false
     voicing = false
     began = Date()
@@ -250,10 +258,10 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     case "ask", "answer":
       guard running else { return }
       let id = b["id"] as? Int ?? nextId()
-      let question = b["text"] as? String ?? ""
+      let question = MeetingCopilotPrompt.portuguese(b["text"] as? String ?? "")
       if action == "ask" { js("question", row(id, question, auto: true)) }
       answer(id, question, manual: true)
-    case "screen": explainScreen(b["text"] as? String ?? "Explain what is on the shared screen.")
+    case "screen": explainScreen(MeetingCopilotPrompt.portuguese(b["text"] as? String ?? MeetingCopilotPrompt.explainScreen))
     case "voice":
       voicing = b["on"] as? Bool ?? false
     case "mute": MeetingCopilotVoice.shared.muted = b["on"] as? Bool ?? false
@@ -295,6 +303,8 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
       .receive(on: DispatchQueue.main)
       .sink { [weak self] notes in MainActor.assumeIsolated { self?.omi("liveNotes", notes.map(\.text)) } }
       .store(in: &subscriptions)
+    serverPoll?.cancel()
+    serverPoll = Task { [weak self] in await self?.pollServer() }
   }
 
   private func stop(paused: Bool) {
@@ -303,6 +313,7 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     clock?.invalidate()
     subscriptions.removeAll()
     settle?.cancel()
+    serverPoll?.cancel()
     MeetingCopilotVoice.shared.stop()
     js("stopped", paused)
     if !paused { persistNotes() }
@@ -315,9 +326,11 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     return serial
   }
 
-  private func row(_ id: Int, _ text: String, auto: Bool, heard: Bool = false) -> [String: Any] {
+  private func row(_ id: Int, _ text: String, auto: Bool, heard: Bool = false, speaker: String = "Alguém")
+    -> [String: Any]
+  {
     var r: [String: Any] = [
-      "id": id, "text": text, "seconds": Int(Date().timeIntervalSince(began)), "speaker": "Alguém", "auto": auto,
+      "id": id, "text": text, "seconds": Int(Date().timeIntervalSince(began)), "speaker": speaker, "auto": auto,
     ]
     if heard { r["heard"] = true }
     return r
@@ -328,6 +341,12 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     guard running else { return }
     if segments.isEmpty {
       sentLines = [:]
+      return
+    }
+    if server != nil {
+      // A transcrição vem da extensão; do Omi fica só a pergunta por voz. O que passou não volta depois.
+      for segment in segments { sentLines[segment.id] = true }
+      if voicing, let last = segments.last, last.isUser { js("heard", last.text) }
       return
     }
     for (index, segment) in segments.enumerated() {
@@ -368,11 +387,76 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     DispatchQueue.main.asyncAfter(deadline: .now() + 1.2, execute: item)
   }
 
-  private func candidate(_ segmentId: String, _ text: String, lineId: Int?) {
+  private func candidate(_ segmentId: String, _ text: String, lineId: Int?, speaker: String = "Alguém") {
     guard MeetingCopilotPrompt.isCandidate(text), askedSegments.insert(segmentId).inserted else { return }
     let id = lineId ?? nextId()
-    js("question", row(id, text, auto: true, heard: true))
+    js("question", row(id, text, auto: true, heard: true, speaker: speaker))
     answer(id, text, manual: false)
+  }
+
+  // MARK: - Trechos da extensão (servidor de reuniões)
+
+  /// A cada 30 s confere se a extensão está gravando uma reunião; enquanto estiver, busca os trechos novos a cada 3 s.
+  private func pollServer() async {
+    guard let key = MeetingCopilotServer.key else { return }
+    var checked = Date.distantPast
+    while !Task.isCancelled, running {
+      if Date().timeIntervalSince(checked) >= 30 {
+        checked = Date()
+        do {
+          let found = try await MeetingCopilotServer.activeMeeting(key: key)
+          guard running, !Task.isCancelled else { return }
+          attach(found)
+        } catch {
+          log("MeetingCopilot: servidor de reuniões indisponível (\(type(of: error)))")
+        }
+      }
+      var more = false
+      if let meeting = server {
+        do {
+          let page = try await MeetingCopilotServer.trechos(meeting: meeting.id, after: serverAfter, key: key)
+          guard running, !Task.isCancelled, server == meeting else { continue }
+          serverLines(page.items, meeting)
+          more = page.more
+        } catch {
+          log("MeetingCopilot: trechos indisponíveis (\(type(of: error)))")
+        }
+      }
+      if !more { try? await Task.sleep(for: .seconds(3)) }
+    }
+  }
+
+  private func attach(_ meeting: MeetingCopilotServer.Meeting?) {
+    guard meeting != server else { return }
+    let had = server != nil
+    server = meeting
+    serverAfter = nil
+    guard meeting != nil else {
+      if had { js("error", "A extensão parou de gravar; seguindo com a transcrição do Omi") }
+      return
+    }
+    settle?.cancel()
+    js("partial", ["mic": false, "text": ""] as [String: Any])
+    js("partial", ["mic": true, "text": ""] as [String: Any])
+    js("error", "Transcrição com nomes, vinda da extensão de reuniões")
+  }
+
+  private func serverLines(_ items: [MeetingCopilotServer.Trecho], _ meeting: MeetingCopilotServer.Meeting) {
+    let givenName = AuthService.shared.givenName
+    for t in items {
+      serverAfter = max(serverAfter ?? -1, t.seq)
+      let text = t.text.trimmingCharacters(in: .whitespacesAndNewlines)
+      guard !text.isEmpty else { continue }
+      let mine = MeetingCopilotServer.isMine(t.speaker, givenName: givenName)
+      let who = t.speaker ?? "Participante"
+      let id = nextId()
+      js("line", ["id": id, "text": text, "seconds": t.startMs / 1000, "mic": mine] as [String: Any])
+      if !mine { omi("speaker", ["id": id, "who": who] as [String: Any]) }
+      let at = meeting.start.addingTimeInterval(Double(t.startMs) / 1000)
+      transcript.append(.init(at: at, mine: mine, text: text, who: mine ? nil : who))
+      // Ao entrar no meio da reunião, pergunta antiga não vira resposta automática
+      if !mine, Date().timeIntervalSince(at) < 90 { candidate("s\(t.seq)", text, lineId: id, speaker: who) }
+    }
   }
 
   // MARK: - Respostas
@@ -476,14 +560,15 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     }
   }
 
-  /// Botão de silenciar a voz e a lista do LiveNotes na aba Notas, sem editar o HTML do Atticus.
+  /// Botão de silenciar a voz, a lista do LiveNotes na aba Notas, o nome de quem falou nas linhas da extensão
+  /// e o português dos textos montados na hora (o `i18n.js` só troca frase inteira), sem editar o HTML do Atticus.
   private static let extras = """
     (() => {
       const post = m => window.webkit?.messageHandlers.meeting.postMessage(m);
       let muted = false;
       const b = document.createElement('button');
       b.id = 'omimute'; b.className = 'quiet icon'; b.hidden = true;
-      const paint = () => { b.textContent = muted ? '🔇' : '🔊'; b.title = muted ? 'Unmute voice' : 'Mute voice';
+      const paint = () => { b.textContent = muted ? '🔇' : '🔊'; b.title = muted ? 'Ativar voz' : 'Silenciar voz';
         b.setAttribute('aria-label', b.title); };
       b.onclick = () => { muted = !muted; paint(); post({do: 'mute', on: muted}); };
       paint();
@@ -494,10 +579,63 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
       list.id = 'omilivenotes'; list.className = 'note';
       list.style.whiteSpace = 'pre-wrap'; list.style.marginTop = '8px';
       document.getElementById('brief')?.after(list);
+
+      const rules = [
+        [/^Listening · /, 'Ouvindo · '], [/^Getting ready$/, 'Preparando'],
+        [/^1 line heard$/, '1 fala ouvida'], [/^(\\d+) lines heard$/, '$1 falas ouvidas'],
+        [/^Someone else asked · /, 'Alguém perguntou · '], [/^(.+) asked · /, '$1 perguntou · '],
+        [/^You · /, 'Você · '], [/^Answer: /, 'Responder: '],
+        [/^Restore meeting panel · Listening$/, 'Restaurar o painel · Ouvindo'],
+        [/^Restore meeting panel · /, 'Restaurar o painel · '], [/^Preview of /, 'Prévia de '],
+      ];
+      const fix = t => rules.reduce((s, [re, to]) => s.replace(re, to), t);
+      const attrs = ['title', 'aria-label', 'alt', 'placeholder'];
+      const fixNode = n => {
+        if (n.nodeType === Node.TEXT_NODE) {
+          if (n.parentElement?.closest('textarea,script,style')) return;
+          const to = fix(n.nodeValue); if (to !== n.nodeValue) n.nodeValue = to; return;
+        }
+        if (n.nodeType !== Node.ELEMENT_NODE) return;
+        for (const el of [n, ...n.querySelectorAll('*')]) {
+          for (const a of attrs) if (el.hasAttribute(a)) {
+            const v = el.getAttribute(a), to = fix(v); if (to !== v) el.setAttribute(a, to);
+          }
+          for (const c of el.childNodes) if (c.nodeType === Node.TEXT_NODE) fixNode(c);
+        }
+      };
+      const watch = new MutationObserver(records => {
+        watch.disconnect();
+        for (const r of records) {
+          if (r.type === 'childList') r.addedNodes.forEach(fixNode);
+          else if (r.type === 'characterData') fixNode(r.target);
+          else fixNode(r.target);
+        }
+        start();
+      });
+      const start = () => watch.observe(document.body, {childList: true, subtree: true, characterData: true,
+        attributes: true, attributeFilter: attrs});
+      fixNode(document.body); start();
+
+      // Copiar a transcrição como está na tela, com os nomes (o original escreve You/Them)
+      document.addEventListener('click', e => {
+        if (!e.target.closest?.('#endcopy')) return;
+        e.preventDefault(); e.stopPropagation();
+        const text = [...document.querySelectorAll('#lines .line')].map(l =>
+          `${l.querySelector('.t')?.textContent || ''}  ${l.querySelector('.text')?.textContent || ''}`).join('\\n');
+        post({do: 'copy', text});
+        const toast = document.getElementById('toast');
+        if (toast) { toast.textContent = 'Transcrição copiada'; toast.hidden = false; setTimeout(() => toast.hidden = true, 4000); }
+      }, true);
+
       window.omi = {
         muted(on) { muted = on; paint(); },
         liveNotes(items) {
           list.textContent = items.length ? 'LiveNotes\\n' + items.map(t => '• ' + t).join('\\n') : '';
+        },
+        speaker({id, who}) {
+          const text = document.querySelector(`#lines [data-id="${id}"] .text`);
+          if (!text || text.querySelector('b')) return;
+          const name = document.createElement('b'); name.textContent = who + ' · '; text.prepend(name);
         }
       };
     })();
