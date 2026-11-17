@@ -299,7 +299,7 @@ struct SpineDay: Identifiable, Equatable {
   /// memories and says nothing about them reads as a day that produced none.
   var subtitle: String {
     var parts: [String] = []
-    if momentCount > 0 { parts.append(SpineFormat.plural(momentCount, "moment", "moments")) }
+    if momentCount > 0 { parts.append(SpineFormat.plural(momentCount, "momento", "momentos")) }
     if conversationCount > 0 {
       parts.append(SpineFormat.plural(conversationCount, "conversa", "conversas"))
     }

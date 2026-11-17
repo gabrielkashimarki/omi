@@ -242,7 +242,7 @@ final class SpineCompositionTests: XCTestCase {
     XCTAssertEqual(composed[0].conversationCount, 1)
     XCTAssertEqual(composed[0].memoryCount, 1)
     // Every kind the day holds, because this line is the whole of the day once it is folded shut.
-    XCTAssertEqual(composed[0].subtitle, "1,204 moments · 1 conversation · 1 memory")
+    XCTAssertEqual(composed[0].subtitle, "1.204 momentos · 1 conversa · 1 memória")
 
     let soloed = SpineComposer.filter(composed, kind: .memories, query: "")
     XCTAssertEqual(

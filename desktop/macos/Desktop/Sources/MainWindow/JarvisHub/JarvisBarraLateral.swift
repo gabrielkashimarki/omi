@@ -68,6 +68,7 @@ enum JarvisPagina: String, CaseIterable, Identifiable {
 
 struct JarvisBarraLateral: View {
   let selecionada: JarvisPagina
+  @ObservedObject var appState: AppState
   let escolher: (JarvisPagina) -> Void
 
   var body: some View {
@@ -80,6 +81,10 @@ struct JarvisBarraLateral: View {
       .padding(.horizontal, 8)
       .padding(.top, 25)
       .padding(.bottom, 16)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .contentShape(Rectangle())
+      // A barra de cima saiu; o cabeçalho é onde se arrasta a janela.
+      .shellWindowDragHandle()
 
       ScrollView {
         VStack(alignment: .leading, spacing: 2) {
@@ -90,8 +95,12 @@ struct JarvisBarraLateral: View {
         }
       }
       .scrollIndicators(.never)
-      item(.ajustes)
-        .padding(.top, 8)
+      // Microfone e tela (o que a barra de cima mostrava) ficam no rodapé, ao lado dos Ajustes.
+      HStack(spacing: 4) {
+        item(.ajustes)
+        ShellStatusIcons(appState: appState)
+      }
+      .padding(.top, 8)
     }
     .padding(.horizontal, 12)
     .padding(.bottom, 14)

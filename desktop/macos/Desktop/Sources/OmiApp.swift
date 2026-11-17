@@ -853,6 +853,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
       action: #selector(heyJarvisToggled(_:)))
     menu.addItem(wakeItem)
 
+    // o painel dos agentes escondido pelo botão dele volta por aqui
+    let agentesItem = NSMenuItem(title: "Mostrar agentes", action: #selector(mostrarAgentes), keyEquivalent: "")
+    agentesItem.target = self
+    menu.addItem(agentesItem)
+
     // When paywalled (trial expired / usage limit hit) it renders OFF: the feature can't run,
     // and tapping the toggle surfaces the upgrade popup.
     let screenCaptureItem = NSMenuItem()
@@ -1012,6 +1017,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
 
   @MainActor @objc private func talkToJarvis() {
     JarvisPainel.shared.abrir(ouvindo: true)
+  }
+
+  @MainActor @objc private func mostrarAgentes() {
+    AgentesNotch.shared.mostrar()
   }
 
   @MainActor @objc private func toggleMeeting() {

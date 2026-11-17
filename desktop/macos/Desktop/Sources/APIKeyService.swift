@@ -273,10 +273,14 @@ final class APIKeyService: ObservableObject {
     selectedBYOKLLMProvider != nil && activeBYOKSnapshot[.deepgram] != nil
   }
 
+  nonisolated static let jarvisMantem: Set<BYOKProvider> = [.gemini, .deepgram]
+
   /// Persist fingerprints that passed BYOKValidator and were sent to activateBYOK.
   nonisolated static func clearPersistedBYOKKeys() {
     let defaults = UserDefaults.standard
-    for provider in BYOKProvider.allCases {
+    // Omi Fork: Gemini e Deepgram são as chaves do Jarvis neste Mac (voz e legenda), não da conta do Omi. Trocar
+    // de conta (o fork já teve dois uid) apagava as duas e o painel ficava mudo com "Sem chave do Deepgram".
+    for provider in BYOKProvider.allCases where !jarvisMantem.contains(provider) {
       defaults.removeObject(forKey: provider.storageKey)
     }
     defaults.removeObject(forKey: DefaultsKey.byokLLMProvider.rawValue)

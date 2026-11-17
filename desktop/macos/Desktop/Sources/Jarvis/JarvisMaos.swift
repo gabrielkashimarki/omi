@@ -8,13 +8,16 @@ enum JarvisMaos {
     case abrirApp(String)
     case abrirURL(URL)
     case digitar(String)
+    /// Pede ao 1Password do Mac (⌘\, autofill da extensão) que preencha o login da página da frente. A senha não
+    /// passa pelo Jarvis, pelo Fly nem pela IA: quem preenche é o próprio 1Password.
+    case preencherLogin
     case hands([String])  // verbos do `Atticus --hands`: see, click, type, press, scroll, menu, wait...
     case desconhecida
   }
 
   static let formatos =
     "Formatos aceitos: {\"acao\":\"abrir_app\",\"app\":\"Calculadora\"}, {\"acao\":\"abrir_url\",\"url\":\"https://...\"}, "
-    + "{\"acao\":\"digitar\",\"texto\":\"...\"} ou {\"args\":[\"click\",\"Enviar\"]} (verbos do Atticus --hands: "
+    + "{\"acao\":\"digitar\",\"texto\":\"...\"}, {\"acao\":\"preencher_login\"} (1Password preenche o login da página) ou {\"args\":[\"click\",\"Enviar\"]} (verbos do Atticus --hands: "
     + "see, click, type, press, scroll, menu, wait)."
 
   // MARK: - Leitura (puro, testado)
@@ -46,6 +49,8 @@ enum JarvisMaos {
       return app.map(Acao.abrirApp) ?? .desconhecida
     case "digitar", "type", "escrever", "type_text":
       return digitado.map(Acao.digitar) ?? .desconhecida
+    case "preencher_login", "login", "autofill", "fazer_login", "logar":
+      return .preencherLogin
     case "":
       if let url, url.scheme != nil { return .abrirURL(url) }
       return app.map(Acao.abrirApp) ?? .desconhecida
@@ -93,6 +98,18 @@ enum JarvisMaos {
       }
       digitar(texto)
       return ok("Digitei \(texto.count) caracteres no app da frente.")
+    case .preencherLogin:
+      guard AXIsProcessTrusted() else {
+        return falha(
+          "O Omi Fork não tem permissão de Acessibilidade para acionar o 1Password. O Gabriel precisa liberar nos Ajustes.")
+      }
+      guard let navegador = trazerNavegador() else { return falha("Não achei um navegador aberto.") }
+      // espera a página carregar (a URL costuma ter acabado de abrir)
+      try? await Task.sleep(nanoseconds: 2_500_000_000)
+      atalhoUmPassword()
+      return ok(
+        "Pedi ao 1Password para preencher o login no \(navegador); se ele pedir Touch ID, confirme. "
+          + "Falta clicar em Entrar, se a página não entrar sozinha.")
     case .hands(let args):
       return await hands(args)
     case .desconhecida:
@@ -119,6 +136,38 @@ enum JarvisMaos {
       }
     }
     return nil
+  }
+
+  static let navegadores = [
+    "com.google.Chrome", "com.apple.Safari", "company.thebrowser.Browser", "com.brave.Browser",
+    "com.microsoft.edgemac", "org.mozilla.firefox",
+  ]
+
+  /// O navegador da frente, ou o último usado (o que acabou de abrir a URL), vai para o foco.
+  @MainActor private static func trazerNavegador() -> String? {
+    let ws = NSWorkspace.shared
+    if let frente = ws.frontmostApplication, navegadores.contains(frente.bundleIdentifier ?? "") {
+      return frente.localizedName
+    }
+    // runningApplications não vem em ordem de uso; o navegador padrão é o que abriu a URL do abrir_url
+    let padrao = ws.urlForApplication(toOpen: URL(string: "https://example.com")!)
+      .flatMap { Bundle(url: $0)?.bundleIdentifier }
+    let abertos = ws.runningApplications.filter { navegadores.contains($0.bundleIdentifier ?? "") }
+    guard let app = abertos.first(where: { $0.bundleIdentifier == padrao }) ?? abertos.first else { return nil }
+    app.activate()
+    usleep(400_000)
+    return app.localizedName
+  }
+
+  /// ⌘\ é o atalho padrão de preenchimento da extensão do 1Password.
+  private static func atalhoUmPassword() {
+    let fonte = CGEventSource(stateID: .hidSystemState)
+    let barraInvertida: CGKeyCode = 42  // kVK_ANSI_Backslash
+    for desce in [true, false] {
+      let e = CGEvent(keyboardEventSource: fonte, virtualKey: barraInvertida, keyDown: desce)
+      e?.flags = .maskCommand
+      e?.post(tap: .cghidEventTap)
+    }
   }
 
   /// Digita no app da frente como se fosse o teclado, em pedaços (o CGEvent aceita até 20 caracteres por evento).

@@ -159,9 +159,10 @@ private final class InkReduceTransparencyObservation: @unchecked Sendable {
 /// cannot flip. Reducing the decision to functions of one `Bool` puts it inside reach; the view then
 /// has a single branch and no judgement of its own.
 package enum InkGlass {
-  /// The appearance every glass surface is pinned to. See the file header — this is what makes the
-  /// panel light *and* what makes the type on it dark. Pinned exactly, never system-following.
-  package static let appearanceName: NSAppearance.Name = .aqua
+  /// The appearance every glass surface is pinned to. Pinned exactly, never system-following.
+  /// Omi Fork: escuro, para o vidro casar com a moldura preta do hub do Jarvis (fase 4). As medições
+  /// de contraste do cabeçalho do arquivo foram feitas no `.aqua` e não valem mais ao pé da letra.
+  package static let appearanceName: NSAppearance.Name = .darkAqua
 
   /// Resolved, for the places that need the object rather than the name.
   ///

@@ -39,8 +39,8 @@ final class ShellGlassChromeTests: XCTestCase {
     WindowGlass.wear(window, as: .titled)
 
     XCTAssertEqual(
-      window.appearance?.name, .aqua,
-      "the glass is pinned light; a dark-pinned window renders the dark material and white type on it")
+      window.appearance?.name, InkGlass.appearanceName,
+      "the glass is pinned; a window following the system would mix both materials")
     XCTAssertFalse(
       window.isOpaque,
       "an opaque window cannot composite the material at all")

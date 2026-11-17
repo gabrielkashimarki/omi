@@ -51,8 +51,8 @@ final class ShellWindowChromeTests: XCTestCase {
     XCTAssertFalse(window.isOpaque)
     XCTAssertEqual(window.backgroundColor, .clear)
     XCTAssertEqual(
-      window.appearance?.name, .aqua,
-      "the glass is pinned light; a dark-pinned window renders the dark material and white type on it")
+      window.appearance?.name, InkGlass.appearanceName,
+      "the glass is pinned; a window following the system would mix both materials")
   }
 
   // MARK: - The chrome that went, and what replaced it

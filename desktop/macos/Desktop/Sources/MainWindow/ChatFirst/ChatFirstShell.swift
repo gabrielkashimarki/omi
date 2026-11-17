@@ -17,7 +17,6 @@ struct ChatFirstShell: View {
   @StateObject private var automationRuntime: ChatFirstAutomationRuntime
   @AppStorage(MemoryHubDestination.storageKey) private var memoryDestinationRawValue =
     MemoryHubDestination.memories.rawValue
-  @AppStorage("topBarNewSince") private var topBarNewSinceRaw: Double = 0
   /// Página do hub do Jarvis aberta por cima das rotas do Omi; nil mostra a rota.
   @State private var paginaHub: JarvisPagina?
 
@@ -48,9 +47,12 @@ struct ChatFirstShell: View {
     // No ground of its own — the window has none either (`ShellWindowChrome`), so the
     // panels below are the glass, and a scrim here would spend the passthrough budget twice.
     HStack(spacing: 0) {
-      JarvisBarraLateral(selecionada: paginaSelecionada, escolher: escolherPagina)
+      JarvisBarraLateral(selecionada: paginaSelecionada, appState: appState, escolher: escolherPagina)
       conteudoPrincipal
     }
+    // A janela inteira é opaca agora; sem este marcador o `ShellMouseInterceptionSync` deixava o
+    // clique atravessar a barra lateral (que não é vidro) para o app de trás.
+    .background(InkGlassHitRegionReporter())
     .background(JarvisHubTema.janela.ignoresSafeArea())
     .onChange(of: navigation.route) { _, _ in paginaHub = nil }
   }
@@ -81,9 +83,9 @@ struct ChatFirstShell: View {
   private var paginaDoHub: some View {
     switch paginaHub {
     case .tarefas:
-      JarvisEmBreve(titulo: "Tarefas", texto: "A matriz de demandas chega na fase 4.")
+      JarvisTarefasPagina()
     case .cerebro:
-      JarvisEmBreve(titulo: "Cérebro", texto: "As asserções por cliente e camada chegam na fase 4.")
+      JarvisCerebroPagina()
     case .estatisticas:
       JarvisEstatisticasPagina()
     case .sessoes:
@@ -95,14 +97,6 @@ struct ChatFirstShell: View {
 
   private var conteudoPrincipal: some View {
     VStack(spacing: 0) {
-      DesktopTopBar(
-        selectedIndex: modernTopBarSelection,
-        memoryDestinationRawValue: $memoryDestinationRawValue,
-        appState: appState,
-        memoriesViewModel: viewModelContainer.memoriesViewModel,
-        tasksStore: viewModelContainer.tasksStore,
-        sinceDate: topBarSinceDate
-      )
       // Route-specific identity guarantees every semantic navigation change
       // mounts a fresh destination root and runs its visibility acknowledgement.
       // Without it, SwiftUI can structurally reuse compatible branches (notably
@@ -226,10 +220,6 @@ struct ChatFirstShell: View {
     _ = navigation.acknowledgeFocus(focus)
   }
 
-  private var topBarSinceDate: Date {
-    topBarNewSinceRaw > 0 ? Date(timeIntervalSince1970: topBarNewSinceRaw) : Date()
-  }
-
   private var memoryHubDestination: some View {
     ChatFirstMemoryHubHost(
       navigation: navigation,
@@ -265,36 +255,6 @@ struct ChatFirstShell: View {
         highlightedSettingId: $highlightedSettingID
       )
     }
-  }
-
-  private var modernTopBarSelection: Binding<Int> {
-    Binding(
-      get: {
-        ChatFirstModernNavigationPolicy.topBarIndex(
-          for: navigation.route, dailyRecapOrigin: navigation.dailyRecapOrigin)
-      },
-      set: { rawValue in
-        guard let route = ChatFirstModernNavigationPolicy.route(forTopBarIndex: rawValue) else {
-          return
-        }
-        switch route {
-        case .conversations:
-          // The hub's one pill says `Brain`, so it opens the Brain spine — not whichever hub view
-          // happened to be persisted last, and not the Conversations route this index maps back
-          // from. Routing through the same writer the chip row uses keeps one path responsible for
-          // moving both halves of the state.
-          selectHubDestination(.activity)
-        case .tasks, .memories, .goals:
-          navigation.selectPrimary(route)
-        case .more(let page):
-          navigation.selectMore(page)
-        case .dailyRecap:
-          // Not reachable — `route(forTopBarIndex:)` never returns a recap —
-          // and a recap is not a top-bar destination even if it were.
-          return
-        }
-      }
-    )
   }
 
   /// Applying a Memory hub selection here moves **both** halves of this shell's state: the persisted

@@ -58,7 +58,11 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
 
   override init() {
     super.init()
-    legenda.aoOuvir = { [weak self] t in self?.chamar("legenda", t) }
+    legenda.aoOuvir = { [weak self] t in
+      self?.chamar("legenda", t)
+      // já falou: a guarda dos 8 s sai; se o Deepgram calar sem fechar a frase, 4 s depois vai o que foi dito
+      self?.guardarSilencio(4)
+    }
     legenda.aoTerminar = { [weak self] t in self?.pedir(t) }
     legenda.aoFalhar = { [weak self] t in
       guard let self else { return }
@@ -163,24 +167,41 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
   // MARK: - Ouvir, pedir e confirmar
 
   func ouvir() {
+    // o botão do microfone enquanto ouve encerra a fala e manda o que foi dito
+    if estado.fase == .ouvindo, legenda.ouvindo {
+      terminarFala()
+      return
+    }
     MeetingCopilotVoice.shared.stop()
     mudar(.ouvindo)
     chamar("legenda", "")
     chamar("erro", "")
     legenda.comecar()
-    // sem fala em 8 s, para de ouvir
+    guardarSilencio(8)  // sem fala em 8 s, para de ouvir
+  }
+
+  /// Guarda contra silêncio sem fim de frase do Deepgram. Antes de qualquer fala é a espera inicial; depois, é
+  /// rearmada a cada palavra, então fala longa nunca é cortada.
+  private func guardarSilencio(_ segundos: TimeInterval) {
     silencio?.cancel()
     let item = DispatchWorkItem {
       MainActor.assumeIsolated {
         let s = JarvisPainel.shared
         guard s.estado.fase == .ouvindo else { return }
-        s.legenda.parar()
-        s.mudar(.pronto)
-        s.chamar("erro", "Não ouvi nada. Fale de novo ou digite.")
+        s.terminarFala()
       }
     }
     silencio = item
-    DispatchQueue.main.asyncAfter(deadline: .now() + 8, execute: item)
+    DispatchQueue.main.asyncAfter(deadline: .now() + segundos, execute: item)
+  }
+
+  /// "Não ouvi nada" só quando nem final nem parcial trouxeram texto.
+  private func terminarFala() {
+    silencio?.cancel()
+    if legenda.terminar() { return }  // aoTerminar → pedir
+    legenda.parar()
+    mudar(.pronto)
+    chamar("erro", "Não ouvi nada. Fale de novo ou digite.")
   }
 
   func pedir(_ texto: String) {
@@ -271,12 +292,16 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
       fila.append((funcao, valor))
       return
     }
+    guard let js = Self.chamadaJS(funcao, valor) else { return }
+    alvo.evaluateJavaScript(js)
+  }
+
+  /// O JS da chamada, com o valor serializado em JSON (aspas, acentos e quebras de linha escapados; puro, testado).
+  nonisolated static func chamadaJS(_ funcao: String, _ valor: Any) -> String? {
     let args: [Any] = [valor]
     guard JSONSerialization.isValidJSONObject(args), let dados = try? JSONSerialization.data(withJSONObject: args)
-    else {
-      return
-    }
-    alvo.evaluateJavaScript("window.jarvis?.\(funcao)(...\(String(decoding: dados, as: UTF8.self)))")
+    else { return nil }
+    return "window.jarvis?.\(funcao)(...\(String(decoding: dados, as: UTF8.self)))"
   }
 
   func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {

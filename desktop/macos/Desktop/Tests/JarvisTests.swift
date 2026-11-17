@@ -94,6 +94,61 @@ final class JarvisTests: XCTestCase {
     XCTAssertEqual(b.receber(["type": "UtteranceEnd"])?.terminou, true)
   }
 
+  func testFimDeFalaUsaOParcialQuandoOFinalNaoChegou() {
+    func r(_ texto: String, final: Bool = false) -> [String: Any] {
+      ["type": "Results", "is_final": final, "channel": ["alternatives": [["transcript": texto]]]]
+    }
+    var a = JarvisLegenda.Acumulador()
+    XCTAssertEqual(a.textoAteAgora, "", "nada ouvido: aí sim é \"Não ouvi nada\"")
+    _ = a.receber(r("abre a conta das no gerenciador de anúncio do Facebook"))
+    XCTAssertEqual(a.textoAteAgora, "abre a conta das no gerenciador de anúncio do Facebook")
+    XCTAssertEqual(a.receber(["type": "UtteranceEnd"])?.texto, "abre a conta das no gerenciador de anúncio do Facebook")
+
+    var b = JarvisLegenda.Acumulador()
+    _ = b.receber(r("abre a conta", final: true))
+    _ = b.receber(r("do Facebook"))
+    XCTAssertEqual(b.textoAteAgora, "abre a conta do Facebook", "finais primeiro, depois o parcial em aberto")
+    _ = b.receber(r("do Facebook Ads", final: true))
+    XCTAssertEqual(b.textoAteAgora, "abre a conta do Facebook Ads", "o final substitui o parcial")
+  }
+
+  func testFalaLongaComAspasEAcentosChegaInteira() throws {
+    let trechos = [
+      "Jarvis, abre o gerenciador de anúncios do Facebook na conta da Ópera Arte,",
+      "procura a campanha \"Réveillon 2027\" e me diz quanto gastou ontem,",
+      "quantos leads entraram e qual foi o custo por lead comparado à semana passada,",
+      "e depois anota isso no Cérebro com a data de hoje — sem pausar a campanha.",
+    ]
+    var a = JarvisLegenda.Acumulador()
+    for t in trechos {
+      _ = a.receber(["type": "Results", "is_final": false, "channel": ["alternatives": [["transcript": t]]]])
+      _ = a.receber(["type": "Results", "is_final": true, "channel": ["alternatives": [["transcript": t]]]])
+    }
+    let fim = try XCTUnwrap(a.receber(["type": "UtteranceEnd"]))
+    let esperado = trechos.joined(separator: " ")
+    XCTAssertGreaterThan(esperado.count, 200)
+    XCTAssertEqual(fim.texto, esperado)
+    XCTAssertTrue(fim.terminou)
+    XCTAssertTrue(JarvisLegenda.url.absoluteString.contains("endpointing=1200"), "fim por silêncio de 1,2 s")
+
+    // a ponte para o JS leva o texto inteiro, escapado
+    let js = try XCTUnwrap(JarvisPainel.chamadaJS("legenda", esperado + "\nlinha 2"))
+    XCTAssertTrue(js.hasPrefix("window.jarvis?.legenda(...["))
+    let json = String(js.dropFirst("window.jarvis?.legenda(...".count).dropLast())
+    let volta = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String])
+    XCTAssertEqual(volta, [esperado + "\nlinha 2"])
+
+    // e o corpo do POST /jarvis também
+    let corpo = try JSONSerialization.data(withJSONObject: ["texto": esperado, "origem": "mac"])
+    XCTAssertEqual((try JSONSerialization.jsonObject(with: corpo) as? [String: String])?["texto"], esperado)
+  }
+
+  func testPreencherLoginNuncaLevaSenha() {
+    XCTAssertEqual(JarvisMaos.ler(["acao": "preencher_login"]), .preencherLogin)
+    XCTAssertEqual(JarvisMaos.ler(["action": "autofill"]), .preencherLogin)
+    XCTAssertTrue(JarvisMaos.formatos.contains("preencher_login"))
+  }
+
   // MARK: - Painel e ícone
 
   func testPainelSomeVinteSegundosDepoisDaUltimaAtividade() {

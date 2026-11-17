@@ -57,6 +57,10 @@ enum ActivityDestinationChip: String, CaseIterable, Identifiable {
     }
   }
 
+  /// Os chips que aparecem no app único: só os dois lados do Hoje. Conversas tem item próprio na
+  /// barra lateral do Jarvis; Memórias e Mapa do cérebro saíram (spec do Jarvis único).
+  static let visiveis: [ActivityDestinationChip] = [.activity, .rewind]
+
   /// Every hub page this row can reach. `ShellDestination.unreachable()` reads exactly this.
   static var reachableHubDestinations: [MemoryHubDestination] {
     allCases.map(\.hubDestination)
@@ -85,7 +89,7 @@ struct BrainSectionNavigation: View {
   @ViewBuilder
   private var navigationRow: some View {
     HStack(spacing: QueryShellLayout.chipSpacing) {
-      ForEach(ActivityDestinationChip.allCases) { chip in
+      ForEach(ActivityDestinationChip.visiveis) { chip in
         BrainSectionButton(
           title: chip.title,
           isActive: chip.hubDestination == selected,
@@ -162,6 +166,7 @@ struct BrainSectionPageLayout<Search: View, Content: View>: View {
         }
 
         VStack(alignment: .leading, spacing: 0) {
+          if ActivityDestinationChip.visiveis.contains(where: { $0.hubDestination == selected }) {
           BrainSectionNavigation(selected: selected) { destination in
             if destination == selected {
               onReselect?()
@@ -172,6 +177,7 @@ struct BrainSectionPageLayout<Search: View, Content: View>: View {
           .padding(.horizontal, QueryShellLayout.panelPaddingHorizontal)
           .padding(.top, BrainSectionPageMetrics.navigationTopPadding)
           .padding(.bottom, BrainSectionPageMetrics.navigationBottomPadding)
+          }
 
           content
             .frame(maxWidth: .infinity, maxHeight: .infinity)

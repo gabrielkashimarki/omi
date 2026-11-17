@@ -1,9 +1,10 @@
 //
-//  AgentesNotch.swift — a ilha preta no notch: o mascote, as sessões e o cartão de permissão.
+//  AgentesNotch.swift — o painel flutuante dos agentes: o mascote, as sessões e o cartão de permissão.
 //
-//  Portado do Coucou (MIT, © 2026 Louis Raillé, aviso em THIRD_PARTY_COUCOU_LICENSE):
-//  `NotchBuddy/Sources/App/IslandWindowController.swift` (painel sem borda acima da barra de menus)
-//  e o cartão de aprovação de `NotchBuddy/Sources/App/IslandViewContent.swift`, bem simplificados.
+//  Era uma ilha fixa no notch (portada do Coucou, MIT, © 2026 Louis Raillé, aviso em
+//  THIRD_PARTY_COUCOU_LICENSE: `IslandWindowController.swift` e o cartão de `IslandViewContent.swift`).
+//  Cobria o topo das janelas, então virou um painel solto como o do copiloto (`CopilotPanel`): recolhido numa
+//  pílula no canto inferior direito, arrastável, lembra onde foi solto e abre ao passar o mouse ou num pedido.
 //
 
 import AppKit
@@ -11,16 +12,69 @@ import Combine
 import OmiTheme
 import SwiftUI
 
+/// Onde e de que tamanho o painel fica (puro, testado). A âncora é o canto inferior direito: o painel cresce
+/// para cima e para a esquerda, que é para onde há espaço quando ele mora no canto da tela.
+enum AgentesPainelPosicao {
+  static let chaveCanto = "agentes.painel.canto"
+  static let chaveEscondido = "agentes.painel.escondido"
+  static let margem: CGFloat = 16
+
+  static func tamanho(expandido: Bool, sessoes: Int, comPedido: Bool) -> NSSize {
+    if comPedido { return NSSize(width: 380, height: 52 + 128) }
+    guard expandido else { return NSSize(width: 92, height: 38) }
+    return NSSize(width: 300, height: 52 + CGFloat(min(max(sessoes, 1), 6)) * 30)
+  }
+
+  /// Canto padrão: inferior direito da área visível.
+  static func cantoPadrao(_ tela: NSRect) -> NSPoint {
+    NSPoint(x: tela.maxX - margem, y: tela.minY + margem)
+  }
+
+  /// O quadro com o canto inferior direito em `canto`, sem sair da tela.
+  static func quadro(canto: NSPoint, tamanho: NSSize, tela: NSRect) -> NSRect {
+    var x = canto.x - tamanho.width
+    var y = canto.y
+    x = min(max(x, tela.minX), tela.maxX - tamanho.width)
+    y = min(max(y, tela.minY), tela.maxY - tamanho.height)
+    return NSRect(x: x, y: y, width: tamanho.width, height: tamanho.height)
+  }
+
+  static func ler(_ d: UserDefaults = .standard) -> NSPoint? {
+    guard let a = d.array(forKey: chaveCanto) as? [Double], a.count == 2 else { return nil }
+    return NSPoint(x: a[0], y: a[1])
+  }
+
+  static func gravar(_ p: NSPoint, _ d: UserDefaults = .standard) {
+    d.set([Double(p.x), Double(p.y)], forKey: chaveCanto)
+  }
+}
+
 @MainActor
-final class AgentesNotch {
+final class AgentesNotch: ObservableObject {
   static let shared = AgentesNotch()
+
+  @Published var expandido = false {
+    didSet { if expandido != oldValue, let central { atualizar(central) } }
+  }
+  /// Escondido pelo botão do painel; volta pelo menu da barra. Pedido de permissão aparece mesmo assim, porque
+  /// a sessão do Claude Code fica parada esperando.
+  var escondido: Bool {
+    get { UserDefaults.standard.bool(forKey: AgentesPainelPosicao.chaveEscondido) }
+    set {
+      UserDefaults.standard.set(newValue, forKey: AgentesPainelPosicao.chaveEscondido)
+      if let central { atualizar(central) }
+    }
+  }
 
   private var painel: NSPanel?
   private var observacao: AnyCancellable?
+  private weak var central: AgentesCentral?
+  private var inicioArrasto: (mouse: NSPoint, origem: NSPoint)?
 
-  /// Mostra a ilha enquanto houver sessão ou pedido; esconde (0 % de CPU) quando não há nada.
+  /// Mostra o painel enquanto houver sessão ou pedido; esconde (0 % de CPU) quando não há nada.
   func ligar(_ central: AgentesCentral) {
     guard observacao == nil else { return }
+    self.central = central
     observacao = central.objectWillChange
       .receive(on: RunLoop.main)
       .sink { [weak self, weak central] _ in
@@ -30,77 +84,141 @@ final class AgentesNotch {
     atualizar(central)
   }
 
+  func mostrar() {
+    escondido = false
+  }
+
   private func atualizar(_ central: AgentesCentral) {
-    let visivel = !central.quadro.sessoes.isEmpty || !central.pedidos.isEmpty
-    guard visivel, let tela = NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) ?? NSScreen.main
-    else {
+    let comPedido = !central.pedidos.isEmpty
+    let visivel = comPedido || (!central.quadro.sessoes.isEmpty && !escondido)
+    guard visivel, let tela = (painel?.screen ?? NSScreen.main)?.visibleFrame else {
       painel?.orderOut(nil)
       return
     }
-    let notch = tela.safeAreaInsets.top
-    let tamanho = NSSize(
-      width: central.pedidos.isEmpty ? 300 : 400,
-      height: notch + 34 + (central.pedidos.isEmpty ? 0 : 128))
-    let topo = notch > 0 ? tela.frame.maxY : tela.visibleFrame.maxY
-    let quadro = NSRect(
-      x: tela.frame.midX - tamanho.width / 2, y: topo - tamanho.height, width: tamanho.width,
-      height: tamanho.height)
-
-    let painel = self.painel ?? criarPainel(central, notch: notch)
+    let tamanho = AgentesPainelPosicao.tamanho(
+      expandido: expandido, sessoes: central.quadro.sessoes.count, comPedido: comPedido)
+    let canto = painel.map { NSPoint(x: $0.frame.maxX, y: $0.frame.minY) }
+      ?? AgentesPainelPosicao.ler() ?? AgentesPainelPosicao.cantoPadrao(tela)
+    let painel = self.painel ?? criarPainel(central)
     self.painel = painel
-    painel.setFrame(quadro, display: true)
+    painel.setFrame(AgentesPainelPosicao.quadro(canto: canto, tamanho: tamanho, tela: tela), display: true)
     painel.orderFrontRegardless()
   }
 
-  private func criarPainel(_ central: AgentesCentral, notch: CGFloat) -> NSPanel {
-    let painel = NSPanel(
+  private func criarPainel(_ central: AgentesCentral) -> NSPanel {
+    let painel = CopilotPanel(
       contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
     painel.isOpaque = false
     painel.backgroundColor = .clear
-    painel.hasShadow = false
-    painel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.mainMenuWindow)) + 3)
-    painel.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
+    painel.hasShadow = true
+    painel.level = .floating
+    painel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
     painel.becomesKeyOnlyIfNeeded = true
+    painel.hidesOnDeactivate = false
     painel.isReleasedWhenClosed = false
-    painel.contentView = NSHostingView(rootView: AgentesIlha(central: central, alturaNotch: notch))
+    painel.contentView = NSHostingView(rootView: AgentesIlha(central: central, controle: self))
     return painel
+  }
+
+  // MARK: - Arrastar (pelo mouse da tela: o gesto do SwiftUI mede em coordenadas da janela, que se move junto)
+
+  func arrastar() {
+    guard let painel else { return }
+    let mouse = NSEvent.mouseLocation
+    if inicioArrasto == nil { inicioArrasto = (mouse, painel.frame.origin) }
+    guard let i = inicioArrasto else { return }
+    painel.setFrameOrigin(NSPoint(x: i.origem.x + mouse.x - i.mouse.x, y: i.origem.y + mouse.y - i.mouse.y))
+  }
+
+  func soltar() {
+    inicioArrasto = nil
+    guard let painel else { return }
+    AgentesPainelPosicao.gravar(NSPoint(x: painel.frame.maxX, y: painel.frame.minY))
   }
 }
 
 struct AgentesIlha: View {
   @ObservedObject var central: AgentesCentral
-  let alturaNotch: CGFloat
+  @ObservedObject var controle: AgentesNotch
+  @State private var sobre = false
+
+  private var aberto: Bool { controle.expandido || !central.pedidos.isEmpty }
 
   var body: some View {
-    VStack(spacing: 0) {
-      Color.clear.frame(height: alturaNotch)
-      HStack(spacing: 10) {
-        JarvisMascote(estado: central.estadoMascote, tamanho: 20)
-        Text(linha)
-          .font(.system(size: 12.5, weight: .medium))
-          .lineLimit(1)
-        Spacer(minLength: 0)
-        Text("\(central.quadro.sessoes.count)")
-          .font(.system(size: 12, weight: .bold))
-          .monospacedDigit()
-          .foregroundColor(JarvisHubTema.secundario)
-      }
-      .padding(.horizontal, 14)
-      .frame(height: 34)
+    VStack(alignment: .leading, spacing: 0) {
+      if aberto { cabecalho } else { pilula }
       if let pedido = central.pedidos.first {
         AgentesCartaoPermissao(pedido: pedido, naFila: central.pedidos.count - 1) {
           central.decidir(pedido.id, $0)
         }
         .padding(.horizontal, 12)
         .padding(.bottom, 12)
+      } else if aberto {
+        ForEach(central.quadro.lista.prefix(6)) { sessao in
+          HStack(spacing: 8) {
+            JarvisMascote(estado: AgentesSessoesPagina.mascote(sessao.estado), tamanho: 14)
+            Text(sessao.projeto).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+            Text(sessao.estado.rotulo.lowercased())
+              .font(.system(size: 11.5))
+              .foregroundColor(JarvisHubTema.secundario)
+              .lineLimit(1)
+            Spacer(minLength: 0)
+          }
+          .frame(height: 30)
+          .padding(.horizontal, 14)
+        }
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .foregroundColor(JarvisHubTema.texto)
-    .background(
-      UnevenRoundedRectangle(bottomLeadingRadius: 18, bottomTrailingRadius: 18, style: .continuous)
-        .fill(Color.black))
+    .background(RoundedRectangle(cornerRadius: aberto ? 16 : 19, style: .continuous).fill(Color.black.opacity(0.92)))
+    .overlay(RoundedRectangle(cornerRadius: aberto ? 16 : 19, style: .continuous).strokeBorder(JarvisHubTema.linha))
+    .contentShape(Rectangle())
+    .gesture(DragGesture(minimumDistance: 3).onChanged { _ in controle.arrastar() }.onEnded { _ in controle.soltar() })
+    .onHover { dentro in
+      sobre = dentro
+      controle.expandido = dentro
+    }
     .environment(\.colorScheme, .dark)
+    .accessibilityIdentifier("agentes-painel")
+  }
+
+  private var pilula: some View {
+    HStack(spacing: 8) {
+      JarvisMascote(estado: central.estadoMascote, tamanho: 20)
+      Text("\(central.quadro.sessoes.count)")
+        .font(.system(size: 13, weight: .bold))
+        .monospacedDigit()
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .onTapGesture { controle.expandido.toggle() }
+    .accessibilityLabel("Agentes: \(central.quadro.sessoes.count) sessões")
+  }
+
+  private var cabecalho: some View {
+    HStack(spacing: 10) {
+      JarvisMascote(estado: central.estadoMascote, tamanho: 20)
+      Text(linha)
+        .font(.system(size: 12.5, weight: .medium))
+        .lineLimit(1)
+      Spacer(minLength: 0)
+      Text("\(central.quadro.sessoes.count)")
+        .font(.system(size: 12, weight: .bold))
+        .monospacedDigit()
+        .foregroundColor(JarvisHubTema.secundario)
+      Button {
+        controle.expandido = false
+        controle.escondido = true
+      } label: {
+        Image(systemName: "eye.slash").font(.system(size: 11, weight: .medium))
+      }
+      .buttonStyle(.plain)
+      .foregroundColor(JarvisHubTema.secundario)
+      .help("Esconder; volta pelo menu da barra (Mostrar agentes)")
+      .accessibilityIdentifier("agentes-painel-esconder")
+    }
+    .padding(.horizontal, 14)
+    .frame(height: 44)
   }
 
   private var linha: String {

@@ -44,34 +44,49 @@ final class JarvisMicrofone: @unchecked Sendable {
 }
 
 /// Legenda ao vivo da fala do Gabriel: Deepgram nova-3 pt-BR em streaming, com parciais, a mesma de 11/10.
-/// A frase termina no `speech_final` (pausa de 0,8 s) ou no `UtteranceEnd`.
+/// A frase termina só por silêncio: `speech_final` (pausa de 1,2 s) ou `UtteranceEnd`; ou pelo botão (`terminar`).
+/// Nada corta por tamanho ou por tempo enquanto ele fala.
 @MainActor
 final class JarvisLegenda {
   // sem smart_format: ele troca "sexta" por "6º"
-  static let url = URL(
+  nonisolated static let url = URL(
     string: "wss://api.deepgram.com/v1/listen?model=nova-3&language=pt-BR&interim_results=true&punctuate=true"
-      + "&encoding=linear16&sample_rate=16000&channels=1&endpointing=800&utterance_end_ms=1500&vad_events=true")!
+      + "&encoding=linear16&sample_rate=16000&channels=1&endpointing=1200&utterance_end_ms=1500&vad_events=true")!
 
   /// Junta finais e parciais de um turno (puro, testado).
   struct Acumulador: Equatable {
     var finais = ""
+    /// O último parcial ainda não confirmado por um `is_final`.
+    var parcial = ""
+
+    /// Tudo o que foi dito: os finais e, depois deles, o parcial em aberto. Vazio só se nada foi ouvido.
+    var textoAteAgora: String {
+      [finais, parcial].filter { !$0.isEmpty }.joined(separator: " ")
+    }
 
     /// Devolve o texto da legenda até agora e se a frase acabou.
     mutating func receber(_ j: [String: Any]) -> (texto: String, terminou: Bool)? {
       if j["type"] as? String == "UtteranceEnd" {
-        return finais.isEmpty ? nil : (finais, true)
+        // o último is_final pode não ter chegado: o parcial em aberto conta
+        let t = textoAteAgora
+        return t.isEmpty ? nil : (t, true)
       }
       guard j["type"] as? String == "Results",
         let alt = ((j["channel"] as? [String: Any])?["alternatives"] as? [[String: Any]])?.first
       else { return nil }
       let texto = (alt["transcript"] as? String ?? "").trimmingCharacters(in: .whitespaces)
       if j["is_final"] as? Bool == true {
-        if !texto.isEmpty { finais = finais.isEmpty ? texto : finais + " " + texto }
-        if finais.isEmpty { return nil }
-        return (finais, j["speech_final"] as? Bool == true)
+        if !texto.isEmpty {
+          finais = finais.isEmpty ? texto : finais + " " + texto
+          parcial = ""
+        }
+        let t = textoAteAgora
+        if t.isEmpty { return nil }
+        return (t, j["speech_final"] as? Bool == true)
       }
       guard !texto.isEmpty else { return nil }
-      return (finais.isEmpty ? texto : finais + " " + texto, false)
+      parcial = texto
+      return (textoAteAgora, false)
     }
   }
 
@@ -99,6 +114,17 @@ final class JarvisLegenda {
     Task { [weak self] in await self?.ler(ws) }
   }
 
+  /// Fim pelo botão ou pela guarda de silêncio: entrega o que já foi dito. Falso se nada foi ouvido.
+  @discardableResult
+  func terminar() -> Bool {
+    guard ws != nil else { return false }
+    let t = acumulador.textoAteAgora
+    parar()
+    guard !t.isEmpty else { return false }
+    aoTerminar?(t)
+    return true
+  }
+
   func parar() {
     guard let ws else { return }
     self.ws = nil
@@ -110,8 +136,8 @@ final class JarvisLegenda {
   private func ler(_ ws: URLSessionWebSocketTask) async {
     while self.ws === ws {
       guard let m = try? await ws.receive() else {
-        if self.ws === ws {
-          parar()
+        // o Deepgram fechou: o que já foi dito vai para o Jarvis em vez de se perder
+        if self.ws === ws, !terminar() {
           aoFalhar?("Sem legenda: o Deepgram não respondeu")
         }
         return

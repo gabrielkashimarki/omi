@@ -242,6 +242,19 @@ import XCTest
       .differentOwner)
   }
 
+  func testTrocaDeDonoNaoApagaAsChavesDoJarvis() {
+    clearAllBYOKKeys()
+    UserDefaults.standard.set("owner-a", forKey: .byokOwnerUid)
+    UserDefaults.standard.set("gm-jarvis", forKey: BYOKProvider.gemini.storageKey)
+    UserDefaults.standard.set("dg-jarvis", forKey: BYOKProvider.deepgram.storageKey)
+
+    APIKeyService.bindBYOKOwner("owner-b")
+
+    XCTAssertEqual(APIKeyService.byokKey(.gemini), "gm-jarvis")
+    XCTAssertEqual(APIKeyService.byokKey(.deepgram), "dg-jarvis")
+    clearAllBYOKKeys()
+  }
+
   func testOwnerBindingWithoutKeysDoesNotInventAResetNotice() {
     clearAllBYOKKeys()
     UserDefaults.standard.removeObject(forKey: .byokOwnerUid)

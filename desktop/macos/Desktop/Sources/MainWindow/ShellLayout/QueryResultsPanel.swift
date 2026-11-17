@@ -233,7 +233,7 @@ struct QueryResultsPanel<Content: View, TopAccessory: View, Accessory: View, Foo
           .accessibilityIdentifier("query-shell-chip-\(kind.rawValue)")
         }
       case .openDestinations(let selected, let open):
-        ForEach(ActivityDestinationChip.allCases) { chip in
+        ForEach(ActivityDestinationChip.visiveis) { chip in
           QueryTypeChip(
             title: chip.title,
             isActive: chip == selected,
