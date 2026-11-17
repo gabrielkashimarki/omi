@@ -311,6 +311,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     DesktopAutomationBridge.shared.startIfNeeded()
     DesktopAutomationWindowPresentation.installIfNeeded()
     NetworkReachability.shared.start()
+    // Sessões do Claude Code e permissões no notch (hooks em ~/Library/Application Support/JarvisAgentes).
+    AgentesCentral.shared.iniciar()
     publishNamedBundleRuntimeManifest()
 
     runStartupSystemMaintenance()

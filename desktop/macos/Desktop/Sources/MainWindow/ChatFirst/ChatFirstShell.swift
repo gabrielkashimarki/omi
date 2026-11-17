@@ -87,7 +87,7 @@ struct ChatFirstShell: View {
     case .estatisticas:
       JarvisEstatisticasPagina()
     case .sessoes:
-      JarvisEmBreve(titulo: "Sessões", texto: "As sessões dos agentes aparecem aqui.")
+      AgentesSessoesPagina()
     default:
       EmptyView()
     }
