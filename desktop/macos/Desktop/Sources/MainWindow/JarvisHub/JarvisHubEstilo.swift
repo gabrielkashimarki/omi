@@ -96,22 +96,6 @@ extension JarvisPaginaBase where Trailing == EmptyView {
   }
 }
 
-/// Página que ainda não existe (fase 4).
-struct JarvisEmBreve: View {
-  let titulo: String
-  let texto: String
-
-  var body: some View {
-    JarvisPaginaBase(titulo: titulo, subtitulo: "Em breve", cor: JarvisHubTema.secundario) {
-      JarvisCartao {
-        Text(texto)
-          .font(.system(size: 13.5))
-          .foregroundColor(JarvisHubTema.secundario)
-      }
-    }
-  }
-}
-
 /// O topo de uma página: faixa colorida com título, linha de apoio, ação e o mascote à direita.
 struct JarvisCabecalho<Trailing: View>: View {
   let titulo: String

@@ -113,6 +113,22 @@ enum JarvisCliente {
     guard status == 200 else { throw Falha.http(status) }
   }
 
+  /// Chamada JSON simples às rotas das abas (`/jarvis/tarefas`, `/jarvis/cerebro`): devolve o corpo da resposta.
+  /// `corpo` vai já em JSON: `[String: Any]` não atravessa a fronteira de concorrência a partir da tela.
+  static func dados(_ caminho: String, metodo: String = "GET", corpo: Data? = nil) async throws -> Data {
+    var r = try requisicao(caminho, metodo: metodo)
+    if let corpo {
+      r.setValue("application/json", forHTTPHeaderField: "Content-Type")
+      r.httpBody = corpo
+    }
+    let (dados, resposta) = try await URLSession.shared.data(for: r)
+    let status = (resposta as? HTTPURLResponse)?.statusCode ?? 0
+    guard status == 200 else { throw Falha.http(status) }
+    return dados
+  }
+
+  static func json(_ corpo: [String: Any]) -> Data? { try? JSONSerialization.data(withJSONObject: corpo) }
+
   static func historico(horas: Int = 24) async throws -> [Mensagem] {
     let (dados, resposta) = try await URLSession.shared.data(for: try requisicao("/jarvis/historico?horas=\(horas)"))
     let status = (resposta as? HTTPURLResponse)?.statusCode ?? 0
