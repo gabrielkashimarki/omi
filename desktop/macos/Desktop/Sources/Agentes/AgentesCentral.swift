@@ -55,7 +55,10 @@ final class AgentesCentral: ObservableObject {
     let pasta = URL(fileURLWithPath: caminhoSocket).deletingLastPathComponent()
     try? FileManager.default.createDirectory(at: pasta, withIntermediateDirectories: true)
     try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: pasta.path)
-    if caminhoSocket == Self.caminhoSocket { AgentesHooks.escreverScripts() }
+    if caminhoSocket == Self.caminhoSocket {
+      AgentesHooks.escreverScripts()
+      aoReagir = JarvisSons.reagir
+    }
     let servidor = AgentesServidor(caminho: caminhoSocket) { [weak self] evento, conexao in
       Task { @MainActor in self?.receber(evento, conexao: conexao) }
     }

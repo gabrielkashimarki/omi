@@ -1,5 +1,6 @@
 //
-//  JarvisMascote.swift — o mascote do Jarvis, desenhado em código.
+//  JarvisMascote.swift — o mascote do Jarvis: desenhado em código, ou a imagem da cópia local do
+//  Coucou quando ela existe (ver JarvisSons.swift; nada dela entra no git).
 //
 
 import OmiTheme
@@ -47,6 +48,23 @@ struct JarvisMascote: View {
     let olhar = estado == .trabalhando ? sin(t * 2.5) * tamanho * 0.08 : 0
 
     return ZStack {
+      if let imagem = JarvisSons.imagemLocal {
+        // Com a cópia local, o personagem vem dela; o aro mostra o humor.
+        Image(nsImage: imagem)
+          .resizable()
+          .scaledToFit()
+          .overlay(
+            Circle().strokeBorder(estado.cor.opacity(estado == .parado ? 0 : 0.9), lineWidth: tamanho * 0.08))
+      } else {
+        desenhado(piscando: piscando, olhar: olhar)
+      }
+    }
+    .scaleEffect(pulso)
+    .offset(x: tremor, y: -pulo)
+  }
+
+  private func desenhado(piscando: Bool, olhar: Double) -> some View {
+    ZStack {
       Circle()
         .fill(
           LinearGradient(
@@ -64,7 +82,5 @@ struct JarvisMascote: View {
         )
         .offset(y: -tamanho * 0.04)
     }
-    .scaleEffect(pulso)
-    .offset(x: tremor, y: -pulo)
   }
 }

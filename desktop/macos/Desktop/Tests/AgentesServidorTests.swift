@@ -152,3 +152,26 @@ final class AgentesServidorTests: XCTestCase {
     XCTAssertFalse(backups.isEmpty)
   }
 }
+
+@MainActor
+final class JarvisSonsTests: XCTestCase {
+  func testCadaReacaoTemSeuSom() {
+    XCTAssertEqual(JarvisSons.nomeDoSom(.terminou), "finish")
+    XCTAssertEqual(JarvisSons.nomeDoSom(.precisaDeVoce), "approval")
+    XCTAssertEqual(JarvisSons.nomeDoSom(.erro), "error")
+    XCTAssertNil(JarvisSons.nomeDoSom(.trabalhando))
+  }
+
+  func testCentralAvisaAReacaoQuandoOHumorMuda() {
+    let central = AgentesCentral()
+    var reacoes: [JarvisEstadoMascote] = []
+    central.aoReagir = { reacoes.append($0) }
+    let evento = { (nome: String) in EventoAgente(nome: nome, sessao: "s", projeto: "p") }
+    central.receber(evento("UserPromptSubmit"), conexao: nil)
+    central.receber(evento("PreToolUse"), conexao: nil)
+    central.receber(evento("Notification"), conexao: nil)
+    central.receber(evento("Stop"), conexao: nil)
+    central.receber(evento("StopFailure"), conexao: nil)
+    XCTAssertEqual(reacoes, [.trabalhando, .precisaDeVoce, .terminou, .erro])
+  }
+}
