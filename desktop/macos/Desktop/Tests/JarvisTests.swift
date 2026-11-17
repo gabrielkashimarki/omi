@@ -67,4 +67,99 @@ final class JarvisTests: XCTestCase {
     XCTAssertEqual(JarvisMac.espera(depois: 3), 4)
     XCTAssertEqual(JarvisMac.espera(depois: 20), 60)
   }
+
+  // MARK: - Legenda do Deepgram
+
+  func testAcumuladorJuntaFinaisEParciais() {
+    var a = JarvisLegenda.Acumulador()
+    func r(_ texto: String, final: Bool = false, fala: Bool = false) -> [String: Any] {
+      ["type": "Results", "is_final": final, "speech_final": fala, "channel": ["alternatives": [["transcript": texto]]]]
+    }
+    XCTAssertEqual(a.receber(r("quantas"))?.texto, "quantas")
+    XCTAssertEqual(a.receber(r("quantas demandas", final: true))?.terminou, false)
+    XCTAssertEqual(a.receber(r("abertas"))?.texto, "quantas demandas abertas")
+    let fim = a.receber(r("abertas eu tenho", final: true, fala: true))
+    XCTAssertEqual(fim?.texto, "quantas demandas abertas eu tenho")
+    XCTAssertEqual(fim?.terminou, true)
+    XCTAssertNil(a.receber(r("")))
+
+    var b = JarvisLegenda.Acumulador()
+    XCTAssertNil(b.receber(["type": "UtteranceEnd"]), "fim de fala sem nada dito não vira pedido")
+    _ = b.receber(r("abre a calculadora", final: true))
+    XCTAssertEqual(b.receber(["type": "UtteranceEnd"])?.terminou, true)
+  }
+
+  // MARK: - Painel e ícone
+
+  func testPainelSomeVinteSegundosDepoisDaUltimaAtividade() {
+    let t0 = Date()
+    var e = JarvisPainelEstado()
+    e.ir(.respondeu, agora: t0)
+    XCTAssertFalse(e.deveSumir(agora: t0.addingTimeInterval(19)))
+    XCTAssertTrue(e.deveSumir(agora: t0.addingTimeInterval(20)))
+    e.atividade(agora: t0.addingTimeInterval(15))
+    XCTAssertFalse(e.deveSumir(agora: t0.addingTimeInterval(30)))
+    for fase in [JarvisPainelEstado.Fase.ouvindo, .pensando, .confirmando] {
+      e.ir(fase, agora: t0)
+      XCTAssertFalse(e.deveSumir(agora: t0.addingTimeInterval(600)), "\(fase) não some")
+    }
+  }
+
+  func testIconeMostraOQueOJarvisFazAntesDaReuniao() {
+    XCTAssertEqual(JarvisMenu.icone(fase: .pronto, reuniao: false), .pronto)
+    XCTAssertEqual(JarvisMenu.icone(fase: .respondeu, reuniao: true), .gravando)
+    XCTAssertEqual(JarvisMenu.icone(fase: .ouvindo, reuniao: true), .ouvindo)
+    XCTAssertEqual(JarvisMenu.icone(fase: .confirmando, reuniao: false), .pensando)
+  }
+
+  // MARK: - Hey Jarvis
+
+  func testHeyJarvisFicaMudoNaReuniao() {
+    XCTAssertFalse(JarvisHeyJarvis.mudo(ligado: true, reuniao: false, painelOuvindo: false))
+    XCTAssertTrue(JarvisHeyJarvis.mudo(ligado: true, reuniao: true, painelOuvindo: false))
+    XCTAssertTrue(JarvisHeyJarvis.mudo(ligado: true, reuniao: false, painelOuvindo: true))
+    XCTAssertTrue(JarvisHeyJarvis.mudo(ligado: false, reuniao: false, painelOuvindo: false))
+  }
+
+  /// "hey jarvis" falado pelo `say` dispara; uma frase comum não. Referência do openwakeword em Python com o
+  /// mesmo áudio: Daniel 0,995, frase comum 0,0.
+  func testDetectorOuveHeyJarvisNoAudioDoSay() throws {
+    let modelos = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+      .deletingLastPathComponent().appendingPathComponent("Sources/Resources")
+    let detector = try XCTUnwrap(JarvisDetectorPalavra(pasta: modelos))
+    let positivo = try falar("hey jarvis", voz: "Daniel")
+    let negativo = try falar("bom dia, tudo bem com você? vamos falar da reunião de amanhã", voz: "Luciana")
+    let silencio = [Int16](repeating: 0, count: 16_000)
+
+    detector.reset()
+    let nota = detector.processar(silencio + positivo + silencio)
+    XCTAssertGreaterThanOrEqual(nota, JarvisDetectorPalavra.limiar, "nota \(nota)")
+
+    detector.reset()
+    let falso = detector.processar(silencio + negativo + silencio)
+    XCTAssertLessThan(falso, JarvisDetectorPalavra.limiar, "nota \(falso)")
+  }
+
+  /// Áudio do `say` em PCM 16 bits a 16 kHz.
+  private func falar(_ texto: String, voz: String) throws -> [Int16] {
+    let pasta = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: pasta, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: pasta) }
+    let aiff = pasta.appendingPathComponent("a.aiff"), wav = pasta.appendingPathComponent("a.wav")
+    for (bin, args) in [
+      ("/usr/bin/say", ["-v", voz, texto, "-o", aiff.path]),
+      ("/usr/bin/afconvert", ["-f", "WAVE", "-d", "LEI16@16000", "-c", "1", aiff.path, wav.path]),
+    ] {
+      let p = try Process.run(URL(fileURLWithPath: bin), arguments: args)
+      p.waitUntilExit()
+      guard p.terminationStatus == 0 else { throw XCTSkip("\(bin) falhou neste Mac") }
+    }
+    let dados = try Data(contentsOf: wav)
+    guard let marca = dados.range(of: Data("data".utf8)), marca.upperBound + 4 < dados.count else {
+      throw XCTSkip("WAV sem bloco de dados")
+    }
+    let pcm = dados[(marca.upperBound + 4)...]
+    guard pcm.count > 3200 else { throw XCTSkip("say gerou áudio vazio") }
+    return Data(pcm).withUnsafeBytes { Array($0.bindMemory(to: Int16.self)) }
+  }
 }

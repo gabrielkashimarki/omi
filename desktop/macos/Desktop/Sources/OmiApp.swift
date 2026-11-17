@@ -258,7 +258,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
   private var userDefaultsObserver: NSObjectProtocol?
   private var statusBarItem: NSStatusItem?
   private var screenCaptureSwitch: NSSwitch?
-  private var audioRecordingSwitch: NSSwitch?
+  private var jarvisStateItem: NSMenuItem?
+  private var jarvisMeetingItem: NSMenuItem?
+  private var jarvisObserver: NSObjectProtocol?
   private var relaunchOnLoginSuppressedForOnboarding = false
   private var apiKeyFetchTask: Task<Void, Never>?
   private var appLifecycleMaintenanceTask: Task<Void, Never>?
@@ -541,8 +543,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     // Called synchronously on main thread to ensure status item is created before app finishes launching
     Task { @MainActor in
       self.setupMenuBar()
-      // Fork: mãos do Jarvis (WebSocket /jarvis/mac), aberto enquanto o app roda
+      // Fork: mãos do Jarvis (WebSocket /jarvis/mac), aberto enquanto o app roda, e o Hey Jarvis
       JarvisMac.shared.ligar()
+      JarvisHeyJarvis.shared.comecar()
+      self.jarvisObserver = NotificationCenter.default.addObserver(
+        forName: .jarvisMudou, object: nil, queue: .main
+      ) { [weak self] _ in
+        MainActor.assumeIsolated { self?.refreshJarvisMenu() }
+      }
     }
 
     // Periodic health check: verify menu bar icon is still visible every 30 seconds.
@@ -819,10 +827,32 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     // Create menu
     let menu = NSMenu()
 
-    // Quick toggles for screen capture and audio recording.
-    // When paywalled (trial expired / usage limit hit) both render OFF — the
-    // features can't run, and tapping a toggle surfaces the upgrade popup.
+    // Fork: menu do Jarvis único (spec jarvis-unico, seção 3). O estado é redesenhado ao abrir.
     let paywalled = AppState.isPaywalledEffective
+    let stateItem = NSMenuItem(title: JarvisMenu.textoEstado, action: nil, keyEquivalent: "")
+    stateItem.isEnabled = false
+    jarvisStateItem = stateItem
+    menu.addItem(stateItem)
+    menu.addItem(NSMenuItem.separator())
+
+    let talkItem = NSMenuItem(title: "Falar com o Jarvis", action: #selector(talkToJarvis), keyEquivalent: "")
+    talkItem.target = self
+    menu.addItem(talkItem)
+
+    let meetingItem = NSMenuItem(title: "", action: #selector(toggleMeeting), keyEquivalent: "")
+    meetingItem.target = self
+    jarvisMeetingItem = meetingItem
+    menu.addItem(meetingItem)
+    refreshJarvisMenu()
+
+    let wakeItem = NSMenuItem()
+    wakeItem.view = makeToggleItemView(
+      title: "Hey Jarvis", iconName: "waveform", isOn: JarvisHeyJarvis.shared.ligado,
+      action: #selector(heyJarvisToggled(_:)))
+    menu.addItem(wakeItem)
+
+    // When paywalled (trial expired / usage limit hit) it renders OFF: the feature can't run,
+    // and tapping the toggle surfaces the upgrade popup.
     let screenCaptureItem = NSMenuItem()
     let screenCaptureView = makeToggleItemView(
       title: "Captura de Tela",
@@ -834,21 +864,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     screenCaptureItem.view = screenCaptureView
     menu.addItem(screenCaptureItem)
 
-    let audioRecordingItem = NSMenuItem()
-    let audioRecordingView = makeToggleItemView(
-      title: "Gravação de Áudio",
-      iconName: "mic.fill",
-      isOn: !paywalled && AssistantSettings.shared.audioRecordingMode != .off,
-      action: #selector(audioRecordingToggled(_:))
-    )
-    audioRecordingItem.view = audioRecordingView
-    menu.addItem(audioRecordingItem)
-
     menu.addItem(NSMenuItem.separator())
 
     // No key equivalent: ⌘O here only worked with this menu open, yet read as the global shortcut.
-    let openItem = NSMenuItem(
-      title: "Abrir \(displayName)", action: #selector(openOmiFromMenu), keyEquivalent: "")
+    let openItem = NSMenuItem(title: "Abrir janela", action: #selector(openOmiFromMenu), keyEquivalent: "")
     openItem.target = self
     menu.addItem(openItem)
 
@@ -858,49 +877,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
 
     menu.addItem(NSMenuItem.separator())
 
-    let updatesItem = NSMenuItem(
-      title: "Buscar atualizações…", action: #selector(checkForUpdates), keyEquivalent: "")
-    updatesItem.target = self
-    menu.addItem(updatesItem)
-
-    menu.addItem(NSMenuItem.separator())
-
-    // Sign out / User info
-    if AuthState.shared.isSignedIn {
-      if let email = AuthState.shared.userEmail {
-        let emailItem = NSMenuItem(title: "Conectado como \(email)", action: nil, keyEquivalent: "")
-        emailItem.isEnabled = false
-        menu.addItem(emailItem)
-        menu.addItem(NSMenuItem.separator())
-      }
-
-      let resetItem = NSMenuItem(
-        title: "Refazer introdução…", action: #selector(resetOnboarding), keyEquivalent: "")
-      resetItem.target = self
-      menu.addItem(resetItem)
-
-      menu.addItem(NSMenuItem.separator())
-
-      let reportItem = NSMenuItem(
-        title: "Reportar problema…", action: #selector(reportIssue), keyEquivalent: "")
-      reportItem.target = self
-      menu.addItem(reportItem)
-
-      menu.addItem(NSMenuItem.separator())
-
-      let signOutItem = NSMenuItem(title: "Sair", action: #selector(signOut), keyEquivalent: "")
-      signOutItem.target = self
-      menu.addItem(signOutItem)
-    } else {
-      let notSignedInItem = NSMenuItem(title: "Sem login", action: nil, keyEquivalent: "")
-      notSignedInItem.isEnabled = false
-      menu.addItem(notSignedInItem)
-    }
-
-    menu.addItem(NSMenuItem.separator())
-
-    // Quit item
-    let quitItem = NSMenuItem(title: "Sair do Omi", action: #selector(quitApp), keyEquivalent: "q")
+    let quitItem = NSMenuItem(title: "Sair", action: #selector(quitApp), keyEquivalent: "q")
     quitItem.target = self
     menu.addItem(quitItem)
 
@@ -1029,36 +1006,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     ShellSummon.summon()
   }
 
-  @MainActor @objc private func checkForUpdates() {
-    AnalyticsManager.shared.menuBarActionClicked(action: "check_updates")
-    UpdaterViewModel.shared.checkForUpdates()
+  // MARK: - Jarvis (fork)
+
+  @MainActor @objc private func talkToJarvis() {
+    JarvisPainel.shared.abrir(ouvindo: true)
   }
 
-  @MainActor @objc private func resetOnboarding() {
-    AnalyticsManager.shared.menuBarActionClicked(action: "reset_onboarding")
-    // Settings asks the same question; the status menu has no shell window to draw it in.
-    let alert = NSAlert()
-    alert.messageText = "Refazer a introdução?"
-    alert.informativeText =
-      "Isso refaz a introdução somente nesta versão do app, apaga o histórico do chat da introdução "
-      + "e reinicia o app sem afetar a outra versão instalada."
-    alert.addButton(withTitle: "Refazer e reiniciar")
-    alert.addButton(withTitle: "Cancelar")
-    NSApp.activate(ignoringOtherApps: true)
-    guard alert.runModal() == .alertFirstButtonReturn else { return }
-    (AppState.current ?? AppState()).resetOnboardingAndRestart()
+  @MainActor @objc private func toggleMeeting() {
+    JarvisMenu.alternarReuniao()
   }
 
-  @MainActor @objc private func reportIssue() {
-    AnalyticsManager.shared.menuBarActionClicked(action: "report_issue")
-    FeedbackWindow.show(userEmail: AuthState.shared.userEmail)
+  @MainActor @objc private func heyJarvisToggled(_ sender: NSSwitch) {
+    JarvisHeyJarvis.shared.ligado = sender.state == .on
   }
 
-  @MainActor @objc private func signOut() {
-    AnalyticsManager.shared.menuBarActionClicked(action: "sign_out")
-    ProactiveAssistantsPlugin.shared.stopMonitoring(reason: .signOut)
-    Task { @MainActor in
-      try? await AuthService.shared.signOut()
+  /// Texto do estado, rótulo de Gravar/Parar e o ícone (pronto, ouvindo, pensando, gravando reunião).
+  @MainActor private func refreshJarvisMenu() {
+    jarvisStateItem?.title = JarvisMenu.textoEstado
+    jarvisMeetingItem?.title = JarvisMenu.reuniaoAtiva ? "Parar reunião" : "Gravar reunião"
+    guard OMIApp.launchMode != .rewind, let button = statusBarItem?.button else { return }
+    let symbol: String?
+    switch JarvisMenu.icone {
+    case .pronto: symbol = nil
+    case .ouvindo: symbol = "waveform"
+    case .pensando: symbol = "ellipsis.circle"
+    case .gravando: symbol = "record.circle"
+    }
+    if let symbol, let image = NSImage(systemSymbolName: symbol, accessibilityDescription: JarvisMenu.textoEstado) {
+      image.isTemplate = true
+      button.image = image
+    } else {
+      button.image = omiMenuBarIcon()
     }
   }
 
@@ -1113,8 +1091,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     // Store reference for later updates
     if action == #selector(screenCaptureToggled(_:)) {
       screenCaptureSwitch = toggle
-    } else if action == #selector(audioRecordingToggled(_:)) {
-      audioRecordingSwitch = toggle
     }
 
     return view
@@ -1135,28 +1111,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     sender.state = outcome.resultingIsOn ? .on : .off
   }
 
-  @MainActor @objc private func audioRecordingToggled(_ sender: NSSwitch) {
-    let enabled = sender.state == .on
-    log("AppDelegate: [MENUBAR] Audio recording toggled: \(enabled)")
-    AnalyticsManager.shared.menuBarActionClicked(
-      action: enabled ? "audio_recording_on" : "audio_recording_off")
-    AnalyticsManager.shared.settingToggled(setting: "transcription", enabled: enabled)
-
-    let outcome = SystemCaptureControls.setAudioRecording(enabled)
-    sender.state = outcome.resultingIsOn ? .on : .off
-  }
-
   // MARK: - NSMenuDelegate
   func menuWillOpen(_ menu: NSMenu) {
     log("AppDelegate: [MENUBAR] Menu opened by user")
     AnalyticsManager.shared.menuBarOpened()
     // Refresh toggle states to match current runtime state. When paywalled,
-    // force both OFF — the features can't run until the user upgrades.
+    // force it OFF — the feature can't run until the user upgrades.
     let paywalled = AppState.isPaywalledEffective
     screenCaptureSwitch?.state =
       (!paywalled && ProactiveAssistantsPlugin.shared.isMonitoring) ? .on : .off
-    audioRecordingSwitch?.state =
-      (!paywalled && AssistantSettings.shared.audioRecordingMode != .off) ? .on : .off
+    refreshJarvisMenu()
   }
 
   func menuDidClose(_ menu: NSMenu) {
