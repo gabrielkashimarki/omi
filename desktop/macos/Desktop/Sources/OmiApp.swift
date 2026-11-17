@@ -719,7 +719,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     log(
       "AppDelegate: Hotkey monitors registered - global=\(globalHotkeyMonitor != nil), local=\(localHotkeyMonitor != nil)"
     )
-    log("AppDelegate: Hotkey is Ctrl+Option+R (⌃⌥R), Ask Omi via Carbon hotkeys")
+    log("AppDelegate: Hotkey is Ctrl+Option+R (⌃⌥R)")
   }
 
   // Dock icon is always visible — LSUIElement=false and activation policy stays .regular
