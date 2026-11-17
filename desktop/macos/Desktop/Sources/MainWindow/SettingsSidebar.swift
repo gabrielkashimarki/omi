@@ -96,11 +96,6 @@ struct SettingsSearchItem: Identifiable {
       keywords: ["vad", "silence", "gate", "cost", "deepgram"], section: .transcription,
       icon: "waveform", settingId: "transcription.vadgate"),
     SettingsSearchItem(
-      name: "Omi Type Silencioso", subtitle: "Mantém o que você dita com o Omi Type fora do chat",
-      keywords: ["silent", "type", "dictation", "voice typing", "private", "chat context"],
-      section: .transcription,
-      icon: "keyboard", settingId: "transcription.silenttype"),
-    SettingsSearchItem(
       name: "Ignorar Apps de Ditado",
       subtitle: "Para de escutar enquanto o Wispr Flow, o superwhisper ou o Ditado do macOS usa o microfone",
       keywords: ["dictation", "wispr", "superwhisper", "noise", "mute", "conversations"],

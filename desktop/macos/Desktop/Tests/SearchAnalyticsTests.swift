@@ -126,8 +126,7 @@ final class SearchAnalyticsTests: XCTestCase {
       ("MainWindow/Pages/AppsPage.swift", "SearchAnalytics.queryEntered(surface: .apps"),
       ("MainWindow/Pages/TasksPage.swift", "SearchAnalytics.queryEntered(surface: .tasks"),
       ("MainWindow/Spine/SpineStream.swift", "SearchAnalytics.scheduleQueryEntered(surface: searchSurface"),
-      ("MainWindow/QueryShell/QueryShellHome.swift", "searchSurface: .home"),
-      ("MainWindow/QueryShell/ActivityHubTab.swift", "searchSurface: .activity"),
+      ("MainWindow/ShellLayout/ActivityHubTab.swift", "searchSurface: .activity"),
       ("MainWindow/Pages/MemoryGraph/MemoryGraphPage.swift", "SearchAnalytics.scheduleQueryEntered(surface: .brainMap"),
       (
         "MainWindow/Pages/MemoryGraph/CanonicalMemoryAtlasView.swift",

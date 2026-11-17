@@ -98,24 +98,6 @@ final class AuthSessionCoordinatorTests: XCTestCase {
     XCTAssertTrue(invalidateSnippet.contains("commitLightInvalidatedSession"))
   }
 
-  func testChatProviderStopsBridgeOnSessionInvalidateWithoutFullReset() throws {
-    let provider = try sourceFile("Providers/ChatProvider.swift")
-    XCTAssertTrue(provider.contains("makeAuthSessionNotificationObserver"))
-    XCTAssertTrue(provider.contains("stopAgentBridgeAfterSessionInvalidation"))
-    let invalidateBlock = try XCTUnwrap(provider.range(of: "sessionDidInvalidate — stopping agent bridge"))
-    let snippet = String(provider[invalidateBlock.lowerBound...]).prefix(400)
-    XCTAssertFalse(snippet.contains("resetSessionStateForAuthChange"))
-  }
-
-  func testChatProviderReloadsSessionsAfterAuthentication() throws {
-    let authExtension = try sourceFile("Providers/ChatProvider+AuthSession.swift")
-    XCTAssertTrue(authExtension.contains("reloadChatSessionsAfterAuthentication"))
-    XCTAssertTrue(authExtension.contains("sessionDidAuthenticate"))
-    let authBlock = try XCTUnwrap(authExtension.range(of: "sessionDidAuthenticate — reloading main chat"))
-    let snippet = String(authExtension[authBlock.lowerBound...]).prefix(350)
-    XCTAssertFalse(snippet.contains("resetSessionStateForAuthChange"))
-  }
-
   func testRestoreAuthStatePreservesReauthOwnerWithoutSignedInBoolean() throws {
     let source = try sourceFile("AuthService.swift")
     let restoreRange = try XCTUnwrap(source.range(of: "private func restoreAuthState(attempt:"))
@@ -157,7 +139,7 @@ final class AuthSessionCoordinatorTests: XCTestCase {
 
   func testOwnerTransitionSynchronouslyInvalidatesPerOwnerStorage() throws {
     let authSource = try sourceFile("AuthService.swift")
-    let ownerSource = try sourceFile("Chat/RuntimeOwnerIdentity.swift")
+    let ownerSource = try sourceFile("Auth/RuntimeOwnerIdentity.swift")
 
     let signOutRange = authSource.range(of: "func signOut(")
     XCTAssertNotNil(signOutRange)

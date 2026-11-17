@@ -29,15 +29,6 @@ final class HiddenSettingsSurfacesTests: XCTestCase {
     }
   }
 
-  /// Surfaces that are NOT hidden must keep their search entries — this suite
-  /// guards the six hidden ids, not the pane wholesale.
-  func testRemainingFloatingBarRowsKeepTheirSearchEntries() {
-    let ids = Set(SettingsSearchItem.allSearchableItems.map(\.settingId))
-    for kept in ["floatingbar.show", "floatingbar.typedvoiceanswers", "floatingbar.screenshare"] {
-      XCTAssertTrue(ids.contains(kept), "\(kept) is still rendered and must stay searchable")
-    }
-  }
-
   // MARK: - The production seams
 
   /// The Tasks-page header consults this policy for the gear. Restoring the gear

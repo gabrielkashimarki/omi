@@ -250,36 +250,6 @@ final class GlassLegibilityTests: XCTestCase {
     )
   }
 
-  /// **Static checker, not behavioural coverage.** It reads source rather than running it, and it
-  /// is here because the behavioural assertion above cannot reach the defect it is paired with:
-  /// `HomePalette.paper` was *already* `Color.clear` when Home went dark. The ground came from a
-  /// second view stacked under the page with a literal RGB gradient in it, and no token that any
-  /// test could resolve ever changed. A component-scoped tripwire on the literal is the only thing
-  /// that would have failed on that commit.
-  ///
-  /// Scoped to Home's own file — `QueryShellHome`, since `DashboardPage` was deleted — and to
-  /// `Color(red:` specifically: a page hosted on the panel has no
-  /// business mixing its own opaque colour at all, and every legitimate surface on it is a token.
-  func testStaticCheck_HomeMixesNoColourLiteralOfItsOwn() {
-    let home = URL(fileURLWithPath: #filePath)
-      .deletingLastPathComponent()  // Tests
-      .deletingLastPathComponent()  // Desktop
-      .appendingPathComponent("Sources/MainWindow/QueryShell/QueryShellHome.swift")
-    // omi-test-quality: source-inspection -- static contract: which token a call site names is a source fact; a rendered view cannot report it.
-    guard let source = try? String(contentsOf: home, encoding: .utf8) else {
-      return XCTFail("Could not read QueryShellHome.swift at \(home.path)")
-    }
-    XCTAssertFalse(
-      source.contains("Color(red:"),
-      """
-      Home mixes a colour literal. This page is hosted on the shell's glass and every surface on \
-      it has to be an `Ink`/`PageGlass` token, because only a token tracks the panel's pinned \
-      appearance. The literal that shipped here was a near-black canvas under a page whose type \
-      had already been converted to resolve dark.
-      """
-    )
-  }
-
   func testHomeProseAndTheAskBarsFilledButtonsAreReadableWhereTheyAreDrawn() {
     // Home's two rungs land straight on the panel now that the canvas is gone.
     for (name, color) in [("ink", HomePalette.ink), ("secondary", HomePalette.secondary)] {

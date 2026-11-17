@@ -80,11 +80,9 @@ final class DesktopAutomationActionEffectTests: XCTestCase {
     let registry = DesktopAutomationActionRegistry()
     registry.registerBuiltins()
     for action in [
-      "memory_log_import_probe", "clear_owner_surface_state", "memories_snapshot",
+      "memory_log_import_probe", "memories_snapshot",
       "conversation_list_snapshot", "screen_frame_quick_look_probe",
-      "permissions_snapshot", "coordinator_awareness_snapshot", "coordinator_inspect_run",
-      "coordinator_action_queue", "coordinator_open_loops", "agent_lifecycle_convergence_snapshot",
-      "recent_screen_frames_snapshot", "kernel_turn_tail", "integration_nudge_evaluate", "rating_prompt_state",
+      "permissions_snapshot", "integration_nudge_evaluate", "rating_prompt_state",
       "chat_timer_lifetime_probe",
     ] {
       do {

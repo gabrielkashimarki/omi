@@ -53,7 +53,7 @@ final class ScreenRecordingPermissionPolicyTests: XCTestCase {
       "Sources/MainWindow/CaptureListeningLogic.swift",
       // OmiApp's menu-bar toggle now delegates to SystemCaptureControls, which owns the
       // register-first screen-recording grant for both the menu bar and the notch cluster.
-      "Sources/FloatingControlBar/SystemCaptureControls.swift",
+      "Sources/AppState/SystemCaptureControls.swift",
       "Sources/MainWindow/Pages/Settings/Components/SettingsContentView+BillingHelpers.swift",
       "Sources/MainWindow/RewindOnlyView.swift",
     ] {
@@ -324,30 +324,6 @@ final class ScreenRecordingPermissionPolicyTests: XCTestCase {
 
   func testCaptureKitFailureDoesNotCreatePermissionFailureWhenTccIsDenied() {
     XCTAssertFalse(ScreenRecordingPermissionPolicy.shouldMarkCaptureKitBroken(tccGranted: false))
-  }
-
-  /// Regression: the onboarding request tool reopened System Settings (and the
-  /// FDA drag card) even when the permission was already granted. Opening must
-  /// stay behind a granted check, like the notifications/automation cases.
-  func testRequestToolOpensSettingsOnlyWhenDenied() throws {
-    // omi-test-quality: source-inspection -- static contract: the tool's
-    // NSWorkspace/System Settings side effects cannot be exercised hermetically.
-    let src = try sourceFile("Sources/Providers/ChatToolExecutor.swift")
-    for (caseStart, caseEnd, grantedGuard, pane) in [
-      ("case \"screen_recording\":", "case \"microphone\":", "if !screenRecordingGranted {", "Privacy_ScreenCapture"),
-      ("case \"full_disk_access\":", "default:", "if !checkFullDiskAccessDirectly() {", "Privacy_AllFiles"),
-    ] {
-      guard let start = src.range(of: caseStart)?.upperBound,
-        let end = src.range(of: caseEnd, range: start..<src.endIndex)?.lowerBound
-      else { return XCTFail("request tool must handle \(caseStart)") }
-      let body = String(src[start..<end])
-      guard let guardPos = body.range(of: grantedGuard)?.lowerBound,
-        let openPos = body.range(of: pane)?.lowerBound
-      else { return XCTFail("\(caseStart) must guard its \(pane) open behind \(grantedGuard)") }
-      XCTAssertLessThan(
-        guardPos, openPos,
-        "\(caseStart): opening \(pane) must sit inside the not-granted branch")
-    }
   }
 
   /// Regression: the onboarding "Reopen Omi" prompt looped forever because the

@@ -39,27 +39,4 @@ final class LiveTranscriptSelectionBoundaryTests: XCTestCase {
     }
   }
 
-  /// The long-nested-markdown hosts this fixed (expanded agent cards and the
-  /// discovery card's nested `ScrollView`) must keep prose on the
-  /// `ChatSelectableProse` path so parent rebuilds cannot relay a tall
-  /// SwiftUI `Text` inside a nested scroller.
-  func testLongNestedMarkdownHostsUseAppKitProseSelection() throws {
-    let chatBubbleSource = try source("MainWindow/Components/ChatBubble.swift")
-
-    XCTAssertTrue(
-      chatBubbleSource.contains(
-        "OmiMarkdown(text: summary.output, sender: .ai, appKitProseSelection: true)"),
-      "expanded background-agent summary output must draw prose through ChatSelectableProse"
-    )
-    XCTAssertTrue(
-      chatBubbleSource.contains(
-        "OmiMarkdown(text: output, sender: .ai, appKitProseSelection: true)"),
-      "expanded agent completion output must draw prose through ChatSelectableProse"
-    )
-    XCTAssertTrue(
-      chatBubbleSource.contains(
-        "OmiMarkdown(text: fullText, sender: .ai, appKitProseSelection: true)"),
-      "discovery card full text must draw prose through ChatSelectableProse"
-    )
-  }
 }

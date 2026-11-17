@@ -701,6 +701,43 @@ final class DesktopAutomationActionRegistry {
     guard !didRegisterBuiltins else { return }
     didRegisterBuiltins = true
     registerProactiveCaptureStatusSnapshot()
+    register(
+      name: "set_automation_ui_presentation",
+      effects: [.localState],
+      summary:
+        "Park automation windows quietly, reveal them briefly for Accessibility, or restore normal user presentation",
+      params: ["mode", "activate"],
+      category: "app_control",
+      surfaces: ["app"],
+      sideEffects: ["changes non-production window placement and input handling"],
+      examples: [
+        "./scripts/omi-ctl ui quiet",
+        "./scripts/omi-ctl ui interactive --activate",
+        "./scripts/omi-ctl ui normal --activate",
+      ]
+    ) { params in
+      // This registry is reachable only through DesktopAutomationBridge, whose listener cannot start
+      // for production-family or published-preview bundles. Keep the handler itself exercisable in a
+      // hermetic test instead of duplicating the bridge's stronger process boundary here.
+      guard let requested = params["mode"]?.lowercased() else {
+        return [
+          "mode": DesktopAutomationWindowPresentation.currentMode.rawValue,
+          "available_modes": DesktopAutomationUIPresentationMode.allCases.map(\.rawValue).joined(
+            separator: ","),
+        ]
+      }
+      guard let mode = DesktopAutomationUIPresentationMode(rawValue: requested) else {
+        throw DesktopAutomationActionError.invalidParams(
+          "mode must be normal, quiet, or interactive")
+      }
+      let activate = boolParam(params["activate"], default: false)
+      let previous = DesktopAutomationWindowPresentation.setMode(mode, activate: activate)
+      return [
+        "previous_mode": previous.rawValue,
+        "mode": DesktopAutomationWindowPresentation.currentMode.rawValue,
+        "activated": activate ? "true" : "false",
+      ]
+    }
     registerActivationActions()
     registerItemLinkActions()
     registerConversationRecordingActions()
@@ -1122,6 +1159,55 @@ final class DesktopAutomationActionRegistry {
       ]
     }
 
+
+    register(
+      name: "local_embedding_benchmark",
+      effects: [.localArtifact],
+      summary: "Run synthetic local hybrid retrieval metrics (recall@10 / nDCG@10) and write JSON",
+      params: ["output"],
+      category: "debug",
+      surfaces: ["app"],
+      sideEffects: ["writes a JSON report under Application Support; uses an in-memory synthetic DB"],
+      examples: ["./scripts/omi-ctl action local_embedding_benchmark"]
+    ) { params in
+      guard AppBuild.isNonProduction else {
+        return ["error": "local_embedding_benchmark is disabled on production bundles"]
+      }
+      let runtime = LocalEmbeddingRuntime.makeDefault()
+      guard case .engine(let engine) = await runtime.selectEngine() else {
+        return [
+          "kind": LocalEmbeddingBenchmark.reportKind,
+          "error": "local_engine_unavailable",
+        ]
+      }
+      let report: LocalEmbeddingBenchmark.Report
+      do {
+        report = try await LocalEmbeddingBenchmark.runSynthetic(engine: engine, runtime: runtime)
+      } catch {
+        return [
+          "kind": LocalEmbeddingBenchmark.reportKind,
+          "error": "benchmark_failed",
+        ]
+      }
+      let output: URL
+      if let raw = params["output"]?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty {
+        output = URL(fileURLWithPath: raw)
+      } else {
+        output = LocalEmbeddingBenchmark.defaultReportURL()
+      }
+      do {
+        try LocalEmbeddingBenchmark.write(report, to: output)
+      } catch {
+        return ["error": "report_write_failed"]
+      }
+      return [
+        "path": output.path,
+        "engine": engine.engineID,
+        "kind": report.kind,
+        "fixture": report.fixture,
+        "metric_count": "\(report.metrics.count)",
+      ]
+    }
 
     register(
       name: "conversation_list_snapshot",

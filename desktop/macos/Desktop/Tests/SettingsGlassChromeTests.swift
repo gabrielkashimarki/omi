@@ -138,15 +138,12 @@ final class SettingsGlassChromeTests: XCTestCase {
     let relativePaths = [
       "MainWindow/Pages/SettingsPage.swift",
       "MainWindow/SettingsSidebar.swift",
-      "MainWindow/Pages/ShortcutsSettingsSection.swift",
       "MainWindow/Pages/PermissionsPage.swift",
       "MainWindow/Pages/AppsPage.swift",
       "MainWindow/Pages/AppsPageHeaderControls.swift",
       "MainWindow/Pages/AgentConnectPickerSheet.swift",
       "MainWindow/Pages/ManualInstallationDisclosure.swift",
       "ConnectorBrandIcon.swift",
-      "BrowserExtensionSetup.swift",
-      "FileIndexing/FileIndexingView.swift",
       "WAL/StorageSyncView.swift",
       "MainWindow/Pages/Settings/Components/SettingsGlassKit.swift",
       "MainWindow/Pages/Settings/Components/SettingsContentView+Controls.swift",
@@ -163,7 +160,6 @@ final class SettingsGlassChromeTests: XCTestCase {
       "MainWindow/Pages/Settings/Sections/SettingsContentView+AccountBilling.swift",
       "MainWindow/Pages/Settings/Sections/SettingsContentView+Integrations.swift",
       "MainWindow/Pages/Settings/Sections/SettingsContentView+DeveloperKeys.swift",
-      "MainWindow/Pages/Settings/Sections/SettingsContentView+FloatingBarAndChat.swift",
       "MainWindow/Pages/Settings/Sections/SettingsContentView+NotificationsPrivacy.swift",
       "MainWindow/Pages/Settings/Sections/MicrophonePickerCard.swift",
     ]

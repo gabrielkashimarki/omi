@@ -231,16 +231,9 @@ final class ShellGlassChromeTests: XCTestCase {
     "MainWindow/DesktopHomeView.swift",
     "MainWindow/DesktopTopBar.swift",
     "MainWindow/ChatFirst/ChatFirstShell.swift",
-    "MainWindow/ChatFirst/Blocks/ChatFirstContentBlockViews.swift",
-    "MainWindow/Pages/ChatErrorCard.swift",
-    "MainWindow/Components/ChatBubble.swift",
-    "MainWindow/Components/ChatMessagesView.swift",
     "MainWindow/Components/ConversationRowView.swift",
-    "MainWindow/Components/CitationCardView.swift",
     "MainWindow/Components/OmiSearchField.swift",
     "MainWindow/SecondBrain/SBComponents.swift",
-    "Chat/TypingIndicator.swift",
-    "Chat/ChatOmiMark.swift",
   ]
 
   /// **Two rungs on glass.** The shell and the chat surfaces may not name `Ink.tertiary` — see the

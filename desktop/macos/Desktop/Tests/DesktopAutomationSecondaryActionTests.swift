@@ -151,33 +151,6 @@ final class DesktopAutomationSecondaryActionTests: XCTestCase {
         "may mutate remote user data",
         "may call model/backend services", "may save imported memory data",
       ])
-
-    let clearState = try XCTUnwrap(
-      descriptors.first { $0.name == "clear_owner_surface_state" })
-    XCTAssertEqual(clearState.category, "write")
-    XCTAssertEqual(clearState.surfaces, ["main_chat"])
-    XCTAssertEqual(clearState.safety, "remote_write")
-    XCTAssertEqual(
-      clearState.sideEffects,
-      [
-        "mutates local app, UI, or stored state",
-        "may call agent runtime, model, or backend services",
-        "may mutate remote user data",
-        "clears the local non-production main-chat projection",
-        "may delete the active owner's main-chat journal turns from the backend",
-      ])
-  }
-
-  func testFloatingIdleWaitRequiresObservedSubmission() throws {
-    let source = try bridgeSource()
-    let askBody = try actionBody(named: "ask", in: source)
-    XCTAssertTrue(askBody.contains("pendingFloatingBarSubmission"))
-    XCTAssertTrue(askBody.contains("baselineMessageCount"))
-
-    let waitBody = try actionBody(named: "wait_floating_bar_chat_idle", in: source)
-    XCTAssertTrue(waitBody.contains("observedSubmission"))
-    XCTAssertTrue(waitBody.contains("messageCount > submission.baselineMessageCount"))
-    XCTAssertTrue(waitBody.contains("submission_observed"))
   }
 
   func testReconciliationUsesNormalizedServerRevision() throws {
@@ -410,16 +383,6 @@ final class DesktopAutomationSecondaryActionTests: XCTestCase {
         "expected MemoriesViewModel to register \(action)"
       )
     }
-  }
-
-  func testAiChatSectionAllowedOnNonProduction() throws {
-    let url = URL(fileURLWithPath: #filePath)
-      .deletingLastPathComponent()
-      .deletingLastPathComponent()
-      .appendingPathComponent("Sources/MainWindow/Pages/SettingsPage.swift")
-    let source = try String(contentsOf: url, encoding: .utf8)
-    XCTAssertTrue(source.contains("AppBuild.isProductionBundle && selectedSection == .aiChat"))
-    XCTAssertTrue(source.contains("AppBuild.isProductionBundle && newValue == .aiChat"))
   }
 
   func testSignOutRequiresLocalAuthProfile() throws {

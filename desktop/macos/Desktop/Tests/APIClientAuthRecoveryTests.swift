@@ -33,7 +33,6 @@ final class APIClientAuthRecoveryTests: XCTestCase {
     XCTAssertFalse(FileManager.default.fileExists(atPath: trackerPath.path))
 
     let callSites = [
-      "Providers/ChatProvider.swift",
       "AppState/AppState+DataLoading.swift",
       "Stores/TasksStore.swift",
       "Stores/DashboardTaskRefreshService.swift",

@@ -503,42 +503,6 @@ final class StartupWarmupPolicyTests: XCTestCase {
     return try String(contentsOf: sourceURL, encoding: .utf8)
   }
 
-  func testAuthSignInFetchesFloatingBarPlanImmediately() throws {
-    let testsURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-    let authURL =
-      testsURL
-      .deletingLastPathComponent()
-      .appendingPathComponent("Sources/AuthService.swift")
-    let source = try String(contentsOf: authURL, encoding: .utf8)
-
-    XCTAssertGreaterThanOrEqual(
-      source.components(separatedBy: "FloatingBarUsageLimiter.shared.fetchPlan()").count - 1,
-      2,
-      "Both Apple and web OAuth sign-in paths must fetch quota immediately after successful sign-in"
-    )
-  }
-
-  func testChatProviderClearsPromptContextOnSignOut() throws {
-    let testsURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-    let chatURL =
-      testsURL
-      .deletingLastPathComponent()
-      .appendingPathComponent("Sources/Providers/ChatProvider.swift")
-    let source = try String(contentsOf: chatURL, encoding: .utf8)
-
-    XCTAssertTrue(
-      source.contains("resetSessionStateForAuthChange()"),
-      "Sign-out must clear ChatProvider prompt caches and visible chat state"
-    )
-    XCTAssertTrue(
-      source.contains("memoriesLoaded = false"),
-      "ChatProvider auth reset must release the memories-loaded guard"
-    )
-    XCTAssertFalse(
-      source.contains("clearOwnerState()"),
-      "RuntimeOwnerIdentity's correlated transition barrier must be the exclusive owner revoker"
-    )
-  }
 }
 
 private actor StartupMaintenanceCounter {

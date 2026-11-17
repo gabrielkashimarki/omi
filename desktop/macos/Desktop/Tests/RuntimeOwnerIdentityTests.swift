@@ -317,37 +317,4 @@ final class RuntimeOwnerIdentityTests: XCTestCase {
 
 
 
-  func testSwapPathSourceNeverWritesAuthUserId() throws {
-    let desktopDir = URL(fileURLWithPath: #filePath)
-      .deletingLastPathComponent()
-      .deletingLastPathComponent()
-    let provider = try String(
-      contentsOf: desktopDir.appendingPathComponent("Sources/Providers/ChatProvider.swift"),
-      encoding: .utf8
-    )
-    let identity = try String(
-      contentsOf: desktopDir.appendingPathComponent("Sources/Chat/RuntimeOwnerIdentity.swift"),
-      encoding: .utf8
-    )
-
-    XCTAssertTrue(provider.contains("RuntimeOwnerIdentity.applyAutomationOwnerOverride"))
-    XCTAssertTrue(provider.contains("RuntimeOwnerIdentity.clearAutomationOwnerOverride"))
-    XCTAssertFalse(
-      provider.contains("UserDefaults.standard.set(trimmedOwnerB, forKey:"),
-      "swap must not write synthetic owner into auth defaults"
-    )
-    XCTAssertTrue(identity.contains("automationOwnerOverride"))
-    XCTAssertFalse(
-      identity.contains("defaults.set(trimmed, forKey: .authUserId)"),
-      "override helper must never rewrite auth_userId"
-    )
-
-    let defaultsKey = try String(
-      contentsOf: desktopDir.appendingPathComponent("Sources/DefaultsKey.swift"),
-      encoding: .utf8
-    )
-    XCTAssertTrue(defaultsKey.contains("automationOwnerOverride = \"automation_owner_override\""))
-    XCTAssertTrue(
-      defaultsKey.contains("automationOwnerABackup = \"automation_swap_owner_a_backup\""))
-  }
 }
