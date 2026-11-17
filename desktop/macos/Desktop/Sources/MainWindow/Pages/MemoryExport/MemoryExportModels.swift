@@ -76,10 +76,9 @@ struct MemoryExportResult: Sendable {
 
 struct AgentConnectionTestResult: Sendable {
   let hostedMemoryCount: Int
-  let localToolCount: Int
 
   var summary: String {
-    "Conexão ok: o Omi devolveu \(hostedMemoryCount) memórias hospedadas e o Desktop compartilhou \(localToolCount) ferramentas locais."
+    "Conexão ok: o Omi devolveu \(hostedMemoryCount) memórias hospedadas."
   }
 }
 

@@ -227,13 +227,7 @@ enum ViewExporter {
       ),
       (
         "full-tasks", 4,
-        {
-          let cp = ChatProvider()
-          return AnyView(
-            TasksPage(
-              viewModel: TasksViewModel(), chatCoordinator: TaskChatCoordinator(chatProvider: cp),
-              chatProvider: cp))
-        }
+        { AnyView(TasksPage(viewModel: TasksViewModel())) }
       ),
       ("full-rewind", 7, { AnyView(RewindPage()) }),
       ("full-apps", 8, { AnyView(AppsPage(appProvider: AppProvider())) }),
@@ -356,36 +350,6 @@ enum ViewExporter {
       )
     }
     return appState
-  }
-
-  private static func previewChatProvider() -> ChatProvider {
-    let provider = ChatProvider()
-    provider.isLoading = false
-    provider.messages = [
-      ChatMessage(
-        text: "Summarize what I should do about the launch checklist and keep it tight.",
-        createdAt: Date().addingTimeInterval(-420),
-        sender: .user
-      ),
-      ChatMessage(
-        text:
-          "You should lock the hero copy, verify pricing copy, and do one final desktop smoke test before sending the build.",
-        createdAt: Date().addingTimeInterval(-360),
-        sender: .ai
-      ),
-      ChatMessage(
-        text: "Also flag anything that still looks too dense in Memories.",
-        createdAt: Date().addingTimeInterval(-240),
-        sender: .user
-      ),
-      ChatMessage(
-        text:
-          "Memories needs the most restraint: fewer borders, more breathing room, and softer chips so the content reads first.",
-        createdAt: Date().addingTimeInterval(-180),
-        sender: .ai
-      ),
-    ]
-    return provider
   }
 
   private static func previewMemoriesViewModel() -> MemoriesViewModel {

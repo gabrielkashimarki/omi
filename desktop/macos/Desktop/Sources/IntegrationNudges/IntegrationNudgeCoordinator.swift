@@ -50,7 +50,7 @@ final class IntegrationNudgeCoordinator {
       _ onDropped: @escaping @MainActor () -> Void
     ) -> OwnerBoundNotificationPresentationResult
 
-  /// The default presenter: the real floating-bar card.
+  /// The default presenter: a system notification.
   ///
   /// Goes through `NotificationService` rather than the floating-bar primitive
   /// so the card is subject to the master toggle, frequency throttle, snooze and
@@ -66,10 +66,6 @@ final class IntegrationNudgeCoordinator {
       message: match.entry.pitch,
       assistantId: IntegrationNudgeCoordinator.assistantID,
       kind: .integration,
-      action: .connectIntegration(
-        telemetryID: match.entry.telemetryID,
-        triggerID: match.trigger.id
-      ),
       sound: .none,
       onPresented: onPresented,
       onDropped: onDropped

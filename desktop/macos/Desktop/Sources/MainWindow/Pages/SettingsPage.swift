@@ -9,7 +9,6 @@ struct SettingsPage: View {
   @ObservedObject var appState: AppState
   @Binding var selectedSection: SettingsContentView.SettingsSection
   @Binding var highlightedSettingId: String?
-  var chatProvider: ChatProvider? = nil
 
   /// Whether the Reset Onboarding confirmation is up.
   ///
@@ -82,7 +81,6 @@ struct SettingsPage: View {
             appState: appState,
             selectedSection: $selectedSection,
             highlightedSettingId: $highlightedSettingId,
-            chatProvider: chatProvider,
             showResetOnboardingConfirm: $showResetOnboardingConfirm
           )
           .padding(.horizontal, SettingsGlassMetrics.paneHorizontalPadding)
@@ -162,14 +160,11 @@ struct SettingsContentView: View {
   // AppState for transcription control
   @ObservedObject var appState: AppState
 
-  // ChatProvider for browser extension setup
-  var chatProvider: ChatProvider? = nil
   @StateObject var viewModel = SettingsViewModel()
   @StateObject var dataExportModel = AccountDataExportModel()
 
   // Updater view model
   @ObservedObject var updaterViewModel = UpdaterViewModel.shared
-  @ObservedObject var shortcutSettings = ShortcutSettings.shared
 
   // Master monitoring state (screen analysis)
   @State var isMonitoring: Bool
@@ -177,13 +172,6 @@ struct SettingsContentView: View {
   @State var isToggling: Bool = false
   @State var permissionError: String?
 
-  // Ask Omi floating bar state
-  @State var showAskOmiBar: Bool = false
-
-  // Grant for chat screenshot tools (capture_screen / get_screenshot);
-  // read by ChatToolExecutor.physicalExecutionPrecondition. Default on.
-  @AppStorage(DefaultsKey.chatScreenshotSharingEnabled.rawValue)
-  var chatScreenshotSharingEnabled: Bool = true
 
   // Offline cache of the server's `meeting_note_screenshots_enabled` account setting; read
   // synchronously by MeetingNoteScreenshotsFeature.isEnabled so the feature gate never blocks on
@@ -216,8 +204,6 @@ struct SettingsContentView: View {
 
   // Task Assistant states
   @State var taskEnabled: Bool
-  @State var taskChatAgentEnabled: Bool
-  @State var taskAgentWorkingDirectory: String
   @State var taskExtractionInterval: Double
   @State var taskMinConfidence: Double
   @State var goalReminderNotificationsEnabled = NotificationService.goalReminderNotificationsEnabled
@@ -251,8 +237,6 @@ struct SettingsContentView: View {
   // Advanced stats
   @State var advancedStats: UserStats?
   @State var isLoadingStats = false
-  @State var chatMessageCount: Int?
-  @State var isLoadingChatMessages = false
   // Persisted, because the copy beside it promises to "keep … hidden until you need them" — a
   // promise a plain `@State` breaks at the next relaunch, and re-hiding a panel every session is
   // the opposite of what the control offers.
@@ -394,22 +378,10 @@ struct SettingsContentView: View {
   @State var vadGateEnabled: Bool = false
 
   @AppStorage("conversationsCompactView") var conversationsCompactView = true
+  @AppStorage(DefaultsKey.transcriptionIgnoreDictationApps.rawValue) var ignoreDictationApps = true
   @AppStorage("speakNotificationsAloud") var speakNotificationsAloud = false
   @AppStorage(DefaultsKey.integrationNudgesEnabled.rawValue) var integrationNudgesEnabled = true
 
-  // AI Chat settings
-  @AppStorage("chatBridgeMode") var chatBridgeMode: String = "piMono"
-  @AppStorage("realtimeOmniProvider") var realtimeOmniProvider: String = RealtimeOmniProvider.auto.rawValue
-  @AppStorage("askModeEnabled") var askModeEnabled = false
-  @AppStorage("aiChatWorkingDirectory") var aiChatWorkingDirectory: String = ""
-  @State var aiChatClaudeMdContent: String?
-  @State var aiChatClaudeMdPath: String?
-  @State var aiChatProjectClaudeMdContent: String?
-  @State var aiChatProjectClaudeMdPath: String?
-  @State var aiChatDiscoveredSkills: [(name: String, description: String, path: String)] =
-    []
-  @State var aiChatProjectDiscoveredSkills: [(name: String, description: String, path: String)] = []
-  @State var aiChatDisabledSkills: Set<String> = []
   @State var showFileViewer = false
   @State var fileViewerContent = ""
   @State var fileViewerTitle = ""
@@ -420,10 +392,6 @@ struct SettingsContentView: View {
   @AppStorage(BetaEnhancedDiagnosticsConfiguration.defaultsKey) var betaEnhancedDiagnosticsEnabled = true
   @State var advancedDetailsExpanded = false
 
-  // Browser Extension settings
-  @AppStorage("playwrightUseExtension") var playwrightUseExtension = true
-  @State var playwrightExtensionToken: String = ""
-  @State var showBrowserSetup = false
 
   // Launch at login manager
   @ObservedObject var launchAtLoginManager = LaunchAtLoginManager.shared
@@ -436,9 +404,6 @@ struct SettingsContentView: View {
     case privacy = "Privacy"
     case account = "Account"
     case planUsage = "Plan and Usage"
-    case aiChat = "AI Chat"
-    case floatingBar = "Floating Bar"
-    case shortcuts = "Shortcuts"
     case advanced = "Advanced"
     case referral = "Refer a Friend"
     case about = "About"
@@ -477,9 +442,6 @@ struct SettingsContentView: View {
       case .general: return "Geral"
       case .rewind: return "Rewind"
       case .transcription: return "Transcrição"
-      case .aiChat: return "Chat com IA"
-      case .floatingBar: return "Barra flutuante"
-      case .shortcuts: return "Atalhos"
       case .referral: return "Indique um amigo"
       case .about: return "Sobre"
       case .permissions: return "Permissões"
@@ -619,13 +581,11 @@ struct SettingsContentView: View {
     appState: AppState,
     selectedSection: Binding<SettingsSection>,
     highlightedSettingId: Binding<String?> = .constant(nil),
-    chatProvider: ChatProvider? = nil,
     showResetOnboardingConfirm: Binding<Bool>
   ) {
     self.appState = appState
     self._selectedSection = selectedSection
     self._highlightedSettingId = highlightedSettingId
-    self.chatProvider = chatProvider
     self._showResetOnboardingConfirm = showResetOnboardingConfirm
     let settings = AssistantSettings.shared
     _isMonitoring = State(initialValue: ProactiveAssistantsPlugin.shared.isMonitoring)
@@ -634,8 +594,6 @@ struct SettingsContentView: View {
     _analysisDelay = State(initialValue: settings.analysisDelay)
     _liveSuggestionsEnabled = State(initialValue: SuggestionAssistantSettings.shared.isEnabled)
     _taskEnabled = State(initialValue: TaskAssistantSettings.shared.isEnabled)
-    _taskChatAgentEnabled = State(initialValue: TaskAgentSettings.shared.isChatEnabled)
-    _taskAgentWorkingDirectory = State(initialValue: TaskAgentSettings.shared.workingDirectory)
     _taskExtractionInterval = State(initialValue: TaskAssistantSettings.shared.extractionInterval)
     _taskMinConfidence = State(initialValue: TaskAssistantSettings.shared.minConfidence)
     _taskNotificationsEnabled = State(
@@ -698,12 +656,6 @@ struct SettingsContentView: View {
           accountSection
           mergedSectionHeader(title: "Plano e uso", icon: "creditcard")
           planUsageSection
-        case .aiChat:
-          aiChatSection
-        case .floatingBar:
-          floatingBarSection
-        case .shortcuts:
-          shortcutsSection
         case .advanced:
           advancedSection
         case .referral:
@@ -722,24 +674,11 @@ struct SettingsContentView: View {
       .omiAnimation(.easeInOut(duration: 0.15), value: selectedSection)
     }
     .onAppear {
-      if AppBuild.isProductionBundle && selectedSection == .aiChat {
-        selectedSection = .advanced
-      }
       loadBackendSettings()
       loadSubscriptionInfo()
-      // Sync floating bar state with persisted preference (not transient visibility)
-      showAskOmiBar = FloatingControlBarManager.shared.isEnabled
-      playwrightExtensionToken =
-        UserDefaults.standard.string(forKey: "playwrightExtensionToken") ?? ""
-      chatProvider?.checkClaudeConnectionStatus()
       // Refresh notification permission state
       appState.checkNotificationPermission()
       screenCaptureHealth = ProactiveAssistantsPlugin.shared.screenCaptureHealth
-    }
-    .onReceive(NotificationCenter.default.publisher(for: .floatingBarEnabledDidChange)) { _ in
-      // The notch's Hide control, the bar's own hide path, and a Push-to-Talk reveal all move
-      // this preference without going through the switch; keep the switch honest.
-      showAskOmiBar = FloatingControlBarManager.shared.isEnabled
     }
     .onReceive(NotificationCenter.default.publisher(for: .assistantMonitoringStateDidChange)) {
       notification in
@@ -749,10 +688,6 @@ struct SettingsContentView: View {
       screenCaptureHealth = ProactiveAssistantsPlugin.shared.screenCaptureHealth
     }
     .onChange(of: selectedSection) { _, newValue in
-      if AppBuild.isProductionBundle && newValue == .aiChat {
-        selectedSection = .advanced
-        return
-      }
       if newValue == .planUsage || newValue == .account {
         // Plan and Usage now renders on the merged "Account & Plan" page, so
         // entering via either section id must refresh billing state.
@@ -762,7 +697,6 @@ struct SettingsContentView: View {
         // per-account on a section switch).
         loadSubscriptionInfo()
         AppState.current?.fetchTrialMetadata()
-        Task { await FloatingBarUsageLimiter.shared.fetchPlan() }
       }
     }
     .onReceive(NotificationCenter.default.publisher(for: .navigateToTaskSettings)) { _ in
@@ -779,9 +713,6 @@ struct SettingsContentView: View {
         }
       }
     }
-    .onReceive(NotificationCenter.default.publisher(for: .navigateToFloatingBarSettings)) { _ in
-      selectedSection = .floatingBar
-    }
     .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
       // Refresh notification permission when app becomes active (user may have changed it in System Settings)
       appState.refreshNotificationPermissionAfterSystemSettings()
@@ -791,22 +722,6 @@ struct SettingsContentView: View {
         activeBillingWebFlow = nil
         handleBillingFlowCompletion(outcome)
       }
-    }
-    .sheet(isPresented: $showBrowserSetup) {
-      BrowserExtensionSetup(
-        onComplete: {
-          showBrowserSetup = false
-          playwrightExtensionToken =
-            UserDefaults.standard.string(forKey: "playwrightExtensionToken") ?? ""
-        },
-        onDismiss: {
-          showBrowserSetup = false
-          playwrightExtensionToken =
-            UserDefaults.standard.string(forKey: "playwrightExtensionToken") ?? ""
-        },
-        chatProvider: chatProvider
-      )
-      .fixedSize()
     }
   }
 

@@ -147,115 +147,6 @@ extension View {
 }
 
 extension SettingsContentView {
-  var floatingBarTypedVoiceAnswersBinding: Binding<Bool> {
-    Binding(
-      get: { shortcutSettings.floatingBarTypedQuestionVoiceAnswersEnabled },
-      set: { newValue in
-        shortcutSettings.floatingBarTypedQuestionVoiceAnswersEnabled = newValue
-      }
-    )
-  }
-
-  func voiceSpeedSlider(settingId: String) -> some View {
-    let steps = ShortcutSettings.voiceSpeedSteps
-    let currentSpeed = shortcutSettings.voicePlaybackSpeed
-    let currentIndex =
-      steps.enumerated().min(by: { abs($0.element - currentSpeed) < abs($1.element - currentSpeed) }
-      )?.offset ?? 3
-
-    return settingsCard(settingId: settingId) {
-      VStack(spacing: OmiSpacing.lg) {
-        HStack {
-          VStack(alignment: .leading, spacing: OmiSpacing.hairline) {
-            Text(ShortcutSettings.voiceSpeedLabel(for: currentSpeed))
-              .scaledFont(size: OmiType.subheading, weight: .semibold)
-              .foregroundColor(Ink.primary)
-            Text("Velocidade da voz")
-              .scaledFont(size: OmiType.body)
-              .foregroundColor(Ink.secondary)
-          }
-          Spacer()
-          // `Ink.primary`, for the reason the frequency readout below is: the accent is a light hue
-          // and a number set in it on this panel is the hardest thing on the row to read.
-          Text("\(String(format: "%.1f", currentSpeed))×")
-            .scaledFont(size: OmiType.subheading, weight: .semibold)
-            .foregroundColor(Ink.primary)
-        }
-
-        VStack(spacing: OmiSpacing.xs) {
-          // Stepped slider
-          GeometryReader { geo in
-            let segmentCount = CGFloat(steps.count - 1)
-            let trackWidth = SettingsControlMetrics.steppedSliderTrackWidth(in: geo.size.width)
-            let trackInset = SettingsControlMetrics.steppedSliderInset(in: geo.size.width)
-
-            ZStack(alignment: .leading) {
-              // Track background
-              RoundedRectangle(cornerRadius: OmiChrome.stripRadius, style: .continuous)
-                .fill(Ink.hairline)
-                .frame(width: trackWidth, height: 6)
-                .offset(x: trackInset)
-
-              // Filled track
-              RoundedRectangle(cornerRadius: OmiChrome.stripRadius, style: .continuous)
-                .fill(Ink.primary)
-                .frame(width: trackWidth * CGFloat(currentIndex) / segmentCount, height: 6)
-                .offset(x: trackInset)
-
-              // Step dots
-              ForEach(0..<steps.count, id: \.self) { i in
-                Circle()
-                  .fill(
-                    i <= currentIndex ? SettingsSelection.valueFill : Ink.hairline
-                  )
-                  .frame(width: 12, height: 12)
-                  .position(
-                    x: SettingsControlMetrics.steppedSliderPosition(
-                      index: i, stepCount: steps.count, containerWidth: geo.size.width),
-                    y: geo.size.height / 2
-                  )
-              }
-
-              // Thumb
-              Circle()
-                .fill(Ink.surface)
-                .frame(width: 22, height: 22)
-                .shadow(color: .black.opacity(0.25), radius: 3, y: 1)
-                .position(
-                  x: SettingsControlMetrics.steppedSliderPosition(
-                    index: currentIndex, stepCount: steps.count, containerWidth: geo.size.width),
-                  y: geo.size.height / 2
-                )
-                .gesture(
-                  DragGesture(minimumDistance: 0, coordinateSpace: .named("voiceSpeedSlider"))
-                    .onChanged { value in
-                      let clamped = SettingsControlMetrics.steppedSliderIndex(
-                        locationX: value.location.x, stepCount: steps.count,
-                        containerWidth: geo.size.width)
-                      if shortcutSettings.voicePlaybackSpeed != steps[clamped] {
-                        performStepHaptic()
-                        shortcutSettings.voicePlaybackSpeed = steps[clamped]
-                      }
-                    }
-                )
-            }
-          }
-          .coordinateSpace(name: "voiceSpeedSlider")
-          .frame(height: 22)
-
-          HStack {
-            Text("Lenta")
-              .scaledFont(size: OmiType.caption)
-              .foregroundColor(Ink.secondary)
-            Spacer()
-            Text("Máx.")
-              .scaledFont(size: OmiType.caption)
-              .foregroundColor(Ink.secondary)
-          }
-        }
-      }
-    }
-  }
 
   /// Stepped slider for `notifications.frequency` matching the voice-speed slider
   /// pattern. Six positions: Off / Minimal / Low / Balanced / High / Maximum.
@@ -534,15 +425,16 @@ extension SettingsContentView {
     }
   }
 
-  func loadChatMessageCount() async {
-    isLoadingChatMessages = true
-    defer { isLoadingChatMessages = false }
-
-    do {
-      chatMessageCount = try await APIClient.shared.getChatMessageCount()
-    } catch {
-      chatMessageCount = 0
-    }
+  struct UserStats {
+    let conversations: Int
+    let appsInstalled: Int
+    let screenshotsTotal: Int
+    let focusSessions: Int
+    let tasksTodo: Int
+    let tasksDone: Int
+    let tasksDeleted: Int
+    let goalsCount: Int
+    let memoriesTotal: Int
   }
 
   // MARK: - About Section

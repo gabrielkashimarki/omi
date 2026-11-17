@@ -282,3 +282,15 @@ final class ItemLinkPresenter: ObservableObject {
     sheet = nil
   }
 }
+
+/// A busca de detalhe é a autoridade para um link de conversa: resposta malformada ou de outro
+/// ID segue o mesmo caminho de "indisponível" que uma requisição que falhou.
+enum ChatFirstConversationLinkPolicy {
+  static func validatedConversation(
+    _ conversation: ServerConversation?,
+    requestedID: String
+  ) -> ServerConversation? {
+    guard let conversation, conversation.id == requestedID else { return nil }
+    return conversation
+  }
+}

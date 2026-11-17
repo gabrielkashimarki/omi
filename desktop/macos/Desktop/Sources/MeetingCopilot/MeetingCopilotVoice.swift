@@ -2,8 +2,8 @@ import AVFoundation
 import Foundation
 
 /// Fala no fone a primeira linha da resposta do copiloto.
-/// Com a chave própria do Gemini, usa o TTS do Gemini direto no Google com a voz Charon (a mesma da voz
-/// ao vivo do Omi); sem chave, cai na voz escolhida do Omi (`speakOneShot`, pelo servidor do Omi).
+/// Usa o TTS do Gemini direto no Google com a voz Charon e a chave própria do Gemini; sem chave, fica
+/// em silêncio (a voz do Omi saiu do app).
 @MainActor
 final class MeetingCopilotVoice {
   static let shared = MeetingCopilotVoice()
@@ -24,7 +24,7 @@ final class MeetingCopilotVoice {
     let line = text.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !muted, !line.isEmpty else { return }
     guard let key = APIKeyService.shared.effectiveGeminiKey else {
-      FloatingBarVoicePlaybackService.shared.speakOneShot(line)
+      log("MeetingCopilotVoice: sem chave do Gemini, resposta não falada")
       return
     }
     stop()
@@ -37,9 +37,7 @@ final class MeetingCopilotVoice {
         player.play()
       } catch is CancellationError {
       } catch {
-        log("MeetingCopilotVoice: TTS do Gemini falhou (\(type(of: error))), usando a voz do Omi")
-        guard let self, !self.muted else { return }
-        FloatingBarVoicePlaybackService.shared.speakOneShot(line)
+        log("MeetingCopilotVoice: TTS do Gemini falhou (\(type(of: error)))")
       }
     }
   }

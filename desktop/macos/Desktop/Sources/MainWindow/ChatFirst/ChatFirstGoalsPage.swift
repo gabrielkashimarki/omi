@@ -10,7 +10,6 @@ struct ChatFirstGoalsPage: View {
   @ObservedObject var navigation: ChatFirstShellNavigation
   @ObservedObject var goalsStore: CanonicalGoalsStore
   @ObservedObject var tasksStore: TasksStore
-  let chatProvider: ChatProvider
   let automationRuntime: ChatFirstAutomationRuntime?
 
   @State private var resolvingTaskIDs = Set<String>()
@@ -67,7 +66,7 @@ struct ChatFirstGoalsPage: View {
   /// shared page title (docs/ux-contract.md §11). Esc takes the same path (`closeGoals`).
   private var header: some View {
     HStack(alignment: .center, spacing: OmiSpacing.md) {
-      BackChip((navigation.goalsOrigin ?? .chat).title, accessibilityIdentifier: "chat-first-goals-back") {
+      BackChip((navigation.goalsOrigin ?? .home).title, accessibilityIdentifier: "chat-first-goals-back") {
         navigation.closeGoals()
       }
       GlassPageHeader(title: "Metas") {
@@ -97,7 +96,6 @@ struct ChatFirstGoalsPage: View {
             onViewTasks: {
               navigation.open(focus: .goal(id: detail.goal.goalId), destination: .tasks)
             },
-            onContinueInChat: { navigation.discuss(.goal(id: detail.goal.goalId), using: chatProvider) },
             onVisible: acknowledgeVisibleGoal
           )
           .id(detail.goal.goalId)
@@ -115,7 +113,6 @@ struct ChatFirstGoalsPage: View {
               ChatFirstGoalRow(
                 goal: goal,
                 isSettingFocus: goalsStore.focusMutationGoalID == goal.goalId,
-                onDiscuss: { navigation.discuss(.goal(id: goal.goalId), using: chatProvider) },
                 onSetFocus: { setFocus(goalID: goal.goalId) }
               )
             }
@@ -138,14 +135,8 @@ struct ChatFirstGoalsPage: View {
     GlassEmptyState(
       systemImage: "target",
       title: "Nenhuma meta ativa",
-      message: "Conte ao Omi o que você quer alcançar e ele ajuda a transformar isso em uma meta."
-    ) {
-      Button("Falar com o Omi sobre uma meta") {
-        navigation.discuss(.goals, using: chatProvider)
-      }
-      .buttonStyle(OmiButtonStyle(.primary, size: .compact))
-      .accessibilityIdentifier("chat-first-goals-empty-discuss")
-    }
+      message: "Suas metas ativas aparecem aqui."
+    )
   }
 
   private func unavailableState(_ message: String) -> some View {
@@ -219,7 +210,6 @@ private struct ChatFirstFocusedGoalSection: View {
   let isResolvingTask: (String) -> Bool
   let onToggleTask: (String) -> Void
   let onViewTasks: () -> Void
-  let onContinueInChat: () -> Void
   let onVisible: (String) -> Void
 
   private var completedCount: Int { ChatFirstGoalDetailPolicy.completedTaskCount(in: detail) }
@@ -289,10 +279,6 @@ private struct ChatFirstFocusedGoalSection: View {
           .buttonStyle(.plain)
           .foregroundStyle(Ink.secondary)
           .accessibilityIdentifier("chat-first-goal-\(detail.goal.goalId)-tasks")
-        Button("Continuar no Chat", action: onContinueInChat)
-          .buttonStyle(.plain)
-          .foregroundStyle(Ink.secondary)
-          .accessibilityIdentifier("chat-first-goal-\(detail.goal.goalId)-discuss")
       }
       .scaledFont(size: OmiType.caption, weight: .semibold)
     }
@@ -344,7 +330,6 @@ private struct ChatFirstGoalTaskRow: View {
 private struct ChatFirstGoalRow: View {
   let goal: OmiAPI.GoalResponse
   let isSettingFocus: Bool
-  let onDiscuss: () -> Void
   let onSetFocus: () -> Void
 
   var body: some View {
@@ -374,10 +359,6 @@ private struct ChatFirstGoalRow: View {
       }
       Spacer(minLength: OmiSpacing.md)
       VStack(alignment: .trailing, spacing: OmiSpacing.sm) {
-        Button("Discutir", action: onDiscuss)
-          .buttonStyle(.plain)
-          .foregroundStyle(Ink.secondary)
-          .accessibilityIdentifier("chat-first-goal-\(goal.goalId)-discuss")
         Button {
           onSetFocus()
         } label: {

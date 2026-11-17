@@ -241,23 +241,6 @@ enum ManagedPlanGateHTTP {
     return isTypedPlanGatedCode(detail as? String)
   }
 
-  static func isPlanGatedMint(_ error: RealtimeTokenMintError) -> Bool {
-    isPlanGatedTypedJSON(status: error.statusCode, data: error.responseBody)
-      || isPlanGated(status: error.statusCode, payload: error.payload)
-  }
-
-  /// Typed 402 `plan_gated` from the managed proxy, or a client that already
-  /// classified it. Distinct from chat-quota / trial-expired 402.
-  static func isPlanGatedWarmFailure(_ error: Error) -> Bool {
-    if case GeminiClient.GeminiClientError.planGated = error {
-      return true
-    }
-    if let mint = error as? RealtimeTokenMintError {
-      return isPlanGatedMint(mint)
-    }
-    return false
-  }
-
   private static func errorField(_ object: Any) -> String? {
     (object as? [String: Any])?["error"] as? String
   }
@@ -334,10 +317,3 @@ struct ManagedPlanGateLatch: Equatable, Sendable {
   }
 }
 
-enum RealtimeHubUsageLimitPresentation {
-  /// Mid-session provider quota 1008 is a usage-limit close. Gemini idle 1008
-  /// (`expectedIdleTeardown`) is not.
-  static func shouldPresent(category: RealtimeHubCloseCategory?, failoverStarted: Bool) -> Bool {
-    category == .providerQuotaExceeded && !failoverStarted
-  }
-}

@@ -292,19 +292,6 @@ enum RuntimeOwnerIdentity {
       @escaping @Sendable (
         _ defaults: UserDefaults, _ previousOwner: String?
       ) -> String?,
-    quiesceVoice:
-      @escaping @Sendable (
-        _ previousOwner: String?, _ cleanupCapability: RuntimeOwnerTransitionCleanupCapability
-      ) async -> Void = { previousOwner, cleanupCapability in
-        await PushToTalkManager.shared.quiesceForEffectiveOwnerTransition(
-          previousOwnerID: previousOwner,
-          cleanupCapability: cleanupCapability)
-      },
-    revokeKernelOwner: (
-      @Sendable (
-        _ previousOwner: String, _ cleanupCapability: RuntimeOwnerTransitionCleanupCapability
-      ) async -> Void
-    )? = nil,
     retargetLocalStorage:
       @escaping @Sendable (
         _ previousOwner: String?, _ nextOwner: String?
@@ -370,15 +357,6 @@ enum RuntimeOwnerIdentity {
           assertionFailure("Effective-owner cleanup capability was revoked before quiescence")
           return
         }
-        await quiesceVoice(previousOwner, cleanupCapability)
-        guard let previousOwner else { return }
-        if let revokeKernelOwner {
-          await revokeKernelOwner(previousOwner, cleanupCapability)
-        } else if defaultsReference.value === UserDefaults.standard {
-          await AgentRuntimeProcess.shared.revokeOwnerRuntime(
-            previousOwnerID: previousOwner,
-            cleanupCapability: cleanupCapability)
-        }
       },
       prepareLocalStorageTransition: prepareLocalStorageTransition,
       finalizeLocalStorageTransition: {
@@ -437,11 +415,7 @@ enum RuntimeOwnerIdentity {
     await AIUserProfileService.shared.invalidateCache()
     await StagedTaskStorage.shared.invalidateCache()
     await GoalStorage.shared.invalidateCache()
-    await TaskChatMessageStorage.shared.invalidateCache()
     await KnowledgeGraphStorage.shared.invalidateCache()
-    await MainActor.run {
-      FloatingBarUsageLimiter.shared.reset()
-    }
   }
 
   /// Active kernel owner: automation override (non-prod) or real auth uid.

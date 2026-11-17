@@ -699,16 +699,6 @@ extension PostHogManager {
 
   // MARK: - Chat Events
 
-  func chatMessageSent(messageLength: Int, hasSelectedAppContext: Bool = false, source: String) {
-    track(
-      "Chat Message Sent",
-      properties: [
-        "message_length": messageLength,
-        "has_selected_app_context": hasSelectedAppContext,
-        "source": source,
-      ])
-  }
-
   // MARK: - Search Events
 
   func searchQueryEntered(properties: [String: Any]) {

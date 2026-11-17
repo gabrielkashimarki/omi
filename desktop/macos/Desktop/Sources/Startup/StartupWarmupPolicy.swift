@@ -43,7 +43,6 @@ enum StartupWarmupTaskID: Hashable {
   case serviceWarmup
   case databaseWarmup
   case dashboardNetworkRefresh
-  case chatPromptContextWarmup
   case databaseRetry
   case agentVMProvisioning
   case conversationWarmup
@@ -102,9 +101,7 @@ enum StartupWarmupPolicy {
   static let dashboardNetworkRefreshDelay: TimeInterval = 4.0
   static let initialSettingsSyncDelay: TimeInterval = 5.0
   static let apiKeyFetchDelay: TimeInterval = 9.0
-  static let chatPromptContextWarmupDelay: TimeInterval = 10.0
   static let screenActivitySyncInitialDelay: TimeInterval = 10.0
-  static let floatingBarPlanFetchDelay: TimeInterval = 0.0
   static let agentVMProvisioningDelay: TimeInterval = 20.0
   static let proactiveAssistantsStartDelay: TimeInterval = 6.0
   static let conversationWarmupDelay: TimeInterval = 6.0

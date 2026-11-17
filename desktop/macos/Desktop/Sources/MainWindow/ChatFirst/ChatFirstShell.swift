@@ -14,7 +14,6 @@ struct ChatFirstShell: View {
   let capability: ChatFirstCapabilityProjection?
   @Binding var selectedSettingsSection: SettingsContentView.SettingsSection
   @Binding var highlightedSettingID: String?
-  @ObservedObject private var promptMaterializationCoordinator = ChatFirstPromptMaterializationCoordinator.shared
   @StateObject private var automationRuntime: ChatFirstAutomationRuntime
   @AppStorage(MemoryHubDestination.storageKey) private var memoryDestinationRawValue =
     MemoryHubDestination.memories.rawValue
@@ -38,8 +37,7 @@ struct ChatFirstShell: View {
       wrappedValue: ChatFirstAutomationRuntime(
         navigation: navigation,
         goalsStore: viewModelContainer.canonicalGoalsStore,
-        tasksStore: viewModelContainer.tasksStore,
-        chatProvider: viewModelContainer.chatProvider
+        tasksStore: viewModelContainer.tasksStore
       )
     )
   }
@@ -74,7 +72,6 @@ struct ChatFirstShell: View {
     .omiToastHost()
     .environmentObject(navigation)
     .onAppear {
-      promptMaterializationCoordinator.activate(using: viewModelContainer.chatProvider)
       activateCapabilityGatedFeatures()
       automationRuntime.install()
       syncMemoryDestination(for: navigation.route)
@@ -97,28 +94,12 @@ struct ChatFirstShell: View {
     .onChange(of: navigation.pendingConversation?.id) { _, _ in
       syncMemoryDestination(for: navigation.route)
     }
-    .onReceive(NotificationCenter.default.publisher(for: .desktopMeetingConversationDidComplete)) { _ in
-      _ = promptMaterializationCoordinator.meetingConversationDidComplete(
-        windowForeground: isMainWindowForeground
-      )
-    }
     .onReceive(NotificationCenter.default.publisher(for: .desktopAutomationOpenMemoryAtlasRequested)) { _ in
       memoryDestinationRawValue = MemoryHubDestination.brainMap.rawValue
       navigation.selectPrimary(.memories)
     }
-    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-      guard let window = NSApp.mainWindow, window.isKeyWindow, window.isVisible else { return }
-      promptMaterializationCoordinator.mainWindowDidBecomeForeground()
-    }
-    .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { notification in
-      guard let window = notification.object as? NSWindow,
-        window === NSApp.mainWindow,
-        window.isVisible
-      else { return }
-      promptMaterializationCoordinator.mainWindowDidBecomeForeground()
-    }
     .onEscapeKey(priority: .navigation) {
-      guard navigation.route != .chat else { return false }
+      guard navigation.route != .home else { return false }
       OmiMotion.perform(.quick) {
         _ = navigation.handleEscapeNavigation()
       }
@@ -131,11 +112,6 @@ struct ChatFirstShell: View {
     viewModelContainer.canonicalGoalsStore.activate(capability: capability)
   }
 
-  private var isMainWindowForeground: Bool {
-    guard NSApp.isActive, let window = NSApp.mainWindow else { return false }
-    return window.isKeyWindow && window.isVisible
-  }
-
   @ViewBuilder
   private var destination: some View {
     ChatFirstPageGlassLane(route: navigation.route) {
@@ -146,19 +122,6 @@ struct ChatFirstShell: View {
   @ViewBuilder
   private var routeDestination: some View {
     switch navigation.route {
-    case .chat, .more(.dashboard):
-      chatDestination
-        .accessibilityIdentifier("chat-first-route-chat")
-        .onAppear {
-          ChatSwitchPerfLog.mark("chatRouteAppear")
-          navigation.markRouteVisible(navigation.route)
-          automationRuntime.registerChatPage(
-            requestPromptMaterialization: {
-              promptMaterializationCoordinator.mainWindowDidBecomeForeground()
-            }
-          )
-        }
-        .onDisappear { automationRuntime.unregisterChatPage() }
     case .conversations, .memories, .more(.rewind):
       memoryHubDestination
         .accessibilityIdentifier("chat-first-route-\(navigation.route.stableName)")
@@ -169,8 +132,6 @@ struct ChatFirstShell: View {
         navigation: navigation,
         viewModel: viewModelContainer.tasksViewModel,
         tasksStore: viewModelContainer.tasksStore,
-        chatProvider: viewModelContainer.chatProvider,
-        chatCoordinator: viewModelContainer.taskChatCoordinator,
         automationRuntime: automationRuntime
       )
       .accessibilityIdentifier("chat-first-route-tasks")
@@ -180,7 +141,6 @@ struct ChatFirstShell: View {
         navigation: navigation,
         goalsStore: viewModelContainer.canonicalGoalsStore,
         tasksStore: viewModelContainer.tasksStore,
-        chatProvider: viewModelContainer.chatProvider,
         automationRuntime: automationRuntime
       )
       .accessibilityIdentifier("chat-first-route-goals")
@@ -217,19 +177,6 @@ struct ChatFirstShell: View {
     topBarNewSinceRaw > 0 ? Date(timeIntervalSince1970: topBarNewSinceRaw) : Date()
   }
 
-  private var chatDestination: some View {
-    QueryShellHome(
-      viewModel: viewModelContainer.dashboardViewModel,
-      homeStatusStore: viewModelContainer.homeStatusStore,
-      appState: appState,
-      appProvider: viewModelContainer.appProvider,
-      chatProvider: viewModelContainer.chatProvider,
-      memoriesViewModel: viewModelContainer.memoriesViewModel,
-      taskChatCoordinator: viewModelContainer.taskChatCoordinator,
-      chatFirstRichBlockContext: richBlockContext
-    )
-  }
-
   private var memoryHubDestination: some View {
     ChatFirstMemoryHubHost(
       navigation: navigation,
@@ -256,26 +203,15 @@ struct ChatFirstShell: View {
         selectedSection: $selectedSettingsSection,
         highlightedSettingId: $highlightedSettingID,
         onBack: { navigation.closeMorePage() },
-        backTitle: (navigation.moreOrigin ?? .chat).title,
+        backTitle: (navigation.moreOrigin ?? .home).title,
         appState: appState
       )
       SettingsPage(
         appState: appState,
         selectedSection: $selectedSettingsSection,
-        highlightedSettingId: $highlightedSettingID,
-        chatProvider: viewModelContainer.chatProvider
+        highlightedSettingId: $highlightedSettingID
       )
     }
-  }
-
-  private var richBlockContext: ChatFirstRichBlockContext {
-    ChatFirstRichBlockContext(
-      navigation: navigation,
-      tasksStore: viewModelContainer.tasksStore,
-      chatProvider: viewModelContainer.chatProvider,
-      canonicalGoalsStore: viewModelContainer.canonicalGoalsStore,
-      promptMaterializationCoordinator: promptMaterializationCoordinator
-    )
   }
 
   private var modernTopBarSelection: Binding<Int> {
@@ -295,7 +231,7 @@ struct ChatFirstShell: View {
           // from. Routing through the same writer the chip row uses keeps one path responsible for
           // moving both halves of the state.
           selectHubDestination(.activity)
-        case .chat, .tasks, .memories, .goals:
+        case .tasks, .memories, .goals:
           navigation.selectPrimary(route)
         case .more(let page):
           navigation.selectMore(page)
@@ -352,14 +288,11 @@ struct ChatFirstShell: View {
   @ViewBuilder
   private func moreDestination(_ page: ChatFirstMorePage) -> some View {
     switch page {
-    case .dashboard:
-      chatDestination
     case .rewind:
       memoryHubDestination
     case .apps:
       ChatFirstAppsHost(
         appProvider: viewModelContainer.appProvider,
-        chatProvider: viewModelContainer.chatProvider,
         appState: appState,
         connectorStatusStore: viewModelContainer.homeStatusStore.connectorStatusStore,
         handlesAutomationPresentations: viewModelContainer.isInitialLoadComplete
@@ -376,7 +309,7 @@ struct ChatFirstShell: View {
 enum ChatFirstPageGlassLanePolicy {
   static func shouldWrap(_ route: ChatFirstRoute) -> Bool {
     switch route {
-    case .chat, .conversations, .memories, .more(.dashboard), .more(.rewind):
+    case .conversations, .memories, .more(.rewind):
       return false
     case .tasks, .more(.apps):
       return false
@@ -411,7 +344,6 @@ struct ChatFirstPageGlassLane<Content: View>: View {
 /// first, then yields one frame before constructing the existing AppsPage.
 private struct ChatFirstAppsHost: View {
   @ObservedObject var appProvider: AppProvider
-  @ObservedObject var chatProvider: ChatProvider
   let appState: AppState
   @ObservedObject var connectorStatusStore: ImportConnectorStatusStore
   let handlesAutomationPresentations: Bool
@@ -423,17 +355,6 @@ private struct ChatFirstAppsHost: View {
         AppsPage(
           appProvider: appProvider,
           appState: appState,
-          onOpenChatApp: { app, details in
-            let appPrompt = [details?.personaPrompt, details?.chatPrompt]
-              .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
-              .first { !$0.isEmpty }
-            await chatProvider.selectApp(
-              app.id,
-              name: app.name,
-              chatPrompt: appPrompt
-            )
-            NotificationCenter.default.post(name: .navigateToChat, object: nil)
-          },
           connectorStatusStore: connectorStatusStore,
           handlesAutomationPresentations: handlesAutomationPresentations
         )
@@ -510,9 +431,6 @@ private struct ChatFirstMemoryHubHost: View {
       initialConversation: navigation.pendingConversation ?? captureRepository.selectedCapture,
       initialCaptureMomentTimestamp: captureMoment,
       onCaptureFocusResolved: acknowledgeCaptureFocus,
-      onDiscussInChat: { conversation in
-        navigation.stageCaptureReference(conversation, using: viewModelContainer.chatProvider)
-      },
       onOpenLinkedTask: { taskID in
         navigation.open(focus: .task(id: taskID))
       },
@@ -561,11 +479,6 @@ private struct ChatFirstMemoryHubHost: View {
         let detail = await captureRepository.loadDetail(id: capture.id)
         return detail != nil || captureRepository.selectedCapture?.id == capture.id
       },
-      discussCapture: {
-        guard let conversation = visibleConversation, conversation.source == .omi else { return false }
-        navigation.stageCaptureReference(conversation, using: viewModelContainer.chatProvider)
-        return true
-      },
       detailIsVisible: {
         visibleConversation?.source == .omi
       }
@@ -581,8 +494,6 @@ private struct ChatFirstRestoredTasksHost: View {
   @ObservedObject var navigation: ChatFirstShellNavigation
   @ObservedObject var viewModel: TasksViewModel
   @ObservedObject var tasksStore: TasksStore
-  let chatProvider: ChatProvider
-  let chatCoordinator: TaskChatCoordinator
   let automationRuntime: ChatFirstAutomationRuntime?
 
   private var pendingFocusToken: String {
@@ -596,8 +507,6 @@ private struct ChatFirstRestoredTasksHost: View {
   var body: some View {
     TasksPage(
       viewModel: viewModel,
-      chatCoordinator: chatCoordinator,
-      chatProvider: chatProvider,
       onOpenRewindEvidence: { screenshotID in
         RewindCitationFocusState.shared.request(screenshotID)
         navigation.selectMore(.rewind)
@@ -694,7 +603,7 @@ private struct ChatFirstRestoredTasksHost: View {
 }
 
 /// Bridges the typed Chat-first routes to the four primary destinations exposed
-/// by the modern top bar. Chat remains Home in this shell. Goals has no pill, so
+/// by the modern top bar. Goals has no pill, so
 /// no pill claims it; a daily recap lights the pill of the page that opened it.
 enum ChatFirstModernNavigationPolicy {
   /// Matches no pill: the bar shows nothing selected.
@@ -704,7 +613,6 @@ enum ChatFirstModernNavigationPolicy {
     switch route {
     case .goals: return noPill
     case .dailyRecap: return dailyRecapOrigin.map { topBarIndex(for: $0) } ?? noPill
-    case .chat: return SidebarNavItem.dashboard.rawValue
     case .conversations, .memories: return SidebarNavItem.conversations.rawValue
     case .tasks: return SidebarNavItem.tasks.rawValue
     case .more(let page):
@@ -712,14 +620,13 @@ enum ChatFirstModernNavigationPolicy {
       case .apps: return SidebarNavItem.apps.rawValue
       case .settings: return SidebarNavItem.settings.rawValue
       case .rewind: return SidebarNavItem.conversations.rawValue
-      default: return SidebarNavItem.dashboard.rawValue
+      case .permissions: return noPill
       }
     }
   }
 
   static func route(forTopBarIndex rawValue: Int) -> ChatFirstRoute? {
     switch SidebarNavItem(rawValue: rawValue) {
-    case .dashboard: return .chat
     case .conversations: return .conversations
     case .tasks: return .tasks
     case .apps: return .more(.apps)

@@ -128,7 +128,6 @@ final class MeetingActionItemBannerService {
           title: title,
           message: body,
           assistantId: MeetingActionItemBannerPolicy.assistantID,
-          action: .meetingSummaryShare(conversationID: conversationID, recipients: recipients),
           isPersistent: true,
           authorizationSnapshot: snapshot
         )

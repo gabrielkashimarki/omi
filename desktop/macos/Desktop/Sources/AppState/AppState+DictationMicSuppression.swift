@@ -8,7 +8,7 @@ extension AppState {
   func ensureDictationMicSuppressionMonitor() -> DictationMicSuppressionMonitor {
     if let monitor = dictationMicSuppressionMonitor { return monitor }
     let monitor = DictationMicSuppressionMonitor(
-      isEnabled: { ShortcutSettings.shared.ambientIgnoresDictationApps },
+      isEnabled: { UserDefaults.standard.object(forKey: .transcriptionIgnoreDictationApps) as? Bool ?? true },
       onWindowClosed: { window in
         AnalyticsManager.shared.ambientDictationMicSuppressed(
           dictationApp: window.bundleID, durationSeconds: window.duration)

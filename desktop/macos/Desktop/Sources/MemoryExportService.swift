@@ -109,9 +109,7 @@ actor MemoryExportService {
     case .obsidian:
       isConfigured = !(defaults.string(forKey: destination.obsidianVaultPathKey) ?? "").isEmpty
     case .agents:
-      isConfigured =
-        hasStoredMCPKey && LocalAgentAPISettings.isEnabled
-        && LocalAgentAPISettings.storedToken() != nil
+      isConfigured = hasStoredMCPKey
     case .claudeCode, .codex, .openclaw, .hermes:
       isConfigured = hasConnection
     case .chatgpt, .claude:
@@ -332,15 +330,9 @@ actor MemoryExportService {
     return trimmed.isEmpty ? nil : trimmed
   }
 
-  func testAgentConnections(hostedKey: String, localToken: String) async throws
-    -> AgentConnectionTestResult
-  {
-    async let hostedCount = testHostedMCPMemoryCount(key: hostedKey)
-    async let localCount = testLocalAgentToolCount(token: localToken)
+  func testAgentConnections(hostedKey: String) async throws -> AgentConnectionTestResult {
     let result = try await AgentConnectionTestResult(
-      hostedMemoryCount: hostedCount,
-      localToolCount: localCount
-    )
+      hostedMemoryCount: testHostedMCPMemoryCount(key: hostedKey))
     markConnected(.agents)
     return result
   }
@@ -453,43 +445,11 @@ actor MemoryExportService {
     return text ?? "Tool call failed."
   }
 
-  private func testLocalAgentToolCount(token: String) async throws -> Int {
-    guard let url = URL(string: "\(LocalAgentAPISettings.serverURL)/v1/local/tools") else {
-      throw MemoryExportError.requestFailed("A URL do Omi Desktop local é inválida.")
-    }
-
-    var request = URLRequest(url: url)
-    request.httpMethod = "GET"
-    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-    let (data, response) = try await URLSession.shared.data(for: request)
-    guard let httpResponse = response as? HTTPURLResponse else {
-      throw MemoryExportError.requestFailed("O Omi Desktop local devolveu uma resposta inválida.")
-    }
-    guard (200...299).contains(httpResponse.statusCode) else {
-      throw MemoryExportError.requestFailed(
-        "O Omi Desktop local devolveu HTTP \(httpResponse.statusCode).")
-    }
-
-    guard
-      let payload = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-      let tools = payload["tools"] as? [Any]
-    else {
-      throw MemoryExportError.requestFailed("O Omi Desktop local não devolveu ferramentas.")
-    }
-
-    return tools.count
-  }
-
   static var omiAgentSkillText: String {
     AgentContextSkillInstaller.document
   }
 
-  static func omiAgentSetupPrompt(
-    hostedKey: String,
-    localURL: String,
-    localToken: String
-  ) -> String {
+  static func omiAgentSetupPrompt(hostedKey: String) -> String {
     """
     Set up Omi access for this agent.
 
@@ -501,30 +461,14 @@ actor MemoryExportService {
     Hosted authorization header:
     Authorization: Bearer \(hostedKey)
 
-    2. Configure the local Omi CLI for this Mac. Local access includes screen history, screenshot retrieval, local transcriptions, read-only SQL, daily recaps, indexed files, goals, app/window activity, and task search/complete/delete while Omi Desktop is running.
-
-    Local Omi Desktop URL:
-    \(localURL)
-
-    Local Omi Desktop token:
-    \(localToken)
-
-    CLI setup:
-    - If `omi` is not installed, install or update it with `pipx install omi-cli` or `pipx upgrade omi-cli`.
-    - Run: `omi local configure --url \(localURL) --token \(localToken)`
-    - Verify: `omi --json local status`
-    - Discover local tools: `omi --json local tools`
-
-    3. Save the Omi guide below. If this agent supports skills, install it as a skill named `omi`; otherwise save it in durable agent or project instructions.
+    2. Save the Omi guide below. If this agent supports skills, install it as a skill named `omi`; otherwise save it in durable agent or project instructions.
 
     \(omiAgentSkillText)
 
-    4. Verify setup:
+    3. Verify setup:
     - List hosted MCP tools.
     - If hosted `get_user_profile` exists, call it. If it is absent or returns `profile: null`, call `get_memories` with `limit: 5`.
-    - Run `omi --json local status`.
-    - Run `omi --json local tools`.
-    - Use only hosted and local tools that were discovered.
+    - Use only hosted tools that were discovered.
     """
   }
 

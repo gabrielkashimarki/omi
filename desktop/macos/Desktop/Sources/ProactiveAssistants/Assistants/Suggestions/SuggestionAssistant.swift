@@ -479,7 +479,7 @@ actor SuggestionAssistant: ProactiveAssistant {
       == WHAT THE USER IS DOING RIGHT NOW ==
       App: \(appName)
       Window: \(windowTitle ?? "(no title)")
-      Today is \(ChatPromptBuilder.currentCalendarDay(at: now, timeZone: timeZone)).
+      Today is \(PromptCalendarDay.current(at: now, timeZone: timeZone)).
       The attached screenshot is their screen at this moment.
       """
     )
@@ -670,20 +670,6 @@ actor SuggestionAssistant: ProactiveAssistant {
       category: suggestion.category,
       commitments: commitmentsInFlight
     )
-    var detail = suggestion.suggestion
-    if let taskId {
-      detail = "task_id=\(taskId)\n\(suggestion.suggestion)"
-    }
-    let context = FloatingBarNotificationContext(
-      sourceTitle: "Foco",
-      assistantId: identifier,
-      sourceApp: nil,
-      windowTitle: nil,
-      contextSummary: result.contextSummary,
-      currentActivity: result.currentActivity,
-      reasoning: suggestion.reasoning,
-      detail: detail
-    )
 
     // The category is model-chosen and decides the dedup depth this suggestion gets
     // (`SuggestionPacing.dedupMemory`), so a repeat that should have been suppressed is
@@ -698,7 +684,6 @@ actor SuggestionAssistant: ProactiveAssistant {
         title: "Foco",
         message: suggestion.suggestion,
         assistantId: identifier,
-        context: context,
         suggestionTelemetryIdentity: telemetryIdentity,
         onPresented: { [weak self] in
           onPresentation?(true)

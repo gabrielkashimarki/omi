@@ -63,7 +63,7 @@ enum MemoryExportExecutor {
       guard let task = destination.omiExecutionTask(key: key) else {
         throw ExecutorError.unsupported(destination.title)
       }
-      await spawnSetupAgent(task: task)
+      await createSetupTask(task: task)
       return Outcome(taskTitle: task.title, mode: .autonomous)
 
     case .browserAutonomous:
@@ -145,7 +145,7 @@ enum MemoryExportExecutor {
       NSWorkspace.shared.open(openURL)
     }
 
-    await spawnSetupAgent(task: task)
+    await createSetupTask(task: task)
     return Outcome(taskTitle: task.title, mode: .autonomous)
   }
 
@@ -370,18 +370,9 @@ enum MemoryExportExecutor {
       mode: .assisted)
   }
 
-  private static func spawnSetupAgent(task: (title: String, body: String)) async {
+  private static func createSetupTask(task: (title: String, body: String)) async {
     _ = await TasksStore.shared.createTask(
       description: task.title, dueAt: Date(), priority: "high", tags: ["mcp-setup"])
-    let model =
-      ShortcutSettings.shared.selectedModel.isEmpty
-      ? "claude-sonnet-4-6" : ShortcutSettings.shared.selectedModel
-    let query = ProactiveTaskExecute.buildQuery(title: task.title, message: task.body)
-    _ = AgentPillsManager.shared.spawn(
-      query: query,
-      model: model,
-      originSurface: .mainChat,
-      systemPromptSuffix: ProactiveTaskExecute.systemPromptSuffix)
   }
 }
 

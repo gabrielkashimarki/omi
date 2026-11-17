@@ -219,7 +219,6 @@ extension SettingsContentView {
     Task {
       try? await APIClient.shared.deactivateBYOK()
       APIKeyService.persistEnrolledFingerprints([:])
-      await FloatingBarUsageLimiter.shared.fetchPlan()
     }
   }
 
@@ -235,7 +234,6 @@ extension SettingsContentView {
       if hasAnyBYOKKey || !APIKeyService.enrolledFingerprints().isEmpty {
         try? await APIClient.shared.deactivateBYOK()
         APIKeyService.persistEnrolledFingerprints([:])
-        await FloatingBarUsageLimiter.shared.fetchPlan()
       }
       loadSubscriptionInfo()
       return
@@ -286,7 +284,6 @@ extension SettingsContentView {
         do {
           try await APIClient.shared.activateBYOK(fingerprints: fingerprints)
           APIKeyService.persistEnrolledFingerprints(fingerprints)
-          await FloatingBarUsageLimiter.shared.fetchPlan()
           await MainActor.run {
             // Clear any sticky paywall flag from a prior `freemium_threshold_reached`
             // event — once the selected LLM BYOK key validates, the user is on the
@@ -321,7 +318,6 @@ extension SettingsContentView {
         let names = failed.keys.map(\.displayName).sorted().joined(separator: ", ")
         try? await APIClient.shared.deactivateBYOK()
         APIKeyService.persistEnrolledFingerprints([:])
-        await FloatingBarUsageLimiter.shared.fetchPlan()
         await MainActor.run {
           byokKeyStatuses = results
           byokActivationError =
@@ -332,7 +328,6 @@ extension SettingsContentView {
     case .deactivate:
       try? await APIClient.shared.deactivateBYOK()
       APIKeyService.persistEnrolledFingerprints([:])
-      await FloatingBarUsageLimiter.shared.fetchPlan()
       await MainActor.run {
         byokKeyStatuses = [:]
         byokActivationError = nil

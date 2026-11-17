@@ -19,9 +19,6 @@ enum FloatingBarQuerySource: String, CaseIterable, Sendable {
   case pttVoiceOnly = "ptt_voice_only"
   case pttRealtime = "ptt_realtime"
 
-  static func visibleQuery(fromVoice: Bool) -> Self {
-    fromVoice ? .ptt : .typed
-  }
 }
 
 /// Unified analytics manager that sends events to PostHog.
@@ -156,34 +153,13 @@ class AnalyticsManager {
     devicePairingTelemetryCaptureForTests = capture
   }
 
-  /// Scoped observation of floating-bar query telemetry. Nil in production;
-  /// tests install a capture at the same boundary as PostHog.
-  private var floatingBarQueryTelemetryCaptureForTests: (@MainActor (String, [String: Any]) -> Void)?
-  /// Test seam for `question_asked` / `question_answered`; the emitters live in
-  /// `Analytics/AnalyticsManager+Questions.swift`, so this is internal, not private.
-  var questionTelemetryCaptureForTests: (@MainActor (String, [String: Any]) -> Void)?
   /// Test seam for search events; emitters live in `Analytics/AnalyticsManager+Search.swift`.
   var searchTelemetryCaptureForTests: (@MainActor (String, [String: Any]) -> Void)?
-  /// Scoped observation of floating-bar PTT terminal telemetry. Nil in
-  /// production; tests install a capture at the same boundary as PostHog.
-  private var floatingBarPTTTelemetryCaptureForTests: (@MainActor (String, [String: Any]) -> Void)?
-
-  func setFloatingBarQueryTelemetryCaptureForTests(
-    _ capture: (@MainActor (String, [String: Any]) -> Void)?
-  ) {
-    floatingBarQueryTelemetryCaptureForTests = capture
-  }
 
   func setSearchTelemetryCaptureForTests(
     _ capture: (@MainActor (String, [String: Any]) -> Void)?
   ) {
     searchTelemetryCaptureForTests = capture
-  }
-
-  func setFloatingBarPTTTelemetryCaptureForTests(
-    _ capture: (@MainActor (String, [String: Any]) -> Void)?
-  ) {
-    floatingBarPTTTelemetryCaptureForTests = capture
   }
 
   // MARK: - Initialization
@@ -234,36 +210,8 @@ class AnalyticsManager {
 
   func onboardingChatToolUsed(tool: String, properties: [String: Any] = [:]) {
     var props = properties
-    props["tool"] = ChatTelemetryDimension.toolName(tool)
+    props["tool"] = tool
     PostHogManager.shared.track("Onboarding Chat Tool Used", properties: props)
-  }
-
-  func onboardingChatMessage(role: String, step: String) {
-    let props: [String: Any] = ["role": role, "step": step]
-    PostHogManager.shared.track("Onboarding Chat Message", properties: props)
-  }
-
-  /// Track onboarding chat shape without sending the user's message content.
-  func onboardingChatMessageDetailed(
-    role: String, text: String, step: String, toolCalls: [String]? = nil, model: String? = nil, error: String? = nil
-  ) {
-    var props: [String: Any] = [
-      "role": role,
-      "step": step,
-      "text_length": text.count,
-    ]
-    if let toolCalls = toolCalls, !toolCalls.isEmpty {
-      let boundedTools = Array(Set(toolCalls.map(ChatTelemetryDimension.toolName))).sorted().prefix(8)
-      props["tool_calls"] = boundedTools.joined(separator: ",")
-      props["tool_call_count"] = toolCalls.count
-    }
-    if let model = model { props["model"] = Self.boundedAnalyticsDimension(model) }
-    if let error = error {
-      let errorClass = PostHogManager.diagnosticErrorClass(error)
-      props["error"] = errorClass
-      props["error_class"] = errorClass
-    }
-    PostHogManager.shared.track("onboarding_chat_message_detailed", properties: props)
   }
 
   private static func boundedAnalyticsDimension(_ value: String) -> String {
@@ -849,21 +797,6 @@ class AnalyticsManager {
 
   // MARK: - Chat Events
 
-  func chatMessageSent(
-    messageLength: Int, hasSelectedAppContext: Bool = false, source: String,
-    countsAsQuestion: Bool = true, attemptID: String? = nil
-  ) {
-    PostHogManager.shared.chatMessageSent(
-      messageLength: messageLength, hasSelectedAppContext: hasSelectedAppContext, source: source)
-    // Every chat surface funnels through here, which makes it the one place
-    // that can count "questions asked" for the rating-prompt trigger. Callers
-    // pass countsAsQuestion: false for sends that are not a NEW accepted
-    // question (retries of a failed turn, busy no-op paths) so the one-time
-    // prompt trigger counts each logical question exactly once.
-    guard countsAsQuestion else { return }
-    questionAsked(surface: .chatWindow, source: source, messageLength: messageLength, attemptID: attemptID)
-  }
-
   func desktopRatingSubmitted(rating: Int, revision: Int? = nil) {
     PostHogManager.shared.desktopRatingSubmitted(rating: rating, revision: revision)
   }
@@ -930,15 +863,6 @@ class AnalyticsManager {
     PostHogManager.shared.chatCleared()
   }
 
-  func messageRated(rating: Int, surface: String = "text") {
-    let ratingString = rating == 1 ? "thumbs_up" : "thumbs_down"
-    // `source` splits the admin thumbs-ratio chart: "text" = main-window
-    // chat, "voice" = floating-bar responses. Events before this dimension
-    // existed chart as the combined series only.
-    PostHogManager.shared.track(
-      "message_rated", properties: ["rating": ratingString, "source": surface])
-  }
-
   // MARK: - Claude Agent Events
 
   /// Sends a Chat-first event only after its closed, content-free mapper has
@@ -952,152 +876,8 @@ class AnalyticsManager {
     )
   }
 
-  func chatQueryTelemetry(_ event: ChatQueryTelemetryEvent) {
-    let payload = event.analyticsPayload
-    PostHogManager.shared.track(payload.eventName, properties: payload.properties)
-    ClientTelemetryShadow.captureFloatingVoice(event)
-    questionAnswered(forChatEvent: event)
-    if case .failed(_, _, let errorClass, _, _, _) = event {
-      DesktopDiagnosticsManager.shared.recordChatFailure(errorClass: errorClass.rawValue)
-    }
-    let diagnosticKeys = [
-      "duration_ms", "error_class", "cancel_reason", "partial_response",
-      "surface", "harness", "runtime_surface", "session_adapter_id", "watchdog_fired",
-    ]
-    let diagnostics = diagnosticKeys.compactMap { key -> String? in
-      guard let value = payload.properties[key] else { return nil }
-      return "\(key)=\(value)"
-    }.joined(separator: " ")
-    log(
-      "Chat telemetry event=\(payload.eventName) attempt_id=\(payload.properties["attempt_id"] ?? "missing") \(diagnostics)"
-    )
-  }
-
-  func providerAuthRequired(
-    sessionAdapterId: String?,
-    harness: String,
-    bridgeMode: String,
-    oauthUrlValid: Bool
-  ) {
-    guard !Self.isDevBuild else { return }
-    var props: [String: Any] = [
-      "harness": boundedAnalyticsIdentifier(harness),
-      "bridge_mode": boundedAnalyticsIdentifier(bridgeMode),
-      "oauth_url_valid": oauthUrlValid,
-    ]
-    if let sessionAdapterId {
-      props["session_adapter_id"] = boundedAnalyticsIdentifier(sessionAdapterId)
-    }
-    PostHogManager.shared.track("provider_auth_required", properties: props)
-  }
-
-  func claudeOAuthBrowserOpened(harness: String, bridgeMode: String) {
-    guard !Self.isDevBuild else { return }
-    PostHogManager.shared.track(
-      "claude_oauth_browser_opened",
-      properties: [
-        "harness": boundedAnalyticsIdentifier(harness),
-        "bridge_mode": boundedAnalyticsIdentifier(bridgeMode),
-      ]
-    )
-  }
-
-  func claudeOAuthCallbackTimeout(harness: String, bridgeMode: String) {
-    guard !Self.isDevBuild else { return }
-    PostHogManager.shared.track(
-      "claude_oauth_callback_timeout",
-      properties: [
-        "harness": boundedAnalyticsIdentifier(harness),
-        "bridge_mode": boundedAnalyticsIdentifier(bridgeMode),
-      ]
-    )
-  }
-
-  func claudeOAuthCallbackReceived(harness: String, bridgeMode: String) {
-    guard !Self.isDevBuild else { return }
-    PostHogManager.shared.track(
-      "claude_oauth_callback_received",
-      properties: [
-        "harness": boundedAnalyticsIdentifier(harness),
-        "bridge_mode": boundedAnalyticsIdentifier(bridgeMode),
-      ]
-    )
-  }
-
-  func screenContextToolResult(
-    toolName: String,
-    context: ScreenContextTelemetryContext,
-    ok: Bool,
-    failureCode: String?,
-    screenNowAvailable: Bool?,
-    timelineCount: Int?,
-    latestCaptureAgeSeconds: Int?,
-    hasOCRPreview: Bool?,
-    imageBytesBucket: String?,
-    permissionTCCGranted: Bool?,
-    sckAvailable: Bool?
-  ) {
-    guard !Self.isDevBuild else { return }
-    var props: [String: Any] = [
-      "tool_name": toolName,
-      "surface": boundedAnalyticsIdentifier(context.surface),
-      "ok": ok,
-    ]
-    addScreenContextProperties(context, to: &props)
-    if let failureCode { props["failure_code"] = failureCode }
-    if let screenNowAvailable { props["screen_now_available"] = screenNowAvailable }
-    if let timelineCount { props["timeline_count"] = timelineCount }
-    if let latestCaptureAgeSeconds { props["latest_capture_age_seconds"] = latestCaptureAgeSeconds }
-    if let hasOCRPreview { props["has_ocr_preview"] = hasOCRPreview }
-    if let imageBytesBucket { props["image_bytes_bucket"] = imageBytesBucket }
-    if let permissionTCCGranted { props["permission_tcc_granted"] = permissionTCCGranted }
-    if let sckAvailable { props["sck_available"] = sckAvailable }
-    PostHogManager.shared.track("desktop_screen_context_result", properties: props)
-  }
-
-  func screenContextInvariant(
-    name: String,
-    context: ScreenContextTelemetryContext,
-    toolName: String?,
-    properties: [String: Any] = [:]
-  ) {
-    guard !Self.isDevBuild else { return }
-    var props = properties
-    props["invariant"] = name
-    props["surface"] = boundedAnalyticsIdentifier(context.surface)
-    if let toolName { props["tool_name"] = toolName }
-    addScreenContextProperties(context, to: &props)
-    PostHogManager.shared.track("desktop_screen_context_invariant", properties: props)
-  }
-
-  private func addScreenContextProperties(_ context: ScreenContextTelemetryContext, to props: inout [String: Any]) {
-    if let surfaceKind = context.surfaceKind { props["surface_kind"] = boundedAnalyticsIdentifier(surfaceKind) }
-    if let externalRefKind = context.externalRefKind {
-      props["external_ref_kind"] = boundedAnalyticsIdentifier(externalRefKind)
-    }
-    if let externalRefId = context.externalRefId {
-      props["external_ref_id"] = boundedAnalyticsIdentifier(externalRefId)
-    }
-    if let runId = context.runId { props["run_id"] = boundedAnalyticsIdentifier(runId) }
-    if let pillId = context.pillId { props["pill_id"] = boundedAnalyticsIdentifier(pillId) }
-  }
-
   private func boundedAnalyticsIdentifier(_ value: String) -> String {
     String(value.trimmingCharacters(in: .whitespacesAndNewlines).prefix(128))
-  }
-
-  /// Track individual tool calls made by the Claude agent.
-  ///
-  /// Fires for every terminal status, not only success — a failed tool call
-  /// previously emitted nothing, so tool reliability was unmeasurable. Filter
-  /// on `outcome == "completed"` for the pre-existing success-only meaning.
-  func chatToolCallCompleted(toolName: String, durationMs: Int, outcome: String) {
-    let props: [String: Any] = [
-      "tool_name": ChatTelemetryDimension.toolName(toolName),
-      "duration_ms": durationMs,
-      "outcome": ChatTelemetryDimension.toolOutcome(outcome),
-    ]
-    PostHogManager.shared.track("chat_tool_call_completed", properties: props)
   }
 
   // MARK: - Conversation Events (Additional)
@@ -1477,106 +1257,6 @@ class AnalyticsManager {
   }
 
   // MARK: - Floating Bar Events
-
-  /// Track when the floating bar is toggled visible/hidden
-  func floatingBarToggled(visible: Bool, source: String) {
-    let props: [String: Any] = [
-      "visible": visible,
-      "source": source,
-    ]
-    PostHogManager.shared.track("floating_bar_toggled", properties: props)
-  }
-
-  /// Track when Ask OMI is opened (AI input panel shown)
-  func floatingBarAskOmiOpened(source: String) {
-    let props: [String: Any] = ["source": source]
-    PostHogManager.shared.track("floating_bar_ask_omi_opened", properties: props)
-  }
-
-  /// Track when the AI conversation is closed
-  func floatingBarAskOmiClosed() {
-    PostHogManager.shared.track("floating_bar_ask_omi_closed")
-  }
-
-  /// Track when an AI query is sent from the floating bar
-  ///
-  /// `attemptID` is the voice turn id when the query came from push-to-talk,
-  /// so `question_asked` joins the coordinator's terminal record. Every call
-  /// here is one accepted question; the voice paths only reach it once the
-  /// transcript (or the realtime commit) exists.
-  func floatingBarQuerySent(
-    messageLength: Int, hasScreenshot: Bool, source: FloatingBarQuerySource, attemptID: String? = nil
-  ) {
-    let props: [String: Any] = [
-      "message_length": messageLength,
-      "has_screenshot": hasScreenshot,
-      "source": source.rawValue,
-    ]
-    floatingBarQueryTelemetryCaptureForTests?("floating_bar_query_sent", props)
-    PostHogManager.shared.track("floating_bar_query_sent", properties: props)
-    questionAsked(
-      surface: QuestionSurface(source), source: source.rawValue, messageLength: messageLength,
-      attemptID: attemptID)
-  }
-
-  /// Track when push-to-talk starts listening
-  func floatingBarPTTStarted(mode: String) {
-    let props: [String: Any] = ["mode": mode]
-    PostHogManager.shared.track("floating_bar_ptt_started", properties: props)
-  }
-
-  /// Track when push-to-talk ends and sends (or discards) transcript.
-  ///
-  /// `had_transcript` does NOT mean "text exists". On the realtime-hub path the
-  /// client commits raw audio and never sees a transcript, so the property means
-  /// **the turn was committed for an answer**. Only the STT cascade can report a
-  /// real length; the hub passes `nil` rather than a literal, because a property
-  /// that is a fake `0` on most events silently poisons every aggregate built on
-  /// it. Read admitted-vs-rejected audio distributions from
-  /// `ptt_audio_capture_lifecycle`, which carries the real measurements.
-  ///
-  /// The wire property names are deliberately unchanged: existing dashboards and
-  /// the PTT quality baseline join on them.
-  ///
-  /// `turn_kind` classifies the terminal by user intent, not route mechanics:
-  /// `dictation` (the voice-typing pipeline ran, paste succeeded or not),
-  /// `question` (committed or attempted agent answer), or `unknown`
-  /// (cancelled / too-short / silent discard before intent was knowable).
-  /// Deliberately absent from `floating_bar_ptt_started`: a dictation is only
-  /// recognized mid-hold. Optional bounded extras follow the same rule —
-  /// `audioSeconds` collapses into the closed `audio_seconds_bucket` when the
-  /// site already knows the length, and `dictationTranscriber` is the dictation
-  /// pipeline's bounded transcriber id (`route` when the STT route already
-  /// produced the transcript; otherwise `backend_batch_stt` / `on_device_asr`
-  /// from `DictationTranscriber.Source`). No deeper provider split here.
-  func floatingBarPTTEnded(
-    mode: String,
-    committed: Bool,
-    transcriptLength: Int?,
-    turnKind: PTTAttemptLifecycleRecorder.TurnKind = .unknown,
-    audioSeconds: Double? = nil,
-    dictationTranscriber: String? = nil
-  ) {
-    var props: [String: Any] = [
-      "mode": mode,
-      "had_transcript": committed,
-      "turn_kind": turnKind.rawValue,
-    ]
-    if let transcriptLength {
-      props["transcript_length"] = transcriptLength
-    }
-    if let audioSecondsBucket = PTTAttemptLifecycleRecorder.AudioSecondsBucket.bucket(fromSeconds: audioSeconds) {
-      props["audio_seconds_bucket"] = audioSecondsBucket.rawValue
-    }
-    if turnKind == .dictation,
-      let dictationTranscriber,
-      ["route", "backend_batch_stt", "on_device_asr"].contains(dictationTranscriber)
-    {
-      props["dictation_transcriber"] = dictationTranscriber
-    }
-    floatingBarPTTTelemetryCaptureForTests?("floating_bar_ptt_ended", props)
-    PostHogManager.shared.track("floating_bar_ptt_ended", properties: props)
-  }
 
   // MARK: - Knowledge Graph Events
 

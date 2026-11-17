@@ -404,8 +404,6 @@ class TasksViewModel: ObservableObject {
   var selectionOwnerGeneration: UInt64 = 0
   private var suppressOrderingPersistence = false
 
-  /// Set by TasksPage so delete operations can purge in-memory chat states.
-  weak var chatCoordinator: TaskChatCoordinator?
 
   // Search state - searches SQLite directly
   @Published var searchText = "" {
@@ -2764,7 +2762,6 @@ class TasksViewModel: ObservableObject {
 
   func deleteTask(_ task: TaskActionItem) async {
     removeFromDisplay(task.id)
-    chatCoordinator?.purgeState(for: task.id)
     await store.deleteTask(task)
   }
 
@@ -2778,7 +2775,6 @@ class TasksViewModel: ObservableObject {
 
     // Delete the task
     removeFromDisplay(task.id)
-    chatCoordinator?.purgeState(for: task.id)
     await store.deleteTask(task)
 
     // Show toast and schedule auto-dismiss
@@ -3455,27 +3451,13 @@ class TasksViewModel: ObservableObject {
 struct TasksPage: View {
   @ObservedObject var viewModel: TasksViewModel
   @ObservedObject private var suggestedStore = SuggestedTasksStore.shared
-  var chatProvider: ChatProvider?
   /// Optional host-owned route handoff. Keeping this callback at the shell boundary lets the task
   /// panel render local evidence cards without owning sidebar selection or a second Rewind page.
   var onOpenRewindEvidence: ((Int64) -> Void)?
 
-  // Chat panel state
-  // NOTE: NOT @ObservedObject — observing coordinator here would re-render the
-  // entire task list (including all row layout) on every streaming token.
-  // TaskChatSidePanelView handles coordinator observation in an isolated subtree.
-  var chatCoordinator: TaskChatCoordinator
-  /// Mirrors coordinator.activeTaskId — updated via onReceive so task rows
-  /// highlight the correct item without observing the full coordinator.
-  @State private var activeChatTaskId: String? = nil
-  @State private var showChatPanel = false
   private var taskDetailTask: TaskActionItem? {
     viewModel.detailPanelTaskID.flatMap { viewModel.findTask($0) }
   }
-  @AppStorage("tasksChatPanelWidth") private var chatPanelWidth: Double = 400
-  /// The window width before the chat panel was opened, so we can restore it exactly.
-  /// Persisted so we can restore on app relaunch if the user quit with chat open.
-  @AppStorage("tasksPreChatWindowWidth") private var preChatWindowWidth: Double = 0
   /// Board (Notion-style status columns) vs the classic grouped list. Board is
   /// the default hero view; the list stays for fast keyboard-driven triage.
   @AppStorage("tasksViewIsBoard") private var tasksViewIsBoard = true
@@ -3489,19 +3471,11 @@ struct TasksPage: View {
   @FocusState private var inlineCreateFocused: Bool
   @State private var keyboardMonitor: Any?
 
-  // Chat panel resize state
-  @State private var isDraggingDivider = false
-  @State private var dragStartWidth: Double = 0
-
   init(
     viewModel: TasksViewModel,
-    chatCoordinator: TaskChatCoordinator,
-    chatProvider: ChatProvider? = nil,
     onOpenRewindEvidence: ((Int64) -> Void)? = nil
   ) {
     self.viewModel = viewModel
-    self.chatCoordinator = chatCoordinator
-    self.chatProvider = chatProvider
     self.onOpenRewindEvidence = onOpenRewindEvidence
   }
 
@@ -3544,45 +3518,12 @@ struct TasksPage: View {
         await viewModel.loadTasksForFirstUse()
         await suggestedStore.load()
         hydratePendingDashboardNavigationTarget()
-        chatCoordinator.ingestTaskMappings(viewModel.displayTasks)
         if !viewModel.isLoading {
           NotificationCenter.default.post(name: .tasksPageDidLoad, object: nil)
         }
       }
       suggestedStore.registerAutomationActions()
-      if chatCoordinator.isPanelOpen, chatCoordinator.activeTaskId != nil {
-        showChatPanel = true
-      }
       Task { await TaskPrioritizationService.shared.start() }
-      if !showChatPanel {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-          shrinkWindowIfNeeded()
-        }
-      }
-    }
-    .onDisappear {
-      if showChatPanel {
-        showChatPanel = false
-      }
-    }
-    .onReceive(chatCoordinator.$activeTaskId) { taskId in
-      activeChatTaskId = taskId
-    }
-    .onReceive(viewModel.$displayTasks) { tasks in
-      chatCoordinator.ingestTaskMappings(tasks)
-    }
-    .onReceive(chatCoordinator.$isPanelOpen.removeDuplicates()) { isOpen in
-      guard isOpen != showChatPanel else { return }
-      if isOpen {
-        viewModel.detailPanelTaskID = nil
-        OmiMotion.withGated(.easeInOut(duration: 0.25)) {
-          showChatPanel = true
-        }
-      } else {
-        OmiMotion.withGated(.easeInOut(duration: 0.25)) {
-          showChatPanel = false
-        }
-      }
     }
   }
 
@@ -3592,55 +3533,7 @@ struct TasksPage: View {
       tasksContent
         .frame(maxWidth: .infinity)
 
-      if showChatPanel {
-        // Draggable divider with handle
-        ZStack {
-          Rectangle()
-            .fill(isDraggingDivider ? Ink.secondary.opacity(0.3) : Ink.separator)
-            .frame(width: 1)
-
-          // Visible drag handle
-          RoundedRectangle(cornerRadius: 2)
-            .fill(isDraggingDivider ? Ink.secondary : Ink.secondary.opacity(0.4))
-            .frame(width: 4, height: 36)
-        }
-        .frame(width: 9)
-        .contentShape(Rectangle())
-        .onHover { hovering in
-          if hovering {
-            NSCursor.resizeLeftRight.push()
-          } else {
-            NSCursor.pop()
-          }
-        }
-        .gesture(
-          DragGesture(coordinateSpace: .global)
-            .onChanged { value in
-              isDraggingDivider = true
-              if dragStartWidth == 0 {
-                dragStartWidth = chatPanelWidth
-              }
-              let delta = value.startLocation.x - value.location.x
-              chatPanelWidth = min(600, max(300, dragStartWidth + delta))
-            }
-            .onEnded { _ in
-              isDraggingDivider = false
-              dragStartWidth = 0
-            }
-        )
-
-        // Right panel: Task chat (slides in from right).
-        // Uses a dedicated view that owns coordinator observation so
-        // streaming updates don't re-render the task list on the left.
-        TaskChatSidePanelView(
-          coordinator: chatCoordinator,
-          viewModel: viewModel,
-          onClose: { closeChatPanel() },
-          onOpenRewindEvidence: onOpenRewindEvidence
-        )
-        .frame(width: chatPanelWidth)
-        .transition(.move(edge: .trailing))
-      } else if let taskDetailTask {
+      if let taskDetailTask {
         Rectangle()
           .fill(Ink.separator)
           .frame(width: 1)
@@ -3656,11 +3549,6 @@ struct TasksPage: View {
             viewModel.editingTaskId = taskDetailTask.id
             closeTaskDetailPanel()
           },
-          onOpenChat: chatProvider != nil && TaskAgentSettings.shared.isChatEnabled
-            ? {
-              closeTaskDetailPanel()
-              openChatForTask(taskDetailTask)
-            } : nil,
           onIncrementIndent: viewModel.getIndentLevel(for: taskDetailTask.id) < 3
             ? {
               viewModel.incrementIndent(for: taskDetailTask.id)
@@ -3686,46 +3574,12 @@ struct TasksPage: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
-  /// Start a background AI investigation for a task (no panel opens)
-  /// Open chat for a task
-  private func openChatForTask(_ task: TaskActionItem) {
-    log(
-      "TaskChat: openChatForTask called for task \(task.id) (retired=\(task.isRetired), completed=\(task.completed))"
-    )
-    viewModel.detailPanelTaskID = nil
-    if !showChatPanel {
-      // The panel opens inside the current window width. It used to resize the user's window, which
-      // no other panel in the app does.
-      OmiMotion.withGated(.easeInOut(duration: 0.25)) {
-        showChatPanel = true
-      }
-    }
-    // Generic navigation only resumes an existing thread. Durable work is
-    // created solely by the labeled “Work on this with Omi” action.
-    Task {
-      if task.workstreamId != nil {
-        _ = await chatCoordinator.openExistingThread(for: task)
-      } else {
-        await chatCoordinator.openChat(for: task)
-      }
-    }
-  }
-
-  /// Close the chat panel and shrink window
-  private func closeChatPanel() {
-    chatCoordinator.closeChat()
-  }
-
   private func closeTaskDetailPanel() {
     viewModel.detailPanelTaskID = nil
   }
 
   private func openTaskDetailPanel(for task: TaskActionItem) {
     guard !viewModel.isMultiSelectMode else { return }
-    if showChatPanel {
-      closeChatPanel()
-      showChatPanel = false
-    }
     viewModel.detailPanelTaskID = task.id
   }
 
@@ -3740,24 +3594,7 @@ struct TasksPage: View {
       closeTaskDetailPanel()
       return true
     }
-    if showChatPanel {
-      closeChatPanel()
-      return true
-    }
     return viewModel.handleEscape()
-  }
-
-  /// On launch, restore the window to its pre-chat width if the user quit with chat open.
-  /// Uses no animation since the app is just opening.
-  private func shrinkWindowIfNeeded() {
-    guard preChatWindowWidth > 0 else { return }
-    guard let window = NSApp.windows.first(where: { $0.title.lowercased().hasPrefix("omi") && $0.isVisible }) else {
-      return
-    }
-    var frame = window.frame
-    frame.size.width = preChatWindowWidth
-    window.setFrame(frame, display: true)
-    preChatWindowWidth = 0
   }
 
   // MARK: - Tasks Content
@@ -3851,9 +3688,8 @@ struct TasksPage: View {
   private func installKeyboardMonitor() {
     guard keyboardMonitor == nil else { return }
     let vm = viewModel
-    keyboardMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak chatCoordinator] event in
-      let chatOpen = chatCoordinator?.isPanelOpen == true
-      return vm.handleKeyDown(event, chatOpen: chatOpen) ? nil : event
+    keyboardMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+      return vm.handleKeyDown(event, chatOpen: false) ? nil : event
     }
   }
 
@@ -4141,55 +3977,7 @@ struct TasksPage: View {
           Label("Selecionar tarefas", systemImage: "checkmark.circle")
         }
       }
-
-      if chatProvider != nil && TaskAgentSettings.shared.isChatEnabled {
-        Button {
-          if showChatPanel {
-            closeChatPanel()
-          } else if let selectedId = viewModel.keyboardSelectedTaskId,
-            let task = viewModel.displayTasks.first(where: { $0.id == selectedId })
-          {
-            openChatForTask(task)
-          } else {
-            OmiMotion.withGated(.easeInOut(duration: 0.25)) {
-              showChatPanel = true
-            }
-          }
-        } label: {
-          Label(showChatPanel ? "Fechar assistente de tarefas" : "Abrir assistente de tarefas", systemImage: "bubble.left")
-        }
-      }
     }
-  }
-
-  private var chatToggleButton: some View {
-    Button {
-      if showChatPanel {
-        closeChatPanel()
-      } else if let selectedId = viewModel.keyboardSelectedTaskId,
-        let task = viewModel.displayTasks.first(where: { $0.id == selectedId })
-      {
-        // A task is selected — open chat directly for it
-        openChatForTask(task)
-      } else {
-        // No task selected — open empty sidebar
-        OmiMotion.withGated(.easeInOut(duration: 0.25)) {
-          showChatPanel = true
-        }
-      }
-    } label: {
-      Image(systemName: showChatPanel ? "bubble.left.and.bubble.right.fill" : "bubble.left.and.bubble.right")
-        .scaledFont(size: OmiType.caption)
-        .foregroundColor(showChatPanel ? Ink.primary : Ink.secondary)
-        .padding(OmiSpacing.sm)
-        .background(
-          RoundedRectangle(cornerRadius: OmiChrome.elementRadius)
-            .fill(showChatPanel ? Ink.primary.opacity(0.12) : Ink.rowFill)
-        )
-    }
-    .buttonStyle(.plain)
-    .help(showChatPanel ? "Fechar painel do chat" : "Abrir chat da tarefa")
-    .accessibilityLabel(showChatPanel ? "Fechar chat da tarefa" : "Abrir chat da tarefa")
   }
 
   // MARK: - Loading View
@@ -4356,15 +4144,10 @@ struct TasksPage: View {
                   },
                   onIncrementIndent: { viewModel.incrementIndent(for: $0) },
                   onDecrementIndent: { viewModel.decrementIndent(for: $0) },
-                  onOpenChat: (chatProvider != nil && TaskAgentSettings.shared.isChatEnabled)
-                    ? { task in openChatForTask(task) } : nil,
                   onSelect: { task in selectTask(task) },
                   onOpenDetails: { task in openTaskDetailPanel(for: task) },
                   onHover: { viewModel.hoveredTaskId = $0 },
                   isTaskDetailPanelActive: taskDetailTask != nil,
-                  isChatActive: showChatPanel,
-                  activeChatTaskId: activeChatTaskId,
-                  chatCoordinator: chatCoordinator,
                   editingTaskId: viewModel.editingTaskId,
                   onEditingChanged: { editing in
                     viewModel.isAnyTaskEditing = editing
@@ -4513,8 +4296,6 @@ struct TasksPage: View {
           },
           onIncrementIndent: { viewModel.incrementIndent(for: $0) },
           onDecrementIndent: { viewModel.decrementIndent(for: $0) },
-          onOpenChat: (chatProvider != nil && TaskAgentSettings.shared.isChatEnabled)
-            ? { task in openChatForTask(task) } : nil,
           onSelect: { task in selectTask(task) },
           onOpenDetails: { task in openTaskDetailPanel(for: task) },
           onHover: { viewModel.hoveredTaskId = $0 },
@@ -4522,9 +4303,6 @@ struct TasksPage: View {
           onDragStarted: { viewModel.draggedTaskId = $0 },
           onDragEnded: handleDragEnded,
           isBeingDragged: viewModel.draggedTaskId == task.id,
-          isChatActive: showChatPanel,
-          activeChatTaskId: activeChatTaskId,
-          chatCoordinator: chatCoordinator,
           editingTaskId: viewModel.editingTaskId,
           onEditingChanged: { editing in
             viewModel.isAnyTaskEditing = editing
@@ -4617,39 +4395,6 @@ struct TasksPage: View {
     }
     if let candidate = navigation.pendingCandidate {
       _ = suggestedStore.revealCandidateForNavigation(candidate)
-    }
-  }
-}
-
-// MARK: - Task Chat Side Panel (isolated coordinator observation)
-
-/// Owns @ObservedObject for the coordinator so streaming updates only
-/// re-render this subtree — not the task list on the left.
-private struct TaskChatSidePanelView: View {
-  @ObservedObject var coordinator: TaskChatCoordinator
-  let viewModel: TasksViewModel
-  let onClose: () -> Void
-  let onOpenRewindEvidence: ((Int64) -> Void)?
-
-  private var activeTask: TaskActionItem? {
-    guard let taskId = coordinator.activeTaskId else { return nil }
-    return viewModel.findTask(taskId)
-  }
-
-  var body: some View {
-    if let taskState = coordinator.activeTaskState {
-      TaskChatPanel(
-        taskState: taskState,
-        coordinator: coordinator,
-        task: activeTask,
-        onClose: onClose,
-        onOpenRewindEvidence: onOpenRewindEvidence
-      )
-    } else {
-      TaskChatPanelPlaceholder(
-        coordinator: coordinator,
-        onClose: onClose
-      )
     }
   }
 }
@@ -4971,75 +4716,6 @@ struct TaskDragPreviewSimple: View {
   }
 }
 
-// MARK: - Chat Session Status Indicator
-
-/// Shows streaming activity or unread dot for a task's chat session.
-/// Appears inline in the TaskRow FlowLayout next to the explicit thread action.
-///
-/// Uses @State + .onReceive instead of @ObservedObject so that only this
-/// specific task's indicator re-renders when coordinator state changes —
-/// not every task row simultaneously (which caused the 822-level layout
-/// traversal on every coordinator publish).
-struct ChatSessionStatusIndicator: View {
-  let task: TaskActionItem
-  let coordinator: TaskChatCoordinator
-  var onOpenChat: ((TaskActionItem) -> Void)?
-
-  @State private var isStreaming = false
-  @State private var streamingStatus: String? = nil
-  @State private var hasUnread = false
-
-  var body: some View {
-    Group {
-      if isStreaming {
-        // Streaming: spinning indicator + status text
-        HStack(spacing: OmiSpacing.xxs) {
-          ProgressView()
-            .controlSize(.small)
-
-          Text(streamingStatus ?? "Respondendo…")
-            .scaledFont(size: OmiType.micro, weight: .medium)
-            .foregroundColor(Ink.secondary)
-            .lineLimit(1)
-        }
-      } else if hasUnread {
-        // Unread: quiet neutral dot
-        Button {
-          onOpenChat?(task)
-        } label: {
-          HStack(spacing: OmiSpacing.xxs) {
-            Circle()
-              .fill(Ink.primary)
-              .frame(width: 8, height: 8)
-
-            Text("Nova resposta")
-              .scaledFont(size: OmiType.micro, weight: .medium)
-              .foregroundColor(Ink.primary)
-          }
-        }
-        .buttonStyle(.plain)
-        .help("Abrir chat (há uma nova resposta)")
-      }
-    }
-    // Subscribe to coordinator publishers to update task-local @State.
-    // .onReceive fires for all tasks but only mutates state when the
-    // value for THIS task changes, so re-renders stay task-local and
-    // don't trigger a full-tree layout pass on every coordinator publish.
-    .onReceive(coordinator.$streamingTaskIds) { ids in
-      let new = ids.contains(task.id)
-      if isStreaming != new { isStreaming = new }
-    }
-    .onReceive(coordinator.$streamingStatuses) { statuses in
-      let new = statuses[task.id]
-      if streamingStatus != new { streamingStatus = new }
-    }
-    .onReceive(coordinator.$unreadTaskIds) { ids in
-      let new = ids.contains(task.id)
-      if hasUnread != new { hasUnread = new }
-    }
-  }
-}
-
 // MARK: - Task Row
 
 /// A single task rendered as a Notion-style board card: checkbox, title, and
@@ -5160,7 +4836,6 @@ struct TaskRow: View {
   var onUpdateTags: ((TaskActionItem, [String]) async -> Void)?
   var onIncrementIndent: ((String) -> Void)?
   var onDecrementIndent: ((String) -> Void)?
-  var onOpenChat: ((TaskActionItem) -> Void)?
   var onSelect: ((TaskActionItem) -> Void)?
   var onOpenDetails: ((TaskActionItem) -> Void)?
   var onHover: ((String?) -> Void)?
@@ -5177,9 +4852,6 @@ struct TaskRow: View {
   var onDragEnded: @Sendable (String) -> Void = { _ in }
   /// True iff this row is the one currently being dragged. Drives the dim effect.
   var isBeingDragged: Bool = false
-  var isChatActive: Bool = false
-  var activeChatTaskId: String?
-  var chatCoordinator: TaskChatCoordinator?
 
   // Edit mode support (external trigger from keyboard navigation)
   var editingTaskId: String?
@@ -5229,11 +4901,6 @@ struct TaskRow: View {
     CGFloat(indentLevel) * 28
   }
 
-  /// Whether this task is the one currently shown in the chat sidebar
-  private var isActiveChatTask: Bool {
-    isChatActive && activeChatTaskId == task.id
-  }
-
   var body: some View {
     HStack(alignment: .center, spacing: 0) {
       // Drag handle OUTSIDE swipeableContent so DragGesture doesn't intercept it
@@ -5263,9 +4930,7 @@ struct TaskRow: View {
         .contentShape(Rectangle())
         .onTapGesture {
           onSelect?(task)
-          if isChatActive, !isActiveChatTask {
-            onOpenChat?(task)
-          } else if !isMultiSelectMode {
+          if !isMultiSelectMode {
             onOpenDetails?(task)
           }
         }
@@ -5275,14 +4940,6 @@ struct TaskRow: View {
           }
         }
     }
-    .background(
-      RoundedRectangle(cornerRadius: OmiChrome.elementRadius)
-        .fill(isActiveChatTask ? Ink.primary.opacity(0.08) : Color.clear)
-    )
-    .overlay(
-      RoundedRectangle(cornerRadius: OmiChrome.elementRadius)
-        .stroke(isActiveChatTask ? Ink.primary.opacity(0.25) : Color.clear, lineWidth: 1)
-    )
     .overlay(alignment: .topTrailing) {
       if showShareCopiedToast {
         shareCopiedToast
@@ -5635,49 +5292,6 @@ struct TaskRow: View {
             // New badge
             if isNewlyCreated {
               NewBadge()
-            }
-
-            // Explicit durable-work action. Merely viewing/selecting a
-            // task never creates a thread.
-            if let coordinator = chatCoordinator,
-              TaskAgentSettings.shared.isChatEnabled,
-              !coordinator.streamingTaskIds.contains(task.id),
-              !coordinator.unreadTaskIds.contains(task.id)
-            {
-              if task.workstreamId != nil {
-                Button {
-                  onOpenChat?(task)
-                } label: {
-                  HStack(spacing: OmiSpacing.hairline) {
-                    Image(systemName: "bubble.left")
-                      .scaledFont(size: OmiType.micro)
-                    Text("Abrir conversa")
-                      .scaledFont(size: OmiType.micro, weight: .medium)
-                  }
-                  .foregroundColor(Ink.primary)
-                }
-                .buttonStyle(.plain)
-                .help("Retomar o trabalho em andamento desta tarefa")
-              } else {
-                Button {
-                  Task { await coordinator.openChat(for: task) }
-                } label: {
-                  HStack(spacing: OmiSpacing.hairline) {
-                    Image(systemName: "sparkles")
-                      .scaledFont(size: OmiType.micro)
-                    Text("Trabalhar nisso com o Omi")
-                      .scaledFont(size: OmiType.micro, weight: .medium)
-                  }
-                  .foregroundColor(Ink.primary)
-                }
-                .buttonStyle(.plain)
-                .help("Cria trabalho em andamento só quando você escolher")
-              }
-            }
-
-            // Chat session status (streaming indicator or unread dot)
-            if let coordinator = chatCoordinator, TaskAgentSettings.shared.isChatEnabled {
-              ChatSessionStatusIndicator(task: task, coordinator: coordinator, onOpenChat: onOpenChat)
             }
 
           }

@@ -69,8 +69,8 @@ enum CloudConnectorFormAutomation {
     _ args: [String: Any],
     expectedOwnerID: String? = nil
   ) async -> String {
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     let provider = ((args["provider"] as? String) ?? "").lowercased()
     guard provider == "claude" || provider == "chatgpt" else {
@@ -182,13 +182,13 @@ enum CloudConnectorFormAutomation {
         in: form.nodes,
         matching: ["advanced settings", "advanced"])
     {
-      guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-        return ChatToolExecutor.authorizedOwnerChangedResult()
+      guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+        return OwnerCheck.ownerChangedResult()
       }
       _ = AXUIElementPerformAction(disclosure.element, kAXPressAction as CFString)
       try? await Task.sleep(nanoseconds: 400_000_000)
-      guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-        return ChatToolExecutor.authorizedOwnerChangedResult()
+      guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+        return OwnerCheck.ownerChangedResult()
       }
     }
 
@@ -202,8 +202,8 @@ enum CloudConnectorFormAutomation {
     var missing: [String] = []
 
     for value in values {
-      guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-        return ChatToolExecutor.authorizedOwnerChangedResult()
+      guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+        return OwnerCheck.ownerChangedResult()
       }
       if let match = findField(for: value, in: fields, usedElementIDs: usedElementIDs)
         ?? fallbackField(for: value, in: fields, usedElementIDs: usedElementIDs, provider: provider)
@@ -233,8 +233,8 @@ enum CloudConnectorFormAutomation {
 
     var pressedButton: String?
     if submit && missing.isEmpty {
-      guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-        return ChatToolExecutor.authorizedOwnerChangedResult()
+      guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+        return OwnerCheck.ownerChangedResult()
       }
       let submitNodes = collectNodes(from: form.root, maxDepth: 12, maxNodes: 700)
       if let button = findActionNode(
@@ -271,8 +271,8 @@ enum CloudConnectorFormAutomation {
     submit: Bool,
     expectedOwnerID: String?
   ) async -> String? {
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     guard provider == "claude" else { return nil }
     guard let target = findClaudeConnectorTargetWithNodes().map({ (app: $0.app, state: $0.state) })
@@ -773,8 +773,8 @@ enum CloudConnectorFormAutomation {
     submit: Bool,
     expectedOwnerID: String?
   ) async -> String? {
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     guard target.state == .addCustomConnectorModal else { return nil }
     guard let name = values.first(where: { $0.label == "Name" })?.value,
@@ -788,8 +788,8 @@ enum CloudConnectorFormAutomation {
 
     target.app.activate()
     try? await Task.sleep(nanoseconds: 450_000_000)
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     guard let active = NSWorkspace.shared.frontmostApplication,
       active.processIdentifier == target.app.processIdentifier,
@@ -802,8 +802,8 @@ enum CloudConnectorFormAutomation {
 
     // Claude's modal currently focuses the close button when opened. Atlas does
     // not expose the page fields through AX, so use the modal's stable tab order.
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     pressTab(count: 3)
     pasteIntoFocusedField(name)
@@ -842,8 +842,8 @@ enum CloudConnectorFormAutomation {
     target: (app: NSRunningApplication, state: ClaudeConnectorPageState),
     expectedOwnerID: String?
   ) async -> String {
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     guard CGPreflightScreenCaptureAccess() else {
       return
@@ -862,8 +862,8 @@ enum CloudConnectorFormAutomation {
       return
         "Error: The Claude add connector button is not exposed to Accessibility. Refusing blind coordinate or keyboard clicks."
     }
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
 
     guard let activeTarget = frontmostClaudeConnectorKeyboardTarget(),
@@ -874,8 +874,8 @@ enum CloudConnectorFormAutomation {
       return "Error: Refusing Claude Add because the OCR target was not stable."
     }
 
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     postLeftClick(at: refreshedPoint)
     try? await Task.sleep(nanoseconds: 700_000_000)
@@ -886,15 +886,15 @@ enum CloudConnectorFormAutomation {
     target: (app: NSRunningApplication, state: ClaudeConnectorPageState),
     expectedOwnerID: String?
   ) async -> String? {
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     guard target.state == .connectorDetailNotConnected else { return nil }
 
     target.app.activate()
     try? await Task.sleep(nanoseconds: 450_000_000)
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     guard let active = NSWorkspace.shared.frontmostApplication,
       active.processIdentifier == target.app.processIdentifier,
@@ -912,8 +912,8 @@ enum CloudConnectorFormAutomation {
       return "Error: Refusing Claude Connect because the verified page state changed."
     }
     if let button = findClaudeConnectorDetailConnectButton(in: nodes) {
-      guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-        return ChatToolExecutor.authorizedOwnerChangedResult()
+      guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+        return OwnerCheck.ownerChangedResult()
       }
       _ = AXUIElementPerformAction(button.element, kAXPressAction as CFString)
       try? await Task.sleep(nanoseconds: 700_000_000)
@@ -945,8 +945,8 @@ enum CloudConnectorFormAutomation {
       return "Error: Refusing Claude Connect because the OCR target was not stable."
     }
 
-    guard ChatToolExecutor.isExpectedOwnerCurrent(expectedOwnerID) else {
-      return ChatToolExecutor.authorizedOwnerChangedResult()
+    guard OwnerCheck.isExpectedOwnerCurrent(expectedOwnerID) else {
+      return OwnerCheck.ownerChangedResult()
     }
     postLeftClick(at: refreshedPoint)
     try? await Task.sleep(nanoseconds: 700_000_000)

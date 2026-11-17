@@ -57,51 +57,11 @@ extension AppState {
       // primary-user fallback used by wake word and barge-in admission.
       let speakerId = incomingSegment.speaker_id ?? -1
 
-      var segment: TranscriptionService.BackendSegment
+      let segment: TranscriptionService.BackendSegment
       if sttSession.useLocalSTT, let manualPersonId = liveManualSpeakerPersonMap[speakerId] {
         segment = segmentWithPersonId(incomingSegment, personId: manualPersonId)
       } else {
         segment = incomingSegment
-      }
-
-      // Omi speaks into a room Omi is also recording, so ambient capture returns the
-      // assistant's own voice attributed to the primary speaker. Every consumer below
-      // then acts on it as if a person had spoken: barge-in halts the very playback that
-      // produced it (observed live, three times in one six-turn session, which is why a
-      // long answer stops partway), the wake word can be commanded by an answer carrying
-      // the wake phrase, and the conversation record and memory extraction gain speech
-      // nobody said. One guard here, where all of them route through.
-      switch VoicePlaybackEchoPolicy.classify(
-        transcript: segment.text,
-        spokenWords: FloatingBarVoicePlaybackService.shared.recentlySpokenWords
-      ) {
-      case .keep:
-        break
-      case .drop:
-        log("Transcription [ECHO]: dropped Omi's own playback heard back: \(segment.text.prefix(60))")
-        continue
-      case .keepResidue(let spoken):
-        // The user talked over the end of the playback. There is no pause to close the
-        // window on while Omi is speaking, so both land in one segment; keeping only the
-        // part Omi did not say is what lets a barge-in survive.
-        log("Transcription [ECHO]: kept the user's words from a segment Omi spoke over: \(spoken.prefix(60))")
-        segment.text = spoken
-      }
-
-      // Barge-in interruption: if the user speaks while voice playback is active,
-      // halt playback immediately so Omi never talks over the user.
-      if VoiceBargeInPolicy.shouldInterrupt(
-        isUser: segment.is_user,
-        speaker: speakerId,
-        text: segment.text,
-        previouslyHeard: segment.id.flatMap { id in
-          speakerSegments.first(where: { $0.segmentId == id })?.text
-        },
-        isSpeaking: FloatingBarVoicePlaybackService.shared.isSpeaking,
-        spokenWords: FloatingBarVoicePlaybackService.shared.recentlySpokenWords
-      ) {
-        log("Transcription [BARGE-IN]: User spoke mid-playback; interrupting voice output")
-        FloatingBarVoicePlaybackService.shared.interruptCurrentResponse()
       }
 
       // Convert backend segment to local SpeakerSegment
@@ -119,7 +79,6 @@ extension AppState {
         translations: translations
       )
 
-      var wakeWordSegment: SpeakerSegment?
 
       // Upsert: if we already have a segment with this ID, update it; otherwise append
       if let segId = segment.id,
@@ -134,7 +93,6 @@ extension AppState {
           updatedSeg.translations = speakerSegments[existingIdx].translations
         }
         speakerSegments[existingIdx] = updatedSeg
-        wakeWordSegment = updatedSeg
         log(
           "Transcript [UPDATE] Speaker \(speakerId) [\(String(format: "%.1f", segment.start))s-\(String(format: "%.1f", segment.end))s]: \(segment.text.prefix(80))"
         )
@@ -149,7 +107,6 @@ extension AppState {
         switch LocalTranscriptionDuplicatePolicy.decision(for: newSeg, existing: speakerSegments) {
         case .accept:
           appendNewTranscriptSegment(newSeg, segment: segment, to: &segmentsToPersist)
-          wakeWordSegment = newSeg
 
         case .suppressIncoming:
           log(
@@ -159,7 +116,6 @@ extension AppState {
         case .replaceExisting(let existingSegmentId):
           guard let existingIdx = speakerSegments.firstIndex(where: { $0.segmentId == existingSegmentId }) else {
             appendNewTranscriptSegment(newSeg, segment: segment, to: &segmentsToPersist)
-            wakeWordSegment = newSeg
             break
           }
 
@@ -170,7 +126,6 @@ extension AppState {
           var replacement = newSeg
           replacement.segmentId = existingSegmentId
           speakerSegments[existingIdx] = replacement
-          wakeWordSegment = replacement
           segmentsToPersist.append(segmentWithID(segment, id: existingSegmentId))
           log(
             "Transcript [DEDUP] Promoted system-audio copy over mic playback duplicate [\(String(format: "%.1f", segment.start))s-\(String(format: "%.1f", segment.end))s]"
@@ -178,14 +133,8 @@ extension AppState {
         }
       } else {
         appendNewTranscriptSegment(newSeg, segment: segment, to: &segmentsToPersist)
-        wakeWordSegment = newSeg
       }
 
-      // A local mic/system duplicate can be playback echo. Only a segment that
-      // survived that policy may trigger the wake-word command path.
-      if let wakeWordSegment {
-        WakeWordService.shared.observe(wakeWordSegment)
-      }
     }
 
     // Sliding window: trim old segments from memory (they're already persisted in SQLite)

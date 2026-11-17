@@ -88,13 +88,6 @@ let package = Package(
         .unsafeFlags(["-strict-concurrency=complete", "-warnings-as-errors"])
       ]
     ),
-    .target(
-      name: "VoiceTurnDomain",
-      path: "Sources/VoiceTurnDomain",
-      swiftSettings: [
-        .unsafeFlags(["-strict-concurrency=complete", "-warnings-as-errors"])
-      ]
-    ),
     .executableTarget(
       name: "Omi Computer",
       dependencies: [
@@ -103,7 +96,6 @@ let package = Package(
         "OmiSupport",
         "OmiTheme",
         "OmiWAL",
-        "VoiceTurnDomain",
         .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
         .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
         .product(name: "PostHog", package: "posthog-ios"),
@@ -119,20 +111,15 @@ let package = Package(
         "Theme",
         "OmiSupport",
         "OmiWAL",
-        "VoiceTurnDomain",
         "Bluetooth/ARCHITECTURE.md",
-        "FloatingControlBar/ARCHITECTURE.md",
         "MainWindow/Pages/MemoryGraph/ARCHITECTURE.md",
       ] + siriSourceExclusions,
       resources: [
         .process("GoogleService-Info.plist"),
         // Bundles everything under Resources/ (incl. *_logo.png brand marks,
-        // signin_bg.png, provider-native VoicePhrases/*.wav, Resources/Fonts/*.ttf —
-        // Geist / Geist Mono — and
+        // signin_bg.png, Resources/Fonts/*.ttf — Geist / Geist Mono — and
         // Resources/Fonts/*.otf — Open Runde, the glass display face — and
-        // Resources/Sounds/*.m4a, the generated onboarding cinematic audio,
-        // Resources/three-doors.html, the onboarding ask-demo page, and
-        // Resources/ProductKnowledge/, the shipped desktop product guide).
+        // Resources/Sounds/*.m4a, the generated onboarding cinematic audio).
         // NOTE: SwiftPM caches the resource manifest, so new files added to
         // Resources/ are only picked up when the manifest regenerates — editing
         // this file forces incremental builds to re-scan and include them.
@@ -149,7 +136,6 @@ let package = Package(
         "OmiSupport",
         "OmiTheme",
         "OmiWAL",
-        "VoiceTurnDomain",
       ],
       path: "Tests",
       exclude: [
@@ -157,7 +143,6 @@ let package = Package(
         "SemanticFeatureSentinels",
         "OmiSupportTests",
         "OmiWALTests",
-        "VoiceTurnDomainTests",
       ] + siriTestExclusions,
       swiftSettings: [
         .unsafeFlags(["-strict-concurrency=complete", "-warnings-as-errors"])
@@ -180,15 +165,6 @@ let package = Package(
       swiftSettings: [
         .unsafeFlags(["-strict-concurrency=complete", "-warnings-as-errors"])
       ],
-      linkerSettings: [testBundleFrameworkSearchPath]
-    ),
-    .testTarget(
-      name: "VoiceTurnDomainTests",
-      dependencies: [
-        .target(name: "Omi Computer"),
-        "VoiceTurnDomain",
-      ],
-      path: "Tests/VoiceTurnDomainTests",
       linkerSettings: [testBundleFrameworkSearchPath]
     ),
     // Compile-only target for the semantic feature probes. Keeping this as a

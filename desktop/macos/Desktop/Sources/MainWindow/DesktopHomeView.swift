@@ -68,7 +68,6 @@ struct DesktopHomeView: View {
   // Settings sidebar state
   @State private var selectedSettingsSection: SettingsContentView.SettingsSection = .general
   @State private var highlightedSettingId: String? = nil
-  @State private var showTryAskingPopup = false
   @State private var logoPulse = false
   @State private var lastActivationRefresh = Date.distantPast
   @State private var didScheduleAgentVMProvisioning = false
@@ -144,7 +143,6 @@ struct DesktopHomeView: View {
     } else {
       SBOnboardingView(
         appState: appState,
-        chatProvider: viewModelContainer.chatProvider,
         importConnectorStatusStore: viewModelContainer.homeStatusStore.connectorStatusStore,
         onComplete: nil
       )
@@ -208,11 +206,6 @@ struct DesktopHomeView: View {
       .onAppear {
         log("DesktopHomeView: Showing mainContent (signed in and onboarded)")
 
-        // The first-use popup is armed by the same guidance policy for every
-        // account now that there is one shell.
-        if PostOnboardingPromptSuggestions.shouldArmPopup() {
-          showTryAskingPopup = true
-        }
         updatePolicyManager.refresh(force: true)
         // Permissions and update policy remain reachable while cutover fences
         // product traffic.
@@ -221,7 +214,6 @@ struct DesktopHomeView: View {
       .task(id: accountCutoverControl.productShellAdmissionToken) {
         await DesktopHomeSignedInStartup.runProductServicesIfAdmitted(
           appState: appState,
-          chatProvider: viewModelContainer.chatProvider,
           scheduleInitialFileIndexing: scheduleInitialFileIndexing,
           restorePersistedCaptureServices: restorePersistedCaptureServices(reason:)
         )
@@ -396,8 +388,6 @@ struct DesktopHomeView: View {
       log(
         "DesktopHomeView: View appeared - isSignedIn=\(authState.isSignedIn), hasCompletedOnboarding=\(appState.hasCompletedOnboarding)"
       )
-      // Drive the notch "moments" (live receipts + conversation-end) off real state.
-      NotchMomentsCoordinator.shared.start(appState: appState)
       // By default, every @Published change triggers
       // updateWindowContentSizeExtremaIfNecessary() → minSize() → sizeThatFits()
       // which traverses the ENTIRE view tree (~200 samples per window per trigger).
@@ -457,17 +447,6 @@ struct DesktopHomeView: View {
       notification in
       handleAutomationNavigation(notification)
     }
-    .onReceive(NotificationCenter.default.publisher(for: .navigateToChat)) { _ in
-      // The global shortcut / notch "Ask Omi" opens the continuous chat, which
-      // is the shell's Chat route. Selecting it is idempotent, so no re-emit
-      // loop guard is needed.
-      chatFirstNavigation.selectPrimary(.chat)
-    }
-    // "Continue in Omi" from the floating bar. The one shell has no second chat
-    // panel to consume the pending request on its behalf.
-    .onReceive(NotificationCenter.default.publisher(for: .openMainChatRequested)) { _ in
-      handleMainChatRequest()
-    }
   }
 
   private func reconcileOnboardingCompletionOwner() {
@@ -480,11 +459,6 @@ struct DesktopHomeView: View {
     onboardingFurthestStep = 0
     onboardingJustCompleted = false
     appState.hasCompletedOnboarding = false
-  }
-
-  private func handleMainChatRequest() {
-    guard MainChatNavigationRequestStore.shared.consume() else { return }
-    chatFirstNavigation.selectPrimary(.chat, origin: .chatDeeplink)
   }
 
   private func enforceMainWindowMinimumSize() {
@@ -617,13 +591,6 @@ struct DesktopHomeView: View {
         to: "persisted_resume",
         direction: "completed_flag_with_resume_state")
     }
-    if viewModelContainer.chatProvider.isOnboarding {
-      DesktopDiagnosticsManager.shared.recordStateAuthoritySignal(
-        seam: .onboardingSetupState,
-        from: "completed_flag",
-        to: "setup_journal",
-        direction: "completed_flag_with_active_journal")
-    }
     return true
   }
 
@@ -666,14 +633,6 @@ struct DesktopHomeView: View {
       isRestoringAuth: authState.isRestoringAuth,
       isAppActive: NSApp.isActive,
       mainWindowTitle: currentWindow?.title,
-      floatingBarVisible: FloatingControlBarManager.shared.automationState.isVisible,
-      askOmiOpen: OpenAskOmiAutomation.isComposerPresented(chatFirstNavigation),
-      askOmiFocused: OpenAskOmiAutomation.isComposerFocused(chatFirstNavigation),
-      floatingBarFrame: FloatingControlBarManager.shared.automationState.frame,
-      floatingBarVoiceListening: FloatingControlBarManager.shared.automationState.isVoiceListening,
-      floatingBarVoiceDictating: FloatingControlBarManager.shared.automationState.isVoiceDictating,
-      floatingBarVoiceResponseActive: FloatingControlBarManager.shared.automationState.isVoiceResponseActive,
-      floatingBarUsesNotchIsland: FloatingControlBarManager.shared.automationState.usesNotchIsland,
       updatedAt: ISO8601DateFormatter().string(from: Date())
     )
 
@@ -762,26 +721,6 @@ struct DesktopHomeView: View {
         activeCommand: automationPresentationCoordinator.activeCommand)
     else { return }
     handleAutomationPresentationCommand(command)
-  }
-
-  /// Update store auto-refresh based on which page is visible
-  /// On launch, if the user quit with the task chat panel open, macOS restores the
-  /// expanded window frame but the chat panel itself is not shown. Shrink the window
-  /// back to its pre-chat width so the layout isn't unexpectedly wide.
-  private func restorePreChatWindowWidth() {
-    let key = "tasksPreChatWindowWidth"
-    let saved = UserDefaults.standard.double(forKey: key)
-    guard saved > 0 else { return }
-    // Reset the persisted value immediately so TasksPage won't double-shrink
-    UserDefaults.standard.set(Double(0), forKey: key)
-    // Delay slightly so the window is fully visible
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-      guard let window = NSApp.windows.first(where: { $0.title.hasPrefix("Omi") && $0.isVisible })
-      else { return }
-      var frame = window.frame
-      frame.size.width = saved
-      window.setFrame(frame, display: true)
-    }
   }
 
   private func resetSessionScopedStartupWarmups() {
@@ -983,7 +922,7 @@ struct DesktopHomeView: View {
 
   private func updateStoreActivityForCurrentShell() {
     viewModelContainer.tasksStore.isActive =
-      chatFirstNavigation.route == .tasks || chatFirstNavigation.route == .more(.dashboard)
+      chatFirstNavigation.route == .tasks
     viewModelContainer.memoriesViewModel.isActive = chatFirstNavigation.route == .memories
   }
 
@@ -1002,7 +941,6 @@ struct DesktopHomeView: View {
         requestedOwnerID: nil,
         ownerIsStillCurrent: false
       )
-      _ = viewModelContainer.chatProvider.configureChatFirstMainChatCapability(nil)
       log("DesktopHomeView: chat-first capability off — no owner or authorization snapshot at sample time")
       AnalyticsManager.shared.chatFirst(
         .capabilityResolution(
@@ -1042,17 +980,6 @@ struct DesktopHomeView: View {
       log("DesktopHomeView: chat-first control unavailable; capability stays off")
     }
 
-    let projectionConfigured = viewModelContainer.chatProvider.configureChatFirstMainChatCapability(
-      chatFirstCapability.projection
-    )
-    if !projectionConfigured {
-      // A pre-existing Main Chat session cannot be retroactively upgraded with
-      // dynamic tools. Fail closed to capability-off for this launch; the shell
-      // and its content blocks are unaffected.
-      chatFirstCapability.failClosed()
-      capabilityErrorClass = .projectionRejected
-      log("DesktopHomeView: chat-first projection handoff rejected; capability stays off")
-    }
     let projection = chatFirstCapability.projection
     let capabilityOutcome: ChatFirstAnalyticsEvent.CapabilityOutcome
     if capabilityErrorClass == .projectionRejected {
@@ -1078,8 +1005,8 @@ struct DesktopHomeView: View {
   }
 
   private func navigateAfterOnboarding() {
-    chatFirstNavigation.selectPrimary(.chat)
-    log("DesktopHomeView: Onboarding just completed — opening Chat")
+    chatFirstNavigation.selectPrimary(.home)
+    log("DesktopHomeView: Onboarding just completed — opening home")
   }
 
   /// Existing menu, keyboard, and automation callers retain their legacy
@@ -1145,33 +1072,12 @@ struct DesktopHomeView: View {
         RatingPromptManager.shared.ownerDidChange()
         RemotePromptEngine.shared.ownerDidChange()
         RemotePromptEngine.shared.start()
-        await RatingPromptManager.shared.seedFromHistoryIfNeeded()
-      }
-      .overlay {
-        if showTryAskingPopup {
-          TryAskingPopupView(
-            onTry: { useCase in
-              showTryAskingPopup = false
-              PostOnboardingPromptSuggestions.consume()
-              FirstUseCaseLauncher.launch(useCase)
-            },
-            onDismiss: {
-              showTryAskingPopup = false
-              PostOnboardingPromptSuggestions.consume()
-            }
-          )
-        }
+        RatingPromptManager.shared.startConfigPolling()
       }
   }
 
   private func mainContentWithNotifications<Content: View>(_ content: Content) -> some View {
     content
-      .onReceive(NotificationCenter.default.publisher(for: .showTryAskingPopup)) { _ in
-        // The first-use popup belongs to whoever just finished onboarding, and
-        // there is now one shell for all of them. `shouldArmPopup` upstream is
-        // still the only thing that decides whether it is due.
-        showTryAskingPopup = true
-      }
       .onReceive(NotificationCenter.default.publisher(for: .navigateToRewindSettings)) { _ in
         selectedSettingsSection = .rewind
         navigateToLegacyDestination(.settings)
@@ -1183,10 +1089,6 @@ struct DesktopHomeView: View {
       }
       .onReceive(NotificationCenter.default.publisher(for: .navigateToTaskSettings)) { _ in
         selectedSettingsSection = .advanced
-        navigateToLegacyDestination(.settings)
-      }
-      .onReceive(NotificationCenter.default.publisher(for: .navigateToFloatingBarSettings)) { _ in
-        selectedSettingsSection = .floatingBar
         navigateToLegacyDestination(.settings)
       }
       .onReceive(NotificationCenter.default.publisher(for: .navigateToAIChatSettings)) { _ in
@@ -1207,9 +1109,6 @@ struct DesktopHomeView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
           NotificationCenter.default.post(name: .expandRewindTranscript, object: nil)
         }
-      }
-      .onReceive(NotificationCenter.default.publisher(for: .navigateToChat)) { _ in
-        chatFirstNavigation.selectPrimary(.chat)
       }
       .onReceive(NotificationCenter.default.publisher(for: .navigateToTasks)) { _ in
         navigateToLegacyDestination(.tasks)
@@ -1260,7 +1159,6 @@ struct DesktopHomeView: View {
       .onChange(of: chatFirstNavigation.isSidebarCollapsed) { _, _ in reportAutomationState() }
       .onAppear {
         updateStoreActivityForCurrentShell()
-        restorePreChatWindowWidth()
       }
   }
 

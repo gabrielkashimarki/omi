@@ -553,9 +553,4 @@ extension Screenshot {
   }
 }
 
-// MARK: - TableDocumented
 
-extension Screenshot: TableDocumented {
-  static var tableDescription: String { ChatPrompts.tableAnnotations["screenshots"]! }
-  static var columnDescriptions: [String: String] { ChatPrompts.columnAnnotations["screenshots"] ?? [:] }
-}

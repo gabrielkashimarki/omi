@@ -1,5 +1,4 @@
 import Foundation
-import VoiceTurnDomain
 
 /// Replacement observations for the frozen collector. PostHog emission stays at the
 /// existing call sites; this type only adds the shadow copy when the transport flag is on.
@@ -42,74 +41,6 @@ enum ClientTelemetryShadow {
       return
     }
     deliver(observation)
-  }
-
-  static func capturePhysicalVoice(
-    phase: String,
-    turnID: String,
-    intent: String,
-    route: String,
-    reason: String?,
-    durationMs: Int?
-  ) {
-    captureVoice(
-      population: "physical_shortcut",
-      phase: phase,
-      operationRaw: turnID,
-      intent: intent,
-      route: route,
-      reason: reason,
-      durationMs: durationMs,
-      outcome: phase == "terminal" ? physicalOutcome(reason: reason) : nil
-    )
-  }
-
-  static func captureFloatingVoice(_ event: ChatQueryTelemetryEvent) {
-    let context: ChatQueryTelemetryContext
-    let phase: String
-    let outcome: String?
-    let reason: String?
-    let durationMs: Int?
-    switch event {
-    case .started(let started):
-      guard started.surface == "floating_voice" else { return }
-      context = started
-      phase = "started"
-      outcome = nil
-      reason = nil
-      durationMs = nil
-    case .completed(let completed, let duration, _):
-      guard completed.surface == "floating_voice" else { return }
-      context = completed
-      phase = "terminal"
-      outcome = "success"
-      reason = nil
-      durationMs = duration
-    case .failed(let failed, let duration, let errorClass, _, _, _):
-      guard failed.surface == "floating_voice" else { return }
-      context = failed
-      phase = "terminal"
-      outcome = "failure"
-      reason = bounded(errorClass.rawValue, allowed: floatingFailureReasons)
-      durationMs = duration
-    case .cancelled(let cancelled, let duration, let cancelReason, _):
-      guard cancelled.surface == "floating_voice" else { return }
-      context = cancelled
-      phase = "terminal"
-      outcome = "excluded"
-      reason = bounded(cancelReason.rawValue, allowed: floatingCancelReasons)
-      durationMs = duration
-    }
-    captureVoice(
-      population: "floating_voice",
-      phase: phase,
-      operationRaw: context.attemptId,
-      intent: "legacy",
-      route: "floating_voice",
-      reason: reason,
-      durationMs: durationMs,
-      outcome: outcome
-    )
   }
 
   static func captureFallback(area: String, from: String, to: String, reason: String, outcome: String) {
@@ -165,92 +96,6 @@ enum ClientTelemetryShadow {
       occurredAt: occurredAt,
       eventID: eventID
     )
-  }
-
-  static func voiceObservation(
-    ownerID: String,
-    channel: String,
-    population: String,
-    phase: String,
-    operationRaw: String,
-    intent: String,
-    route: String,
-    reason: String?,
-    durationMs: Int?,
-    outcome: String?,
-    occurredAt: Date = Date(),
-    eventID: UUID = UUID()
-  ) -> ClientTelemetryObservation? {
-    let operationID = ClientTelemetryCodec.stableUUID(operationRaw)
-    let boundedPopulation = bounded(population, allowed: populations)
-    let boundedPhase = bounded(phase, allowed: phases)
-    let boundedRoute = bounded(route, allowed: routes)
-    let boundedIntent = bounded(intent, allowed: intents)
-    var attributes: [String: ClientTelemetryJSON] = [
-      "intent": .string(boundedIntent),
-      "operation_id": .string(operationID.uuidString.lowercased()),
-      "phase": .string(boundedPhase),
-      "population": .string(boundedPopulation),
-      "route": .string(boundedRoute),
-    ]
-    let boundedOutcome = outcome.map { bounded($0, allowed: outcomes) }
-    if let boundedOutcome { attributes["outcome"] = .string(boundedOutcome) }
-    if let reason { attributes["reason"] = .string(bounded(reason, allowed: voiceReasons)) }
-    if boundedOutcome == "success", let durationMs, (0...86_400_000).contains(durationMs) {
-      attributes["latency_ms"] = .int(durationMs)
-    }
-    return make(
-      ownerID: ownerID,
-      channel: channel,
-      family: "voice_turn",
-      attributes: attributes,
-      occurredAt: occurredAt,
-      eventID: eventID
-    )
-  }
-
-  private static func captureVoice(
-    population: String,
-    phase: String,
-    operationRaw: String,
-    intent: String,
-    route: String,
-    reason: String?,
-    durationMs: Int?,
-    outcome: String?
-  ) {
-    guard ClientTelemetryFlags.transportShadowEnabled else { return }
-    guard let channel = ClientTelemetryFlags.resolvedChannel() else { return }
-    guard let ownerID = ClientTelemetryIdentity.currentOwnerID(), !ownerID.isEmpty else {
-      noteDrop(.missingOwner)
-      return
-    }
-    guard
-      let observation = voiceObservation(
-        ownerID: ownerID,
-        channel: channel,
-        population: population,
-        phase: phase,
-        operationRaw: operationRaw,
-        intent: intent,
-        route: route,
-        reason: reason,
-        durationMs: durationMs,
-        outcome: outcome
-      )
-    else { return }
-    deliver(observation)
-  }
-
-  private static func physicalOutcome(reason: String?) -> String {
-    guard let reason, voiceTerminalReasons.contains(reason) else { return "unknown" }
-    switch reason {
-    case "success": return "success"
-    case "too_short", "silent_rejected", "cancelled", "owner_changed", "interrupted_by_barge_in",
-      "explicit_interrupt", "cleanup":
-      return "excluded"
-    default: return "failure"
-    }
   }
 
   private static func deliver(_ observation: ClientTelemetryObservation) {
@@ -336,24 +181,7 @@ enum ClientTelemetryShadow {
     return min(max(Int(raw.rounded()), 0), 86_400_000)
   }
 
-  private static let families: Set<String> = ["screen_task", "voice_turn", "fallback"]
-  private static let populations: Set<String> = ["physical_shortcut", "floating_voice"]
-  private static let phases: Set<String> = ["started", "terminal"]
-  private static let intents: Set<String> = ["hold", "locked", "legacy", "unknown"]
-  private static let outcomes: Set<String> = ["success", "failure", "excluded", "unknown"]
-  private static let routes: Set<String> = [
-    "undecided", "hub_warm_wait", "hub", "omni_stt", "deepgram_batch", "deepgram_live", "on_device_asr",
-    "floating_voice", "unknown",
-  ]
-  private static let voiceTerminalReasons = Set(VoiceTurnTerminalReason.allCases.map(\.rawValue))
-  private static let floatingFailureReasons: Set<String> = [
-    "agent_error", "agent_runtime", "attachment_upload", "authentication", "bridge_unavailable",
-    "bridge_start_failed", "browser_extension_missing", "concurrent_request", "encoding", "quota",
-    "resource_exhausted", "session_setup", "timeout", "tool_stall", "transient_network", "unknown",
-  ]
-  private static let floatingCancelReasons: Set<String> = ["superseded", "task_cancelled", "user_stop", "unknown"]
-  private static let voiceReasons = voiceTerminalReasons.union(floatingFailureReasons).union(floatingCancelReasons)
-    .union(["unknown"])
+  private static let families: Set<String> = ["screen_task", "fallback"]
   private static let fallbackAreas: Set<String> = [
     "realtime_hub", "ptt_cascade", "screen_task_gate", "screen_task_extraction", "other",
   ]

@@ -245,13 +245,14 @@ enum RewindArtifactGauntlet {
     taskChatMessageId: String
   ) async throws -> (actionItem: Bool, taskChat: Bool) {
     let actionItem = try await ActionItemStorage.shared.getActionItem(id: actionItemId)
-    let taskChat = try await TaskChatMessageStorage.shared.legacyMessagePage(
-      fromTaskIds: [taskChatKey],
-      workstreamId: taskChatKey
-    )
+    guard let pool = await RewindDatabase.shared.getDatabaseQueue() else { return (false, false) }
+    let taskChatIds = try await pool.read { database in
+      try String.fetchAll(
+        database, sql: "SELECT messageId FROM task_chat_messages WHERE taskId = ?", arguments: [taskChatKey])
+    }
     return (
       actionItem?.description == actionItemDescription,
-      taskChat.rows.map(\.messageId) == [taskChatMessageId]
+      taskChatIds == [taskChatMessageId]
     )
   }
 

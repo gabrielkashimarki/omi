@@ -113,9 +113,4 @@ extension GoalRecord {
   }
 }
 
-// MARK: - TableDocumented
 
-extension GoalRecord: TableDocumented {
-  static var tableDescription: String { ChatPrompts.tableAnnotations["goals"]! }
-  static var columnDescriptions: [String: String] { ChatPrompts.columnAnnotations["goals"] ?? [:] }
-}

@@ -728,7 +728,6 @@ public class ProactiveAssistantsPlugin: NSObject {
         title: NotificationService.screenCaptureConsentTitle,
         message:
           "O macOS pediu para confirmar de novo a gravação de tela do Omi. Clique para retomar a captura.",
-        deliverSystemBanner: true,
         respectFrequency: false
       )
     }
@@ -1352,32 +1351,12 @@ public class ProactiveAssistantsPlugin: NSObject {
       let resolvedMessage = message?.isEmpty == false ? message! : "Test notification from Omi"
       let resolvedAssistantId = assistantId?.isEmpty == false ? assistantId! : "insight"
 
-      let context = FloatingBarNotificationContext(
-        sourceTitle: resolvedTitle,
-        assistantId: resolvedAssistantId,
-        sourceApp: payload["sourceApp"],
-        windowTitle: payload["windowTitle"],
-        contextSummary: payload["contextSummary"],
-        currentActivity: payload["currentActivity"],
-        reasoning: payload["reasoning"],
-        detail: payload["detail"]
-      )
-
-      // Functional notices (screen-recording repair, meeting hand-off) opt into a system
-      // banner; the proactive default does not. The CLI carries the flag so both delivery
-      // contracts stay exercisable against a real running bundle.
-      let deliverSystemBanner = payload["deliverSystemBanner"] == "true"
-
-      log(
-        "NotificationTestCLI: Received test trigger (title=\(resolvedTitle), "
-          + "assistantId=\(resolvedAssistantId), deliverSystemBanner=\(deliverSystemBanner))")
+      log("NotificationTestCLI: Received test trigger (title=\(resolvedTitle), assistantId=\(resolvedAssistantId))")
       NotificationService.shared.sendNotification(
         ownerID: ownerID,
         title: resolvedTitle,
         message: resolvedMessage,
-        assistantId: resolvedAssistantId,
-        context: context,
-        deliverSystemBanner: deliverSystemBanner
+        assistantId: resolvedAssistantId
       )
     }
   }
@@ -1615,7 +1594,6 @@ public class ProactiveAssistantsPlugin: NSObject {
           title: "Permissão de Gravação de Tela necessária",
           message:
             "O Omi precisa da permissão de gravação de tela para continuar monitorando. Ative-a de novo nos Ajustes do Sistema.",
-          deliverSystemBanner: true,
           respectFrequency: false
         )
       }
@@ -1917,7 +1895,6 @@ public class ProactiveAssistantsPlugin: NSObject {
         ownerID: ownerID,
         title: NotificationService.screenCaptureResetTitle,
         message: "A permissão de gravação de tela precisa ser ativada de novo. Clique para abrir os Ajustes.",
-        deliverSystemBanner: true,
         respectFrequency: false
       )
       return
@@ -1934,7 +1911,6 @@ public class ProactiveAssistantsPlugin: NSObject {
       ownerID: ownerID,
       title: NotificationService.screenCaptureResetTitle,
       message: "A permissão de gravação de tela precisa ser ativada de novo. Clique para abrir os Ajustes.",
-      deliverSystemBanner: true,
       respectFrequency: false
     )
   }

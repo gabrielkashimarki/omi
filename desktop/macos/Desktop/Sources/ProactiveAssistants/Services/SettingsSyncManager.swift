@@ -13,7 +13,6 @@ class SettingsSyncManager {
     do {
       let remote = try await APIClient.shared.getAssistantSettings()
       applyRemoteSettings(remote)
-      await AssistantVoiceStore.shared.refresh()
       log("SettingsSyncManager: synced from server")
     } catch {
       logError("SettingsSyncManager: failed to sync from server", error: error)
@@ -154,15 +153,10 @@ class SettingsSyncManager {
       excludedApps: Array(MemoryAssistantSettings.shared.excludedApps)
     )
 
-    let floatingBar = FloatingBarSettingsResponse(
-      voiceAnswersEnabled: ShortcutSettings.shared.floatingBarVoiceAnswersEnabled
-    )
-
     return AssistantSettingsResponse(
       shared: shared,
       task: task,
       memory: memory,
-      floatingBar: floatingBar,
       updateChannel: UpdaterViewModel.shared.updateChannel.rawValue
     )
   }

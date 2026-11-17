@@ -951,16 +951,6 @@ struct MemorySettingsResponse: Codable {
   }
 }
 
-struct FloatingBarSettingsResponse: Codable {
-  var voiceAnswersEnabled: Bool?
-  var elevenlabsVoiceId: String?
-
-  enum CodingKeys: String, CodingKey {
-    case voiceAnswersEnabled = "voice_answers_enabled"
-    case elevenlabsVoiceId = "elevenlabs_voice_id"
-  }
-}
-
 enum AssistantSettingsJSONValue: Codable, Equatable {
   case null
   case bool(Bool)
@@ -1017,14 +1007,12 @@ struct AssistantSettingsResponse: Codable {
   var shared: SharedAssistantSettingsResponse?
   var task: TaskSettingsResponse?
   var memory: MemorySettingsResponse?
-  var floatingBar: FloatingBarSettingsResponse?
   var updateChannel: String?
   var unknownSections: [String: AssistantSettingsJSONValue]
 
   enum CodingKeys: String, CodingKey, CaseIterable {
     case shared, task
     case memory
-    case floatingBar = "floating_bar"
     case updateChannel = "update_channel"
   }
 
@@ -1032,14 +1020,12 @@ struct AssistantSettingsResponse: Codable {
     shared: SharedAssistantSettingsResponse? = nil,
     task: TaskSettingsResponse? = nil,
     memory: MemorySettingsResponse? = nil,
-    floatingBar: FloatingBarSettingsResponse? = nil,
     updateChannel: String? = nil,
     unknownSections: [String: AssistantSettingsJSONValue] = [:]
   ) {
     self.shared = shared
     self.task = task
     self.memory = memory
-    self.floatingBar = floatingBar
     self.updateChannel = updateChannel
     self.unknownSections = unknownSections
   }
@@ -1049,8 +1035,6 @@ struct AssistantSettingsResponse: Codable {
     shared = Self.decodeLossy(SharedAssistantSettingsResponse.self, from: container, forKey: .shared)
     task = Self.decodeLossy(TaskSettingsResponse.self, from: container, forKey: .task)
     memory = Self.decodeLossy(MemorySettingsResponse.self, from: container, forKey: .memory)
-    floatingBar = Self.decodeLossy(
-      FloatingBarSettingsResponse.self, from: container, forKey: .floatingBar)
     updateChannel = Self.decodeLossy(String.self, from: container, forKey: .updateChannel)
 
     let rawContainer = try decoder.container(keyedBy: AssistantSettingsDynamicCodingKey.self)
@@ -1068,7 +1052,6 @@ struct AssistantSettingsResponse: Codable {
     try container.encodeIfPresent(shared, forKey: .shared)
     try container.encodeIfPresent(task, forKey: .task)
     try container.encodeIfPresent(memory, forKey: .memory)
-    try container.encodeIfPresent(floatingBar, forKey: .floatingBar)
     try container.encodeIfPresent(updateChannel, forKey: .updateChannel)
 
     var rawContainer = encoder.container(keyedBy: AssistantSettingsDynamicCodingKey.self)

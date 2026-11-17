@@ -111,9 +111,4 @@ struct IndexedFileRecord: Codable, FetchableRecord, PersistableRecord, Identifia
   }
 }
 
-// MARK: - TableDocumented
 
-extension IndexedFileRecord: TableDocumented {
-  static var tableDescription: String { ChatPrompts.tableAnnotations["indexed_files"]! }
-  static var columnDescriptions: [String: String] { ChatPrompts.columnAnnotations["indexed_files"] ?? [:] }
-}

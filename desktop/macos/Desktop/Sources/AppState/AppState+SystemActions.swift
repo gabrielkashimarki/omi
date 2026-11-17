@@ -190,18 +190,6 @@ extension AppState {
     log("Cleared onboarding chat persistence")
 
     Task { @MainActor [self] in
-      // Clear only setup-owned local conversation state. A re-walkthrough must
-      // never mutate the user's normal local or backend chat history.
-      if let chatProvider = ChatProvider.mainInstance {
-        if await chatProvider.clearOnboardingJournal() {
-          log("Cleared onboarding journal")
-        } else {
-          log("Failed to clear onboarding journal")
-        }
-      } else {
-        log("Onboarding journal reset deferred: main chat provider unavailable")
-      }
-
       try? await Task.sleep(nanoseconds: 150_000_000)
 
       // Reset Onboarding is someone deliberately asking to see first run again,

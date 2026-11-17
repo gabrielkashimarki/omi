@@ -47,7 +47,7 @@ final class RewindThumbnailLoader {
   /// 2×, so 480 px is the size the picture is actually shown at. Asking for more than the file holds
   /// costs nothing — `kCGImageSourceThumbnailMaxPixelSize` is a ceiling, not a target.
   static let maxPixelSize = Int(
-    (RewindSearchLayout.cardWidth(panelWidth: ChatComposerLayout.contentLaneMaxWidth) * 2).rounded())
+    (RewindSearchLayout.cardWidth(panelWidth: QueryShellLayout.contentLaneMaxWidth) * 2).rounded())
 
   /// Roughly 60 decoded cards. A 480 px thumbnail is ~1.2 MB decoded, so this is ~72 MB — enough that
   /// scrolling a page of results and coming back is free, and bounded so a long session cannot grow

@@ -22,12 +22,7 @@ struct AIUserProfileRecord: Codable, FetchableRecord, MutablePersistableRecord, 
   }
 }
 
-// MARK: - TableDocumented
 
-extension AIUserProfileRecord: TableDocumented {
-  static var tableDescription: String { ChatPrompts.tableAnnotations["ai_user_profiles"]! }
-  static var columnDescriptions: [String: String] { ChatPrompts.columnAnnotations["ai_user_profiles"] ?? [:] }
-}
 
 // MARK: - Service
 
@@ -225,12 +220,12 @@ actor AIUserProfileService {
     log("AIUserProfileService: Starting profile generation")
 
     // 1. Fetch all data sources in parallel
-    let (memories, tasks, goals, conversations, messages) = await fetchDataSources()
+    let (memories, tasks, goals, conversations) = await fetchDataSources()
 
     // 2. Count total data items
-    let dataSourcesUsed = memories.count + tasks.count + goals.count + conversations.count + messages.count
+    let dataSourcesUsed = memories.count + tasks.count + goals.count + conversations.count
     log(
-      "AIUserProfileService: Fetched \(dataSourcesUsed) data items (memories=\(memories.count), tasks=\(tasks.count), goals=\(goals.count), convos=\(conversations.count), messages=\(messages.count))"
+      "AIUserProfileService: Fetched \(dataSourcesUsed) data items (memories=\(memories.count), tasks=\(tasks.count), goals=\(goals.count), convos=\(conversations.count))"
     )
 
     guard dataSourcesUsed > 0 else {
@@ -247,7 +242,7 @@ actor AIUserProfileService {
       tasks: tasks,
       goals: goals,
       conversations: conversations,
-      messages: messages,
+      messages: [],
       pastProfilesOldestFirst: pastProfiles.reversed().map { $0.profileText }
     )
     let finalText = synthesis.profileText
@@ -303,22 +298,19 @@ actor AIUserProfileService {
     memories: [String],
     tasks: [String],
     goals: [String],
-    conversations: [String],
-    messages: [String]
+    conversations: [String]
   ) {
     async let memoriesTask = fetchMemories()
     async let tasksTask = fetchTasks()
     async let goalsTask = fetchGoals()
     async let conversationsTask = fetchConversations()
-    async let messagesTask = fetchMessages()
 
     let memories = await memoriesTask
     let tasks = await tasksTask
     let goals = await goalsTask
     let conversations = await conversationsTask
-    let messages = await messagesTask
 
-    return (memories, tasks, goals, conversations, messages)
+    return (memories, tasks, goals, conversations)
   }
 
   private func fetchMemories() async -> [String] {
@@ -373,16 +365,6 @@ actor AIUserProfileService {
       }
     } catch {
       log("AIUserProfileService: Failed to fetch conversations: \(error.localizedDescription)")
-      return []
-    }
-  }
-
-  private func fetchMessages() async -> [String] {
-    do {
-      let messages = try await APIClient.shared.getMessages(limit: 30)
-      return messages.map { "[\($0.sender)] \($0.text)" }
-    } catch {
-      log("AIUserProfileService: Failed to fetch messages: \(error.localizedDescription)")
       return []
     }
   }

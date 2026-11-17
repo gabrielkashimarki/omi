@@ -21,20 +21,15 @@ struct SBOnboardingWidgetShape: Equatable {
   var step: SBOnboardingModel.Step
   var localFileProfile: SBOnboardingModel.LocalFileProfileState
   var permission: SBPermissionStepAction?
-  var screenDemoReady: Bool
-  var screenDemoUnavailable: Bool
-  var screenDemoDone: Bool
-  var shortcutRegistrationError: String? = nil
 }
 
 /// Drives the Second Brain conversational onboarding: a real chat with Omi that
 /// streams word-by-word, collects answers, and performs the SAME live side-effects
-/// as the legacy wizard (name/language → backend, every permission, the summon
-/// shortcut, a live screen+voice demo, agent + context connectors, capture,
-/// completion). No fake steps — every widget does real work.
+/// as the legacy wizard (name/language → backend, every permission, agent +
+/// context connectors, capture, completion). No fake steps — every widget does real work.
 ///
 /// Core state + lifecycle + copy live here. The heavier per-step behavior
-/// (permissions, shortcut, screen/voice demo, connectors) lives in
+/// (permissions, connectors) lives in
 /// `SBOnboardingModel+Steps.swift`.
 @MainActor
 final class SBOnboardingModel: ObservableObject {
@@ -55,7 +50,7 @@ final class SBOnboardingModel: ObservableObject {
   enum Step: Int, CaseIterable {
     case promise, name, howHeard, language, role
     case mic, systemAudio, screen, files, accessibility, automation, notifications
-    case shortcutOpen, shortcutTalk, screenDemo, agents, context, capture, referral
+    case agents, context, capture, referral
   }
 
   /// "How did you hear about Omi?" options (mirrors the legacy step).
@@ -128,57 +123,6 @@ final class SBOnboardingModel: ObservableObject {
   /// Recording is granted, so the live screen demo doesn't hit that prompt.
   var didPrimeScreenCapture = false
 
-  // Summon shortcut
-  @Published var shortcutTokens: [String] = []
-  @Published var shortcutPicked = false
-  @Published var shortcutPressed = false
-  @Published var shortcutRecording = false
-  /// Set when Carbon could not claim the chosen Open Omi chord.
-  /// Keep the stage active so the user can choose another chord instead of finishing with a shortcut
-  /// that appears to work only inside onboarding.
-  @Published var shortcutRegistrationError: String?
-  /// Set when the user pressed a bare key while recording. `acceptsRecordedChord` refuses it — a
-  /// bare `L` bound as a **global** hotkey makes every `L` typed anywhere open Omi — and the refusal
-  /// used to be silent, so the step simply stopped responding with nothing said. Cleared the moment
-  /// a valid chord arrives or the stage re-arms.
-  @Published var shortcutNeedsModifier = false
-  /// The chosen shortcut + which mechanism it uses (key hotkey vs modifier-hold).
-  var chosenShortcut: ShortcutSettings.KeyboardShortcut?
-  var chosenShortcutIsPTT = false
-  var pendingModifierOnlyShortcut: ShortcutSettings.KeyboardShortcut?
-  /// Each shortcut stage keeps its own choice so stepping back does not make a
-  /// user re-select a key they already confirmed.
-  var openShortcutSelection: ShortcutSettings.KeyboardShortcut?
-  var talkShortcutSelection: ShortcutSettings.KeyboardShortcut?
-  var shortcutMonitors: [Any] = []
-  /// Main menu stashed while the shortcut step's key monitor is armed (menu key
-  /// equivalents like ⌘O would otherwise swallow the press before we see it).
-  var savedMainMenu: NSMenu?
-
-  // Screen + voice demo
-  @Published var screenThings: [String] = []
-  @Published var screenDemoLoading = false
-  @Published var voiceHeard = false
-  @Published var voiceAnswer: String?
-  /// True once Omi has actually answered the demo question (the notch shows a
-  /// response). The screen-demo Continue button stays hidden until then, so the
-  /// user can't skip past before seeing the "fun part" work.
-  @Published var screenDemoDone = false
-  /// The hold-to-talk demo is armed only after the bridge has initialized its
-  /// kernel context. Showing the chord sooner invites a first PTT turn while its
-  /// only response route is still cold.
-  @Published var screenDemoPTTReady = false
-  /// Bridge startup can fail before an authenticated response route exists. In
-  /// that state, leave PTT unarmed and offer an explicit retry or skip instead
-  /// of presenting a shortcut which cannot answer.
-  @Published var screenDemoPTTUnavailable = false
-  /// The three-doors demo page was opened for the current visit to the screen-demo step.
-  @Published var threeDoorsOpened = false
-  var openDoorsObserver: NSObjectProtocol?
-  var doorsCompletedObserver: NSObjectProtocol?
-  var voiceCancellable: AnyCancellable?
-  var voiceTimeout: Task<Void, Never>?
-  var screenDemoSetupTask: Task<Void, Never>?
   /// Dwell-time origin for the current step's `Onboarding Step Completed` event.
   var stepStartedAt = Date()
   /// Guards double-fire when `skip()`/`complete()` run after `advance` already recorded.
@@ -194,7 +138,6 @@ final class SBOnboardingModel: ObservableObject {
   @Published var contextDetails: [String: String] = [:]
 
   unowned let appState: AppState
-  let chatProvider: ChatProvider
   /// The same persisted connector authority the post-onboarding Home and Apps
   /// surfaces read. A context row is not connected until this store records a
   /// completed import, never merely because a browser session passed a probe.
@@ -221,14 +164,12 @@ final class SBOnboardingModel: ObservableObject {
 
   init(
     appState: AppState,
-    chatProvider: ChatProvider,
     importConnectorStatusStore: ImportConnectorStatusStore? = nil,
     fileScanRunner: @escaping FileScanRunner = { appState in
-      ChatToolExecutor.onboardingAppState = appState
       guard let authorization = RuntimeOwnerIdentity.captureAuthorizationSnapshot() else {
         return .failed(message: "Please sign in again before building your local profile.")
       }
-      let outcome = await ChatToolExecutor.scanLocalFiles(
+      let outcome = await LocalFileScan.run(
         expectedOwnerID: authorization.ownerID,
         authorizationSnapshot: authorization)
       guard !Task.isCancelled, RuntimeOwnerIdentity.isAuthorizationCurrent(authorization) else {
@@ -237,37 +178,17 @@ final class SBOnboardingModel: ObservableObject {
       guard outcome.didCompleteSuccessfully, outcome.hasReadableUserFileTarget else {
         return .failed(message: ConnectorImportOperations.localFilesFailureLine(for: outcome))
       }
-
-      // Preserve the legacy post-scan owner: it derives the indexed-file
-      // snapshot, writes aggregate local-file profile evidence, and updates the
-      // knowledge graph. The conversational flow merely presents its outcome.
-      let coordinator = OnboardingPagedIntroCoordinator()
-      await coordinator.refreshSnapshotIfAvailable(
-        expectedOwnerID: authorization.ownerID,
-        authorizationSnapshot: authorization)
-      guard !Task.isCancelled, RuntimeOwnerIdentity.isAuthorizationCurrent(authorization) else {
-        return .failed(message: "Your account changed before Omi could save your local profile.")
-      }
-      let fileCount = coordinator.scanSnapshot?.fileCount ?? outcome.indexedFileCount
-      if fileCount > 0, coordinator.localFileMemoriesSaved == 0 {
-        return .failed(message: "Your files were indexed, but Omi couldn't save your profile memories. Try again.")
-      }
       return .complete(
-        fileCount: fileCount,
-        memoryCount: coordinator.localFileMemoriesSaved,
+        fileCount: outcome.indexedFileCount,
+        memoryCount: 0,
         deniedFolders: outcome.deniedUserFolders)
     },
     onComplete: (() -> Void)?
   ) {
     self.appState = appState
-    self.chatProvider = chatProvider
     self.importConnectorStatusStore = importConnectorStatusStore
     self.fileScanRunner = fileScanRunner
     self.onComplete = onComplete
-    // Isolate any onboarding chat/voice turns to the throwaway `.onboarding()`
-    // journal surface so they never pollute the real Chat tab. Cleared on
-    // complete()/skip(), after which the Chat tab reloads the clean default surface.
-    chatProvider.beginOnboardingJournal()
     // Detect the user's real name automatically (mirrors the legacy paged intro):
     // seed the editable field from what we already know, kick a backend fetch if we
     // don't have it yet, and adopt an async arrival — so onboarding greets by name
@@ -333,14 +254,6 @@ final class SBOnboardingModel: ObservableObject {
     case .notifications:
       return
         "Nos dias em que você gravar uma conversa, posso avisar quando o resumo do dia estiver pronto. Ative as Notificações para receber esse aviso."
-    // Both steps used to invite "press any key", and `acceptsRecordedChord` then refused a bare key
-    // in silence — correct (a global bare `L` is unrecoverable) but unexplained. Name the rule.
-    case .shortcutOpen:
-      return "Como você quer me abrir? Escolha uma opção ou use Personalizado para definir o seu, que precisa de ⌘, ⌃ ou ⌥."
-    case .shortcutTalk:
-      return "E para falar comigo sem usar as mãos? Escolha uma opção ou use Personalizado para segurar sua própria tecla modificadora."
-    case .screenDemo:
-      return "Agora vem a parte divertida."
     case .agents:
       return "Quer que eu faça coisas por você? Conecte um agente e eu o coloco para trabalhar."
     case .context:
@@ -366,11 +279,7 @@ final class SBOnboardingModel: ObservableObject {
     SBOnboardingWidgetShape(
       step: step,
       localFileProfile: localFileProfileState,
-      permission: permissionKey(for: step).map { permissionPrimaryAction($0) },
-      screenDemoReady: screenDemoPTTReady,
-      screenDemoUnavailable: screenDemoPTTUnavailable,
-      screenDemoDone: screenDemoDone,
-      shortcutRegistrationError: shortcutRegistrationError
+      permission: permissionKey(for: step).map { permissionPrimaryAction($0) }
     )
   }
 
@@ -390,20 +299,11 @@ final class SBOnboardingModel: ObservableObject {
     }?.name ?? code
   }
 
-  /// The chosen open-Omi chord as individual tokens, rendered as keycap chips in
-  /// `captureWidget` (e.g. ⌘ + O) rather than plain glyphs in the message copy.
-  var summonTokens: [String] { ShortcutSettings.shared.askOmiShortcut.displayTokens }
-
   // MARK: lifecycle
 
   /// Persisted so quitting mid-onboarding (e.g. stepping away to grant a permission
   /// in System Settings) resumes where you left off instead of restarting.
   static let resumeStepKey = "sbOnboardingResumeStep"
-
-  /// Persisted when the user completes both required shortcut stages through the
-  /// new onboarding flow. Legacy resume states persisted before shortcuts were
-  /// mandatory lacked this flag, so `begin()` clamps them back through the steps.
-  static let shortcutsCompletedKey = "sbOnboardingShortcutsCompleted"
 
   /// Layout version of the persisted `resumeStepKey` value.
   ///
@@ -412,7 +312,7 @@ final class SBOnboardingModel: ObservableObject {
   /// older build. Version 2 added `.notifications` between `.automation` and
   /// `.shortcutOpen`; absent (0) means the version-1 layout that predates it.
   static let resumeStepSchemaKey = "sbOnboardingResumeStepSchema"
-  static let resumeStepSchemaVersion = 2
+  static let resumeStepSchemaVersion = 3
 
   /// Raw value `.notifications` took in version 2, frozen as a literal.
   ///
@@ -421,13 +321,20 @@ final class SBOnboardingModel: ObservableObject {
   /// again. A future insertion adds a version 3 rule beside this one.
   private static let notificationsStepRawInV2 = 11
 
+  /// Raw value of the first of the three steps (Open Omi shortcut, talk shortcut, voice demo)
+  /// that version 3 removed together with the floating bar. Frozen for the same reason.
+  private static let shortcutStepsRawInV2 = 12
+
   /// Translate a persisted resume step into the current layout.
   ///
   /// Pure so the renumbering is testable without `UserDefaults`. Anything at or
   /// after the inserted case shifts up by one; earlier steps are unaffected.
   static func migratedResumeStepRaw(savedRaw: Int, storedSchema: Int) -> Int {
-    guard storedSchema < 2 else { return savedRaw }
-    return savedRaw >= notificationsStepRawInV2 ? savedRaw + 1 : savedRaw
+    var raw = savedRaw
+    if storedSchema < 2, raw >= notificationsStepRawInV2 { raw += 1 }
+    // Quem parou num dos três passos removidos segue para o primeiro passo depois deles.
+    if storedSchema < 3, raw >= shortcutStepsRawInV2 { raw = max(shortcutStepsRawInV2, raw - 3) }
+    return raw
   }
 
   func begin() {
@@ -467,20 +374,8 @@ final class SBOnboardingModel: ObservableObject {
     }
     recordSetupStateDisagreementAtRead(savedRaw: savedRaw)
     if savedRaw > Step.promise.rawValue, let resumed = Step(rawValue: savedRaw) {
-      // A legacy resume state persisted before shortcuts were mandatory bypasses the new
-      // required gate. Clamp it back to the first shortcut stage so the user completes both.
-      let shortcutsDone = UserDefaults.standard.bool(forKey: Self.shortcutsCompletedKey)
-      var effective = resumed
-      // Clamp values >= shortcutTalk (not just >) because a legacy resume at exactly
-      // shortcutTalk without the completion flag means the user never selected or
-      // exercised Open Omi — completing only the Talk stage would set the flag and
-      // bypass Open Omi entirely.
-      if !shortcutsDone, effective.rawValue >= Step.shortcutTalk.rawValue {
-        effective = .shortcutOpen
-        UserDefaults.standard.set(Step.shortcutOpen.rawValue, forKey: Self.resumeStepKey)
-      }
       // Skip a resumed permission step the user granted while away.
-      let target = firstUnaskedStep(from: effective)
+      let target = firstUnaskedStep(from: resumed)
       shownStepHistory = predictedShownSteps(before: target)
       step = target
       streamMessage(for: target)
@@ -527,13 +422,6 @@ final class SBOnboardingModel: ObservableObject {
         from: "completed_flag",
         to: "persisted_resume",
         direction: "completed_flag_with_resume_state")
-    }
-    if chatProvider.isOnboarding {
-      DesktopDiagnosticsManager.shared.recordStateAuthoritySignal(
-        seam: .onboardingSetupState,
-        from: "completed_flag",
-        to: "setup_journal",
-        direction: "completed_flag_with_active_journal")
     }
   }
 
@@ -582,8 +470,6 @@ final class SBOnboardingModel: ObservableObject {
     case .accessibility: precheckPerm("accessibility")
     case .automation: precheckPerm("automation")
     case .notifications: precheckPerm("notifications")
-    case .shortcutOpen, .shortcutTalk: armShortcutSummon()
-    case .screenDemo: startScreenDemo()
     case .agents: refreshAgentStates()
     case .context: refreshContextStates()
     default: break
@@ -624,13 +510,9 @@ final class SBOnboardingModel: ObservableObject {
     previousShownStep != nil
   }
 
-  /// The full-onboarding escape hatch stays unavailable until both required shortcut stages have
-  /// been completed. A persisted flag records that the user went through both stages; legacy resume
-  /// states from before shortcuts were mandatory are clamped back in `begin()`, so the only way to
-  /// reach a stage past `shortcutTalk` with this flag set is through the guarded shortcut answers.
+  /// The full-onboarding escape hatch opens once every permission step has been asked.
   var canSkipOnboarding: Bool {
-    step.rawValue > Step.shortcutTalk.rawValue
-      && UserDefaults.standard.bool(forKey: Self.shortcutsCompletedKey)
+    step.rawValue > Step.notifications.rawValue
   }
 
   /// Tear down any live monitors/tasks a step installed before leaving it.
@@ -641,8 +523,6 @@ final class SBOnboardingModel: ObservableObject {
       if case .scanning = localFileProfileState {
         localFileProfileState = .idle
       }
-    case .shortcutOpen, .shortcutTalk: disarmShortcutSummon()
-    case .screenDemo: teardownVoiceDemo()
     default: break
     }
   }
@@ -780,28 +660,14 @@ final class SBOnboardingModel: ObservableObject {
   /// be produced by neither: there was no single place that owned "onboarding is
   /// over, hand the user to the app". There is now, so a step added here can
   /// never reach one door and not the other.
-  ///
-  /// `clearOnboardingChatFlag` is the only real difference between the two
-  /// paths, and it is ordered exactly where each path had it.
-  func finishOnboardingHandoff(clearOnboardingChatFlag: Bool) {
+  func finishOnboardingHandoff() {
     teardownAll()
     // Fades rather than cuts: onboarding's last beat should not end on a click.
     OmiOnboardingCinematic.stopAmbientMusic()
     AnalyticsManager.shared.onboardingCompleted()
-    chatProvider.stopAgent(owner: .mainChat)
     UserDefaults.standard.set(true, forKey: DefaultsKey.onboardingJustCompleted)
     UserDefaults.standard.removeObject(forKey: Self.resumeStepKey)
-    if clearOnboardingChatFlag { chatProvider.isOnboarding = false }
-    // Answer "what do I do now" before anything renders it. Must precede
-    // `presentOnboardingOpener()`, which reads these saved suggestions to build
-    // the Chat tab's starter chips.
-    savePostOnboardingGuidance()
-    // Greet the user in the Home chat with the personalized opener + starters.
-    chatProvider.presentOnboardingOpener()
-    ChatToolExecutor.onboardingAppState = nil
     OnboardingChatPersistence.clear()
-    ChatDraftStore.shared.clear(.onboardingMain)
-    ChatDraftStore.shared.clear(.onboardingFloating)
     // **Mark onboarding done before anything can await, and before the last window can close.**
     //
     // `applicationShouldTerminateAfterLastWindowClosed` returns true while this flag is false --
@@ -820,13 +686,9 @@ final class SBOnboardingModel: ObservableObject {
     OnboardingFlow.markCompleted(for: RuntimeOwnerIdentity.currentOwnerId())
     appState.hasCompletedOnboarding = true
     onComplete?()
-    Task { [chatProvider] in
-      await chatProvider.finishOnboardingJournal()
-    }
   }
 
-  /// Skip the rest of onboarding: mark it complete and drop straight to the Chat
-  /// tab (with the personalized opener), without force-enabling capture or screen
+  /// Skip the rest of onboarding: mark it complete and drop straight to the app, without force-enabling capture or screen
   /// analysis the user chose to bypass. They can turn those on later.
   func skip() {
     if step == .referral {
@@ -834,7 +696,7 @@ final class SBOnboardingModel: ObservableObject {
       return
     }
     recordStepExit(skipped: true)
-    finishOnboardingHandoff(clearOnboardingChatFlag: false)
+    finishOnboardingHandoff()
   }
 
   /// Replicates the essential real side-effects of the legacy handleOnboardingComplete().
@@ -847,7 +709,7 @@ final class SBOnboardingModel: ObservableObject {
     // false) and every later rescan. Leaving it false lets that existing silent
     // backfill actually index the standard folders once the app is up, so the
     // Files connector becomes truly connected with real content.
-    finishOnboardingHandoff(clearOnboardingChatFlag: true)
+    finishOnboardingHandoff()
 
     Task {
       await AgentVMService.shared.startPipeline()
@@ -885,11 +747,6 @@ final class SBOnboardingModel: ObservableObject {
       // raise the TCC sheet — the user asked to skip, not to be asked again.
       appState.startTranscription(userInitiated: false)
       await appState.reconcileCapture()
-      // Ambient transcription opens the shared input device on its way in and
-      // releases any parked push-to-talk capture to avoid two IOProcs on one
-      // device. Re-arm behind it: the first ⌥ hold after onboarding is the one
-      // that used to be lost to capture-start latency.
-      PushToTalkManager.shared.prewarmMicCapture(trigger: .onboardingCompleted)
     }
     // NOTE: previously this created a "Run omi for two days…" welcome task. That
     // seeded onboarding scaffolding into the user's real Tasks surface (there is no
@@ -935,7 +792,5 @@ final class SBOnboardingModel: ObservableObject {
       pollTask.cancel()
     }
     pollTasks.removeAll()
-    disarmShortcutSummon()
-    teardownVoiceDemo()
   }
 }

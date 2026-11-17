@@ -23,13 +23,10 @@ class ViewModelContainer: ObservableObject {
   /// Brain-map graph — persistent so the SceneKit scene, force layout, and
   /// camera survive page navigation instead of rebuilding every visit.
   let memoryGraphViewModel = MemoryGraphViewModel()
-  let chatProvider: ChatProvider
-  let taskChatCoordinator: TaskChatCoordinator
   private lazy var warmupCoordinator = StartupWarmupCoordinator(
     tasksStore: tasksStore,
     dashboardViewModel: dashboardViewModel,
     appProvider: appProvider,
-    chatProvider: chatProvider,
     retryDatabaseInit: { [weak self] in
       await self?.retryDatabaseInit() ?? false
     },
@@ -37,20 +34,12 @@ class ViewModelContainer: ObservableObject {
   )
 
   init() {
-    let provider = ChatProvider()
-    chatProvider = provider
-    taskChatCoordinator = TaskChatCoordinator(chatProvider: provider)
-    ChatProvider.mainInstance = provider
-
     // Bind the headless task automation actions (create/toggle/delete/reorder/dump)
     // to this canonical, long-lived TasksViewModel so omi-ctl can drive TASK-01/02/03
     // without the Tasks page being on screen. Gated to the automation bridge, which
     // only runs on non-prod bundles.
     if DesktopAutomationLaunchOptions.isEnabled {
       tasksViewModel.registerAutomationActions()
-      #if DEBUG
-        taskChatCoordinator.registerAutomationActions()
-      #endif
       memoriesViewModel.registerAutomationActions()
     }
   }
@@ -121,7 +110,6 @@ class ViewModelContainer: ObservableObject {
   }
 
   private func schedulePostInteractiveWarmup(dbAvailable: Bool) {
-    tasksViewModel.chatCoordinator = taskChatCoordinator
     warmupCoordinator.schedulePostInteractiveWarmup(dbAvailable: dbAvailable)
   }
 

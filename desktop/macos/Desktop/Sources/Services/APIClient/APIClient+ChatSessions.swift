@@ -1,23 +1,6 @@
 import Foundation
 import OmiWAL
 
-// MARK: - Chat Sessions API
-
-extension APIClient {
-
-  /// Delete a chat session and its messages
-  func deleteChatSession(
-    sessionId: String,
-    expectedOwnerId: String? = nil
-  ) async throws {
-    try await delete(
-      "v2/chat-sessions/\(sessionId)",
-      authPolicy: expectedOwnerId.map { .ownerBound($0) } ?? .default,
-      expectedAuthOwnerId: expectedOwnerId
-    )
-  }
-}
-
 // MARK: - AI User Profile API
 
 /// Response of POST /v1/users/ai-profile/synthesize.

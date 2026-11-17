@@ -232,7 +232,7 @@ struct OMIApp: App {
   }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemValidation, @unchecked Sendable {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked Sendable {
   /// The live AppDelegate instance. SwiftUI's `@NSApplicationDelegateAdaptor` does
   /// NOT make `NSApp.delegate` our `AppDelegate` — on macOS 14+ it installs an
   /// internal forwarding delegate, so `NSApp.delegate as? AppDelegate` is `nil`.
@@ -261,7 +261,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
   private var audioRecordingSwitch: NSSwitch?
   private var relaunchOnLoginSuppressedForOnboarding = false
   private var apiKeyFetchTask: Task<Void, Never>?
-  private var floatingBarPlanFetchTask: Task<Void, Never>?
   private var appLifecycleMaintenanceTask: Task<Void, Never>?
   private var didScheduleInitialSettingsSync = false
   private var initialSettingsSyncTask: Task<Void, Never>?
@@ -303,7 +302,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     // Ignore SIGPIPE so broken-pipe writes return errors instead of crashing the app.
-    // Without this, writing to a dead FFmpeg stdin or agent-bridge pipe kills the process.
+    // Without this, writing to a dead FFmpeg stdin pipe kills the process.
     signal(SIGPIPE, SIG_IGN)
 
     // Load bundle .env before AuthState/Firebase so local harness env is visible to getenv().
@@ -311,14 +310,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     DesktopAutomationBridge.shared.startIfNeeded()
     DesktopAutomationWindowPresentation.installIfNeeded()
-    // Watching from launch, so the first push-to-talk turn already knows
-    // whether there is a network to route to instead of guessing.
     NetworkReachability.shared.start()
-    LocalAgentAPIServer.shared.startIfNeeded()
     publishNamedBundleRuntimeManifest()
 
     runStartupSystemMaintenance()
-    pruneExpiredAgentToolOutputs()
     // A Quick Look panel that was open when the app was force-quit or crashed left full-resolution
     // screenshots in the temp directory, and its close handler never ran. This is the first moment
     // anything of ours can take them off disk.
@@ -334,9 +329,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         "AppDelegate: Sparkle update relaunch detected; restoreMainWindow=\(restoreMainWindowAfterUpdateRelaunch)"
       )
     }
-
-    // Refresh the "Auto" realtime-voice model pick from Artificial Analysis (daily, cached).
-    AutoModelSelector.shared.refreshIfStale()
 
     // After a Sparkle update, show a small "what's new" card in the corner of the
     // main window once. Delayed so the window/overlay exist to render it.
@@ -471,9 +463,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     // Start resource monitoring (memory, CPU, disk)
     ResourceMonitor.shared.start()
 
-    // Route completed background-agent results into live voice sessions.
-    AgentCompletionVoiceDelivery.shared.start()
-
     scheduleAppLifecycleMaintenance()
 
     // Offer an integration when the user opens an app Omi can connect to.
@@ -488,10 +477,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     // wait for the user to open Chat; arm them at launch like the other proactive coordinators.
     Task { @MainActor in await ChatDailySummaryCoordinator.shared.activate() }
 
-    // Once per fresh install, after onboarding, the first real app the user
-    // opens gets the tap-to-ask card. Started here for the same reason as the
-    // line above — it installs its own observers and decides eligibility itself.
-    FirstRealAppCardCoordinator.shared.start()
     ContextReminderCoordinator.shared.start()
 
     // Identify user if already signed in
@@ -499,9 +484,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
       AnalyticsManager.shared.identify()
       // Fetch API keys after first-window warmup settles. First-use paths call waitForKeys().
       scheduleAPIKeyFetch()
-
-      // Fetch subscription plan for floating bar usage limits after the startup warmup settles.
-      scheduleFloatingBarPlanFetch()
 
       // Start trial metadata polling (countdown UI + pre-expiry nudges)
       if let state = AppState.current {
@@ -551,9 +533,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     // Register global hotkey for Rewind (Cmd+Shift+Space)
     setupGlobalHotkeys()
-
-    // Register Carbon-based global shortcuts for floating control bar (Ask Omi)
-    GlobalShortcutManager.shared.registerShortcuts()
 
     // Ensure app always shows in dock as a regular app
     NSApp.setActivationPolicy(.regular)
@@ -693,19 +672,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
   }
 
-  /// Expire leftover agent `tool-output` JSON so existing installs reclaim disk
-  /// on the next launch, without waiting for a chat that starts the Node runtime.
-  private func pruneExpiredAgentToolOutputs() {
-    let artifactsDirectory = URL(
-      fileURLWithPath: AgentRuntimeProcess.defaultArtifactsDirectory())
-    DispatchQueue.global(qos: .utility).async {
-      let deleted = AgentArtifactRetention.pruneExpiredToolOutputs(in: artifactsDirectory)
-      if deleted > 0 {
-        log("AppDelegate: pruned \(deleted) expired agent tool-output files")
-      }
-    }
-  }
-
   /// Set up global keyboard shortcuts
   private func setupGlobalHotkeys() {
     // Handler for Ctrl+Option+R -> Open Rewind
@@ -739,9 +705,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
       }
       return event
     }
-
-    // Ask Omi shortcut is registered via Carbon RegisterEventHotKey in
-    // GlobalShortcutManager (works regardless of accessibility permission state).
 
     // Global monitor - for when OTHER apps are focused (Ctrl+Option+R only)
     globalHotkeyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { event in
@@ -886,15 +849,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
       title: "Abrir \(displayName)", action: #selector(openOmiFromMenu), keyEquivalent: "")
     openItem.target = self
     menu.addItem(openItem)
-    menu.addItem(FloatingBarMenuBarItem.make())  // Show/Hide Floating Bar: the way back after Hide
 
     let settingsItem = NSMenuItem(title: "Ajustes…", action: #selector(openSettingsFromMenu), keyEquivalent: "")
     settingsItem.target = self
     menu.addItem(settingsItem)
-    let undoDictationItem = NSMenuItem(
-      title: "Desfazer último ditado", action: #selector(undoLastDictationFromMenu), keyEquivalent: "")
-    undoDictationItem.target = self
-    menu.addItem(undoDictationItem)
 
     menu.addItem(NSMenuItem.separator())
 
@@ -1009,28 +967,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     OMIApp.navigate(to: .settings)
   }
 
-  /// "Continue in Omi": bring the main window forward *and* land on the chat
-  /// timeline, wherever the window was last resting. The pending request
-  /// survives window creation, so a freshly created window also lands on chat.
-  @MainActor func openMainAppChat() {
-    MainChatNavigationRequestStore.shared.request()
-    openMainAppWindow()
-  }
-
-  /// Land on the chat with `draft` in the composer, focused and unsent — the
-  /// only "ask this" entry that leaves the send to the user. `attachedFrame`
-  /// stages the first-real-app card's screen referent alongside the draft.
-  @MainActor func openMainAppChat(prefilledDraft draft: String, attachedFrame: ChatAttachment? = nil) {
-    MainChatNavigationRequestStore.shared.request(draft: draft, attachment: attachedFrame)
-    openMainAppWindow()
-  }
-
-  /// Merge an offline question only once the actual composer has restored its draft.
-  @MainActor func openMainAppChat(appendingDraft draft: String, authorization: RuntimeOwnerAuthorizationSnapshot) {
-    MainChatNavigationRequestStore.shared.request(draft: draft, disposition: .append, authorization: authorization)
-    openMainAppWindow()
-  }
-
   /// Bring the main Omi window to the front, creating it if needed. Shared by
   /// the menu-bar "Open Omi" item, the auth callback, and the floating bar's
   /// "Continue in Omi" affordance. The Dock callback summons directly, while
@@ -1040,11 +976,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     DesktopAutomationWindowPresentation.revealForUser()
     // Capture this BEFORE any activate call mutates AppKit's notion of frontmost.
     let alreadyFrontmost = NSWorkspace.shared.frontmostApplication == NSRunningApplication.current
-    // The screen still shows the app the user is leaving; pin it now — once
-    // Omi is front, the periodic capture skips Omi and nothing fresher exists.
-    if !alreadyFrontmost {
-      RewindFrameLoader.shared.recordSummonBoundary()
-    }
     NSApp.activate(ignoringOtherApps: true)
     var foundWindow = revealMainWindowIfAvailable()
     if !foundWindow {
@@ -1213,17 +1144,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     sender.state = outcome.resultingIsOn ? .on : .off
   }
 
-  @MainActor @objc private func undoLastDictationFromMenu() {
-    PushToTalkManager.shared.undoLastDictationAfterMenuTracking()
-  }
-
-  @MainActor func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
-    if menuItem.action == #selector(undoLastDictationFromMenu) {
-      return PushToTalkManager.shared.canUndoLastDictation
-    }
-    return true
-  }
-
   // MARK: - NSMenuDelegate
   func menuWillOpen(_ menu: NSMenu) {
     log("AppDelegate: [MENUBAR] Menu opened by user")
@@ -1334,16 +1254,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
       NSEvent.removeMonitor(monitor)
       localHotkeyMonitor = nil
     }
-    // Remove floating bar shortcuts
-    GlobalShortcutManager.shared.unregisterShortcuts()
-
-    // Stop push-to-talk
-    PushToTalkManager.shared.cleanup()
-
     apiKeyFetchTask?.cancel()
     apiKeyFetchTask = nil
-    floatingBarPlanFetchTask?.cancel()
-    floatingBarPlanFetchTask = nil
     appLifecycleMaintenanceTask?.cancel()
     appLifecycleMaintenanceTask = nil
     initialSettingsSyncTask?.cancel()
@@ -1380,7 +1292,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     Task { @MainActor in
       if ItemLinkPresenter.shared.receive(url) { return }  // only items/conversation/task/memory hosts
-      if !ThreeDoorsDemoPage.handleReturnURL(url) { AuthService.shared.handleOAuthCallback(url: url) }
+      AuthService.shared.handleOAuthCallback(url: url)
       // Bring app to foreground after OAuth redirect — Safari stays in front otherwise.
       // NSApp.activate() alone doesn't switch macOS Spaces; ordering a window front does.
       NSApp.activate()
@@ -1517,19 +1429,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
           }
         }
       }
-    }
-  }
-
-  private func scheduleFloatingBarPlanFetch() {
-    floatingBarPlanFetchTask?.cancel()
-    floatingBarPlanFetchTask = Task {
-      let delay = StartupWarmupPolicy.floatingBarPlanFetchDelay
-      if delay > 0 {
-        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-      }
-      guard !Task.isCancelled else { return }
-      guard await AuthState.shared.isSignedIn else { return }
-      await FloatingBarUsageLimiter.shared.fetchPlan()
     }
   }
 

@@ -462,7 +462,7 @@ enum ConnectorImportOperations {
       tool: "scan_files",
       properties: ["surface": "import_connector_sheet"]
     )
-    let result = await ChatToolExecutor.scanLocalFiles()
+    let result = await LocalFileScan.run()
 
     guard result.didCompleteSuccessfully, result.hasReadableUserFileTarget else {
       return .failure(message: localFilesFailureLine(for: result))
@@ -480,8 +480,7 @@ enum ConnectorImportOperations {
     )
   }
 
-  /// One-line user-facing summary for a completed scan. The scan outcome's
-  /// `summaryText` is agent-facing context and must not be shown in the UI.
+  /// One-line user-facing summary for a completed scan.
   static func localFilesStatusLine(indexedCount: Int, newItems: Int, deniedFolders: [String]) -> String {
     var line = "\(indexedCount.formatted()) arquivos indexados"
     if newItems > 0 {
@@ -494,7 +493,7 @@ enum ConnectorImportOperations {
     return line
   }
 
-  static func localFilesFailureLine(for outcome: ChatToolExecutor.LocalFileScanOutcome) -> String {
+  static func localFilesFailureLine(for outcome: LocalFileScan.Outcome) -> String {
     guard outcome.didCompleteSuccessfully else {
       return "Não foi possível concluir a indexação. Tente de novo."
     }

@@ -660,17 +660,8 @@ extension TranscriptionSessionRecord {
   }
 }
 
-// MARK: - TableDocumented
 
-extension TranscriptionSessionRecord: TableDocumented {
-  static var tableDescription: String { ChatPrompts.tableAnnotations["transcription_sessions"]! }
-  static var columnDescriptions: [String: String] { ChatPrompts.columnAnnotations["transcription_sessions"] ?? [:] }
-}
 
-extension TranscriptionSegmentRecord: TableDocumented {
-  static var tableDescription: String { ChatPrompts.tableAnnotations["transcription_segments"]! }
-  static var columnDescriptions: [String: String] { ChatPrompts.columnAnnotations["transcription_segments"] ?? [:] }
-}
 
 extension TranscriptionSegmentRecord {
   /// Create a local record from a TranscriptSegment

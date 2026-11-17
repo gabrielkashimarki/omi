@@ -149,9 +149,4 @@ struct ExtractionWithScreenshot {
   }
 }
 
-// MARK: - TableDocumented
 
-extension ProactiveExtractionRecord: TableDocumented {
-  static var tableDescription: String { ChatPrompts.tableAnnotations["proactive_extractions"]! }
-  static var columnDescriptions: [String: String] { ChatPrompts.columnAnnotations["proactive_extractions"] ?? [:] }
-}

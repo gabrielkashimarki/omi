@@ -925,7 +925,7 @@ struct SkillEditorSheet: View {
   }
 
   private func handleDrop(providers: [NSItemProvider]) -> Bool {
-    return ChatAttachmentDropHandler.collectURLs(from: providers) { urls in
+    return FileURLDrop.collectURLs(from: providers) { urls in
       guard let url = urls.first else { return }
       Task { @MainActor in
         importSkillFile(url)
@@ -1148,5 +1148,55 @@ struct LocalMcpDetailSheet: View {
     } catch {
       errorText = error.localizedDescription
     }
+  }
+}
+
+/// Junta as URLs de arquivo de um drop vindas de `NSItemProvider`s concorrentes.
+enum FileURLDrop {
+  /// Thread-safe accumulator for URLs gathered from concurrent
+  /// `NSItemProvider.loadItem` completions. `@unchecked Sendable` because all
+  /// mutation is serialized through `lock`; the captured `let` reference is
+  /// therefore safe to share across the @Sendable completion closures.
+  private final class URLBuffer: @unchecked Sendable {
+    private var urls: [URL] = []
+    private let lock = NSLock()
+
+    func append(_ url: URL) {
+      lock.lock()
+      urls.append(url)
+      lock.unlock()
+    }
+
+    func snapshot() -> [URL] {
+      lock.lock()
+      let copy = urls
+      lock.unlock()
+      return copy
+    }
+  }
+
+  static func collectURLs(from providers: [NSItemProvider], onComplete: @escaping ([URL]) -> Void) -> Bool {
+    let buffer = URLBuffer()
+    let group = DispatchGroup()
+    for provider in providers {
+      guard provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) else { continue }
+      group.enter()
+      provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+        defer { group.leave() }
+        let loadedURL: URL?
+        if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
+          loadedURL = url
+        } else if let url = item as? URL {
+          loadedURL = url
+        } else {
+          loadedURL = nil
+        }
+        if let loadedURL {
+          buffer.append(loadedURL)
+        }
+      }
+    }
+    group.notify(queue: .main) { onComplete(buffer.snapshot()) }
+    return !providers.isEmpty
   }
 }

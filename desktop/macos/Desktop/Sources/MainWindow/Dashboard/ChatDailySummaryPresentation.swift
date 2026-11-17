@@ -185,16 +185,6 @@ enum ChatDailySummaryPresentation {
 
   // MARK: - Actions
 
-  /// The follow-up affordance's whole action, separated from any view so it is testable: place the
-  /// question in the composer and stop. It never sends — the reader reads the recap, then decides
-  /// whether to ask. `MainChatNavigationRequestStore` is the one prefill seam both shells'
-  /// composers consume; a second path would race the first for the draft.
-  @MainActor
-  static func requestFollowUp(_ question: String) {
-    MainChatNavigationRequestStore.shared.request(draft: question)
-    AnalyticsManager.shared.trackDailySummary(.followUpTapped)
-  }
-
   // MARK: - Generation failures
 
   /// The one line a recap writer shows when the server did not produce a record.

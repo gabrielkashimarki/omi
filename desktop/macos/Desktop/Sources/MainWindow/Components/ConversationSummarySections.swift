@@ -54,7 +54,7 @@ struct ConversationSummaryBody: View {
       } else {
         OmiMarkdown(
           text: selection.content,
-          sender: .ai,
+          style: .assistant,
           appKitProseSelection: true,
           documentProse: true
         )

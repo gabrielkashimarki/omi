@@ -193,9 +193,6 @@ extension TasksViewModel {
     switch outcome {
     case .localFailure(let remoteDeletedIDs):
       if !remoteDeletedIDs.isEmpty {
-        for id in remoteDeletedIDs {
-          chatCoordinator?.purgeState(for: id)
-        }
         mutateMultiSelection { state in
           state.removeSelectedIDs(remoteDeletedIDs)
         }
@@ -213,9 +210,6 @@ extension TasksViewModel {
       }
       return
     case .remoteFailure(let confirmedIDs):
-      for id in confirmedIDs {
-        chatCoordinator?.purgeState(for: id)
-      }
       if !confirmedIDs.isEmpty {
         mutateMultiSelection { state in
           state.removeSelectedIDs(confirmedIDs)
@@ -241,9 +235,7 @@ extension TasksViewModel {
       recomputeDisplayCaches()
       return
     case .deletedEverywhere:
-      for id in orderedIDs {
-        chatCoordinator?.purgeState(for: id)
-      }
+      break
     }
 
     mutateMultiSelection { state in

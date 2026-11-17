@@ -38,8 +38,6 @@ struct OmiMarkdown: View {
 
   let text: String
   let style: Style
-  let citations: [ChatCitationReference]
-  let onOpenCitation: ((ChatCitationReference) -> Void)?
   /// Draw prose through `ChatSelectableProse` (one `NSTextView`) instead of
   /// SwiftUI `Text`, so the reader can drag across it. This is **not** the
   /// banned SwiftUI selection: no `SelectionOverlay` is installed anywhere on
@@ -48,28 +46,9 @@ struct OmiMarkdown: View {
   let documentProse: Bool
   @Environment(\.fontScale) private var fontScale
 
-  init(
-    text: String,
-    sender: ChatSender,
-    citations: [ChatCitationReference] = [],
-    onOpenCitation: ((ChatCitationReference) -> Void)? = nil,
-    appKitProseSelection: Bool = false,
-    documentProse: Bool = false
-  ) {
-    let style: Style = sender == .user ? .user : .assistant
-    self.text = Self.renderableText(text, style: style)
-    self.style = style
-    self.citations = citations
-    self.onOpenCitation = onOpenCitation
-    self.appKitProseSelection = appKitProseSelection
-    self.documentProse = documentProse
-  }
-
   init(text: String, style: Style, appKitProseSelection: Bool = false, documentProse: Bool = false) {
     self.text = Self.renderableText(text, style: style)
     self.style = style
-    self.citations = []
-    self.onOpenCitation = nil
     self.appKitProseSelection = appKitProseSelection
     self.documentProse = documentProse
   }
@@ -82,23 +61,11 @@ struct OmiMarkdown: View {
   }
 
   var body: some View {
-    Group {
-      if citations.isEmpty && onOpenCitation == nil {
-        OmiMarkdownContent(
-          text: text, style: style, fontScale: fontScale, appKitProseSelection: appKitProseSelection,
-          documentProse: documentProse
-        )
-        .equatable()
-      } else {
-        OmiMarkdownContent(
-          text: text,
-          style: style,
-          fontScale: fontScale,
-          citations: citations,
-          onOpenCitation: onOpenCitation,
-          appKitProseSelection: appKitProseSelection, documentProse: documentProse)
-      }
-    }
+    OmiMarkdownContent(
+      text: text, style: style, fontScale: fontScale, appKitProseSelection: appKitProseSelection,
+      documentProse: documentProse
+    )
+    .equatable()
     .textSelection(.disabled)
   }
 
@@ -113,13 +80,11 @@ struct OmiMarkdown: View {
 /// Keeps parent-only UI feedback (copy checkmarks, hover chrome, ratings) from
 /// rebuilding unchanged message content. Combined with the selection-free
 /// render boundary above, this prevents AppKit font invalidations from
-/// re-entering AttributeGraph while the transcript changes. The AppKit prose path joins this island (citations opt out).
+/// re-entering AttributeGraph while the transcript changes. The AppKit prose path joins this island.
 struct OmiMarkdownContent: View, Equatable {
   let text: String
   let style: OmiMarkdown.Style
   let fontScale: CGFloat
-  let citations: [ChatCitationReference]
-  let onOpenCitation: ((ChatCitationReference) -> Void)?
   let appKitProseSelection: Bool
   let documentProse: Bool
 
@@ -127,23 +92,19 @@ struct OmiMarkdownContent: View, Equatable {
     text: String,
     style: OmiMarkdown.Style,
     fontScale: CGFloat,
-    citations: [ChatCitationReference] = [],
-    onOpenCitation: ((ChatCitationReference) -> Void)? = nil,
     appKitProseSelection: Bool = false,
     documentProse: Bool = false
   ) {
     self.text = text
     self.style = style
     self.fontScale = fontScale
-    self.citations = citations
-    self.onOpenCitation = onOpenCitation
     self.appKitProseSelection = appKitProseSelection
     self.documentProse = documentProse
   }
 
   nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.text == rhs.text && lhs.style == rhs.style && lhs.fontScale == rhs.fontScale
-      && lhs.citations == rhs.citations && lhs.appKitProseSelection == rhs.appKitProseSelection
+      && lhs.appKitProseSelection == rhs.appKitProseSelection
       && lhs.documentProse == rhs.documentProse
   }
 
@@ -165,9 +126,7 @@ struct OmiMarkdownContent: View, Equatable {
               OmiMarkdownTableView(
                 table: table,
                 style: style,
-                fontScale: fontScale,
-                citations: citations,
-                onOpenCitation: onOpenCitation)
+                fontScale: fontScale)
             case .thematicBreak:
               thematicBreakView()
             }
@@ -206,16 +165,7 @@ struct OmiMarkdownContent: View, Equatable {
           text: content,
           style: style,
           fontScale: fontScale,
-          citations: citations,
-          onOpenCitation: onOpenCitation,
           documentProse: documentProse)
-      } else if !citations.isEmpty {
-        OmiMarkdownCitationContent(
-          text: content,
-          style: style,
-          fontScale: fontScale,
-          citations: citations,
-          onOpenCitation: onOpenCitation)
       } else {
         swiftUIProse(content, fontSize: fontSize)
       }
@@ -476,11 +426,6 @@ struct VerticalWheelPassthrough: NSViewRepresentable {
       else { return event }
       let location = innerScrollView.convert(event.locationInWindow, from: nil)
       guard innerScrollView.bounds.contains(location) else { return event }
-      NotificationCenter.default.post(
-        name: .chatVerticalWheelPassthrough,
-        object: outerScrollView,
-        userInfo: ["event": event]
-      )
       outerScrollView.scrollWheel(with: event)
       return nil
     }
@@ -1040,324 +985,6 @@ struct OmiMarkdownInlineFlowLayout: Layout {
   }
 }
 
-/// Citation-aware projection used only for settled assistant answers with typed provenance. The
-/// popover lives outside transcript layout, so showing a preview cannot move the scroll anchor.
-private struct OmiMarkdownCitationContent: View {
-  let text: String
-  let style: OmiMarkdown.Style
-  let fontScale: CGFloat
-  let citations: [ChatCitationReference]
-  let onOpenCitation: ((ChatCitationReference) -> Void)?
-
-  private var referencesByOrdinal: [Int: ChatCitationReference] {
-    Dictionary(citations.map { ($0.ordinal, $0) }, uniquingKeysWith: { first, _ in first })
-  }
-
-  var body: some View {
-    let fontSize = round(14 * fontScale)
-    let source = OmiMarkdownContent.preprocessText(text)
-    if let citationMask = ChatCitationMask.mask(source, references: referencesByOrdinal),
-      let interactiveMask = ChatCitationMask.maskInlineCode(in: citationMask),
-      let attributed = OmiMarkdownContent.styledAttributedString(
-        from: interactiveMask.markdown, style: style, fontSize: fontSize, fontScale: fontScale)
-    {
-      VStack(alignment: .leading, spacing: OmiMarkdownContent.chatLineSpacing(fontSize: fontSize)) {
-        ForEach(
-          Array(
-            ChatCitationMask.units(
-              in: attributed,
-              citationMarkers: citationMask.markers,
-              codePlaceholders: interactiveMask.codePlaceholders
-            ).enumerated()),
-          id: \.offset
-        ) {
-          _, line in
-          if line.isEmpty {
-            Color.clear.frame(height: fontSize * 0.45)
-          } else {
-            OmiMarkdownInlineFlowLayout(
-              spacing: 0, lineSpacing: OmiMarkdownContent.chatLineSpacing(fontSize: fontSize)
-            ) {
-              ForEach(Array(line.enumerated()), id: \.offset) { _, unit in
-                switch unit {
-                case .text(let value):
-                  Text(value)
-                    .lineSpacing(OmiMarkdownContent.chatLineSpacing(fontSize: fontSize))
-                    .fixedSize(horizontal: false, vertical: true)
-                    .if_available_writingToolsNone()
-                case .citation(let reference):
-                  ChatCitationToken(
-                    reference: reference,
-                    fontScale: fontScale,
-                    onOpen: { onOpenCitation?($0) })
-                case .code(let value):
-                  OmiMarkdownInlineCodeCopyButton(
-                    code: value,
-                    style: style,
-                    fontScale: fontScale)
-                }
-              }
-            }
-          }
-        }
-      }
-    } else {
-      // Type-erased on purpose (#11573). `OmiMarkdownContent.body` reaches this view through
-      // `textView` and `OmiMarkdownTableView`, so naming `OmiMarkdownContent` here closes a cycle
-      // in the *static* view-type graph. SwiftUI's `View._viewListCount(inputs:)` walks that graph
-      // by type, never evaluating a body, so no value-level guard bounds it: on macOS 15 a
-      // `ScrollView`/`LazyVStack` host recursed until the main thread wrote past its stack guard
-      // page and died with SIGSEGV. `AnyView` is the terminator — it resolves its count
-      // dynamically, which cuts both cycles here and leaves the graph acyclic.
-      AnyView(OmiMarkdownContent(text: text, style: style, fontScale: fontScale))
-    }
-  }
-}
-
-enum ChatCitationMask {
-  struct Marker {
-    let placeholder: String
-    let reference: ChatCitationReference
-  }
-
-  struct Masked {
-    let markdown: String
-    let markers: [Marker]
-  }
-
-  struct InteractiveMask {
-    let markdown: String
-    let codePlaceholders: [OmiMarkdownInlineCode.Placeholder]
-  }
-
-  enum Unit {
-    case text(AttributedString)
-    case citation(ChatCitationReference)
-    case code(String)
-  }
-
-  static func mask(_ text: String, references: [Int: ChatCitationReference]) -> Masked? {
-    guard !references.isEmpty else { return nil }
-    var markdown = ""
-    var markers = [Marker]()
-    var cursor = text.startIndex
-
-    for match in ChatCitationMarkup.markerMatches(
-      in: text, pattern: ChatCitationMarkup.numericMarkerOrMarkdownLinkPattern)
-    {
-      guard let reference = references[match.ordinal] else { continue }
-      markdown += text[cursor..<match.range.lowerBound]
-      var placeholder = "omiCitationPlaceholder\(markers.count)"
-      while text.contains(placeholder) { placeholder.append("x") }
-      markdown += placeholder
-      markers.append(Marker(placeholder: placeholder, reference: reference))
-      cursor = match.range.upperBound
-    }
-    guard !markers.isEmpty else { return nil }
-    markdown += text[cursor...]
-    return Masked(markdown: markdown, markers: markers)
-  }
-
-  static func maskInlineCode(in citationMask: Masked) -> InteractiveMask? {
-    guard let codeMask = OmiMarkdownInlineCode.maskedMarkdown(citationMask.markdown) else {
-      return InteractiveMask(markdown: citationMask.markdown, codePlaceholders: [])
-    }
-    return InteractiveMask(
-      markdown: codeMask.markdown,
-      codePlaceholders: codeMask.placeholders)
-  }
-
-  static func units(
-    in attributed: AttributedString,
-    citationMarkers: [Marker],
-    codePlaceholders: [OmiMarkdownInlineCode.Placeholder]
-  ) -> [[Unit]] {
-    enum PlaceholderUnit {
-      case citation(ChatCitationReference)
-      case code(String)
-    }
-
-    var lines: [[Unit]] = [[]]
-    let rendered = String(attributed.characters)
-    var renderedStart = rendered.startIndex
-    var attributedStart = attributed.startIndex
-
-    let placeholders: [(marker: String, unit: PlaceholderUnit)] =
-      citationMarkers.map { ($0.placeholder, .citation($0.reference)) }
-      + codePlaceholders.map { ($0.marker, .code($0.code)) }
-
-    let orderedPlaceholders = placeholders.compactMap {
-      placeholder -> (
-        marker: String, unit: PlaceholderUnit, range: Range<String.Index>
-      )? in
-      guard let range = rendered.range(of: placeholder.marker) else { return nil }
-      return (placeholder.marker, placeholder.unit, range)
-    }.sorted { $0.range.lowerBound < $1.range.lowerBound }
-
-    func appendText(_ range: Range<AttributedString.Index>) {
-      var segmentStart = range.lowerBound
-      var cursor = range.lowerBound
-      while cursor < range.upperBound {
-        let character = attributed.characters[cursor]
-        let next = attributed.index(afterCharacter: cursor)
-        if character == "\n" {
-          if segmentStart < cursor { appendWords(segmentStart..<cursor) }
-          lines.append([])
-          segmentStart = next
-        } else if character.isWhitespace {
-          appendWords(segmentStart..<next)
-          segmentStart = next
-        }
-        cursor = next
-      }
-      if segmentStart < range.upperBound { appendWords(segmentStart..<range.upperBound) }
-    }
-
-    func appendWords(_ range: Range<AttributedString.Index>) {
-      guard range.lowerBound < range.upperBound else { return }
-      lines[lines.count - 1].append(.text(AttributedString(attributed[range])))
-    }
-
-    for placeholder in orderedPlaceholders {
-      let markerRange = placeholder.range
-      guard markerRange.lowerBound >= renderedStart else { continue }
-      let lowerOffset = rendered.distance(from: rendered.startIndex, to: markerRange.lowerBound)
-      let upperOffset = rendered.distance(from: rendered.startIndex, to: markerRange.upperBound)
-      let lower = attributed.index(attributed.startIndex, offsetByCharacters: lowerOffset)
-      let upper = attributed.index(attributed.startIndex, offsetByCharacters: upperOffset)
-      appendText(attributedStart..<lower)
-      switch placeholder.unit {
-      case .citation(let reference):
-        lines[lines.count - 1].append(.citation(reference))
-      case .code(let value):
-        lines[lines.count - 1].append(.code(value))
-      }
-      attributedStart = upper
-      renderedStart = markerRange.upperBound
-    }
-    appendText(attributedStart..<attributed.endIndex)
-    return lines
-  }
-}
-
-private struct ChatCitationToken: View {
-  let reference: ChatCitationReference
-  let fontScale: CGFloat
-  let onOpen: (ChatCitationReference) -> Void
-
-  @State private var isHovering = false
-  @State private var isPreviewHovering = false
-  @State private var isPreviewPresented = false
-  @State private var hoverGeneration = 0
-  @FocusState private var isFocused: Bool
-
-  var body: some View {
-    Button {
-      guard reference.canOpen else { return }
-      isPreviewPresented = false
-      onOpen(reference)
-    } label: {
-      Text("[\(reference.ordinal)]")
-        .font(.system(size: round(11 * fontScale), weight: .semibold, design: .rounded))
-        .foregroundStyle(reference.canOpen ? Ink.accent : Ink.tertiary)
-        .padding(.horizontal, 3)
-        .padding(.vertical, 2)
-        .background(isHovering || isFocused ? Ink.rowFillHover : Color.clear)
-        .clipShape(RoundedRectangle(cornerRadius: 4))
-        .contentShape(Rectangle())
-    }
-    .buttonStyle(.plain)
-    .disabled(!reference.canOpen)
-    .focused($isFocused)
-    .onHover { hovering in
-      isHovering = hovering
-      hoverGeneration += 1
-      let generation = hoverGeneration
-      if hovering {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
-          guard isHovering, generation == hoverGeneration else { return }
-          isPreviewPresented = true
-        }
-      } else {
-        schedulePreviewDismiss(generation: generation)
-      }
-    }
-    .onChange(of: isFocused) { _, focused in
-      if focused { isPreviewPresented = true } else if !isHovering { isPreviewPresented = false }
-    }
-    .popover(isPresented: $isPreviewPresented, attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) {
-      ChatCitationPreview(
-        reference: reference,
-        fontScale: fontScale,
-        onOpen: {
-          isPreviewPresented = false
-          onOpen(reference)
-        }
-      )
-      .onHover { hovering in
-        isPreviewHovering = hovering
-        hoverGeneration += 1
-        if !hovering {
-          schedulePreviewDismiss(generation: hoverGeneration)
-        }
-      }
-    }
-    .accessibilityLabel("Fonte \(reference.ordinal): \(reference.displayTitle)")
-    .accessibilityHint(reference.canOpen ? "Abrir esta fonte" : "Esta fonte está indisponível")
-    .accessibilityIdentifier("query-shell-citation-\(reference.ordinal)")
-    .help("Fonte \(reference.ordinal): \(reference.displayTitle)")
-  }
-
-  private func schedulePreviewDismiss(generation: Int) {
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-      guard !isHovering, !isPreviewHovering, generation == hoverGeneration, !isFocused else { return }
-      isPreviewPresented = false
-    }
-  }
-}
-
-struct ChatCitationPreview: View {
-  let reference: ChatCitationReference
-  let fontScale: CGFloat
-  let onOpen: () -> Void
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: OmiSpacing.sm) {
-      Label(reference.kind.title, systemImage: reference.kind.systemImage)
-        .font(.system(size: round(11 * fontScale), weight: .semibold))
-        .foregroundStyle(Ink.secondary)
-      Text(reference.displayTitle)
-        .font(.system(size: round(14 * fontScale), weight: .semibold))
-        .foregroundStyle(Ink.primary)
-        .lineLimit(2)
-      Text(reference.displayPreview)
-        .font(.system(size: round(12 * fontScale)))
-        .foregroundStyle(Ink.secondary)
-        .lineLimit(4)
-      if let metadata = [reference.appName, reference.createdAt]
-        .compactMap({ $0?.trimmingCharacters(in: .whitespacesAndNewlines) })
-        .filter({ !$0.isEmpty }).joined(separator: " · ").nilIfEmpty
-      {
-        Text(metadata)
-          .font(.system(size: round(10 * fontScale)))
-          .foregroundStyle(Ink.tertiary)
-      }
-      if reference.canOpen {
-        Button(action: onOpen) {
-          Label("Abrir \(reference.kind.title)", systemImage: "arrow.up.right")
-            .font(.system(size: round(11 * fontScale), weight: .semibold))
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(Ink.accent)
-        .accessibilityHint("Abrir a fonte citada")
-      }
-    }
-    .padding(OmiSpacing.md)
-    .frame(width: 330, alignment: .leading)
-    .accessibilityElement(children: .contain)
-  }
-}
-
 extension String {
   fileprivate var nilIfEmpty: String? { isEmpty ? nil : self }
 }
@@ -1526,8 +1153,6 @@ private struct OmiMarkdownTableView: View {
   let table: OmiMarkdownTable
   let style: OmiMarkdown.Style
   let fontScale: CGFloat
-  let citations: [ChatCitationReference]
-  let onOpenCitation: ((ChatCitationReference) -> Void)?
 
   private var allRows: [[String]] {
     [table.header] + table.rows
@@ -1588,14 +1213,7 @@ private struct OmiMarkdownTableView: View {
     let metrics = columnMetrics(column, alignment: columnAlignment)
 
     Group {
-      if !citations.isEmpty {
-        OmiMarkdownCitationContent(
-          text: content,
-          style: style,
-          fontScale: fontScale,
-          citations: citations,
-          onOpenCitation: onOpenCitation)
-      } else if let inlineCopy = OmiMarkdownContent.inlineCopyContent(
+      if let inlineCopy = OmiMarkdownContent.inlineCopyContent(
         from: content,
         style: style,
         fontSize: fontSize,

@@ -7,7 +7,6 @@ import Foundation
 enum DesktopHomeSignedInStartup {
   static func runProductServicesIfAdmitted(
     appState: AppState,
-    chatProvider: ChatProvider,
     scheduleInitialFileIndexing: () -> Void,
     restorePersistedCaptureServices: (_ reason: String) -> Void
   ) async {
@@ -43,19 +42,9 @@ enum DesktopHomeSignedInStartup {
 
     restorePersistedCaptureServices("launch")
 
-    FloatingControlBarManager.shared.setup(appState: appState, chatProvider: chatProvider)
-    FloatingControlBarManager.shared.presentForLaunch(context: .normalSignedInDesktop)
-
-    if let barState = FloatingControlBarManager.shared.barState {
-      PushToTalkManager.shared.setup(barState: barState)
-    }
-
     DesktopUsageDailyReporter.shared.start(
       isWatching: { ProactiveAssistantsPlugin.shared.isMonitoring },
-      isListening: { [weak appState] in
-        appState?.isLiveCapturing == true
-          || VoiceTurnCoordinator.shared.activeTurn?.phase.isRecording == true
-      })
+      isListening: { [weak appState] in appState?.isLiveCapturing == true })
   }
 
   static func loadDataIfAdmitted(

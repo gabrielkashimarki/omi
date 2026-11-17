@@ -1064,9 +1064,6 @@ extension SettingsContentView {
   ) {
     guard requestID == planUsageDetailsRequestID else { return }
     chatUsageQuota = quota
-    if let quota {
-      FloatingBarUsageLimiter.shared.applyQuota(quota)
-    }
     self.overageInfo = overageInfo
     isLoadingChatUsage = false
     isLoadingOverage = false
@@ -1078,12 +1075,6 @@ extension SettingsContentView {
     pendingSubscriptionPriceId = nil
     pendingCheckoutSessionId = nil
     selectedPlanIdForCheckout = nil
-
-    FloatingBarUsageLimiter.shared.applyPlan(
-      plan: subscription.subscription.plan,
-      status: subscription.subscription.status,
-      desktopGrandfatherUntil: subscription.desktopGrandfatherUntil
-    )
 
     if subscription.subscription.plan.hasPaidCapability,
       subscription.subscription.status == .active,

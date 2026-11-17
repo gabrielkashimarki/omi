@@ -300,7 +300,6 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
 
     do {
       let key = try await MemoryExportService.shared.createNewMCPKey()
-      _ = try LocalAgentAPISettings.createNewToken()
       mcpKey = key
       statusMessage = "Nova chave criada. Copie o prompt de novo quando quiser."
     } catch {
@@ -318,11 +317,8 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
       guard let key = await MemoryExportService.shared.storedMCPKey() else {
         throw MemoryExportError.requestFailed("Copie o prompt de configuração antes de testar a conexão.")
       }
-      let localToken = try LocalAgentAPISettings.enable()
       mcpKey = key
-      let result = try await MemoryExportService.shared.testAgentConnections(
-        hostedKey: key,
-        localToken: localToken)
+      let result = try await MemoryExportService.shared.testAgentConnections(hostedKey: key)
       statusMessage = result.summary
     } catch {
       errorMessage = "O Omi não conseguiu testar a conexão: \(error.localizedDescription)"
@@ -343,13 +339,9 @@ final class MemoryExportDestinationSheetModel: ObservableObject {
 
     do {
       let key = try await MemoryExportService.shared.ensureMCPKey()
-      let localToken = try LocalAgentAPISettings.enable()
       mcpKey = key
       copyToPasteboard(
-        MemoryExportService.omiAgentSetupPrompt(
-          hostedKey: key,
-          localURL: LocalAgentAPISettings.serverURL,
-          localToken: localToken),
+        MemoryExportService.omiAgentSetupPrompt(hostedKey: key),
         label: "Prompt do agente")
       statusMessage =
         "Prompt copiado. Compartilhe só com um agente de confiança: ele inclui chaves de acesso do Omi."

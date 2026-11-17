@@ -26,7 +26,6 @@ final class ContextReminderCoordinator {
   private let store: ContextReminderStore
   private let contextProvider: ContextProvider
   private let presenter: Presenter
-  private let dismisser: @MainActor () -> Void
   private let now: () -> Date
   private let calendar: Calendar
   private let ownerIDProvider: () -> String?
@@ -41,7 +40,6 @@ final class ContextReminderCoordinator {
     store: ContextReminderStore = .shared,
     contextProvider: @escaping ContextProvider = ContextReminderCoordinator.liveContextProvider,
     presenter: @escaping Presenter = ContextReminderCoordinator.notificationServicePresenter,
-    dismisser: @escaping @MainActor () -> Void = ContextReminderCoordinator.floatingBarDismisser,
     now: @escaping () -> Date = Date.init,
     calendar: Calendar = .current,
     ownerIDProvider: @escaping () -> String? = { RuntimeOwnerIdentity.currentOwnerId() },
@@ -51,7 +49,6 @@ final class ContextReminderCoordinator {
     self.store = store
     self.contextProvider = contextProvider
     self.presenter = presenter
-    self.dismisser = dismisser
     self.now = now
     self.calendar = calendar
     self.ownerIDProvider = ownerIDProvider
@@ -191,7 +188,6 @@ final class ContextReminderCoordinator {
   func resetForOwnerChange() {
     deliveredInCurrentContext.removeAll()
     lastObservedIdentity = nil
-    dismisser()
   }
 
   /// Resolves a reminder from its card. `ownerID`/`authorization` capture the
@@ -228,7 +224,6 @@ final class ContextReminderCoordinator {
         return
       }
       deliveredInCurrentContext.insert(id)
-      dismisser()
       completion?(true)
     } catch {
       logError("ContextReminderCoordinator: failed to resolve reminder", error: error)
@@ -269,17 +264,10 @@ final class ContextReminderCoordinator {
       title: reminder.contextKey.normalizedTitle,
       message: "Você voltou. Você pediu para eu te lembrar: \(reminder.text)",
       assistantId: assistantID,
-      action: .contextReminder(reminderID: reminder.id),
       respectFrequency: false,
       isPersistent: true,
       authorizationSnapshot: snapshot)
     return true
-  }
-
-  static let floatingBarDismisser: @MainActor () -> Void = {
-    let manager = FloatingControlBarManager.shared
-    guard manager.window?.state.currentNotification?.assistantId == assistantID else { return }
-    manager.dismissCurrentNotification(kind: .user)
   }
 
   static let liveActionItemCreator: ActionItemCreator = { text, context, ownerID, authorization in

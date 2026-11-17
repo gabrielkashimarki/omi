@@ -355,3 +355,33 @@ enum APIError: LocalizedError {
     }
   }
 }
+
+struct APIErrorPayload: Decodable, Equatable {
+  let error: String?
+  let code: String?
+  let message: String?
+  let detail: String?
+  let provider: String?
+  let reason: String?
+  let backendRoute: String?
+  let upstreamStatusCode: Int?
+  let retryable: Bool?
+  let retryAfterSeconds: Int?
+
+  enum CodingKeys: String, CodingKey {
+    case error
+    case code
+    case message
+    case detail
+    case provider
+    case reason
+    case backendRoute = "backend_route"
+    case upstreamStatusCode = "upstream_status_code"
+    case retryable
+    case retryAfterSeconds = "retry_after_seconds"
+  }
+
+  var preferredMessage: String? {
+    detail ?? message ?? error ?? code
+  }
+}

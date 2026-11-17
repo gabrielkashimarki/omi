@@ -106,30 +106,3 @@ enum SuggestionTaskNudgePolicy {
     return trimmed.isEmpty ? nil : trimmed
   }
 }
-
-/// Engagement (thumbs-down, dismiss, reply) suppresses the named task for 7 days.
-enum SuggestionTaskNudgeEngagement {
-  @MainActor
-  static func record(
-    taskId: String?, persisting: SuggestionTaskNudgeLedgerPersisting = SuggestionTaskNudgeLedgerDefaults(),
-    now: Date = Date()
-  ) {
-    guard NegativeFeedbackRemediationFeature.isEnabled, let taskId, !taskId.isEmpty else { return }
-    var ledger = persisting.load()
-    SuggestionTaskNudgePolicy.recordingEngagement(taskId: taskId, in: &ledger, now: now)
-    persisting.save(ledger)
-  }
-
-  @MainActor
-  static func record(from notification: FloatingBarNotification) {
-    record(taskId: SuggestionTaskNudgePolicy.taskId(fromNotificationDetail: notification.context?.detail))
-  }
-
-  @MainActor
-  static func record(fromContinuityKey key: String?) {
-    record(
-      taskId: SuggestionTaskNudgePolicy.taskId(
-        fromNotificationDetail: FloatingControlBarManager.shared.notificationDetail(
-          forContinuityKey: key)))
-  }
-}

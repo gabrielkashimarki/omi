@@ -123,7 +123,7 @@ enum ShellSummonPlacement {
   static func fitted(
     _ size: NSSize,
     in visibleFrame: NSRect,
-    maxWidth: CGFloat = ChatComposerLayout.contentLaneMaxWidth
+    maxWidth: CGFloat = QueryShellLayout.contentLaneMaxWidth
   ) -> NSSize {
     NSSize(
       width: min(size.width, visibleFrame.width, maxWidth),

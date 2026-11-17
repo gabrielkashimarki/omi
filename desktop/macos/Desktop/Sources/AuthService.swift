@@ -606,7 +606,6 @@ class AuthService {
       loadNameFromBackendIfNeeded()
       APIKeyService.shared.startFetchingKeys()
       Task { await APIKeyService.shared.reconcileBYOKActivation() }
-      Task { await FloatingBarUsageLimiter.shared.fetchPlan() }
     } catch AuthError.notSignedIn {
       guard sessionAttemptFence.isCurrent(attempt) else { return }
       if sessionCoordinator.phase == .needsReauth
@@ -811,16 +810,12 @@ class AuthService {
     AnalyticsManager.shared.identify()
     AnalyticsManager.shared.signInCompleted(provider: "apple")
     APIKeyService.shared.startFetchingKeys()
-    Task { await FloatingBarUsageLimiter.shared.fetchPlan() }
 
     // Start trial polling for the newly signed-in user
     if let state = AppState.current {
       state.startTrialMetadataRefresh()
       TrialBannerService.shared.start(appState: state)
     }
-    // Refresh the chat usage limiter for the new account (PTT gate + floating
-    // bar read it); without this it stays nil/old until the next app launch.
-    Task { await FloatingBarUsageLimiter.shared.fetchPlan() }
 
     NSLog("OMI AUTH: Apple Sign in complete!")
     fetchConversations()
@@ -1104,16 +1099,12 @@ class AuthService {
       clearOAuthFlowIfCurrent(flowId: flowId, callbackServer: callbackServer)
       APIKeyService.shared.startFetchingKeys()
       Task { await APIKeyService.shared.reconcileBYOKActivation() }
-      Task { await FloatingBarUsageLimiter.shared.fetchPlan() }
 
       // Start trial polling for the newly signed-in user
       if let state = AppState.current {
         state.startTrialMetadataRefresh()
         TrialBannerService.shared.start(appState: state)
       }
-      // Refresh the chat usage limiter for the new account (PTT gate +
-      // floating bar read it); without this it stays nil/old until launch.
-      Task { await FloatingBarUsageLimiter.shared.fetchPlan() }
 
       NSLog("OMI AUTH: Sign in complete!")
 
@@ -1766,7 +1757,7 @@ class AuthService {
       return authorizationSnapshot.ownerID == expectedOwnerID
         && RuntimeOwnerIdentity.isAuthorizationCurrent(authorizationSnapshot)
     }
-    return AuthorizedToolExecution.isOwnerCurrent(expectedOwnerID)
+    return OwnerCheck.isOwnerCurrent(expectedOwnerID)
   }
 
   /// Try to get name from Firebase user (after OAuth sign-in)
@@ -2535,7 +2526,6 @@ class AuthService {
     sessionCoordinator.resetAfterNuclearSignOut()
     CredentialHealthManager.shared.reset()
     APIKeyService.shared.clear()
-    ChatDraftStore.shared.clearAll(ownerID: signingOutUserID)
 
     // Stop trial polling and reset banner state for this user session
     if let state = AppState.current {

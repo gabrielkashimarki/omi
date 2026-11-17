@@ -23,9 +23,4 @@ struct ObservationRecord: Codable, FetchableRecord, PersistableRecord, Identifia
   }
 }
 
-// MARK: - TableDocumented
 
-extension ObservationRecord: TableDocumented {
-  static var tableDescription: String { ChatPrompts.tableAnnotations["observations"]! }
-  static var columnDescriptions: [String: String] { ChatPrompts.columnAnnotations["observations"] ?? [:] }
-}

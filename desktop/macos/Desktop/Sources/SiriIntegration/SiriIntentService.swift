@@ -107,14 +107,8 @@ struct SiriActionFailure: LocalizedError, Equatable {
   var errorDescription: String? { failure.message(for: action) }
 }
 
-enum SiriAskResult {
-  case answered(String)
-  case pending, draft
-}
-
 enum SiriIntentService {
   @TaskLocal static var memoryWriter: (@Sendable (String) async throws -> ServerMemory)?
-  @TaskLocal static var answerWriter: (@Sendable (String) async throws -> String?)?
   @TaskLocal static var taskCompletionWriter: (@Sendable (String) async throws -> TaskActionItem)?
   @TaskLocal static var taskCreationWriter: (@Sendable (String, Date?) async throws -> TaskActionItem)?
   static func normalizedMemory(_ input: String) -> String {
@@ -132,48 +126,6 @@ enum SiriIntentService {
       break
     }
     return value
-  }
-
-  static func attemptedAnswerResult(_ answer: String?) -> SiriAskResult {
-    answer.map(SiriAskResult.answered) ?? .pending
-  }
-
-  /// Use the canonical main-chat provider so Siri's turn belongs to the same
-  /// journal and answer timeline as a typed Ask Omi turn.
-  @MainActor
-  static func ask(_ input: String) async throws -> SiriAskResult {
-    let question = normalizedQuestion(input)
-    guard !question.isEmpty else { throw SiriActionFailure(action: "ask", failure: .unsupported) }
-    guard let authorization = RuntimeOwnerIdentity.captureAuthorizationSnapshot() else {
-      throw SiriFailure.auth
-    }
-    if let answerWriter {
-      let answer = try await answerWriter(question)
-      guard RuntimeOwnerIdentity.isAuthorizationCurrent(authorization) else { throw SiriFailure.cancelled }
-      // The writer ran. A missing response may follow an accepted send, so
-      // opening chat must never cause an automatic second send.
-      return attemptedAnswerResult(answer)
-    }
-    guard let provider = ChatProvider.mainInstance, provider.canAcceptSend else {
-      return .draft
-    }
-    // Siri has a short execution window. Once a send starts, an unfinished
-    // answer stays in main chat; opening that timeline must not duplicate it.
-    let (stream, continuation) = AsyncStream<String?>.makeStream()
-    Task { @MainActor in
-      continuation.yield(await provider.sendMessage(question))
-      continuation.finish()
-    }
-    let timeout = Task {
-      do { try await Task.sleep(for: .seconds(18)) } catch { return }
-      continuation.yield(nil)
-      continuation.finish()
-    }
-    var iterator = stream.makeAsyncIterator()
-    let answer = await iterator.next() ?? nil
-    timeout.cancel()
-    guard RuntimeOwnerIdentity.isAuthorizationCurrent(authorization) else { throw SiriFailure.cancelled }
-    return attemptedAnswerResult(answer)
   }
 
   static func remember(_ input: String) async throws -> ServerMemory {

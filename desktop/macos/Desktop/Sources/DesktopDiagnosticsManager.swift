@@ -41,16 +41,6 @@ enum DesktopStateAuthoritySeam: String {
   case connectorStatus = "connector_status"
 }
 
-/// The immediate customer-turn/recovery decision made after a realtime transport
-/// closes. This is deliberately separate from the raw close event: the close is
-/// captured before the controller chooses a replacement, failover, or terminal
-/// path, while this closed set records that decision without provider payloads.
-enum RealtimeProviderCloseTurnOutcome: String {
-  case notInterrupted = "not_interrupted"
-  case failed
-  case pendingReplacement = "pending_replacement"
-}
-
 struct DesktopHealthSnapshot: @unchecked Sendable {
   let timestamp: Date
   let event: DesktopHealthEventName
@@ -84,21 +74,11 @@ final class DesktopDiagnosticsManager {
   private var snapshots: [DesktopHealthSnapshot] = []
   private var betaTrailSnapshots: [DesktopHealthSnapshot] = []
   private let snapshotLimit = 150
-  /// Wall-clock start of each in-flight realtime voice tool call, keyed by the
-  /// hub's transport key. A start/stop timer for `voice_tool_latency`; cleared
-  /// on turn reset so it can't grow unbounded.
-  private var voiceToolStarts: [String: Date] = [:]
-  private var realtimeProviderCloseAttemptID = 0
   /// State-authority checks can sit on hot UI projection/read paths. Emit each
   /// bounded seam/direction/subject at most once per process while still keeping
   /// the check itself cheap enough to run at every authoritative read point.
   private var reportedStateAuthoritySignals: Set<String> = []
   private let betaTrailSnapshotLimit = 50
-  private var consecutiveNearZeroPTTTurns = 0
-  private var lastPTTWatchdogIncidentAt: Date?
-  private let pttWatchdogThreshold = 3
-  private let pttWatchdogDedupWindow: TimeInterval = 15 * 60
-  private let pttWatchdogMinimumAudioSeconds: Double = 0.35
 
   private init() {}
 
@@ -190,36 +170,6 @@ final class DesktopDiagnosticsManager {
       ])
   }
 
-  func recordAgentRuntimeStaleAliveCheck() {
-    recordFallback(
-      area: "agent_runtime",
-      from: "alive_latch",
-      to: "termination_cleanup",
-      reason: "stale_alive_latch",
-      outcome: .degraded,
-      extra: [
-        "failure_class": "stale_alive_latch",
-        "recovery_action": "route_to_termination",
-        "recovery_result": "degraded",
-      ])
-  }
-
-  func recordAgentRuntimeUnexpectedExit(exitCode: Int32, oom: Bool) {
-    recordFallback(
-      area: "agent_runtime",
-      from: "running",
-      to: "stopped",
-      reason: oom ? "out_of_memory" : "process_exited",
-      outcome: .degraded,
-      extra: [
-        "exit_code": Int(exitCode),
-        "oom": oom,
-        "failure_class": oom ? "out_of_memory" : "process_exited",
-        "recovery_action": "restart_on_next_send",
-        "recovery_result": "degraded",
-      ])
-  }
-
   func recordApiAuthRetry(endpoint: String, outcome: String) {
     let fallbackOutcome: DesktopFallbackOutcome =
       outcome == "succeeded" ? .recovered : (outcome == "retrying" ? .degraded : .exhausted)
@@ -249,21 +199,6 @@ final class DesktopDiagnosticsManager {
         "source": source,
         "failure_class": "db_lock_contention",
         "recovery_action": "backoff",
-        "recovery_result": "degraded",
-      ])
-  }
-
-  func recordChatBridgeModeSwitchTimeout(waitSeconds: Int) {
-    recordFallback(
-      area: "chat_bridge",
-      from: "mode_switch",
-      to: "continue_waiting",
-      reason: "mode_switch_timeout",
-      outcome: .degraded,
-      extra: [
-        "wait_seconds": waitSeconds,
-        "failure_class": "mode_switch_timeout",
-        "recovery_action": "clear_waiters",
         "recovery_result": "degraded",
       ])
   }
@@ -300,17 +235,6 @@ final class DesktopDiagnosticsManager {
       ])
   }
 
-  func recordPTTStarted(mode: String, hubActive: Bool, micPermissionGranted: Bool) {
-    record(
-      .pttStarted,
-      properties: [
-        "mode": mode,
-        "hub_active": hubActive,
-        "tcc_microphone_granted": micPermissionGranted,
-      ],
-      trackRemotely: false)
-  }
-
   /// Per-tool wall time on a realtime voice turn: from the provider's tool
   /// request to the result being returned — i.e. the "dead air" the user hears
   /// while a tool runs. Instruments where voice latency actually goes (fast
@@ -328,102 +252,6 @@ final class DesktopDiagnosticsManager {
       ])
   }
 
-  /// Start a `voice_tool_latency` timer for a realtime tool call (the hub's
-  /// transport key). Kept here rather than on the hub so the 1500-line
-  /// RealtimeHubController does not grow.
-  func markVoiceToolStart(key: String) {
-    lock.lock()
-    voiceToolStarts[key] = Date()
-    lock.unlock()
-  }
-
-  /// Stop the timer for `key` and emit `voice_tool_latency`. No-op if no start
-  /// was recorded (stale/dropped result).
-  func finishVoiceToolLatency(key: String, toolName: String, provider: String, resultBytes: Int) {
-    lock.lock()
-    let start = voiceToolStarts.removeValue(forKey: key)
-    lock.unlock()
-    guard let start else { return }
-    recordVoiceToolLatency(
-      toolName: toolName,
-      provider: provider,
-      durationMs: Date().timeIntervalSince(start) * 1000,
-      resultBytes: resultBytes)
-  }
-
-  /// Drop any in-flight voice tool timers — called on realtime turn reset.
-  func clearVoiceToolStarts() {
-    lock.lock()
-    voiceToolStarts.removeAll()
-    lock.unlock()
-  }
-
-  func recordPTTSilentTurn(
-    source: String,
-    mode: String,
-    audioSeconds: Double,
-    voicedSeconds: Double?,
-    peak: Int,
-    rms: Int,
-    deviceDescription: String?,
-    micPermissionGranted: Bool,
-    hubActive: Bool,
-    recoveryAction: String = "none",
-    recoveryResult: String = "not_attempted"
-  ) {
-    let nearZero = peak <= 5 && rms <= 5
-    let watchdogEligible = audioSeconds >= pttWatchdogMinimumAudioSeconds
-    if nearZero && micPermissionGranted && watchdogEligible {
-      consecutiveNearZeroPTTTurns += 1
-    } else if peak > 50 || rms > 20 {
-      consecutiveNearZeroPTTTurns = 0
-    }
-
-    var properties: [String: Any] = [
-      "source": source,
-      "mode": mode,
-      "hub_active": hubActive,
-      "turn_audio_seconds": rounded(audioSeconds),
-      "peak": peak,
-      "rms": rms,
-      "is_near_zero": nearZero,
-      "watchdog_eligible": watchdogEligible,
-      "consecutive_silent_turns": consecutiveNearZeroPTTTurns,
-      "tcc_microphone_granted": micPermissionGranted,
-      "input_device_class": classifyInputDevice(deviceDescription),
-      "recovery_action": recoveryAction,
-      "recovery_result": recoveryResult,
-    ]
-    if let voicedSeconds {
-      properties["voiced_audio_seconds"] = rounded(voicedSeconds)
-    }
-
-    record(.pttAudioCaptureSilentTurn, properties: properties)
-
-    if nearZero && micPermissionGranted && watchdogEligible {
-      recordUserVisibleIssue(
-        area: "ptt",
-        failureClass: "silent_capture",
-        phase: "audio_capture",
-        extra: properties)
-    }
-
-    guard nearZero && micPermissionGranted && watchdogEligible && consecutiveNearZeroPTTTurns >= pttWatchdogThreshold
-    else { return }
-    recordPTTWatchdogTriggered(latestProperties: properties)
-  }
-
-  func recordPTTCommitted(mode: String, hubActive: Bool) {
-    consecutiveNearZeroPTTTurns = 0
-    record(
-      .pttCommitted,
-      properties: [
-        "mode": mode,
-        "hub_active": hubActive,
-      ],
-      trackRemotely: false)
-  }
-
   /// Terminal shared-capture failure for listen, manual recording, and Quick Note.
   /// The event intentionally carries only a bounded retry count.
   func recordTranscriptionSilentCaptureExhausted(recoveryAttempts: Int) {
@@ -438,23 +266,6 @@ final class DesktopDiagnosticsManager {
         "recovery_result": "exhausted",
       ])
   }
-  /// Record one bounded PTT attempt lifecycle snapshot (see
-  /// `PTTAttemptLifecycleRecorder`). Routes through the shared ring buffer.
-  /// Emitted remotely (PostHog) for EVERY terminal disposition —
-  /// including `failureClass == .committed` — so a release-health query has the
-  /// full attempt denominator (success + the causally distinct excluded/failure
-  /// classes), not only classified failures. Short tap / quiet discard / user
-  /// cancel are bounded `failure_class` values distinct from `capture_never_operational`,
-  /// so they cannot inflate a capture-failure rate. This is the authoritative,
-  /// privacy-bounded PTT terminal-outcome funnel (#10425); the ambiguous
-  /// `floating_bar_ptt_ended` `had_transcript` event is retained only for backward
-  /// compatibility and must not be read as a success/failure denominator.
-  func recordPTTAttemptLifecycle(_ snapshot: PTTAttemptLifecycleRecorder.Snapshot) {
-    record(
-      .pttAudioCaptureLifecycle,
-      properties: snapshot.properties,
-      trackRemotely: true)
-  }
 
   /// Records a typed chat failure as a fleet-health metric.
   func recordChatFailure(errorClass: String) {
@@ -462,28 +273,6 @@ final class DesktopDiagnosticsManager {
       area: "chat",
       failureClass: errorClass,
       phase: "query")
-  }
-
-  /// Records a global-hotkey registration failure surfaced by Carbon
-  /// `RegisterEventHotKey`.
-  ///
-  /// This is a hard-terminal failure — the shortcut will not fire on this machine
-  /// (typically another app, or a macOS System Settings > Keyboard > Shortcuts
-  /// entry — even a disabled one — already owns the combination). Because no
-  /// provider, mode, or correctness path switches and there is nothing to fail
-  /// open to, the telemetry contract routes this through the incident path, not
-  /// `recordFallback`. `isConflict` distinguishes `eventHotKeyExistsErr` (-9878),
-  /// which is a property of the user's machine, from other `OSStatus` values.
-  func recordHotkeyRegistrationFailed(osStatus: Int, keycode: Int, modifiers: Int, isConflict: Bool) {
-    recordUserVisibleIssue(
-      area: "startup",
-      failureClass: isConflict ? "hotkey_conflict" : "unknown",
-      phase: "startup",
-      extra: [
-        "osstatus": osStatus,
-        "keycode": keycode,
-        "modifiers": modifiers,
-      ])
   }
 
   /// Records a beta-only typed error trail entry. The caller passes free-form local
@@ -523,61 +312,6 @@ final class DesktopDiagnosticsManager {
     lock.unlock()
   }
 
-  func recordVoiceTurnStarted(turnID: String, intent: String) {
-    record(
-      .voiceTurnStarted,
-      properties: [
-        "attempt_id": turnID,
-        "intent": intent,
-        "telemetry_schema_version": 1,
-      ])
-    ClientTelemetryShadow.capturePhysicalVoice(
-      phase: "started", turnID: turnID, intent: intent, route: "unknown", reason: nil, durationMs: nil)
-  }
-
-  func recordVoiceTurnTerminal(
-    turnID: String,
-    reason: String,
-    route: String,
-    intent: String,
-    durationMs: Int?,
-    answerDelivered: Bool,
-    staleEventCount: Int,
-    invalidTransitionCount: Int
-  ) {
-    var properties: [String: Any] = [
-      "attempt_id": turnID,
-      "terminal_reason": reason,
-      "outcome": Self.voiceTurnOutcome(for: reason),
-      "response_outcome": Self.voiceResponseOutcome(for: reason, answerDelivered: answerDelivered),
-      "route": route,
-      "intent": intent,
-      "stale_event_count": staleEventCount,
-      "invalid_transition_count": invalidTransitionCount,
-      "telemetry_schema_version": 1,
-    ]
-    if let durationMs {
-      properties["duration_ms"] = max(0, durationMs)
-    }
-    record(.voiceTurnTerminal, properties: properties)
-    ClientTelemetryShadow.capturePhysicalVoice(
-      phase: "terminal",
-      turnID: turnID,
-      intent: intent,
-      route: route,
-      reason: reason,
-      durationMs: durationMs)
-    if let outcome = AnalyticsManager.questionOutcome(forVoiceTerminalReason: reason, answerDelivered: answerDelivered)
-    {
-      let surface = AnalyticsManager.questionSurface(forVoiceRoute: route)
-      Task { @MainActor in
-        AnalyticsManager.shared.questionAnswered(
-          surface: surface, outcome: outcome, attemptID: turnID, durationMs: durationMs)
-      }
-    }
-
-  }
-
   static func voiceTurnOutcome(for reason: String) -> String {
     switch reason {
     case "success":
@@ -595,15 +329,6 @@ final class DesktopDiagnosticsManager {
       return "success"
     }
     return voiceTurnOutcome(for: reason)
-  }
-
-  func recordPTTDeviceRouteChanged(recoveryAction: String, recoveryResult: String) {
-    record(
-      .pttAudioCaptureDeviceRouteChanged,
-      properties: [
-        "recovery_action": recoveryAction,
-        "recovery_result": recoveryResult,
-      ])
   }
 
   /// Shared fallback / resilience telemetry. Prefer this over inventing new
@@ -640,13 +365,6 @@ final class DesktopDiagnosticsManager {
       to: clientTelemetryShadowEndpoint(to),
       reason: clientTelemetryShadowReason(reason),
       outcome: outcome.rawValue)
-  }
-
-  /// A deterministic screen-verification failure reached the user as spoken local text.
-  /// `properties` must carry bounded dimensions only (enum raw values, coarse buckets,
-  /// provider tag); the spoken string itself is never sent.
-  func recordScreenEvidenceTerminal(properties: [String: Any]) {
-    record(.screenEvidenceTerminal, properties: properties, trackRemotely: true)
   }
 
   /// Detects silent ownership disagreement without changing which state wins.
@@ -689,141 +407,6 @@ final class DesktopDiagnosticsManager {
       outcome: .degraded,
       extra: extra)
     return true
-  }
-
-  /// Realtime token-mint failure. `phase` is bucketed to a closed set (`warm` =
-  /// background pre-warm vs `barge_in_replacement` = replacement during an active
-  /// turn) so a release-health query has a bounded warm-vs-active dimension (#10425).
-  /// `outcome`/`mintAttemptId` are optional: a mint failure is point-in-time, so its
-  /// terminal fate (recovered/degraded/exhausted) is carried by the correlated
-  /// `fallback_triggered`{area=realtime_hub} event; `mint_attempt_id` lets a query
-  /// join the two without provider/time heuristics.
-  func recordRealtimeTokenMintFailed(
-    provider: String,
-    reason: String,
-    phase: String,
-    httpStatusCode: Int? = nil,
-    backendRoute: String? = nil,
-    upstreamStatusCode: Int? = nil,
-    providerCode: String? = nil,
-    retryable: Bool? = nil,
-    outcome: DesktopFallbackOutcome? = nil,
-    mintAttemptId: String? = nil
-  ) {
-    var properties: [String: Any] = [
-      "provider": safeProvider(provider),
-      "reason": reason,
-      "phase": bucketRealtimePhase(phase),
-    ]
-    if let httpStatusCode {
-      properties["http_status_code"] = httpStatusCode
-    }
-    if let backendRoute {
-      properties["backend_route"] = backendRoute
-    }
-    if let upstreamStatusCode {
-      properties["upstream_status_code"] = upstreamStatusCode
-    }
-    if let providerCode {
-      properties["provider_code"] = providerCode
-    }
-    if let retryable {
-      properties["retryable"] = retryable
-    }
-    if let outcome {
-      properties["outcome"] = outcome.rawValue
-    }
-    if let mintAttemptId, !mintAttemptId.isEmpty {
-      properties["mint_attempt_id"] = mintAttemptId
-    }
-    record(
-      .realtimeTokenMintFailed,
-      properties: properties)
-  }
-
-  @discardableResult
-  func recordRealtimeProviderClose(
-    provider: String,
-    category: String?,
-    aliveFor: TimeInterval,
-    activeTurn: Bool,
-    authMode: CredentialAuthMode?,
-    failureClass: CredentialFailureClass?
-  ) -> Int {
-    lock.lock()
-    realtimeProviderCloseAttemptID += 1
-    let closeAttemptID = realtimeProviderCloseAttemptID
-    lock.unlock()
-    let normalizedCategory = category ?? failureClass?.logValue ?? "unclassified"
-    let event: DesktopHealthEventName
-    switch normalizedCategory {
-    case RealtimeHubCloseCategory.expectedIdleTeardown.rawValue:
-      event = .realtimeProviderExpectedIdleTeardown
-    case RealtimeHubCloseCategory.expectedSessionRotation.rawValue:
-      event = .realtimeProviderExpectedSessionRotation
-    case RealtimeHubCloseCategory.providerPolicyCloseFast.rawValue,
-      CredentialFailureClass.providerPolicyClose(provider: .openai).logValue:
-      event = .realtimeProviderPolicyClose
-    default:
-      event = .realtimeProviderSessionError
-    }
-    // Bounded release-health dimension: a single `expected` flag + `lifecycle_class`
-    // so a release-regression rollup can exclude normal idle teardown / planned
-    // session rotation without enumerating the two `realtime_provider_expected_*`
-    // event names (#10425). Expected lifecycle stays inspectable, never an error.
-    let expectedLifecycle =
-      event == .realtimeProviderExpectedIdleTeardown
-      || event == .realtimeProviderExpectedSessionRotation
-    var properties: [String: Any] = [
-      "provider": safeProvider(provider),
-      "category": normalizedCategory,
-      "alive_for_seconds": Int(aliveFor),
-      "active_turn": activeTurn,
-      "close_attempt_id": closeAttemptID,
-      "expected": expectedLifecycle,
-      "lifecycle_class": expectedLifecycle ? "expected" : "error",
-    ]
-    if normalizedCategory == RealtimeHubCloseCategory.expectedSessionRotation.rawValue {
-      properties["recovery_action"] = "rotate_realtime_session"
-      properties["recovery_result"] = activeTurn ? "turn_terminated_and_rewarm_started" : "rewarm_started"
-    }
-    if let authMode {
-      properties["auth_mode"] = authMode.rawValue
-    }
-    if let failureClass {
-      properties["failure_class"] = failureClass.logValue
-      if let httpStatusCode = failureClass.httpStatusCode {
-        properties["http_status_code"] = httpStatusCode
-      }
-    }
-    record(
-      event,
-      properties: properties)
-    return closeAttemptID
-  }
-
-  /// Pair a provider-close event with the controller's immediate lifecycle
-  /// decision. `closeAttemptID` is a process-local monotonic counter, useful
-  /// only to join bounded events from one analytics session; it is not a user,
-  /// device, turn, or provider-session identifier.
-  func recordRealtimeProviderCloseResolution(
-    closeAttemptID: Int,
-    provider: String,
-    activeTurn: Bool,
-    turnOutcome: RealtimeProviderCloseTurnOutcome,
-    recoveryAction: RealtimeProviderCloseRecoveryAction,
-    recoveryResult: RealtimeProviderCloseRecoveryResult
-  ) {
-    record(
-      .realtimeProviderCloseResolution,
-      properties: [
-        "close_attempt_id": closeAttemptID,
-        "provider": safeProvider(provider),
-        "active_turn": activeTurn,
-        "turn_outcome": turnOutcome.rawValue,
-        "recovery_action": recoveryAction.rawValue,
-        "recovery_result": recoveryResult.rawValue,
-      ])
   }
 
   func currentSnapshots() -> [[String: Any]] {
@@ -1112,9 +695,6 @@ final class DesktopDiagnosticsManager {
     snapshots.removeAll()
     betaTrailSnapshots.removeAll()
     reportedStateAuthoritySignals.removeAll()
-    realtimeProviderCloseAttemptID = 0
-    consecutiveNearZeroPTTTurns = 0
-    lastPTTWatchdogIncidentAt = nil
     lock.unlock()
   }
 
@@ -1197,22 +777,6 @@ final class DesktopDiagnosticsManager {
         name: event.rawValue,
         properties: snapshot.dictionary())
     }
-  }
-
-  private func recordPTTWatchdogTriggered(latestProperties: [String: Any]) {
-    let now = Date()
-    if let last = lastPTTWatchdogIncidentAt, now.timeIntervalSince(last) < pttWatchdogDedupWindow {
-      return
-    }
-    lastPTTWatchdogIncidentAt = now
-
-    let properties = latestProperties.merging([
-      "threshold": pttWatchdogThreshold,
-      "recovery_action": "prompt_restart",
-      "recovery_result": "not_attempted",
-    ]) { _, new in new }
-    record(.pttAudioCaptureWatchdogTriggered, properties: properties)
-    // Keep this threshold event in PostHog as the terminal watchdog marker.
   }
 
   private func commonProperties() -> [String: Any] {

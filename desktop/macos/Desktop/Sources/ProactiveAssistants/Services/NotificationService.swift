@@ -47,16 +47,22 @@ enum NotificationSound {
 
 }
 
-/// Named delivery intent for notifications that must not become Chat rows.
-/// The default preserves the existing floating-bar presentation and journaling
-/// path; system-banner-only callers still pass every owner, toggle, and
-/// frequency gate in `NotificationService` before reaching UserNotifications.
-enum NotificationDeliveryMode: Equatable {
-  case standard
-  case systemBannerOnly
+/// O que o usuário fez com uma notificação do sistema.
+enum NotificationInteraction: String {
+  case opened
+  case dismissed
+  case timeout
+  case thumbsUp = "thumbs_up"
+  case thumbsDown = "thumbs_down"
+}
 
-  var presentsInFloatingBar: Bool { self == .standard }
-  var requiresSystemBanner: Bool { self == .systemBannerOnly }
+/// Resultado de uma entrega proativa que o chamador precisa conhecer (orçamento de ofertas).
+enum OwnerBoundNotificationPresentationResult: Equatable {
+  case rejectedOwnerChange
+  case windowUnavailable
+  case suppressed
+  case queued
+  case presented
 }
 
 @MainActor
@@ -127,9 +133,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     let title: String
     let message: String
     let assistantId: String
-    let context: FloatingBarNotificationContext?
     let authorizationSnapshot: RuntimeOwnerAuthorizationSnapshot
-    var action: FloatingBarNotificationAction? = nil
     var onInteraction: ((NotificationInteraction) -> Void)? = nil
   }
 
@@ -310,11 +314,10 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
           self.handleScreenCaptureResetAction(source: "notification_click")
         case .resumeScreenCapture:
           self.handleScreenCaptureResumeAction(source: "notification_click")
-        case .openMainChat:
-          // The same reveal-and-land-on-chat path the floating bar's
-          // "Continue in Omi" affordance uses; the chat transcript there
-          // carries the meeting-notes card with the conversation link.
-          AppDelegate.summonWindowTarget()?.openMainAppChat()
+        case .openConversations:
+          // O resumo da reunião está na conversa; abre a janela em Conversas.
+          AppDelegate.summonWindowTarget()?.openMainAppWindow()
+          OMIApp.navigate(to: .conversations, hub: .conversations)
         case .none:
           break
         }
@@ -368,9 +371,8 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     /// Resume after a terminal consent decline: the grant is intact, so the repair is
     /// simply restarting monitoring (one user-initiated capture attempt), never a reset.
     case resumeScreenCapture
-    /// The main-window chat surface, where the meeting-notes card (with its
-    /// conversation link) was materialized.
-    case openMainChat
+    /// A aba Conversas, onde fica a conversa da reunião que acabou.
+    case openConversations
   }
 
   /// Resolve the tap destination from the notification's provenance.
@@ -384,7 +386,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
   ) -> OpenAction {
     if title == screenCaptureResetTitle { return .resetScreenCapture }
     if title == screenCaptureConsentTitle { return .resumeScreenCapture }
-    if assistantId == MeetingActionItemBannerPolicy.assistantID { return .openMainChat }
+    if assistantId == MeetingActionItemBannerPolicy.assistantID { return .openConversations }
     return .none
   }
 
@@ -566,19 +568,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
   }
 
   /// Only the Notifications master toggle (and frequency gate) decide whether a
-  /// notification is owed. Disabling the Ask Omi bar (`askOmiBarEnabled`) hides the
-  /// persistent bar UI only: delivery still uses the existing temp-show path, which
-  /// pops the card and re-hides afterwards. `FloatingBarNotificationPreviewPolicy`
-  /// forces a system banner once the user has explicitly muted in-bar previews
-  /// (`ShortcutSettings.floatingBarNotificationPreviewsEnabled == false`) while the
-  /// Floating Bar is still enabled, so that opt-out is never fully silenced (#6765).
-  /// Previews muted *and* the bar disabled still temp-shows the card rather than
-  /// going silent or falling back to a contentless banner. That temp-show is a
-  /// proactive-notification surface only: a caller passing `deliverSystemBanner: true`
-  /// while the bar is disabled keeps its banner instead, because a card on a bar the
-  /// user turned off auto-dismisses in seconds and cannot carry a functional notice
-  /// (the screen-recording repair prompt is delivered once per broken-capture episode).
-  /// bounded delivery outcomes and never carries notification text or window context.
+  /// notification is owed. Every delivery is a macOS notification.
   ///
   /// Proactive deliveries are rechecked for snooze and live presence at the actual
   /// presentation boundary. `onPresented` therefore means the user-visible surface
@@ -589,12 +579,8 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     message: String,
     assistantId: String = "default",
     sound: NotificationSound = .default,
-    context: FloatingBarNotificationContext? = nil,
-    action: FloatingBarNotificationAction? = nil,
     suggestionTelemetryIdentity: SuggestionAssistantTelemetry.NotificationIdentity? = nil,
     screenshotData: Data? = nil,
-    deliverSystemBanner: Bool = false,
-    deliveryMode: NotificationDeliveryMode = .standard,
     respectFrequency: Bool = true,
     isPersistent: Bool = false,
     authorizationSnapshot suppliedAuthorizationSnapshot: RuntimeOwnerAuthorizationSnapshot? = nil,
@@ -731,14 +717,9 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
       return
     }
 
-    // `respectFrequency` is the existing proactive/functional split: assistants leave it
-    // true; functional notices (onboarding test, screen-repair prompts) pass false and
-    // must never be spoken.
-    let speech = NotificationSpeechOnDelivery(message: message, isProactive: respectFrequency)
     let presentationReceipt = NotificationPresentationReceipt(onPresented: onPresented)
     let recordPresentation = { [weak self] in
       guard RuntimeOwnerIdentity.isAuthorizationCurrent(authorizationSnapshot) else { return }
-      speech.notificationWasPresented()
       presentationReceipt.record()
       if respectFrequency {
         self?.recordProactiveNotificationPresented(
@@ -750,87 +731,12 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
       }
     }
 
-    let previewsEnabled = ShortcutSettings.shared.floatingBarNotificationPreviewsEnabled
-    let floatingBarEnabled = FloatingControlBarManager.shared.isEnabled
-    let floatingBarPreviewEnabled =
-      deliveryMode.presentsInFloatingBar
-      && FloatingBarNotificationPreviewPolicy.shouldShowInBarPreview(
-        previewsEnabled: previewsEnabled, floatingBarEnabled: floatingBarEnabled,
-        deliverSystemBanner: deliverSystemBanner
-      )
-
-    var floatingBarMayDeliver = false
-    var floatingBarQueued = false
-    if floatingBarPreviewEnabled {
-      let presentation = FloatingControlBarManager.shared.showNotification(
-        ownerID: ownerID,
-        title: title,
-        message: message,
-        assistantId: assistantId,
-        sound: sound,
-        // The same category this delivery was already gated on a few lines up.
-        kind: ProactiveNotificationKind.from(assistantId: assistantId),
-        context: context,
-        action: action,
-        suggestionTelemetryIdentity: suggestionTelemetryIdentity,
-        screenshotData: screenshotData,
-        isPersistent: isPersistent,
-        isProactive: respectFrequency,
-        spokenAloud: speech.willSpeak,
-        onPresented: recordPresentation,
-        onDropped: onDropped,
-        notificationID: notificationID,
-        onInteraction: onInteraction,
-        expiresAt: expiresAt
-      )
-      switch presentation {
-      case .presented:
-        floatingBarMayDeliver = true
-      case .queued:
-        // Queue admission is not user-visible delivery. Leave the identity unresolved so a
-        // later presentation boundary (or a system-banner fallback) can emit the terminal event.
-        floatingBarQueued = true
-      case .suppressed:
-        // Unreachable today (a hidden or disabled bar presents via temp-show instead of
-        // suppressing), kept for the shared result type; label with the surface, not a
-        // retired reason.
-        return
-      case .rejectedOwnerChange:
-        return
-      case .windowUnavailable:
-        break
-      }
-    }
-
-    // V2 receipts require a mounted card. Native enqueue success is not render evidence.
+    // V2 receipts require a mounted card, and the floating bar that mounted them is gone.
     if assistantId == "proactivity_v2" {
-      if !floatingBarMayDeliver && !floatingBarQueued { onDropped?() }
+      onDropped?()
       return
     }
 
-    // Default path: floating-bar card (including temp-show when the bar is disabled).
-    // Functional callers opt-in via `deliverSystemBanner: true` (see the parameter
-    // doc above). When the user explicitly muted in-bar previews (bar still enabled),
-    // fall back to the system banner so the notification is never fully silenced.
-    let shouldDeliverSystemBanner =
-      deliveryMode.requiresSystemBanner
-      || FloatingBarNotificationPreviewPolicy.shouldDeliverSystemBannerAfterFloatingBar(
-        previewsEnabled: previewsEnabled, floatingBarEnabled: floatingBarEnabled,
-        deliverSystemBanner: deliverSystemBanner,
-        floatingBarAccepted: floatingBarMayDeliver || floatingBarQueued
-      )
-    guard shouldDeliverSystemBanner else {
-      if !floatingBarMayDeliver && !floatingBarQueued {
-        // Genuine no-surface failure (window creation / presentation never started).
-        // Bar-disabled is no longer a suppression reason; that path temp-shows.
-      }
-      return
-    }
-
-    // Freeze the presentation decision before crossing the UserNotifications callback boundary;
-    // @Sendable MainActor closures must not capture mutable local state.
-    let floatingBarDelivered = floatingBarMayDeliver
-    let floatingBarHasQueued = floatingBarQueued
     UserNotificationCallbackBridge.authorizationStatus { [weak self] authorizationStatus in
       guard RuntimeOwnerIdentity.isAuthorizationCurrent(authorizationSnapshot) else {
         log("NotificationService: dropping stale-owner system notification")
@@ -844,9 +750,6 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
           status: authorizationStatus,
           surface: ProactiveNotificationKind.from(assistantId: assistantId)
         )
-
-        if !floatingBarDelivered && !floatingBarHasQueued {
-        }
 
         // Sending an assistant notification is not consent to change TCC or
         // LaunchServices state. A user can repair notification access from
@@ -874,11 +777,9 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         message: message,
         assistantId: assistantId,
         sound: sound,
-        context: context,
         authorizationSnapshot: authorizationSnapshot,
         onPresented: recordPresentation,
         notificationID: notificationID,
-        action: action,
         onInteraction: onInteraction
       )
     }
@@ -907,7 +808,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
   /// skipping every control the user has along the way.
   ///
   /// Applies the same snooze and presence gates as `sendNotification`, returns the
-  /// presentation result, carries a `FloatingBarNotificationAction`, and throttles
+  /// presentation result, and throttles
   /// against the caller's own `assistantId`.
   ///
   /// A suppressed card composes correctly with a bounded budget: `onPresented`
@@ -923,7 +824,6 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     /// assistant-id fallback for what a card *is*, so routing a card through this
     /// gate must not cost it its kind.
     kind: ProactiveNotificationKind,
-    action: FloatingBarNotificationAction,
     sound: NotificationSound = .none,
     onPresented: (() -> Void)? = nil,
     onDropped: (() -> Void)? = nil
@@ -1001,18 +901,19 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
       onPresented?()
     }
 
-    return FloatingControlBarManager.shared.showNotification(
+    // Os portões acima já foram aplicados; a entrega é a notificação do sistema, que é
+    // assíncrona, então o cartão fica "na fila" até o macOS confirmar.
+    sendNotification(
       ownerID: ownerID,
       title: title,
       message: message,
       assistantId: assistantId,
       sound: sound,
-      kind: kind,
-      action: action,
-      isProactive: true,
+      respectFrequency: false,
       authorizationSnapshot: authorizationSnapshot,
       onPresented: recordPresented,
       onDropped: onDropped)
+    return .queued
   }
 
   /// Maps every proactive notification kind to its user-facing category — Focus, Task,
@@ -1097,23 +998,11 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
       return trace
     }
 
-    let context = FloatingBarNotificationContext(
-      sourceTitle: candidate.headline,
-      assistantId: "task",
-      sourceApp: nil,
-      windowTitle: nil,
-      contextSummary: candidate.whyNow,
-      currentActivity: nil,
-      reasoning: candidate.whyNow,
-      detail: "recommendation_id=\(candidate.recommendationID)"
-    )
     sendNotification(
       ownerID: ownerID,
       title: candidate.headline,
       message: "\(candidate.whyNow) · \(candidate.recommendedAction)",
       assistantId: "task",
-      context: context,
-      action: .openWhatMattersNow(recommendationID: candidate.recommendationID),
       authorizationSnapshot: authorizationSnapshot
     )
     return trace
@@ -1144,12 +1033,10 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     message: String,
     assistantId: String,
     sound: NotificationSound,
-    context: FloatingBarNotificationContext? = nil,
     authorizationSnapshot: RuntimeOwnerAuthorizationSnapshot,
     onPresented: (() -> Void)? = nil,
     onDropped: (() -> Void)? = nil,
     notificationID: UUID = UUID(),
-    action: FloatingBarNotificationAction? = nil,
     onInteraction: ((NotificationInteraction) -> Void)? = nil
   ) {
     let content = UNMutableNotificationContent()
@@ -1178,11 +1065,9 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
       title: title,
       message: message,
       assistantId: assistantId,
-      context: context,
       authorizationSnapshot: authorizationSnapshot
     )
 
-    notificationMetadata[notificationId]?.action = action
     notificationMetadata[notificationId]?.onInteraction = onInteraction
 
     print("[\(assistantId)] Sending notification: \(title) - \(message)")
@@ -1357,7 +1242,6 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     title: String,
     message: String = "",
     assistantId: String,
-    context: FloatingBarNotificationContext? = nil,
     authorizationSnapshot: RuntimeOwnerAuthorizationSnapshot
   ) {
     guard RuntimeOwnerIdentity.isAuthorizationCurrent(authorizationSnapshot) else { return }
@@ -1365,7 +1249,6 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
       title: title,
       message: message,
       assistantId: assistantId,
-      context: context,
       authorizationSnapshot: authorizationSnapshot
     )
     notificationMetadataOrder.append(id)

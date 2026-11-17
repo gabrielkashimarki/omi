@@ -49,7 +49,7 @@ struct DailyRecapPage: View {
   /// shared page title, the page's actions trailing.
   private var topBar: some View {
     HStack(spacing: OmiSpacing.md) {
-      BackChip((navigation.dailyRecapOrigin ?? .chat).title, accessibilityIdentifier: "daily-recap-back") {
+      BackChip((navigation.dailyRecapOrigin ?? .home).title, accessibilityIdentifier: "daily-recap-back") {
         navigation.closeDailyRecap()
       }
       GlassPageHeader(title: "Resumo do dia") {
@@ -62,18 +62,6 @@ struct DailyRecapPage: View {
 
   @ViewBuilder
   private var topBarActions: some View {
-    // Single-line by construction: one line of text that never wraps. A wrapped
-    // action pill reads as two controls.
-    Button {
-      askAboutThisDay()
-    } label: {
-      Label("Perguntar sobre este dia", systemImage: "text.bubble")
-        .lineLimit(1)
-        .fixedSize(horizontal: true, vertical: false)
-    }
-    .buttonStyle(OmiButtonStyle(.primary, size: .compact))
-    .accessibilityIdentifier("daily-recap-ask")
-
     if !isSynthesizedID {
       Button {
         Task { await regenerate() }
@@ -360,15 +348,6 @@ struct DailyRecapPage: View {
   }
 
   // MARK: - Actions
-
-  private func askAboutThisDay() {
-    guard let record = current else { return }
-    let question = ChatDailySummaryPresentation.followUpQuestion(for: record.date, now: Date())
-    ChatDailySummaryPresentation.requestFollowUp(question)
-    // The question is in the composer of the surface that opened the recap;
-    // going back is what makes that visible.
-    navigation.closeDailyRecap()
-  }
 
   /// Re-runs generation server-side and replaces the record in place, through the same owner fence
   /// every other recap writer uses (INV-AUTH-1).

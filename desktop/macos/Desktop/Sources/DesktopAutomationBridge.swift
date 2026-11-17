@@ -4,7 +4,6 @@ import Foundation
 import Network
 import OmiSupport
 import OmiTheme
-import VoiceTurnDomain
 
 enum DesktopAutomationLaunchOptions {
   static let enableFlag = "--automation-bridge"
@@ -195,17 +194,6 @@ struct DesktopAutomationSnapshot: Codable, Sendable {
   var isRestoringAuth: Bool
   var isAppActive: Bool
   var mainWindowTitle: String?
-  var floatingBarVisible: Bool
-  /// True when the chat-first Chat route is selected, so the main-window composer is the typed Ask Omi surface.
-  var askOmiOpen: Bool
-  /// True when that composer’s text view is first responder.
-  var askOmiFocused: Bool
-  var floatingBarFrame: String?
-  var floatingBarVoiceListening: Bool
-  /// The current hold has been recognised as a dictation (the notch's red tint).
-  var floatingBarVoiceDictating: Bool
-  var floatingBarVoiceResponseActive: Bool
-  var floatingBarUsesNotchIsland: Bool
   var updatedAt: String
   /// True when the live MainActor refresh timed out and this is the last cached
   /// snapshot instead — e.g. the main thread is wedged on a blocking Keychain
@@ -455,14 +443,6 @@ final class DesktopAutomationStateStore {
     isRestoringAuth: true,
     isAppActive: false,
     mainWindowTitle: nil,
-    floatingBarVisible: false,
-    askOmiOpen: false,
-    askOmiFocused: false,
-    floatingBarFrame: nil,
-    floatingBarVoiceListening: false,
-    floatingBarVoiceDictating: false,
-    floatingBarVoiceResponseActive: false,
-    floatingBarUsesNotchIsland: false,
     updatedAt: ISO8601DateFormatter().string(from: Date())
   )
 
@@ -551,30 +531,9 @@ func liveAutomationSnapshot() async -> DesktopAutomationSnapshot {
 
 @Sendable
 private func liveAutomationSnapshotFromMainActor() async -> DesktopAutomationSnapshot {
-  let floating = await MainActor.run {
-    let floating = FloatingControlBarManager.shared.automationState
-    return (
-      isVisible: floating.isVisible,
-      isAskOmiOpen: OpenAskOmiAutomation.isComposerPresented(),
-      isAskOmiFocused: OpenAskOmiAutomation.isComposerFocused(),
-      frame: floating.frame,
-      isVoiceListening: floating.isVoiceListening,
-      isVoiceDictating: floating.isVoiceDictating,
-      isVoiceResponseActive: floating.isVoiceResponseActive,
-      usesNotchIsland: floating.usesNotchIsland,
-      isAppActive: NSApp.isActive
-    )
-  }
+  let isAppActive = await MainActor.run { NSApp.isActive }
   return DesktopAutomationStateStore.shared.updateLiveFields { snapshot in
-    snapshot.floatingBarVisible = floating.isVisible
-    snapshot.askOmiOpen = floating.isAskOmiOpen
-    snapshot.askOmiFocused = floating.isAskOmiFocused
-    snapshot.floatingBarFrame = floating.frame
-    snapshot.floatingBarVoiceListening = floating.isVoiceListening
-    snapshot.floatingBarVoiceDictating = floating.isVoiceDictating
-    snapshot.floatingBarVoiceResponseActive = floating.isVoiceResponseActive
-    snapshot.floatingBarUsesNotchIsland = floating.usesNotchIsland
-    snapshot.isAppActive = floating.isAppActive
+    snapshot.isAppActive = isAppActive
     snapshot.updatedAt = ISO8601DateFormatter().string(from: Date())
     snapshot.snapshotStale = false
   }
@@ -669,10 +628,6 @@ final class DesktopAutomationActionRegistry {
   private var didRegisterBuiltins = false
   /// Non-prod harness latch so race probes stay busy without relying on LLM latency.
   private var harnessBusyUntil: Date?
-  /// The current typed floating-bar submission and its pre-submit timeline size.
-  /// The wait action must observe this turn before it may accept an idle state.
-  private var pendingFloatingBarSubmission: (generation: Int, baselineMessageCount: Int)?
-  private var floatingBarSubmissionGeneration = 0
 
   private func harnessBusyLatchActive(now: Date = Date()) -> Bool {
     guard let until = harnessBusyUntil else { return false }
@@ -745,52 +700,8 @@ final class DesktopAutomationActionRegistry {
   func registerBuiltins() {
     guard !didRegisterBuiltins else { return }
     didRegisterBuiltins = true
-    registerOpenOmiShortcutActionsForQA()
     registerProactiveCaptureStatusSnapshot()
-    register(
-      name: "set_automation_ui_presentation",
-      effects: [.localState],
-      summary:
-        "Park automation windows quietly, reveal them briefly for Accessibility, or restore normal user presentation",
-      params: ["mode", "activate"],
-      category: "app_control",
-      surfaces: ["app"],
-      sideEffects: ["changes non-production window placement and input handling"],
-      examples: [
-        "./scripts/omi-ctl ui quiet",
-        "./scripts/omi-ctl ui interactive --activate",
-        "./scripts/omi-ctl ui normal --activate",
-      ]
-    ) { params in
-      // This registry is reachable only through DesktopAutomationBridge, whose listener cannot start
-      // for production-family or published-preview bundles. Keep the handler itself exercisable in a
-      // hermetic test instead of duplicating the bridge's stronger process boundary here.
-      guard let requested = params["mode"]?.lowercased() else {
-        return [
-          "mode": DesktopAutomationWindowPresentation.currentMode.rawValue,
-          "available_modes": DesktopAutomationUIPresentationMode.allCases.map(\.rawValue).joined(
-            separator: ","),
-        ]
-      }
-      guard let mode = DesktopAutomationUIPresentationMode(rawValue: requested) else {
-        throw DesktopAutomationActionError.invalidParams(
-          "mode must be normal, quiet, or interactive")
-      }
-      let activate = boolParam(params["activate"], default: false)
-      let previous = DesktopAutomationWindowPresentation.setMode(mode, activate: activate)
-      return [
-        "previous_mode": previous.rawValue,
-        "mode": DesktopAutomationWindowPresentation.currentMode.rawValue,
-        "activated": activate ? "true" : "false",
-      ]
-    }
-    // Cursor-free Home-stage and first-use-popup drivers: see their own files for the shared failure mode.
-    registerHomeStageActions()
     registerActivationActions()
-    registerOpenAskOmiActions()
-    registerCloseAskOmiActions()
-    registerPTTRecoveryActions()
-    registerFirstUsePopupActions()
     registerItemLinkActions()
     registerConversationRecordingActions()
     registerCaptureRecoveryActions()
@@ -862,97 +773,7 @@ final class DesktopAutomationActionRegistry {
         "window": window.map { $0.title.isEmpty ? "untitled" : $0.title } ?? "none",
       ]
     }
-    // CHAT-05: read the free-tier monthly chat usage-limiter state so a harness can
-    // prove the counter is deterministic without spending LLM calls. Read-only.
-    register(
-      name: "usage_limiter_snapshot",
-      effects: [],
-      summary: "Read the free-tier monthly chat usage-limiter state (deterministic counter) — CHAT-05 harness read."
-    ) { _ in
-      await MainActor.run {
-        let limiter = FloatingBarUsageLimiter.shared
-        let banner = ChatQuotaBanner.current(
-          quota: limiter.serverQuota,
-          optimisticDelta: limiter.optimisticDelta,
-          dismissed: ChatQuotaBannerDismissals.shared.dismissed)
-        return [
-          "is_limit_reached": limiter.isLimitReached ? "true" : "false",
-          "remaining_queries": "\(limiter.remainingQueries)",
-          "limit_description": limiter.limitDescription,
-          "banner_threshold": banner.map { "\($0.threshold)" } ?? "none",
-          "rendered_banner_threshold": ChatQuotaBannerPresentation.shared.rendered
-            .map { "\($0.threshold)" } ?? "none",
-          "rendered_banner_title": ChatQuotaBannerPresentation.shared.rendered?.title ?? "",
-          "banner_title": banner?.title ?? "",
-          "banner_message": banner?.message ?? "",
-        ]
-      }
-    }
 
-    // CHAT-05: reset the usage-limiter counter so a harness can prove it is
-    // dev-resettable (the criterion's second half) without driving real LLM usage.
-    register(
-      name: "reset_usage_limiter",
-      effects: [.localState],
-      summary: "Reset the free-tier monthly chat usage-limiter counter (dev-resettable proof) — CHAT-05. Non-prod only."
-    ) { _ in
-      guard AppBuild.isNonProduction else {
-        return ["error": "reset_usage_limiter is disabled on production bundles"]
-      }
-      return await MainActor.run {
-        let limiter = FloatingBarUsageLimiter.shared
-        limiter.reset()
-        return [
-          "reset": "true",
-          "is_limit_reached": limiter.isLimitReached ? "true" : "false",
-          "remaining_queries": "\(limiter.remainingQueries)",
-        ]
-      }
-    }
-    // Seeds the quota snapshot the chat-quota warnings key off, so a harness can
-    // walk 90/100 without spending a month of real questions. Non-prod only.
-    register(
-      name: "apply_usage_quota",
-      effects: [.localState],
-      summary: "Seed the chat usage-quota snapshot (threshold-warning harness). Non-prod only.",
-      params: ["used", "limit", "plan", "unit", "is_overage_plan", "reset_at"]
-    ) { params in
-      guard AppBuild.isNonProduction else {
-        return ["error": "apply_usage_quota is disabled on production bundles"]
-      }
-      guard let used = params["used"].flatMap(Double.init) else {
-        throw DesktopAutomationActionError.invalidParams("used must be a number")
-      }
-      var json: [String: Any] = [
-        "plan": params["plan"] ?? "Operator",
-        "plan_type": "operator",
-        "unit": params["unit"] ?? "questions",
-        "used": used,
-        "percent": 0,
-        "allowed": true,
-      ]
-      if let limit = params["limit"].flatMap(Double.init) {
-        json["limit"] = limit
-        json["allowed"] = used < limit
-      }
-      if let resetAt = params["reset_at"].flatMap(Int.init) { json["reset_at"] = resetAt }
-      if let overage = params["is_overage_plan"] { json["is_overage_plan"] = overage == "true" }
-      let data = try JSONSerialization.data(withJSONObject: json)
-      let quota = try JSONDecoder().decode(APIClient.ChatUsageQuota.self, from: data)
-      return await MainActor.run {
-        let limiter = FloatingBarUsageLimiter.shared
-        limiter.applyQuota(quota)
-        // Seeding a cycle must produce the banner it asks for; a dismissal left
-        // over from an earlier run would silently suppress it.
-        ChatQuotaBannerDismissals.shared.reset()
-        return [
-          "applied": "true",
-          "used": "\(quota.used)",
-          "limit": "\(quota.limit ?? -1)",
-          "is_limit_reached": limiter.isLimitReached ? "true" : "false",
-        ]
-      }
-    }
     register(
       name: "task_capture_fixture",
       effects: [],
@@ -1135,119 +956,6 @@ final class DesktopAutomationActionRegistry {
       ]
     }
 
-    register(
-      name: "prepare_task_artifact_fixture",
-      effects: [.localState, .localArtifact],
-      summary: "Persist an allowlisted prepared artifact through the workstream kernel",
-      params: ["workstream_id", "logical_key", "kind", "content", "execution_ready", "grant_id"]
-    ) { params in
-      guard let workstreamID = params["workstream_id"], !workstreamID.isEmpty,
-        let logicalKey = params["logical_key"], !logicalKey.isEmpty,
-        let kind = params["kind"], !kind.isEmpty,
-        let content = params["content"], !content.isEmpty
-      else {
-        throw DesktopAutomationActionError.invalidParams(
-          "workstream_id, logical_key, kind, and content are required")
-      }
-      var configuration = ProactiveTaskInterruptionSettings.load()
-      configuration.allowedPreparationKinds.insert(kind)
-      ProactiveTaskInterruptionSettings.save(configuration)
-      let referenceDigest = SHA256.hash(data: Data("automation-preparation:\(logicalKey)".utf8))
-        .map { String(format: "%02x", $0) }.joined()
-      let evidence = OmiAPI.EvidenceRef(
-        deviceId: ClientDeviceService.shared.clientDeviceId,
-        excerptHash: "sha256:\(referenceDigest)",
-        id: "sha256:\(referenceDigest)",
-        kind: .local_screen,
-        scope: .device_local,
-        version: "automation-preparation.v1"
-      )
-      let grantID: String
-      if let supplied = params["grant_id"], !supplied.isEmpty {
-        grantID = supplied
-      } else {
-        func object(_ raw: String) throws -> [String: Any] {
-          guard let data = raw.data(using: .utf8),
-            let value = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-          else { throw DesktopAutomationActionError.invalidParams("kernel returned invalid JSON") }
-          return value
-        }
-        let prepared = try object(
-          try await TaskChatRuntime.controlTool(
-            name: "prepare_workstream_continuity",
-            input: ["workstreamId": workstreamID, "taskIds": []]
-          ))
-        guard let session = prepared["session"] as? [String: Any],
-          let sessionID = session["agentSessionId"] as? String
-        else { throw DesktopAutomationActionError.invalidParams("kernel session unavailable") }
-        let capability = "desktop.workstream.artifact.prepare"
-        let operation = "prepare_artifact"
-        let resource = "workstream:\(workstreamID)"
-        let expiry = Int(Date().addingTimeInterval(5 * 60).timeIntervalSince1970 * 1_000)
-        let dispatch = try object(
-          try await TaskChatRuntime.controlTool(
-            name: "create_desktop_dispatch",
-            input: [
-              "kind": "approval",
-              "priority": 1,
-              "title": "Automation prepared artifact fixture",
-              "decisionPrompt": "Authorize this non-production artifact fixture?",
-              "sourceSessionId": sessionID,
-              "capability": capability,
-              "operation": operation,
-              "resourceRef": resource,
-              "payload": ["automation_fixture": true],
-              "expiresAtMs": expiry,
-            ]
-          ))
-        guard let dispatchObject = dispatch["dispatch"] as? [String: Any],
-          let dispatchID = dispatchObject["dispatchId"] as? String
-        else { throw DesktopAutomationActionError.invalidParams("kernel dispatch unavailable") }
-        let resolved = try object(
-          try await TaskChatRuntime.controlTool(
-            name: "resolve_desktop_dispatch",
-            input: [
-              "dispatchId": dispatchID,
-              "status": "resolved",
-              "resolvedBy": "desktop_automation",
-              "resolution": ["decision": "allow"],
-              "grant": [
-                "sessionId": sessionID,
-                "capability": capability,
-                "operation": operation,
-                "resourcePattern": resource,
-                "effect": "allow",
-                "source": "user",
-                "expiresAtMs": expiry,
-              ],
-            ]
-          ))
-        guard let grant = resolved["grant"] as? [String: Any],
-          let createdGrantID = grant["grantId"] as? String
-        else { throw DesktopAutomationActionError.invalidParams("kernel grant unavailable") }
-        grantID = createdGrantID
-      }
-      let artifact = try await KernelPreparedArtifactBridge().prepare(
-        ProactiveTaskArtifactProposal(
-          workstreamID: workstreamID,
-          logicalKey: logicalKey,
-          kind: kind,
-          content: Data(content.utf8),
-          evidenceRefs: [evidence],
-          executionReady: boolParam(params["execution_ready"], default: true),
-          coordinatorGrantID: grantID
-        ),
-        configuration: configuration
-      )
-      return [
-        "prepared": artifact == nil ? "false" : "true",
-        "version": artifact.map { "\($0.version)" } ?? "",
-        "content_hash": artifact?.contentHash ?? "",
-        "file": artifact?.fileURL.path ?? "",
-        "supersedes_artifact_id": artifact?.supersedesArtifactID ?? "",
-        "delivery_count": artifact.map { "\($0.deliveryIDs.count)" } ?? "0",
-      ]
-    }
 
     // Runs the exact service + outcome mapping the ChatGPT/Claude import
     // sheets use, so harnesses can assert outcome copy without driving the
@@ -1414,57 +1122,6 @@ final class DesktopAutomationActionRegistry {
       ]
     }
 
-    register(
-      name: "local_embedding_benchmark",
-      effects: [.localArtifact],
-      summary: "Run synthetic local hybrid retrieval metrics (recall@10 / nDCG@10) and write JSON",
-      params: ["output"],
-      category: "debug",
-      surfaces: ["app"],
-      sideEffects: ["writes a JSON report under Application Support; uses an in-memory synthetic DB"],
-      examples: ["./scripts/omi-ctl action local_embedding_benchmark"]
-    ) { params in
-      guard AppBuild.isNonProduction else {
-        return ["error": "local_embedding_benchmark is disabled on production bundles"]
-      }
-      let runtime = LocalEmbeddingRuntime.makeDefault()
-      _ = await ChatLocalHybridTool.execute(
-        ["query": "synthetic"], runID: nil, attemptID: nil, expectedOwnerID: nil,
-        sourceKinds: [.transcriptChunk], runtime: runtime)
-      guard case .engine(let engine) = await runtime.selectEngine() else {
-        return [
-          "kind": LocalEmbeddingBenchmark.reportKind,
-          "error": "local_engine_unavailable",
-        ]
-      }
-      let report: LocalEmbeddingBenchmark.Report
-      do {
-        report = try await LocalEmbeddingBenchmark.runSynthetic(engine: engine, runtime: runtime)
-      } catch {
-        return [
-          "kind": LocalEmbeddingBenchmark.reportKind,
-          "error": "benchmark_failed",
-        ]
-      }
-      let output: URL
-      if let raw = params["output"]?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty {
-        output = URL(fileURLWithPath: raw)
-      } else {
-        output = LocalEmbeddingBenchmark.defaultReportURL()
-      }
-      do {
-        try LocalEmbeddingBenchmark.write(report, to: output)
-      } catch {
-        return ["error": "report_write_failed"]
-      }
-      return [
-        "path": output.path,
-        "engine": engine.engineID,
-        "kind": report.kind,
-        "fixture": report.fixture,
-        "metric_count": "\(report.metrics.count)",
-      ]
-    }
 
     register(
       name: "conversation_list_snapshot",
@@ -1619,188 +1276,13 @@ final class DesktopAutomationActionRegistry {
       ]
     }
 
-    // Drive the real push-to-talk state machine headlessly (MIC-01). ptt_start begins
-    // capture like the shortcut key-down; ptt_stop finalizes like a long-hold release.
-    // Releasing with no mic audio exercises the empty-batch release path — it must end
-    // the turn with a hint, not hang. Both hit the exact private startListening/finalize
-    // the shortcut handler calls, so no synthetic key events or cursor are involved.
-    register(
-      name: "ptt_start",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary:
-        "Begin a push-to-talk capture after admission (mirrors the PTT shortcut key-down). Returns after capture admission; provider/hub readiness and screen evidence are polled via ptt_turn_snapshot"
-    ) { _ in
-      PushToTalkManager.shared.beginPushToTalkForAutomation()
-    }
 
-    register(
-      name: "ptt_quick_tap",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary: "Mirror one quick tap of a modifier-only PTT key; two inside the double-tap window lock"
-    ) { _ in
-      PushToTalkManager.shared.quickTapPushToTalkForAutomation()
-    }
-    register(
-      name: "ptt_stop",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary: "Finalize the in-progress push-to-talk capture (mirrors a long-hold release)"
-    ) { _ in
-      PushToTalkManager.shared.endPushToTalkForAutomation()
-    }
 
-    // Manager-level PTT harness: this crosses the real shortcut lifecycle,
-    // routing decision, realtime admission, warm buffering, and replay seam.
-    // Unlike `ptt_test_turn`, it does not bypass PushToTalkManager; unlike a
-    // physical test, it needs neither microphone permission nor a device.
-    // `pace_ms` spaces the 100 ms chunks in wall time (pass 100 for a real-time
-    // hold), which is what lets the wake-word probes and the hub's warm
-    // deadline run on the timeline a physical hold has. `settle_ms` waits after
-    // release for the closing transcription, polish, and paste to land.
-    register(
-      name: "ptt_manager_turn",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary:
-        "Inject a PCM16/16k mono hold through PushToTalkManager and realtime admission; returns lifecycle diagnostics",
-      params: ["pcm", "pace_ms", "settle_ms", "chunk_bytes"]
-    ) { params in
-      guard let path = params["pcm"],
-        let pcm16k = try? Data(contentsOf: URL(fileURLWithPath: path)),
-        !pcm16k.isEmpty
-      else { return ["error": "missing or unreadable 'pcm' file (expected raw s16le 16k mono)"] }
-      // Bounded so the nanosecond conversion below cannot trap on a typo.
-      let maxWaitMs: UInt64 = 10 * 60 * 1_000
-      let paceMs = min(UInt64(params["pace_ms"] ?? "") ?? 0, maxWaitMs)
-      let settleMs = min(UInt64(params["settle_ms"] ?? "") ?? 0, maxWaitMs)
-      // Default 100 ms. Pass 342 to mimic what the CoreAudio IOProc hands a
-      // 48 kHz device's capture after resampling — chunk size has already
-      // hidden one bug that only a real microphone showed. Always a whole
-      // number of 16-bit samples, so an odd size cannot shear the PCM framing.
-      let requestedChunk = Int(params["chunk_bytes"] ?? "") ?? 3_200
-      let chunkSize = max(2, requestedChunk - requestedChunk % 2)
 
-      var result = PushToTalkManager.shared.beginRealtimePushToTalkForAutomation()
-      guard result["listening"] == "true" else { return result }
-      var offset = 0
-      var injected = 0
-      while offset < pcm16k.count {
-        let end = min(offset + chunkSize, pcm16k.count)
-        if PushToTalkManager.shared.injectRealtimePTTAutomationAudio(pcm16k.subdata(in: offset..<end)) {
-          injected += end - offset
-        }
-        offset = end
-        if paceMs > 0 { try? await Task.sleep(nanoseconds: paceMs * 1_000_000) }
-      }
-      let stopped = PushToTalkManager.shared.endPushToTalkForAutomation()
-      if settleMs > 0 { try? await Task.sleep(nanoseconds: settleMs * 1_000_000) }
-      result["injected_bytes"] = "\(injected)"
-      result["finalized"] = stopped["finalized"] ?? "false"
-      for (key, value) in RealtimeHubController.shared.automationPTTDiagnostics() {
-        result[key] = value
-      }
-      for (key, value) in PushToTalkManager.shared.voiceTypingAutomationDiagnostics() {
-        result[key] = value
-      }
-      return result
-    }
 
-    // The dictation pipeline without a voice turn: transcribe a recording the
-    // way a key-up does (backend, then on-device; on-device only with
-    // network=false), clean it up, and paste it into the frontmost app. Lets a
-    // harness verify the paste and the fallback order with no microphone and,
-    // with network=false, no sign-in.
-    register(
-      name: "voice_typing_dictate",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary: "Run a PCM16/16k recording through the dictation pipeline and paste the result into the frontmost app",
-      params: ["pcm", "network"]
-    ) { params in
-      guard let path = params["pcm"],
-        let pcm16k = try? Data(contentsOf: URL(fileURLWithPath: path)),
-        !pcm16k.isEmpty
-      else { return ["error": "missing or unreadable 'pcm' file (expected raw s16le 16k mono)"] }
-      let allowNetwork = (params["network"] ?? "true").lowercased() != "false"
-      return await PushToTalkManager.shared.dictateForAutomation(pcm16k: pcm16k, allowNetwork: allowNetwork)
-    }
 
-    register(
-      name: "ptt_turn_snapshot",
-      effects: [],
-      summary: "Return typed PTT lifecycle state, pending-tool fences, and safe screen-evidence diagnostics"
-    ) { _ in
-      RealtimeHubController.shared.automationPTTDiagnostics()
-    }
 
-    // Fake-voice end-to-end test: inject a raw PCM16/16kHz-mono file through the
-    // real realtime omni STT path and return the transcript. No mic, no human.
-    register(
-      name: "omni_test_turn",
-      effects: [.networkOrModel],
-      summary: "Inject a raw PCM16/16kHz mono file through the omni STT path; returns the transcript",
-      params: ["pcm", "timeout", "provider"]
-    ) { params in
-      guard let path = params["pcm"],
-        let data = try? Data(contentsOf: URL(fileURLWithPath: path)), !data.isEmpty
-      else {
-        return ["error": "missing or unreadable 'pcm' file (expected raw s16le 16k mono)"]
-      }
-      let provider =
-        params["provider"].flatMap(RealtimeOmniProvider.init(rawValue:))
-        ?? RealtimeOmniSettings.shared.effectiveProvider
-      let base = DesktopBackendEnvironment.pythonBaseURL()
-      let authHeader: String
-      do {
-        authHeader = try await AuthService.shared.getAuthHeader()
-      } catch {
-        return ["error": "auth failed: \(error.localizedDescription)"]
-      }
-      let timeout = Double(params["timeout"] ?? "") ?? 20
-      let harness = RealtimeOmniTestHarness(
-        provider: provider, relayBaseURL: base, authHeader: authHeader, pcm16k: data)
-      return await harness.run(timeoutSeconds: timeout)
-    }
 
-    // Run the post-scan local-file memory import exactly as onboarding does
-    // (indexed-files snapshot → aggregate drafts → import evidence service
-    // with legacy batch fallback). Lets agents verify the import pipeline
-    // without driving the onboarding UI or the cursor.
-    register(
-      name: "onboarding_local_file_import",
-      effects: [.localState, .networkOrModel, .remoteWrite],
-      summary: "Run the post-scan local-file memory import from the indexed snapshot; returns saved count"
-    ) { _ in
-      let coordinator = OnboardingPagedIntroCoordinator()
-      await coordinator.refreshSnapshotIfAvailable()
-      return [
-        "saved": String(coordinator.localFileMemoriesSaved),
-        "file_count": String(coordinator.scanSnapshot?.fileCount ?? 0),
-      ]
-    }
-
-    // Drive the live onboarding language step exactly as its Continue button
-    // does: set the selection on the on-screen coordinator, run
-    // confirmLanguages() (the real backend save), and advance to the next step
-    // only when the save succeeded — mirroring OnboardingLanguageStepView.
-    register(
-      name: "onboarding_confirm_languages",
-      effects: [.localState, .networkOrModel, .remoteWrite],
-      summary: "Select languages on the live onboarding coordinator and run the real Continue save",
-      params: ["languages"]
-    ) { params in
-      let codes = (params["languages"] ?? "en")
-        .split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-      guard let coordinator = await MainActor.run(body: { OnboardingPagedIntroCoordinator.current })
-      else {
-        return ["error": "no live onboarding coordinator (is onboarding on screen?)"]
-      }
-      await MainActor.run { coordinator.selectedLanguageCodes = codes }
-      await coordinator.confirmLanguages()
-      let error = await MainActor.run { coordinator.lastActionError }
-      if error == nil {
-        await MainActor.run { UserDefaults.standard.set(2, forKey: DefaultsKey.onboardingStep) }
-        return ["status": "saved", "advanced_to_step": "2", "languages": codes.joined(separator: ",")]
-      }
-      return ["status": "failed", "error": error ?? "unknown"]
-    }
 
     // Same code path as the status-menu "Reset Onboarding..." item and the
     // Settings "Reset & Restart" button — clears onboarding state and restarts
@@ -1839,67 +1321,8 @@ final class DesktopAutomationActionRegistry {
       ]
     }
 
-    register(
-      name: "ask",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary: "Send a query to the floating-bar AI (typed path); exercises the full chat pipeline",
-      params: ["query"]
-    ) { params in
-      let query = (params["query"] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-      guard !query.isEmpty else { return ["error": "missing 'query'"] }
-      let baselineSnapshot = FloatingControlBarManager.shared.automationFloatingBarChatSnapshot(limit: 1)
-      guard baselineSnapshot["error"] == nil,
-        let baselineRaw = baselineSnapshot["message_count"],
-        let baseline = Int(baselineRaw)
-      else {
-        return ["error": baselineSnapshot["error"] ?? "floating chat timeline unavailable"]
-      }
-      self.floatingBarSubmissionGeneration += 1
-      let generation = self.floatingBarSubmissionGeneration
-      self.pendingFloatingBarSubmission = (generation: generation, baselineMessageCount: baseline)
-      if !FloatingControlBarManager.shared.isVisible {
-        FloatingControlBarManager.shared.show()
-      }
-      FloatingControlBarManager.shared.openAIInputWithQuery(query, fromVoice: false)
-      return ["sent": query, "submission_generation": "\(generation)"]
-    }
 
-    // Force the floating-bar active state so the pill↔notch-island morph and the
-    // "thinking" animation can be exercised without a mic. Same flags a real PTT
-    // turn sets; non-prod bridge only. state = idle|listening|thinking|answering.
-    register(
-      name: "debug_bar_state",
-      effects: [.localState],
-      summary: "Force floating-bar state: idle|listening|thinking|answering (visual verification)",
-      params: ["state"]
-    ) { params in
-      let s = (params["state"] ?? "thinking").lowercased()
-      guard let debugState = VoiceTurnDebugPresentationState(rawValue: s) else {
-        return ["error": "state must be idle, listening, thinking, or answering"]
-      }
-      let mgr = FloatingControlBarManager.shared
-      guard let bar = mgr.barState else { return ["error": "no bar state"] }
-      if s != "idle", !mgr.isVisible { mgr.show() }
-      guard VoiceTurnCoordinator.shared.applyDebugPresentationState(debugState) else {
-        return ["error": "a non-debug voice turn is active"]
-      }
-      return ["state": s, "usesNotchIsland": bar.usesNotchIsland ? "true" : "false"]
-    }
 
-    register(
-      name: "debug_reach_error",
-      effects: [.localState],
-      summary: "Show the actionable 'Couldn't reach Omi' card on the bar (Retry/Skip) for visual verification",
-      params: []
-    ) { _ in
-      let mgr = FloatingControlBarManager.shared
-      guard mgr.barState != nil else { return ["error": "no bar state"] }
-      if !mgr.isVisible { mgr.show() }
-      mgr.showReachError(message: "Error 502") {
-        log("debug_reach_error: Retry tapped")
-      }
-      return ["shown": "true"]
-    }
 
     // Drives the real post-meeting completion signal so the entire production
     // chain runs (banner service → conversation + recipients fetch → persistent
@@ -1923,26 +1346,6 @@ final class DesktopAutomationActionRegistry {
       return ["posted": conversationID]
     }
 
-    // Reads whatever notch card is on screen, so a flow can assert the card a
-    // person actually sees rather than trusting that a trigger fired.
-    register(
-      name: "notification_state",
-      effects: [],
-      summary: "Read the notch notification currently on screen (title, message, persistence).",
-      params: []
-    ) { _ in
-      guard let bar = FloatingControlBarManager.shared.barState,
-        let notification = bar.currentNotification
-      else {
-        return ["present": "false"]
-      }
-      return [
-        "present": "true",
-        "title": notification.title,
-        "message": notification.message,
-        "persistent": notification.isPersistent ? "true" : "false",
-      ]
-    }
 
     // Presents the same "Omi is taking notes" notice the meeting boundary
     // posts once a detected meeting has rotated into its recording session.
@@ -1960,590 +1363,26 @@ final class DesktopAutomationActionRegistry {
       return ["presented": "true"]
     }
 
-    // Cursor-free driver for the meeting summary share card: `state` reads the
-    // presented card, `copy`/`send` run the same MeetingSummaryShareActions the
-    // card's buttons call, `close` is the user dismissal path.
-    register(
-      name: "meeting_summary_share",
-      effects: [.localState, .networkOrModel, .remoteWrite],
-      summary:
-        "Inspect or drive the presented meeting summary share card (action=state|copy|send|close). Non-prod only.",
-      params: ["action"]
-    ) { params in
-      guard AppBuild.isNonProduction else {
-        return ["error": "meeting_summary_share is disabled on production bundles"]
-      }
-      let mgr = FloatingControlBarManager.shared
-      guard let bar = mgr.barState else { return ["error": "no bar state"] }
-      guard let notification = bar.currentNotification,
-        case .meetingSummaryShare(let conversationID, let recipients)? = notification.action
-      else {
-        return ["present": "false"]
-      }
-      switch (params["action"] ?? "state").lowercased() {
-      case "state":
-        return [
-          "present": "true",
-          "assistant_id": notification.assistantId,
-          "title": notification.title,
-          "message": notification.message,
-          "persistent": notification.isPersistent ? "true" : "false",
-          "conversation_id": conversationID,
-          "recipients": recipients.map(\.email).joined(separator: ","),
-        ]
-      case "copy":
-        let feedback = await MeetingSummaryShareActions.copyLink(conversationID: conversationID)
-        return ["copied": feedback == .copied ? "true" : "false"]
-      case "send":
-        // `email` mirrors what the owner types into the Share field; with no
-        // address supplied the detected suggestion is used, which is exactly
-        // what the field prefills with.
-        // Drive the card's own Send handler so its phase (sending → sent /
-        // failed) is exercised, not just the network call underneath it.
-        let typed = params["email"]?.trimmingCharacters(in: .whitespaces) ?? ""
-        let address = typed.isEmpty ? (recipients.first?.email ?? "") : typed
-        guard !address.isEmpty else {
-          return ["error": "no recipient: pass email=<address>"]
-        }
-        NotificationCenter.default.post(
-          name: .meetingSummaryShareSubmit, object: address)
-        return ["submitted": address]
-      case "share":
-        NotificationCenter.default.post(name: .meetingSummaryShareBeginAddressing, object: nil)
-        return ["addressing": "true"]
-      case "close":
-        mgr.dismissCurrentNotification()
-        return ["closed": "true"]
-      default:
-        throw DesktopAutomationActionError.invalidParams(
-          "action must be state, share, copy, send, or close")
-      }
-    }
 
-    // Cursor-free click diagnosis: report which window (any app's) is topmost at a screen point,
-    // and — when it is one of ours — the exact view AppKit hit-tests there. Exists because "I
-    // click X and nothing happens" is otherwise undiagnosable without synthesizing real clicks.
-    register(
-      name: "debug_hit_probe",
-      effects: [],
-      summary: "Report topmost window + hit-tested view at screen point (top-left coords)",
-      params: ["x", "y"]
-    ) { params in
-      guard let x = Double(params["x"] ?? ""), let y = Double(params["y"] ?? "") else {
-        return ["error": "need x and y (screen top-left coords)"]
-      }
-      guard let primary = NSScreen.screens.first else { return ["error": "no screens"] }
-      let cocoaPoint = NSPoint(x: x, y: primary.frame.maxY - y)
-      var result: [String: String] = [
-        "screen_point_cg": "(\(Int(x)), \(Int(y)))",
-        "screen_point_cocoa": NSStringFromPoint(cocoaPoint),
-        "screens": NSScreen.screens.map { NSStringFromRect($0.frame) }.joined(separator: " | "),
-      ]
-      // Our own windows containing the point, front-to-back. Reliable where the window-server
-      // query is not; foreign overlap is diagnosed from outside via CGWindowList.
-      let containing = NSApp.windows
-        .filter { $0.isVisible && $0.frame.contains(cocoaPoint) }
-        .sorted { $0.orderedIndex < $1.orderedIndex }
-      result["own_windows_at_point"] =
-        containing.isEmpty
-        ? "none"
-        : containing.map { window in
-          var extras = ""
-          let local = NSPoint(
-            x: cocoaPoint.x - window.frame.minX, y: cocoaPoint.y - window.frame.minY)
-          if let bar = window as? FloatingControlBarWindow {
-            extras =
-              " acceptsHit=\(bar.automationAcceptsMouseHit(inContentPoint: local)) ignores=\(window.ignoresMouseEvents)"
-          } else {
-            // Shell click-through verdict (ShellClickThrough.swift): whether this point owns the
-            // pointer, per the same policy the ignoresMouseEvents sync runs.
-            let accepts = ShellClickThroughPolicy.acceptsMouseHit(
-              localPoint: local,
-              windowSize: window.frame.size,
-              isResizable: window.styleMask.contains(.resizable),
-              contentContains: { InkGlassHitRegions.shared.containsPoint($0, in: window) })
-            extras =
-              " shellAccepts=\(accepts) glassSurfaces=\(InkGlassHitRegions.shared.surfaceCount(in: window))"
-              + " ignores=\(window.ignoresMouseEvents)"
-          }
-          return
-            "\(String(describing: type(of: window)))(\"\(window.title)\" level=\(window.level.rawValue) key=\(window.isKeyWindow) idx=\(window.orderedIndex)\(extras))"
-        }.joined(separator: " ; ")
-      if let window = containing.first {
-        let inWindow = window.convertPoint(fromScreen: cocoaPoint)
-        result["point_in_window"] = NSStringFromPoint(inWindow)
-        if let root = window.contentView?.superview ?? window.contentView {
-          let inRoot = root.convert(inWindow, from: nil)
-          let hit = root.hitTest(inRoot)
-          var chain: [String] = []
-          var view = hit
-          while let v = view, chain.count < 8 {
-            chain.append(String(describing: type(of: v)))
-            view = v.superview
-          }
-          result["hit_view_chain"] = chain.isEmpty ? "nil (click falls through)" : chain.joined(separator: " < ")
-        }
-      }
-      return result
-    }
 
-    register(
-      name: "reset_main_chat",
-      effects: [.localState, .networkOrModel, .remoteWrite],
-      summary: "Clear main-window chat messages and start a fresh session (harness flow isolation)",
-      params: []
-    ) { _ in
-      guard AppBuild.isNonProduction else {
-        return ["error": "reset_main_chat is disabled on production bundles"]
-      }
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      if let error = await provider.automationResetMainChatForHarness() {
-        return ["error": error]
-      }
-      return ["reset": "true"]
-    }
 
-    register(
-      name: "clear_main_chat",
-      effects: [.localState, .networkOrModel, .remoteWrite],
-      summary: "Run the main chat's Clear Chat action (the menu item's path, without its confirmation)",
-      params: []
-    ) { _ in
-      guard AppBuild.isNonProduction else {
-        return ["error": "clear_main_chat is disabled on production bundles"]
-      }
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      await provider.clearChat()
-      if let error = provider.errorMessage, !error.isEmpty {
-        return ["error": error]
-      }
-      return ["cleared": "true"]
-    }
 
-    register(
-      name: "present_onboarding_opener",
-      effects: [.localState, .networkOrModel],
-      summary: "Compose and show the post-onboarding opener in the empty-chat slot (QA rendering seam)",
-      params: []
-    ) { _ in
-      guard AppBuild.isNonProduction else {
-        return ["error": "present_onboarding_opener is disabled on production bundles"]
-      }
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      provider.presentOnboardingOpener()
-      return [
-        "presented": "true",
-        "starter_count": "\(provider.onboardingOpener?.starters.count ?? 0)",
-      ]
-    }
 
-    // Send a message through the real main-window chat pipeline (Home),
-    // in-process via ViewModelContainer's ChatProvider — no synthetic mouse
-    // or keyboard input, so it never touches the user's actual cursor.
-    register(
-      name: "ask_main_chat",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary: "Send a query to the main-window chat (typed path); exercises the full chat pipeline",
-      params: ["query"]
-    ) { params in
-      let query = (params["query"] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-      guard let provider = ChatProvider.mainInstance else {
-        return query.isEmpty
-          ? ["error": "missing 'query'"]
-          : ["error": "main ChatProvider not yet initialized"]
-      }
-      guard
-        ChatProvider.hasSendableSubject(
-          text: query,
-          attachmentCount: provider.pendingAttachments.count,
-          referenceCount: provider.pendingComposerReferences.count
-        )
-      else {
-        return ["error": "missing 'query'"]
-      }
-      // Report the provider's own admission decision. This used to answer
-      // `sent` unconditionally, so a send the busy guard refused was reported
-      // as delivered and the refusal was invisible to every harness.
-      guard provider.canAcceptSend else {
-        return [
-          "accepted": "false",
-          "busy": "true",
-          "is_sending": provider.isSending ? "true" : "false",
-          "is_streaming": provider.messages.contains(where: { $0.isStreaming }) ? "true" : "false",
-          "reason": "already_sending",
-          "query": query,
-        ]
-      }
-      let tracer = QueryTracer(query: query, inputMode: .text)
-      await QueryTracerContext.$current.withValue(tracer) {
-        _ = await provider.sendMessage(query)
-      }
-      return ["accepted": "true", "sent": query]
-    }
 
-    // Fire-and-forget main-chat send for race/busy probes. Returns before the
-    // turn settles so harnesses can observe isSending / concurrent rejection.
-    // Optional hold_busy_ms arms a non-prod latch so R3 does not depend on LLM
-    // latency keeping isSending true.
-    register(
-      name: "ask_main_chat_no_wait",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary: "Fire-and-forget main-chat send; returns immediately without waiting for the turn",
-      params: ["query", "hold_busy_ms"]
-    ) { params in
-      let query = (params["query"] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-      guard let provider = ChatProvider.mainInstance else {
-        return query.isEmpty
-          ? ["error": "missing 'query'"]
-          : ["error": "main ChatProvider not yet initialized"]
-      }
-      guard
-        ChatProvider.hasSendableSubject(
-          text: query,
-          attachmentCount: provider.pendingAttachments.count,
-          referenceCount: provider.pendingComposerReferences.count
-        )
-      else {
-        return ["error": "missing 'query'"]
-      }
-      let isSending = provider.isSending
-      let isStreaming = provider.messages.contains(where: { $0.isStreaming })
-      let latchBusy = self.harnessBusyLatchActive()
-      let busy = isSending || isStreaming || latchBusy
-      if busy {
-        return [
-          "accepted": "false",
-          "busy": "true",
-          "is_sending": isSending ? "true" : "false",
-          "is_streaming": isStreaming ? "true" : "false",
-          "harness_busy_latch": latchBusy ? "true" : "false",
-          "reason": "already_sending",
-          "query": query,
-        ]
-      }
-      let holdBusyMs = intParam(params["hold_busy_ms"], default: 0)
-      if holdBusyMs > 0 {
-        guard AppBuild.isNonProduction else {
-          return ["error": "hold_busy_ms is disabled on production bundles"]
-        }
-        self.armHarnessBusyLatch(holdBusyMs: holdBusyMs)
-      }
-      Task { @MainActor in
-        let tracer = QueryTracer(query: query, inputMode: .text)
-        await QueryTracerContext.$current.withValue(tracer) {
-          _ = await provider.sendMessage(query)
-        }
-      }
-      return [
-        "accepted": "true",
-        "busy": "false",
-        "is_sending": "false",
-        "is_streaming": isStreaming ? "true" : "false",
-        "harness_busy_latch": holdBusyMs > 0 ? "true" : "false",
-        "hold_busy_ms": "\(max(0, holdBusyMs))",
-        "sent": query,
-      ]
-    }
 
-    register(
-      name: "main_chat_busy_state",
-      effects: [.localState],
-      summary: "Return whether main chat is currently sending or streaming (race/busy probes)",
-      params: []
-    ) { _ in
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      let isSending = provider.isSending
-      let isStreaming = provider.messages.contains(where: { $0.isStreaming })
-      let latchBusy = self.harnessBusyLatchActive()
-      return [
-        "is_sending": isSending ? "true" : "false",
-        "is_streaming": isStreaming ? "true" : "false",
-        "harness_busy_latch": latchBusy ? "true" : "false",
-        "busy": (isSending || isStreaming || latchBusy) ? "true" : "false",
-      ]
-    }
 
-    // Gauntlet step 06: clear owner A kernel bindings, re-register synthetic owner B,
-    // and run one assembled-context probe turn. Non-production bundles only.
-    register(
-      name: "swap_test_owner",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary: "Clear owner A kernel state, swap to synthetic owner B, and run one probe turn",
-      params: ["owner_b", "query"]
-    ) { params in
-      guard AppBuild.isNonProduction else {
-        return ["error": "swap_test_owner is disabled on production bundles"]
-      }
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      return await provider.automationSwapTestOwner(
-        ownerBId: params["owner_b"] ?? "",
-        probeQuery: params["query"] ?? ""
-      )
-    }
 
-    register(
-      name: "restore_test_owner",
-      effects: [.localState, .networkOrModel, .remoteWrite],
-      summary: "Restore the real owner after swap_test_owner (harness cleanup; no-op if no swap active)",
-      params: []
-    ) { _ in
-      guard AppBuild.isNonProduction else {
-        return ["error": "restore_test_owner is disabled on production bundles"]
-      }
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      return await provider.automationRestoreTestOwner()
-    }
 
-    register(
-      name: "main_chat_snapshot",
-      effects: [],
-      summary: "Export main-chat transcript, session ids, and stream state for continuity harnesses",
-      params: ["limit"]
-    ) { params in
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      let limit = max(1, intParam(params["limit"], default: 50))
-      return provider.automationMainChatSnapshot(limit: limit)
-    }
 
-    register(
-      name: "set_chat_drafts",
-      effects: [.localState],
-      summary: "Set main and floating composer drafts without sending (non-prod persistence harness)",
-      params: ["main", "floating"],
-      category: "chat",
-      surfaces: ["main_chat", "ask_omi"],
-      sideEffects: ["local_storage"],
-      examples: ["./scripts/omi-ctl action set_chat_drafts main=main-draft floating=notch-draft"]
-    ) { params in
-      guard AppBuild.isNonProduction else {
-        return ["error": "set_chat_drafts is disabled on production bundles"]
-      }
-      if let main = params["main"] {
-        if let provider = ChatProvider.mainInstance {
-          provider.draftText = main
-        } else {
-          ChatDraftStore.shared.setText(main, for: .mainChat(contextID: "omi:default"))
-        }
-      }
-      if let floating = params["floating"] {
-        if let barState = FloatingControlBarManager.shared.barState {
-          barState.switchAIDraft(to: .floatingMain)
-          barState.aiInputText = floating
-        } else {
-          ChatDraftStore.shared.setText(floating, for: .floatingMain)
-        }
-      }
-      ChatDraftStore.shared.flush()
-      return [
-        "main": ChatProvider.mainInstance?.draftText
-          ?? ChatDraftStore.shared.text(for: .mainChat(contextID: "omi:default")),
-        "floating": FloatingControlBarManager.shared.barState?.aiInputText
-          ?? ChatDraftStore.shared.text(for: .floatingMain),
-      ]
-    }
 
-    register(
-      name: "chat_drafts_snapshot",
-      effects: [],
-      summary: "Read current main and floating composer drafts (non-prod persistence harness)",
-      category: "chat",
-      surfaces: ["main_chat", "ask_omi"],
-    ) { _ in
-      guard AppBuild.isNonProduction else {
-        return ["error": "chat_drafts_snapshot is disabled on production bundles"]
-      }
-      return [
-        "main": ChatProvider.mainInstance?.draftText
-          ?? ChatDraftStore.shared.text(for: .mainChat(contextID: "omi:default")),
-        "floating": FloatingControlBarManager.shared.barState?.aiInputText
-          ?? ChatDraftStore.shared.text(for: .floatingMain),
-      ]
-    }
 
-    register(
-      name: "clear_owner_surface_state",
-      effects: [.localState, .networkOrModel, .remoteWrite],
-      summary: "Clear kernel main_chat turns for the active owner (non-prod continuity harness hygiene)",
-      params: ["chatId"],
-      category: "write",
-      surfaces: ["main_chat"],
-      sideEffects: [
-        "clears the local non-production main-chat projection",
-        "may delete the active owner's main-chat journal turns from the backend",
-      ]
-    ) { params in
-      guard AppBuild.isNonProduction else {
-        return ["error": "clear_owner_surface_state is disabled on production bundles"]
-      }
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      let chatId = params["chatId"]?.trimmingCharacters(in: .whitespacesAndNewlines)
-      return await provider.automationClearOwnerSurfaceState(chatId: chatId?.isEmpty == false ? chatId! : "default")
-    }
 
-    register(
-      name: "kernel_turn_tail",
-      effects: [.localState, .localArtifact, .networkOrModel],
-      summary: "Return the last N kernel main_chat turns for continuity harness evidence",
-      params: ["limit"]
-    ) { params in
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      let limit = max(1, intParam(params["limit"], default: 8))
-      return await provider.automationKernelTurnTail(limit: limit)
-    }
 
-    register(
-      name: "suspend_agent_stream",
-      effects: [.localState],
-      summary:
-        "Freeze the agent stdio stream (SIGSTOP) to induce a chat stall; auto-resumes after durationMs. Non-prod only.",
-      params: ["durationMs"]
-    ) { params in
-      guard AppBuild.isNonProduction else {
-        return ["error": "suspend_agent_stream is disabled on production bundles"]
-      }
-      // Default just past the 60s send watchdog so CHAT-02 can assert the
-      // "Response took too long" error + recoverable retry; capped at 300s.
-      let durationMs = intParam(params["durationMs"], default: 70_000)
-      return await AgentRuntimeProcess.shared.debugSuspendStream(durationMs: durationMs)
-    }
 
-    register(
-      name: "resume_agent_stream",
-      effects: [.localState],
-      summary: "Resume a suspended agent stdio stream (SIGCONT) immediately. Non-prod only.",
-      params: []
-    ) { _ in
-      guard AppBuild.isNonProduction else {
-        return ["error": "resume_agent_stream is disabled on production bundles"]
-      }
-      // debugResumeStream is nonisolated (off-actor SIGCONT) so it returns promptly
-      // even when the actor is blocked writing to the frozen process.
-      return AgentRuntimeProcess.shared.debugResumeStream()
-    }
 
-    register(
-      name: "floating_bar_chat_snapshot",
-      effects: [],
-      summary: "Export floating-bar chat transcript and stream state for harness assertions",
-      params: ["limit"]
-    ) { params in
-      let limit = max(1, intParam(params["limit"], default: 50))
-      return FloatingControlBarManager.shared.automationFloatingBarChatSnapshot(limit: limit)
-    }
 
-    register(
-      name: "wait_floating_bar_chat_idle",
-      effects: [.localState],
-      summary: "Block until the latest submitted floating-bar turn is observed and becomes idle",
-      params: ["timeoutMs", "pollMs"]
-    ) { params in
-      let timeoutMs = max(1_000, intParam(params["timeoutMs"], default: 180_000))
-      let pollMs = max(100, intParam(params["pollMs"], default: 500))
-      guard let submission = self.pendingFloatingBarSubmission else {
-        return ["error": "no pending floating-bar submission to observe"]
-      }
-      let deadline = Date().addingTimeInterval(Double(timeoutMs) / 1000.0)
-      var observedSubmission = false
-      while Date() < deadline {
-        var detail = FloatingControlBarManager.shared.automationFloatingBarChatSnapshot(limit: 8)
-        let messageCount = Int(detail["message_count"] ?? "") ?? 0
-        observedSubmission =
-          observedSubmission
-          || messageCount > submission.baselineMessageCount
-          || detail["is_sending"] == "true"
-          || detail["is_streaming"] == "true"
-        if observedSubmission,
-          detail["error"] == nil,
-          detail["is_sending"] == "false",
-          detail["is_streaming"] == "false"
-        {
-          detail["idle"] = "true"
-          detail["submission_observed"] = "true"
-          detail["submission_generation"] = "\(submission.generation)"
-          if self.pendingFloatingBarSubmission?.generation == submission.generation {
-            self.pendingFloatingBarSubmission = nil
-          }
-          return detail
-        }
-        try await Task.sleep(nanoseconds: UInt64(pollMs) * 1_000_000)
-      }
-      var detail = FloatingControlBarManager.shared.automationFloatingBarChatSnapshot(limit: 8)
-      detail["error"] = "timeout"
-      detail["timeout_ms"] = "\(timeoutMs)"
-      detail["submission_observed"] = observedSubmission ? "true" : "false"
-      detail["submission_generation"] = "\(submission.generation)"
-      return detail
-    }
 
-    register(
-      name: "wait_main_chat_idle",
-      effects: [.localState],
-      summary: "Block until main chat is not sending or streaming (continuity harness)",
-      params: ["timeoutMs", "pollMs"]
-    ) { params in
-      let timeoutMs = max(1_000, intParam(params["timeoutMs"], default: 180_000))
-      let pollMs = max(100, intParam(params["pollMs"], default: 500))
-      guard let provider = ChatProvider.mainInstance else {
-        return ["error": "main ChatProvider not yet initialized"]
-      }
-      // Drop harness race latch so later probes are not stuck "busy" after R3.
-      self.clearHarnessBusyLatch()
-      let deadline = Date().addingTimeInterval(Double(timeoutMs) / 1000.0)
-      while Date() < deadline {
-        if !provider.isSending && !provider.messages.contains(where: { $0.isStreaming }) {
-          var detail = provider.automationMainChatSnapshot(limit: 8)
-          detail["idle"] = "true"
-          detail["harness_busy_latch"] = "false"
-          return detail
-        }
-        try await Task.sleep(nanoseconds: UInt64(pollMs) * 1_000_000)
-      }
-      var detail = provider.automationMainChatSnapshot(limit: 8)
-      detail["error"] = "timeout"
-      detail["timeout_ms"] = "\(timeoutMs)"
-      return detail
-    }
 
-    register(
-      name: "agent_runtime_evidence",
-      effects: [],
-      summary: "Return omi-agentd.sqlite3 path and SHA-256 for continuity harness evidence bundles"
-    ) { _ in
-      let stateDir = AgentRuntimeProcess.defaultStateDirectory()
-      let dbPath = (stateDir as NSString).appendingPathComponent("omi-agentd.sqlite3")
-      var detail: [String: String] = [
-        "state_dir": stateDir,
-        "database_path": dbPath,
-        "database_exists": FileManager.default.fileExists(atPath: dbPath) ? "true" : "false",
-        "bundle_id": Bundle.main.bundleIdentifier ?? "",
-      ]
-      if FileManager.default.fileExists(atPath: dbPath),
-        let data = try? Data(contentsOf: URL(fileURLWithPath: dbPath))
-      {
-        let digest = SHA256.hash(data: data)
-        detail["database_sha256"] = digest.map { String(format: "%02x", $0) }.joined()
-        detail["database_bytes"] = "\(data.count)"
-      }
-      return detail
-    }
 
     register(
       name: "memories_qa_export",
@@ -2639,14 +1478,6 @@ final class DesktopAutomationActionRegistry {
       }
     }
 
-    register(
-      name: "device_tools_probe",
-      effects: [],
-      summary: "Probe the on-device tool surface without reading real messages or sending anything",
-      params: ["messagesDbPath"]
-    ) { params in
-      await DeviceToolsProbe.run(messagesDbPath: params["messagesDbPath"])
-    }
 
     register(
       name: "delete_conversation",
@@ -2730,102 +1561,10 @@ final class DesktopAutomationActionRegistry {
       }
     }
 
-    register(
-      name: "capture_floating_bar_png",
-      effects: [.localArtifact],
-      summary: "Write PNG of the floating control bar window (in-process capture)",
-      params: ["path"]
-    ) { params in
-      guard let path = params["path"], !path.isEmpty else {
-        return ["error": "missing 'path'"]
-      }
-      return await MainActor.run { () -> [String: String] in
-        guard
-          let window = NSApp.windows.compactMap({ $0 as? FloatingControlBarWindow }).first,
-          window.isVisible,
-          let contentView = window.contentView
-        else {
-          return ["error": "no_floating_bar_window"]
-        }
-        let bounds = contentView.bounds
-        guard let rep = contentView.bitmapImageRepForCachingDisplay(in: bounds) else {
-          return ["error": "bitmap_rep_failed"]
-        }
-        contentView.cacheDisplay(in: bounds, to: rep)
-        guard let data = rep.representation(using: .png, properties: [:]) else {
-          return ["error": "png_encode_failed"]
-        }
-        do {
-          try data.write(to: URL(fileURLWithPath: path))
-          return [
-            "path": path,
-            "bytes": "\(data.count)",
-            "frame": NSStringFromRect(window.frame),
-          ]
-        } catch {
-          return ["error": error.localizedDescription]
-        }
-      }
-    }
 
-    // Cursor-free notch hover driver: enter/exit run the same pointer update
-    // the tracking view calls from mouse events; state reads the island's
-    // visibility inputs so a stuck reveal or menu can be caught mechanically.
-    register(
-      name: "notch_hover",
-      effects: [.localState],
-      summary: "Simulate notch pointer enter/exit or read island state (non-prod). action=enter|exit|state",
-      params: ["action"]
-    ) { params in
-      guard AppBuild.isNonProduction else {
-        return ["error": "notch_hover is disabled on production bundles"]
-      }
-      guard let bar = FloatingControlBarManager.shared.window else {
-        return ["error": "no floating bar window"]
-      }
-      switch params["action"] ?? "state" {
-      case "enter":
-        bar.automationSimulateNotchPointer(inside: true)
-      case "exit":
-        bar.automationSimulateNotchPointer(inside: false)
-      case "state":
-        break
-      default:
-        throw DesktopAutomationActionError.invalidParams("action must be enter, exit, or state")
-      }
-      return bar.automationNotchStateSnapshot
-    }
 
-    register(
-      name: "seed_subagents",
-      effects: [.localState],
-      summary: "Seed synthetic floating-bar subagents for deterministic UI benchmarks",
-      params: ["count"]
-    ) { params in
-      let count = intParam(params["count"], default: 3)
-      return await FloatingControlBarManager.shared.seedSubagentsForAutomation(count: count)
-    }
 
-    register(
-      name: "open_seeded_subagent",
-      effects: [.localState],
-      summary: "Open a seeded subagent in the floating-bar chat",
-      params: ["index", "wait"]
-    ) { params in
-      let index = intParam(params["index"], default: 0)
-      let wait = boolParam(params["wait"], default: true)
-      return await FloatingControlBarManager.shared.openSeededSubagentForAutomation(index: index, wait: wait)
-    }
 
-    register(
-      name: "back_from_subagent",
-      effects: [.localState],
-      summary: "Return from the selected subagent to the main Ask Omi chat",
-      params: ["wait"]
-    ) { params in
-      let wait = boolParam(params["wait"], default: true)
-      return await FloatingControlBarManager.shared.backFromSubagentForAutomation(wait: wait)
-    }
 
     register(
       name: "spatial_overlay_present_fixture",
@@ -2892,168 +1631,14 @@ final class DesktopAutomationActionRegistry {
       await MainActor.run { CloudConnectorFormAutomation.claudeAddGuidanceDiagnostics() }
     }
 
-    register(
-      name: "coordinator_awareness_snapshot",
-      effects: [.localState, .localArtifact, .networkOrModel],
-      summary: "Read the Swift coordinator awareness projection for Agents & Attention debugging",
-      params: ["limit"]
-    ) { params in
-      let limit = max(1, min(200, intParam(params["limit"], default: 50)))
-      let snapshot = try await DesktopCoordinatorService.shared.awarenessSnapshotJSON(limit: limit)
-      return ["snapshot": snapshot]
-    }
 
-    register(
-      name: "agent_lifecycle_convergence_snapshot",
-      effects: [.localState, .localArtifact, .networkOrModel],
-      summary: "Read canonical child-run status alongside the rendered pill and journal-completion projection",
-      params: ["runIds"],
-      category: "read",
-      surfaces: ["floating_bar", "main_chat", "realtime"],
-    ) { params in
-      let runIDs = Set(
-        (params["runIds"] ?? "")
-          .split(separator: ",")
-          .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
-          .filter { !$0.isEmpty }
-          .prefix(20)
-      )
-      return ["snapshot": await AgentPillsManager.shared.lifecycleConvergenceSnapshot(runIDs: runIDs)]
-    }
 
-    register(
-      name: "coordinator_inspect_run",
-      effects: [.localState, .localArtifact, .networkOrModel],
-      summary: "Inspect one owner-scoped kernel run and its bounded tool-invocation ledger",
-      params: ["runId"]
-    ) { params in
-      guard let runId = params["runId"]?.trimmingCharacters(in: .whitespacesAndNewlines),
-        !runId.isEmpty
-      else {
-        throw DesktopAutomationActionError.invalidParams("missing runId")
-      }
-      let run = try await DesktopCoordinatorService.shared.inspectRun(runId: runId)
-      return ["run": run]
-    }
 
-    register(
-      name: "coordinator_continue_agent",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary: "Continue one owner-scoped canonical agent session and return its new run handles",
-      params: ["sessionId", "prompt", "surfaceKind"]
-    ) { params in
-      guard let sessionId = params["sessionId"]?.trimmingCharacters(in: .whitespacesAndNewlines),
-        !sessionId.isEmpty
-      else {
-        throw DesktopAutomationActionError.invalidParams("missing sessionId")
-      }
-      guard let prompt = params["prompt"]?.trimmingCharacters(in: .whitespacesAndNewlines),
-        !prompt.isEmpty
-      else {
-        throw DesktopAutomationActionError.invalidParams("missing prompt")
-      }
-      let inspection = try await DesktopCoordinatorService.shared.continueAgent(
-        sessionId: sessionId,
-        prompt: prompt,
-        originSurface: DesktopCoordinatorOriginSurface(surfaceKind: params["surfaceKind"]),
-        model: nil,
-        cwd: nil
-      )
-      return [
-        "session_id": inspection.sessionId ?? "",
-        "run_id": inspection.runId ?? "",
-        "attempt_id": inspection.attemptId ?? "",
-        "status": inspection.status,
-        "error": inspection.errorMessage ?? "",
-      ]
-    }
 
-    register(
-      name: "coordinator_action_queue",
-      effects: [.localState, .localArtifact, .networkOrModel],
-      summary: "Read the derived Swift coordinator attention queue",
-      params: ["limit"]
-    ) { params in
-      let limit = intParam(params["limit"], default: 20)
-      let queue = try await DesktopCoordinatorService.shared.actionQueueJSON(limit: max(1, limit))
-      return ["items": queue]
-    }
 
-    register(
-      name: "coordinator_open_loops",
-      effects: [.localState, .localArtifact, .networkOrModel],
-      summary: "Read unresolved agent/coordinator loops from the Swift projection"
-    ) { _ in
-      let loops = try await DesktopCoordinatorService.shared.openLoopsJSON()
-      return ["openLoops": loops]
-    }
 
-    register(
-      name: "coordinator_route_intent",
-      effects: [.localState, .localArtifact, .networkOrModel, .remoteWrite],
-      summary: "Route a structured proposal through the canonical agent kernel",
-      params: [
-        "intent", "surfaceKind", "taskId", "proposal", "snapshotVersion",
-        "sessionId", "runId", "parentRunId", "provider", "agentCount",
-      ]
-    ) { params in
-      let proposal: DesktopCoordinatorIntentProposal
-      switch params["proposal"] {
-      case "spawn_agent": proposal = .spawnAgent
-      case "continue_run": proposal = .continueRun
-      case "clarify": proposal = .clarify(missing: ["automation_input"])
-      default: proposal = .answerInline
-      }
-      let syntaxFacts = DesktopCoordinatorIntentSyntaxFacts(
-        delegationNegated: nil,
-        explicitSessionId: params["sessionId"],
-        explicitRunId: params["runId"],
-        parentRunId: params["parentRunId"],
-        explicitProvider: params["provider"],
-        requestedAgentCount: params["agentCount"].flatMap(Int.init))
-      let decision = try await DesktopCoordinatorService.shared.routeIntentJSON(
-        intent: params["intent"] ?? "",
-        surfaceKind: params["surfaceKind"],
-        taskId: params["taskId"],
-        snapshotVersion: params["snapshotVersion"],
-        proposal: proposal,
-        syntaxFacts: syntaxFacts
-      )
-      return ["decision": decision]
-    }
 
-    register(
-      name: "coordinator_create_dispatch",
-      effects: [.localState],
-      summary: "Create a coordinator dispatch through the runtime control path for Agents & Attention testing",
-      params: ["kind", "title", "decisionPrompt", "recommendedDefault", "sourceSessionId", "sourceRunId"]
-    ) { params in
-      let dispatch = try await DesktopCoordinatorService.shared.createDispatchJSON(
-        kind: params["kind"] ?? "routing_choice",
-        title: params["title"] ?? "Coordinator attention",
-        decisionPrompt: params["decisionPrompt"] ?? "Review this coordinator attention item.",
-        recommendedDefault: params["recommendedDefault"],
-        sourceSessionId: params["sourceSessionId"],
-        sourceRunId: params["sourceRunId"]
-      )
-      return ["dispatch": dispatch]
-    }
 
-    register(
-      name: "coordinator_resolve_dispatch",
-      effects: [.localState],
-      summary: "Resolve a coordinator dispatch through the runtime control path",
-      params: ["dispatchId", "resolution"]
-    ) { params in
-      guard let dispatchId = params["dispatchId"], !dispatchId.isEmpty else {
-        throw DesktopAutomationActionError.invalidParams("missing dispatchId")
-      }
-      let dispatch = try await DesktopCoordinatorService.shared.resolveDispatchJSON(
-        dispatchId: dispatchId,
-        resolution: params["resolution"] ?? "resolved"
-      )
-      return ["dispatch": dispatch]
-    }
 
     register(
       name: "calendar_read_probe",
@@ -4016,7 +2601,6 @@ final class DesktopAutomationActionRegistry {
     registerRatingPromptActions()
     registerGlassTransparencyActions()
     registerRemotePromptActions()
-    registerRealtimeHubActions()
     register(
       name: "rewind_settings_snapshot",
       effects: [],
@@ -4090,7 +2674,6 @@ final class DesktopAutomationActionRegistry {
       let assistant = AssistantSettings.shared
       return [
         "task_enabled": task.isEnabled ? "true" : "false",
-        "task_chat_agent_enabled": TaskAgentSettings.shared.isChatEnabled ? "true" : "false",
         "memory_enabled": memory.isEnabled ? "true" : "false",
         "screen_analysis_enabled": assistant.screenAnalysisEnabled ? "true" : "false",
         "transcription_enabled": assistant.audioRecordingMode != .off ? "true" : "false",
@@ -4724,7 +3307,6 @@ final class DesktopAutomationBridge: @unchecked Sendable {
         statusCode: 403)
     }
     if request.method == "GET", request.path == "/health", request.headers["authorization"] == nil {
-      let runtime = await AgentRuntimeProcess.shared.diagnosticsSnapshot()
       return jsonResponse(
         DesktopAutomationHealth(
           ok: true,
@@ -4738,11 +3320,7 @@ final class DesktopAutomationBridge: @unchecked Sendable {
           requiresAuth: true,
           backendEnvironment: DesktopBackendEnvironment.shouldUseDevelopmentBackends ? "development" : "production",
           pythonBackendURL: DesktopBackendEnvironment.pythonBaseURL(),
-          rustBackendURL: DesktopBackendEnvironment.rustBackendURL(),
-          agentRuntimeRunning: runtime.running,
-          agentRuntimeExpectedProtocolVersion: AgentRuntimeProcess.expectedProtocolVersion,
-          agentRuntimeProtocolVersion: runtime.protocolVersion,
-          agentRuntimeVersion: runtime.runtimeVersion
+          rustBackendURL: DesktopBackendEnvironment.rustBackendURL()
         )
       )
     }
@@ -5071,9 +3649,7 @@ final class DesktopAutomationBridge: @unchecked Sendable {
       }
 
       let window: NSWindow?
-      if payload.target == "floating" {
-        window = NSApp.windows.first(where: { $0 is FloatingControlBarWindow && $0.isVisible })
-      } else if payload.target == "overlay" {
+      if payload.target == "overlay" {
         window = CloudConnectorGuidanceOverlay.shared.automationWindow
       } else if payload.target == "task_thread" {
         window = NSApp.windows.first(where: { $0.title == "Omi — Task thread scenario" && $0.isVisible })

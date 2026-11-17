@@ -1,5 +1,4 @@
 import Foundation
-import VoiceTurnDomain
 
 enum OnboardingFlow {
   enum CompletionOwnerReconciliation: Equatable {
@@ -227,13 +226,6 @@ enum OnboardingFlow {
     }
 
     return min(max(0, migratedStep), lastStepIndex)
-  }
-
-  static func shouldUnlockVoiceShortcutContinue(
-    observedShortcutPress: Bool,
-    voiceTurnPhase: VoiceTurnPhase?
-  ) -> Bool {
-    observedShortcutPress && (voiceTurnPhase == nil || voiceTurnPhase?.isTerminal == true)
   }
 
   /// Account-scoped onboarding UserDefaults keys, cleared on both sign-out

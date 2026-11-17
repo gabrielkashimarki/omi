@@ -24,7 +24,6 @@ final class AppServicesCoordinator {
   var screenCapturePermissionLostObserver: NSObjectProtocol?
   var screenCaptureKitBrokenObserver: NSObjectProtocol?
   var audioRecordingModeObserver: NSObjectProtocol?
-  var coreAudioCaptureRecoveryObserver: NSObjectProtocol?
 
   var buttonStreamTask: Task<Void, Never>?
   var bluetoothStateCancellable: AnyCancellable?
@@ -71,10 +70,6 @@ final class AppServicesCoordinator {
     if let observer = audioRecordingModeObserver {
       NotificationCenter.default.removeObserver(observer)
       audioRecordingModeObserver = nil
-    }
-    if let observer = coreAudioCaptureRecoveryObserver {
-      NotificationCenter.default.removeObserver(observer)
-      coreAudioCaptureRecoveryObserver = nil
     }
   }
 }

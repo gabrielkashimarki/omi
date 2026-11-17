@@ -6,7 +6,6 @@ import Foundation
 /// integer values. The legacy adapter below is the only compatibility boundary
 /// while both shells are live.
 enum ChatFirstRoute: Hashable, Codable, Sendable {
-  case chat
   case conversations
   case tasks
   case goals
@@ -21,7 +20,6 @@ enum ChatFirstRoute: Hashable, Codable, Sendable {
 
   var stableName: String {
     switch self {
-    case .chat: return "chat"
     case .conversations: return "conversations"
     case .tasks: return "tasks"
     case .goals: return "goals"
@@ -33,7 +31,6 @@ enum ChatFirstRoute: Hashable, Codable, Sendable {
 
   var analyticsRoute: ChatFirstAnalyticsEvent.Route {
     switch self {
-    case .chat: return .chat
     case .conversations: return .conversations
     case .tasks: return .tasks
     case .goals: return .goals
@@ -45,7 +42,6 @@ enum ChatFirstRoute: Hashable, Codable, Sendable {
 
   var title: String {
     switch self {
-    case .chat: return "Chat"
     case .conversations: return "Conversas"
     case .tasks: return "Tarefas"
     case .goals: return "Metas"
@@ -57,14 +53,18 @@ enum ChatFirstRoute: Hashable, Codable, Sendable {
 
   var isPrimaryDestination: Bool {
     switch self {
-    case .chat, .conversations, .tasks, .goals, .memories: return true
+    case .conversations, .tasks, .goals, .memories: return true
     case .more, .dailyRecap: return false
     }
   }
 
   static let primaryDestinations: [ChatFirstRoute] = [
-    .chat, .conversations, .tasks, .goals, .memories,
+    .conversations, .tasks, .goals, .memories,
   ]
+
+  /// Onde a janela abre e para onde voltam Esc e os "voltar" sem origem: o hub de memórias,
+  /// que abre em Conversas (o chat do Omi saiu do app).
+  static let home: ChatFirstRoute = .memories
 
   /// Automation reuses the stable names of primary destinations. Legacy-only
   /// locations deliberately return nil here and continue through the legacy
@@ -72,7 +72,6 @@ enum ChatFirstRoute: Hashable, Codable, Sendable {
   static func primaryAutomationDestination(named target: String) -> ChatFirstRoute? {
     let normalized = target.lowercased().replacingOccurrences(of: "-", with: "_")
     switch normalized {
-    case "chat": return .chat
     case "conversations": return .memories
     case "tasks": return .tasks
     case "goals": return .goals
@@ -91,7 +90,7 @@ enum ChatFirstRoute: Hashable, Codable, Sendable {
     }
     let normalized = target.lowercased().replacingOccurrences(of: "-", with: "_")
     switch normalized {
-    case "dashboard", "home": return .chat
+    case "dashboard", "home": return .home
     // `help` used to name a "Help from Founder" page no shell mounted. Getting
     // help from a person lives in Settings → About (the Community card), so the
     // legacy name resolves to the destination that actually exists.
@@ -122,7 +121,6 @@ struct DailyRecapRouteRef: Hashable, Codable, Sendable {
 }
 
 enum ChatFirstMorePage: String, CaseIterable, Codable, Hashable, Sendable {
-  case dashboard
   case rewind
   case apps
   case permissions
@@ -132,7 +130,6 @@ enum ChatFirstMorePage: String, CaseIterable, Codable, Hashable, Sendable {
 
   var title: String {
     switch self {
-    case .dashboard: return "Painel"
     case .rewind: return "Rewind"
     case .apps: return "Apps"
     case .permissions: return "Permissões"
@@ -142,7 +139,6 @@ enum ChatFirstMorePage: String, CaseIterable, Codable, Hashable, Sendable {
 
   var systemImage: String {
     switch self {
-    case .dashboard: return "house.fill"
     case .rewind: return "clock.arrow.circlepath"
     case .apps: return "puzzlepiece.fill"
     case .permissions: return PermissionNavSymbol.filled
@@ -182,26 +178,6 @@ enum ChatFirstPendingFocus: Equatable, Sendable {
   var entityID: String {
     switch self {
     case .task(let id), .goal(let id), .capture(let id, _), .memory(let id): return id
-    }
-  }
-}
-
-/// A route-safe, strongly typed origin for the one normal user turn created
-/// by a page's "Discuss in Chat" affordance. Pages never construct model
-/// prompts from display strings or pass raw URLs into Chat.
-enum ChatFirstDiscussionContext: Equatable, Sendable {
-  case tasks
-  case goals
-  case goal(id: String)
-
-  var userMessage: String {
-    switch self {
-    case .tasks:
-      return "Me ajude a revisar minhas tarefas atuais."
-    case .goals:
-      return "Me ajude a criar uma meta."
-    case .goal(let id):
-      return "Me ajude a continuar trabalhando na meta \(id)."
     }
   }
 }
@@ -275,7 +251,7 @@ final class ChatFirstShellNavigation: ObservableObject {
       route = persisted.route
       isSidebarCollapsed = persisted.isSidebarCollapsed
     } else {
-      route = .chat
+      route = .home
       isSidebarCollapsed = false
     }
     pendingFocus = nil
@@ -344,15 +320,15 @@ final class ChatFirstShellNavigation: ObservableObject {
       closeGoals()
       return true
     }
-    guard route != .chat else { return false }
-    selectPrimary(.chat)
+    guard route != .home else { return false }
+    selectPrimary(.home)
     return true
   }
 
   /// Goals' Back, and Esc on it: to the page that opened Goals, or Chat when there was none.
   func closeGoals() {
     guard route == .goals else { return }
-    selectPrimary(goalsOrigin ?? .chat, origin: .sidebar)
+    selectPrimary(goalsOrigin ?? .home, origin: .sidebar)
   }
 
   /// Goals remembers the primary page it was opened from. Arriving from a detour (a recap, Settings)
@@ -394,7 +370,7 @@ final class ChatFirstShellNavigation: ObservableObject {
   /// Settings' Back, and Esc on it: to the page that opened it, or Chat when there was none.
   func closeMorePage() {
     guard case .more = route else { return }
-    let origin = moreOrigin ?? .chat
+    let origin = moreOrigin ?? .home
     selectPrimary(origin, origin: .sidebar)
   }
 
@@ -457,7 +433,7 @@ final class ChatFirstShellNavigation: ObservableObject {
   func openDailyRecap(_ ref: DailyRecapRouteRef) {
     presentMainWindowIfNeeded()
     // Capture the origin BEFORE the route moves — it is where the reader is.
-    let origin = route.isPrimaryDestination ? route : ChatFirstRoute.chat
+    let origin = route.isPrimaryDestination ? route : ChatFirstRoute.home
     invalidateLinkResolutions()
     route = .dailyRecap(ref)
     visibleRoute = nil
@@ -475,7 +451,7 @@ final class ChatFirstShellNavigation: ObservableObject {
   /// that opened the recap, or Chat when that surface is gone.
   func closeDailyRecap() {
     guard case .dailyRecap = route else { return }
-    let origin = dailyRecapOrigin ?? .chat
+    let origin = dailyRecapOrigin ?? .home
     dailyRecapOrigin = nil
     selectPrimary(origin, origin: .sidebar)
   }
@@ -519,39 +495,6 @@ final class ChatFirstShellNavigation: ObservableObject {
     guard isCurrentConversationLinkResolution(generation) else { return false }
     open(conversation: conversation)
     return true
-  }
-
-  /// Routes first, then records exactly one ordinary main-Chat user turn.
-  /// `ChatProvider` remains the single journal owner; navigation stores no
-  /// transcript copy or separate session identity.
-  func discuss(_ context: ChatFirstDiscussionContext, using chatProvider: ChatProvider) {
-    selectPrimary(.chat, origin: .chatDeeplink)
-    Task {
-      _ = await chatProvider.sendMessage(context.userMessage)
-    }
-  }
-
-  /// Opens the canonical main chat with a conversation source staged in its
-  /// composer. The existing draft is intentionally untouched and no turn is
-  /// submitted until the user types and presses Send.
-  func stageCaptureReference(
-    _ conversation: ServerConversation,
-    using chatProvider: ChatProvider,
-    momentTimestamp: TimeInterval? = nil
-  ) {
-    let preview =
-      conversation.structured.overview.isEmpty
-      ? (conversation.transcriptSegments.first?.text ?? "")
-      : conversation.structured.overview
-    chatProvider.stageComposerReference(
-      ChatComposerReference(
-        kind: .conversation,
-        sourceID: conversation.id,
-        title: conversation.displayTitle,
-        preview: preview,
-        momentTimestampMs: momentTimestamp.map { Int($0 * 1_000) }
-      ))
-    selectPrimary(.chat, origin: .chatDeeplink)
   }
 
   @discardableResult
@@ -603,7 +546,7 @@ final class ChatFirstShellNavigation: ObservableObject {
   /// No Chat-first route is represented by a legacy raw index internally.
   func selectLegacyDestination(_ item: SidebarNavItem) {
     switch item {
-    case .dashboard: selectPrimary(.chat)
+    case .dashboard: selectPrimary(.home)
     case .conversations: selectPrimary(.memories)
     case .memories: selectPrimary(.memories)
     case .tasks: selectPrimary(.tasks)
@@ -701,43 +644,5 @@ struct ChatFirstCapabilitySample: Equatable {
 
   mutating func failClosed() {
     projection = nil
-  }
-}
-
-/// The provider owns this tiny bridge handoff. It contains no persistence and
-/// only projects an enabled sample to the exact main-Chat surface and owner.
-struct ChatFirstMainChatProjectionGate: Equatable {
-  private var ownerID: String?
-  private var sample: ChatFirstCapabilityProjection?
-  private var mainChatWasResolved = false
-
-  mutating func configure(sample: ChatFirstCapabilityProjection?, ownerID: String?) -> Bool {
-    guard let ownerID, !ownerID.isEmpty else { return false }
-    if mainChatWasResolved {
-      return self.ownerID == ownerID && self.sample == sample
-    }
-    if let configuredOwner = self.ownerID {
-      return configuredOwner == ownerID && self.sample == sample
-    }
-    self.ownerID = ownerID
-    self.sample = sample
-    return true
-  }
-
-  func isConfigured(for ownerID: String?) -> Bool {
-    self.ownerID == ownerID && ownerID != nil
-  }
-
-  func capability(
-    for surface: AgentSurfaceReference,
-    ownerID: String?
-  ) -> ChatFirstCapabilityProjection? {
-    guard surface.surfaceKind == "main_chat", self.ownerID == ownerID else { return nil }
-    return sample
-  }
-
-  mutating func markResolved(surface: AgentSurfaceReference, ownerID: String?) {
-    guard surface.surfaceKind == "main_chat", self.ownerID == ownerID else { return }
-    mainChatWasResolved = true
   }
 }

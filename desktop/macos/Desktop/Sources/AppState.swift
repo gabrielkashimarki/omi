@@ -681,10 +681,6 @@ class AppState: ObservableObject {
     get { servicesCoordinator.audioRecordingModeObserver }
     set { servicesCoordinator.audioRecordingModeObserver = newValue }
   }
-  var coreAudioCaptureRecoveryObserver: NSObjectProtocol? {
-    get { servicesCoordinator.coreAudioCaptureRecoveryObserver }
-    set { servicesCoordinator.coreAudioCaptureRecoveryObserver = newValue }
-  }
 
   var wasTranscribingBeforeSleep = false
   var conversationRoleBeforeSleep: MeetingConversationBoundaryPolicy.Role = .ambient
@@ -729,11 +725,6 @@ class AppState: ObservableObject {
 
   init() {
     alertPresenter = AppKitSheetAlertPresenter()
-    // Fold any legacy PTT-only microphone choice into the shared preference before
-    // anything reads it. Running this only from PTT routing meant a user who had picked a
-    // PTT microphone saw "System Default" in Transcription — and was recorded by it —
-    // until they happened to take a push-to-talk turn.
-    ShortcutSettings.migratePTTMicrophoneChoiceIfNeeded()
     // Register as the current instance so background services can check recording state
     AppState.current = self
     ownerChangeObserver = NotificationCenter.default.addObserver(
@@ -1026,17 +1017,6 @@ class AppState: ObservableObject {
         }
       }
     }
-
-    coreAudioCaptureRecoveryObserver = NotificationCenter.default.addObserver(
-      forName: .coreAudioCaptureRecoveryRequested,
-      object: nil,
-      queue: .main
-    ) { [weak self] note in
-      let reason = note.userInfo?["reason"] as? String ?? "unspecified"
-      Task { @MainActor in
-        await self?.rebuildCoreAudioCaptureStack(reason: reason)
-      }
-    }
   }
 
   deinit {
@@ -1055,11 +1035,6 @@ extension Notification.Name {
   /// never reach UserDefaults or the UI on all macOS versions).
   static let onboardingStepNavigationRequested = Notification.Name(
     "onboardingStepNavigationRequested")
-  /// Automation bridge → onboarding screen-demo step: open the three-doors page (same code path as
-  /// the step's "Open the doors" button), so agents can exercise the demo without the cursor.
-  static let onboardingOpenDoorsRequested = Notification.Name("onboardingOpenDoorsRequested")
-  /// The three-doors page finished and handed the user back to Omi via the app URL scheme.
-  static let onboardingDoorsCompleted = Notification.Name("onboardingDoorsCompleted")
   /// Posted when the system wakes from sleep
   static let systemDidWake = Notification.Name("systemDidWake")
   /// Posted when the screen is locked

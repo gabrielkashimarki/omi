@@ -56,11 +56,6 @@ extension SettingsContentView {
           }
           advancedCategoryHeader(title: "Chaves dos Provedores de Modelo", icon: "key")
           developerKeysSubsection
-
-          if devModeEnabled {
-            advancedCategoryHeader(title: "Ferramentas de Desenvolvedor", icon: "hammer")
-            devToolsSubsection
-          }
         }
         .padding(.top, OmiSpacing.md)
       } label: {
@@ -126,278 +121,10 @@ extension SettingsContentView {
     }
   }
 
-  // MARK: - Dev Tools Subsection
-
-  var devToolsSubsection: some View {
-    VStack(spacing: OmiSpacing.xl) {
-      settingsCard(settingId: "advanced.devtools.chatlab") {
-        HStack(spacing: OmiSpacing.md) {
-          Image(systemName: "flask.fill")
-            .scaledFont(size: OmiType.subheading)
-            .foregroundColor(Ink.secondary)
-          VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-            Text("Laboratório de Prompts do Chat")
-              .scaledFont(size: OmiType.subheading, weight: .semibold)
-              .foregroundColor(Ink.primary)
-            Text("Itere nos prompts de sistema do chat com perguntas reais, avaliação por IA e notas de produção")
-              .scaledFont(size: OmiType.caption)
-              .foregroundColor(Ink.secondary)
-          }
-          Spacer()
-          Button("Abrir") {
-            ChatLabWindowManager.shared.openWindow(chatProvider: chatProvider)
-          }
-          .buttonStyle(OmiButtonStyle(.primary, size: .compact))
-        }
-      }
-    }
-  }
-
   // MARK: - Advanced Subsections
 
   var aiSetupSubsection: some View {
     VStack(spacing: OmiSpacing.xl) {
-      settingsCard(settingId: "aichat.realtimevoice") {
-        VStack(alignment: .leading, spacing: OmiSpacing.md) {
-          HStack {
-            Image(systemName: "waveform")
-              .scaledFont(size: OmiType.subheading)
-              .foregroundColor(Ink.secondary)
-
-            Text("Modelo de Voz")
-              .scaledFont(size: OmiType.subheading, weight: .semibold)
-              .foregroundColor(Ink.primary)
-
-            Spacer()
-
-            SettingsMenuPicker(selection: $realtimeOmniProvider) {
-              ForEach(RealtimeOmniProvider.allCases, id: \.rawValue) { p in
-                Text(p.displayName).tag(p.rawValue)
-              }
-            }
-            .onChange(of: realtimeOmniProvider) { _, newValue in
-              if newValue == RealtimeOmniProvider.auto.rawValue {
-                AutoModelSelector.shared.refreshIfStale()
-              }
-              // The picker writes @AppStorage directly (bypassing the RealtimeOmniSettings
-              // setter), so post the change ourselves — this is what re-warms the realtime
-              // hub on the newly selected provider (and is a no-op for unchanged providers).
-              NotificationCenter.default.post(name: .realtimeOmniSettingsDidChange, object: nil)
-            }
-          }
-
-          if let p = RealtimeOmniProvider(rawValue: realtimeOmniProvider), p == .auto {
-            Text("\(p.subtitle) · atualmente \(RealtimeOmniSettings.shared.effectiveProvider.displayName)")
-              .scaledFont(size: OmiType.caption)
-              .foregroundColor(Ink.secondary)
-          } else if let p = RealtimeOmniProvider(rawValue: realtimeOmniProvider) {
-            Text(p.subtitle)
-              .scaledFont(size: OmiType.caption)
-              .foregroundColor(Ink.secondary)
-          }
-          // Fork: a voz usa a chave própria de Developer Keys quando existe (sem ela, depende do plano Omi).
-          Text(
-            "Chave própria (Developer Keys): Gemini \(APIKeyService.byokKey(.gemini) == nil ? "não" : "sim") · "
-              + "OpenAI \(APIKeyService.byokKey(.openai) == nil ? "não" : "sim")"
-          )
-          .scaledFont(size: OmiType.caption)
-          .foregroundColor(Ink.secondary)
-        }
-      }
-
-      settingsCard(settingId: "aichat.provider") {
-        VStack(alignment: .leading, spacing: OmiSpacing.md) {
-          HStack {
-            Image(systemName: "cpu")
-              .scaledFont(size: OmiType.subheading)
-              .foregroundColor(Ink.secondary)
-
-            Text("Provedor de IA")
-              .scaledFont(size: OmiType.subheading, weight: .semibold)
-              .foregroundColor(Ink.primary)
-
-            Spacer()
-
-            SettingsMenuPicker(selection: $chatBridgeMode) {
-              ForEach(AIProvider.all) { provider in
-                Text(provider.displayName).tag(provider.bridgeModeRawValue)
-              }
-            }
-            .onChange(of: chatBridgeMode) { _, newMode in
-              if let mode = ChatProvider.BridgeMode(rawValue: newMode) {
-                Task {
-                  await chatProvider?.switchBridgeMode(to: mode)
-                }
-              }
-            }
-          }
-
-          if let provider = AIProvider.from(bridgeMode: chatBridgeMode) {
-            if let url = provider.attributionURL {
-              Link(destination: url) {
-                Text("\(provider.tagline) · \(url.host ?? "")")
-                  .scaledFont(size: OmiType.caption)
-                  .foregroundColor(Ink.secondary)
-              }
-            } else {
-              Text(provider.tagline)
-                .scaledFont(size: OmiType.caption)
-                .foregroundColor(Ink.secondary)
-            }
-          }
-
-          if chatBridgeMode == "claudeCode" {
-            GlassSeparator()
-            claudeConnectionRow
-          }
-        }
-      }
-
-      settingsCard(settingId: "aichat.workspace") {
-        VStack(alignment: .leading, spacing: OmiSpacing.md) {
-          HStack {
-            Image(systemName: "folder")
-              .scaledFont(size: OmiType.subheading)
-              .foregroundColor(Ink.secondary)
-
-            Text("Espaço de Trabalho")
-              .scaledFont(size: OmiType.subheading, weight: .semibold)
-              .foregroundColor(Ink.primary)
-
-            Spacer()
-
-            Button("Procurar…") {
-              let panel = NSOpenPanel()
-              panel.canChooseFiles = false
-              panel.canChooseDirectories = true
-              panel.allowsMultipleSelection = false
-              panel.message = "Selecione uma pasta de projeto"
-              if panel.runModal() == .OK, let url = panel.url {
-                aiChatWorkingDirectory = url.path
-                chatProvider?.aiChatWorkingDirectory = url.path
-                Task { await chatProvider?.discoverClaudeConfig() }
-                if chatProvider?.workingDirectory == nil {
-                  chatProvider?.workingDirectory = url.path
-                }
-              }
-            }
-            .buttonStyle(OmiButtonStyle(.primary, size: .compact))
-
-            if !aiChatWorkingDirectory.isEmpty {
-              Button("Limpar") {
-                aiChatWorkingDirectory = ""
-                chatProvider?.aiChatWorkingDirectory = ""
-                Task { await chatProvider?.discoverClaudeConfig() }
-                chatProvider?.workingDirectory = nil
-              }
-              .buttonStyle(OmiButtonStyle(.primary, size: .compact))
-            }
-          }
-
-          if !aiChatWorkingDirectory.isEmpty {
-            Text(aiChatWorkingDirectory)
-              .scaledFont(size: OmiType.caption)
-              .foregroundColor(Ink.secondary)
-              .lineLimit(1)
-              .truncationMode(.middle)
-          } else {
-            Text("Nenhum espaço de trabalho definido. Escolha uma pasta de projeto para o contexto do chat no desktop.")
-              .scaledFont(size: OmiType.caption)
-              .foregroundColor(Ink.secondary)
-          }
-        }
-      }
-
-      settingsCard(settingId: "aichat.browserextension") {
-        VStack(alignment: .leading, spacing: OmiSpacing.md) {
-          HStack {
-            Image(systemName: "globe")
-              .scaledFont(size: OmiType.subheading)
-              .foregroundColor(Ink.secondary)
-
-            Text("Extensão do Navegador")
-              .scaledFont(size: OmiType.subheading, weight: .semibold)
-              .foregroundColor(Ink.primary)
-
-            Spacer()
-
-            if !playwrightExtensionToken.isEmpty {
-              HStack(spacing: OmiSpacing.xxs) {
-                Circle()
-                  .fill(Ink.listeningGreen)
-                  .frame(width: 6, height: 6)
-                Text("Conectado")
-                  .scaledFont(size: OmiType.caption)
-                  .foregroundColor(Ink.secondary)
-              }
-            }
-
-            Toggle("", isOn: $playwrightUseExtension)
-              .toggleStyle(OmiToggleStyle())
-              .controlSize(.small)
-              .labelsHidden()
-          }
-
-          Text("Permite que a IA use seu navegador Chrome com todas as suas sessões logadas.")
-            .scaledFont(size: OmiType.caption)
-            .foregroundColor(Ink.secondary)
-
-          if playwrightUseExtension {
-            if playwrightExtensionToken.isEmpty {
-              Button(action: {
-                showBrowserSetup = true
-              }) {
-                HStack(spacing: OmiSpacing.xs) {
-                  Image(systemName: "wrench.and.screwdriver")
-                    .scaledFont(size: OmiType.caption)
-                  Text("Configurar")
-                    .scaledFont(size: OmiType.body, weight: .medium)
-                }
-              }
-              .buttonStyle(OmiButtonStyle(.primary, size: .compact))
-            } else {
-              HStack(spacing: OmiSpacing.sm) {
-                Text("Token")
-                  .scaledFont(size: OmiType.caption)
-                  .foregroundColor(Ink.secondary)
-
-                Text(String(playwrightExtensionToken.prefix(8)) + "...")
-                  .scaledFont(size: OmiType.caption, weight: .medium)
-                  .foregroundColor(Ink.primary)
-                  .font(.system(.body, design: .monospaced))
-
-                Spacer()
-
-                Button(action: {
-                  showBrowserSetup = true
-                }) {
-                  HStack(spacing: OmiSpacing.xxs) {
-                    Image(systemName: "arrow.clockwise")
-                      .scaledFont(size: OmiType.caption)
-                    Text("Reconfigurar")
-                      .scaledFont(size: OmiType.caption)
-                  }
-                }
-                .buttonStyle(OmiButtonStyle(.primary, size: .compact))
-
-                Button(action: {
-                  playwrightExtensionToken = ""
-                  UserDefaults.standard.set("", forKey: "playwrightExtensionToken")
-                }) {
-                  HStack(spacing: OmiSpacing.xxs) {
-                    Image(systemName: "arrow.counterclockwise")
-                      .scaledFont(size: OmiType.caption)
-                    Text("Redefinir")
-                      .scaledFont(size: OmiType.caption)
-                  }
-                }
-                .buttonStyle(OmiButtonStyle(.secondary, size: .compact))
-              }
-            }
-          }
-        }
-      }
-
       settingsCard(settingId: "aichat.devmode") {
         VStack(alignment: .leading, spacing: OmiSpacing.md) {
           HStack {
@@ -704,18 +431,6 @@ extension SettingsContentView {
           if let stats = advancedStats {
             statRow(label: "Conversas", value: stats.conversations)
             statRow(label: "Apps Instalados", value: stats.appsInstalled)
-            if isLoadingChatMessages {
-              HStack {
-                Text("Mensagens do Chat com IA")
-                  .scaledFont(size: OmiType.body)
-                  .foregroundColor(Ink.secondary)
-                Spacer()
-                ProgressView()
-                  .controlSize(.mini)
-              }
-            } else if let count = chatMessageCount {
-              statRow(label: "Mensagens do Chat com IA", value: count)
-            }
             statRow(label: "Capturas de Tela", value: stats.screenshotsTotal)
             statRow(label: "Sessões de Foco", value: stats.focusSessions)
             statRow(label: "Tarefas (A fazer)", value: stats.tasksTodo)
@@ -726,7 +441,6 @@ extension SettingsContentView {
           } else if isLoadingStats {
             statRowLoading(label: "Conversas")
             statRowLoading(label: "Apps Instalados")
-            statRowLoading(label: "Mensagens do Chat com IA")
             statRowLoading(label: "Capturas de Tela")
             statRowLoading(label: "Sessões de Foco")
             statRowLoading(label: "Tarefas (A fazer)")
@@ -744,9 +458,6 @@ extension SettingsContentView {
     }
     .task {
       await loadAdvancedStats()
-    }
-    .task {
-      await loadChatMessageCount()
     }
   }
 

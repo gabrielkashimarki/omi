@@ -22,6 +22,21 @@ import OmiTheme
 
 /// Pure policy: which points of the shell window own the pointer.
 enum ShellClickThroughPolicy {
+  /// Ignora o mouse quando a janela está oculta ou quando o ponto não cai numa área que aceita clique.
+  static func shouldIgnoreMouseEvents(
+    mouseLocation: NSPoint,
+    windowFrame: NSRect,
+    isVisible: Bool,
+    acceptsMouseHit: (NSPoint) -> Bool
+  ) -> Bool {
+    guard isVisible else { return true }
+    guard windowFrame.contains(mouseLocation) else { return false }
+    let local = NSPoint(
+      x: mouseLocation.x - windowFrame.minX,
+      y: mouseLocation.y - windowFrame.minY)
+    return !acceptsMouseHit(local)
+  }
+
   /// Interactive band kept along the window's frame edge so the chrome-less, resizable window can
   /// still be resized. The glass fills the window (`DesktopWindowLayoutPolicy.windowInset` is 0),
   /// so this rim *is* the visible panel edge. Matches AppKit's effective resize zone.
@@ -96,7 +111,7 @@ final class ShellMouseInterceptionSync {
   func sync() {
     guard let window else { return }
     setPollingActive(window.isVisible)
-    let shouldIgnore = FloatingBarMouseInterceptionPolicy.shouldIgnoreMouseEvents(
+    let shouldIgnore = ShellClickThroughPolicy.shouldIgnoreMouseEvents(
       mouseLocation: NSEvent.mouseLocation,
       windowFrame: window.frame,
       isVisible: window.isVisible,

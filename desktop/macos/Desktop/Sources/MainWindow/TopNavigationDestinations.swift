@@ -15,13 +15,9 @@
 //  - **The rest are genuinely separate views**, so they are flat pills: `Tasks` and `Apps`.
 //    Always visible, one click, no disclosure, no hover.
 //
-//  `Home` is a peer of those, with a magnifying glass for a glyph. It used to be the eight-dot Omi
-//  mark, and the mark also leads the query bar on Home — the same glyph twice on one screen, once
-//  static in chrome and once **animating while Omi is answering**. Only the second one earns it: the
-//  mark means "this is Omi answering", and a nav button that spends it on "you are on Home" dilutes
-//  that to decoration. The bar's row is uniform now — every item is a glyph and a word.
+//  No fork o chat do Omi (a antiga pill `Chat`/Home) saiu; a janela abre em Memórias/Conversas.
 //
-//  What is left is a row of four words. That fits the lane at the narrowest window
+//  What is left is a row of three words. That fits the lane at the narrowest window
 //  the shell allows without falling back to the compact menu —
 //  `TopNavigationBarLayoutTests.testTheFlatDestinationRowFitsTheNarrowestWindow…` measures the real
 //  pills with both badges at their widest and asserts it.
@@ -45,7 +41,6 @@ import SwiftUI
 /// each destination, so a future edit that removes a pill has to move the destination somewhere else
 /// explicitly instead of quietly deleting the only way in.
 enum ShellDestination: Int, CaseIterable, Identifiable {
-  case home
   case conversations
   case memories
   case brainMap
@@ -91,7 +86,6 @@ enum ShellDestination: Int, CaseIterable, Identifiable {
 
   var title: String {
     switch self {
-    case .home: return "Chat"
     case .conversations: return "Conversas"
     case .memories: return "Memórias"
     case .brainMap: return "Mapa do cérebro"
@@ -106,7 +100,6 @@ enum ShellDestination: Int, CaseIterable, Identifiable {
   /// The established page this routes to. Never a shell-local copy of it (INV-NAV-1).
   var navItem: SidebarNavItem {
     switch self {
-    case .home: return .dashboard
     case .conversations, .memories, .brainMap, .rewind, .activity: return .conversations
     case .tasks: return .tasks
     case .apps: return .apps
@@ -122,7 +115,7 @@ enum ShellDestination: Int, CaseIterable, Identifiable {
     case .brainMap: return .brainMap
     case .activity: return .activity
     case .rewind: return .rewind
-    case .home, .tasks, .apps, .permissions: return nil
+    case .tasks, .apps, .permissions: return nil
     }
   }
 
@@ -130,7 +123,7 @@ enum ShellDestination: Int, CaseIterable, Identifiable {
   var settingsSection: SettingsContentView.SettingsSection? {
     switch self {
     case .permissions: return .permissions
-    case .home, .conversations, .memories, .brainMap, .activity, .tasks, .rewind, .apps: return nil
+    case .conversations, .memories, .brainMap, .activity, .tasks, .rewind, .apps: return nil
     }
   }
 
@@ -140,7 +133,7 @@ enum ShellDestination: Int, CaseIterable, Identifiable {
     /// hub views are reached from Activity's chip row once you are there.
     case .conversations, .memories, .brainMap, .rewind: return .activityChipRow
     case .permissions: return .settingsSidebar
-    case .home, .tasks, .apps, .activity: return .topBar
+    case .tasks, .apps, .activity: return .topBar
     }
   }
 
@@ -210,11 +203,8 @@ struct TopNavigationItem: Identifiable, Equatable {
 
 enum TopNavigationRoutes {
   /// **The whole primary navigation, flat.** `Brain` owns five peer views and exposes them from a
-  /// persistent section row. Chat, Tasks and Apps are single pages, so they are single pills.
+  /// persistent section row. Tasks and Apps are single pages, so they are single pills.
   static let primaryItems = [
-    TopNavigationItem(
-      index: SidebarNavItem.dashboard.rawValue, title: "Chat", icon: "bubble.left.and.text.bubble.right",
-      tooltip: "Chat: converse com o Omi sobre tudo o que você viu e ouviu"),
     // The hub's pill names the view it opens. It used to say `Memories` while opening whichever hub
     // view was last persisted, so the word on the bar and the page you landed on were only
     // sometimes the same thing. It opens `Brain` — the chronological spine over everything

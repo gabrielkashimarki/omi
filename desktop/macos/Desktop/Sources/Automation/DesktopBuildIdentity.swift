@@ -70,8 +70,4 @@ struct DesktopAutomationHealth: Codable {
   let backendEnvironment: String
   let pythonBackendURL: String
   let rustBackendURL: String
-  let agentRuntimeRunning: Bool
-  let agentRuntimeExpectedProtocolVersion: Int
-  let agentRuntimeProtocolVersion: Int?
-  let agentRuntimeVersion: String?
 }

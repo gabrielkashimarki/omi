@@ -171,12 +171,6 @@ extension SettingsContentView {
           }
         }
       }
-
-      // Voice assistant (push-to-talk) languages
-      settingsCard(settingId: "transcription.voicelanguages") {
-        VoiceAssistantLanguagesCard()
-      }
-
       // Custom Vocabulary
       settingsCard(settingId: "transcription.vocabulary") {
         VStack(alignment: .leading, spacing: OmiSpacing.lg) {
@@ -301,33 +295,6 @@ extension SettingsContentView {
         }
       }
 
-      // Silent Type
-      settingsCard(settingId: "transcription.silenttype") {
-        VStack(alignment: .leading, spacing: OmiSpacing.md) {
-          HStack {
-            Image(systemName: "keyboard.badge.eye")
-              .scaledFont(size: OmiType.subheading)
-              .foregroundColor(Ink.secondary)
-
-            VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-              Text("Omi Type Silencioso")
-                .scaledFont(size: OmiType.subheading, weight: .medium)
-                .foregroundColor(Ink.primary)
-
-              Text("Mantém o que você dita com o Omi Type fora do chat.")
-                .scaledFont(size: OmiType.body)
-                .foregroundColor(Ink.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer()
-
-            Toggle("", isOn: $shortcutSettings.silentTypeEnabled)
-              .toggleStyle(OmiToggleStyle())
-          }
-        }
-      }
-
       // Ignore dictation apps
       settingsCard(settingId: "transcription.ignoredictationapps") {
         VStack(alignment: .leading, spacing: OmiSpacing.md) {
@@ -351,7 +318,7 @@ extension SettingsContentView {
 
             Spacer()
 
-            Toggle("", isOn: $shortcutSettings.ambientIgnoresDictationApps)
+            Toggle("", isOn: $ignoreDictationApps)
               .toggleStyle(OmiToggleStyle())
           }
         }
@@ -580,123 +547,6 @@ enum TranscriptionVocabularyWriter {
     return edited
   }
 }
-
-/// Multi-select for the languages the user speaks to the VOICE ASSISTANT (push-to-talk).
-/// Order matters: the first selection is the primary. Self-contained — reads and writes
-/// `AssistantSettings.voiceLanguages` directly and re-warms the realtime hub so the new
-/// set reaches the session's system instruction without an app restart. Deliberately
-/// separate from the ambient Language Mode card above: this never touches the always-on
-/// transcriber's language settings.
-private struct VoiceAssistantLanguagesCard: View {
-  @State private var selection: [String] = []
-
-  private var chipOptions: [(code: String, name: String)] {
-    let common = OnboardingPagedIntroCoordinator.commonLanguages
-    let extra =
-      selection
-      .filter { code in !common.contains(where: { $0.code == code }) }
-      .map { code in
-        (
-          code: code,
-          name: AssistantSettings.supportedLanguages.first(where: { $0.code == code })?.name
-            ?? code
-        )
-      }
-    return common + extra
-  }
-
-  private var addableLanguages: [(code: String, name: String)] {
-    AssistantSettings.supportedLanguages.filter { option in
-      !option.code.contains("-") && !selection.contains(option.code)
-        && !chipOptions.contains(where: { $0.code == option.code })
-    }
-  }
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: OmiSpacing.lg) {
-      HStack {
-        Image(systemName: "person.wave.2")
-          .scaledFont(size: OmiType.subheading)
-          .foregroundColor(Ink.secondary)
-
-        VStack(alignment: .leading, spacing: OmiSpacing.xxs) {
-          Text("Idiomas do Assistente de Voz")
-            .scaledFont(size: OmiType.subheading, weight: .medium)
-            .foregroundColor(Ink.primary)
-
-          Text(
-            "Idiomas que você fala com o Omi ao apertar para falar (o primeiro é o principal). O Omi identifica qual deles você está falando a cada vez."
-          )
-          .scaledFont(size: OmiType.body)
-          .foregroundColor(Ink.secondary)
-          .fixedSize(horizontal: false, vertical: true)
-        }
-
-        Spacer()
-      }
-
-      FlowLayout(spacing: OmiSpacing.xs) {
-        ForEach(chipOptions, id: \.code) { option in
-          languageChip(option)
-        }
-        if !addableLanguages.isEmpty {
-          SearchableDropdown(
-            title: "Adicionar idioma",
-            label: "Mais…",
-            options: addableLanguages.map { option in
-              SearchableDropdownOption(id: option.code, title: option.name)
-            },
-            selectedId: nil
-          ) { option in
-            selection.append(option.id)
-            persist()
-          }
-          .fixedSize()
-        }
-      }
-    }
-    .onAppear {
-      selection = AssistantSettings.shared.voiceLanguages
-    }
-  }
-
-  private func languageChip(_ option: (code: String, name: String)) -> some View {
-    let isSelected = selection.contains(option.code)
-    let isPrimary = selection.first == option.code
-    return Button(action: {
-      if let idx = selection.firstIndex(of: option.code) {
-        selection.remove(at: idx)
-      } else {
-        selection.append(option.code)
-      }
-      persist()
-    }) {
-      Text(isPrimary ? "\(option.name) ✓" : option.name)
-        .scaledFont(size: OmiType.caption, weight: isSelected ? .semibold : .regular)
-        .foregroundColor(isSelected ? Ink.surface : Ink.secondary)
-        .padding(.horizontal, OmiSpacing.sm)
-        .padding(.vertical, OmiSpacing.xs)
-        .background(
-          Capsule().fill(isSelected ? Ink.primary : Color.clear)
-            .overlay(Capsule().stroke(Ink.hairline, lineWidth: isSelected ? 0 : 1))
-        )
-    }
-    .buttonStyle(.plain)
-  }
-
-  private func persist() {
-    guard !selection.isEmpty else {
-      // Never store an empty set — fall back to the current stored value.
-      selection = AssistantSettings.shared.voiceLanguages
-      return
-    }
-    AssistantSettings.shared.voiceLanguages = selection
-    selection = AssistantSettings.shared.voiceLanguages
-    // The voiceLanguages setter posts .voiceLanguagesDidChange; the hub controller
-    // observes it to prewarm the LID model and re-warm the session's instructions.
-  }
-}
-
 /// One-line notice that meetings in the selected language use cloud STT, because no on-device
 /// Parakeet model covers it (`STTLanguageCapability`). Intel Macs are always cloud, so no notice.
 struct CloudTranscriptionLanguageHint: View {

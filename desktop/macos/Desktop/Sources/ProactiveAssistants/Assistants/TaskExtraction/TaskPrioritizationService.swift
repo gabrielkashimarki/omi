@@ -283,7 +283,7 @@ actor TaskPrioritizationService {
         contextSection: contextSection,
         taskLines: taskLines,
         maxMoves: runPolicy.maxTasksPerRequest,
-        today: ChatPromptBuilder.currentCalendarDay()
+        today: PromptCalendarDay.current()
       )
 
       let responseText: String

@@ -2,7 +2,7 @@ import Combine
 import CryptoKit
 import Foundation
 
-/// Watches trial metadata and posts floating-bar notifications at key thresholds:
+/// Watches trial metadata and posts system notifications at key thresholds:
 /// - 24 hours remaining (once)
 /// - 1 hour remaining (once)
 /// - Trial expired (once)
@@ -34,14 +34,14 @@ final class TrialBannerService {
   func start(
     appState: AppState,
     presenter: @escaping NotificationPresenter = { ownerID, title, message in
-      FloatingControlBarManager.shared.showNotification(
+      NotificationService.shared.sendNotification(
         ownerID: ownerID,
         title: title,
         message: message,
         assistantId: "trial",
-        sound: .default,
-        kind: .trial
+        respectFrequency: false
       )
+      return .queued
     }
   ) {
     cancellable?.cancel()

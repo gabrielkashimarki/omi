@@ -274,9 +274,7 @@ actor MemoryAssistant: ProactiveAssistant {
     if notificationsEnabled {
       await sendMemoryNotification(
         ownerID: ownerID,
-        memory: memory,
-        result: memoryResult,
-        windowTitle: windowTitle
+        memory: memory
       )
     }
     guard RuntimeOwnerIdentity.currentOwnerId() == ownerID else { return }
@@ -309,9 +307,7 @@ actor MemoryAssistant: ProactiveAssistant {
   /// Send a notification for the extracted memory
   private func sendMemoryNotification(
     ownerID: String,
-    memory: ExtractedMemory,
-    result: MemoryExtractionResult,
-    windowTitle: String?
+    memory: ExtractedMemory
   ) async {
     // One category, one name: every memory notification presents as "Memory" — the
     // "Wisdom Captured" variant read as an unclassifiable notification type.
@@ -319,24 +315,13 @@ actor MemoryAssistant: ProactiveAssistant {
     // memory itself. Prefixing "New memory:" stacked a third copy of the same word.
     let title = "Memória salva"
     let message = memory.content
-    let context = FloatingBarNotificationContext(
-      sourceTitle: title,
-      assistantId: identifier,
-      sourceApp: memory.sourceApp.isEmpty ? nil : memory.sourceApp,
-      windowTitle: windowTitle,
-      contextSummary: result.contextSummary,
-      currentActivity: result.currentActivity,
-      reasoning: nil,
-      detail: memory.content
-    )
 
     await MainActor.run {
       NotificationService.shared.sendNotification(
         ownerID: ownerID,
         title: title,
         message: message,
-        assistantId: identifier,
-        context: context
+        assistantId: identifier
       )
     }
   }

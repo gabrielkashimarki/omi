@@ -87,12 +87,6 @@ struct SettingsSearchItem: Identifiable {
       keywords: ["language", "multilingual", "single language"], section: .transcription,
       icon: "waveform", settingId: "transcription.languagemode"),
     SettingsSearchItem(
-      name: "Idiomas do Assistente de Voz",
-      subtitle: "Idiomas que você fala com o Omi ao apertar para falar",
-      keywords: ["voice", "push to talk", "ptt", "language", "russian", "multilingual"],
-      section: .transcription, icon: "person.wave.2",
-      settingId: "transcription.voicelanguages"),
-    SettingsSearchItem(
       name: "Vocabulário Personalizado",
       subtitle: "Melhora o reconhecimento de nomes, marcas e termos técnicos",
       keywords: ["vocabulary", "words", "custom words", "dictionary"], section: .transcription,
@@ -252,20 +246,6 @@ struct SettingsSearchItem: Identifiable {
       keywords: ["statistics", "conversations", "usage"], section: .advanced, icon: "chart.bar",
       settingId: "advanced.stats"),
     SettingsSearchItem(
-      name: "Provedor de IA", subtitle: "Escolha entre sua conta do Omi e o Claude para o chat do desktop",
-      keywords: ["provider", "agent sdk", "claude code", "acp", "bridge mode"], section: .advanced,
-      icon: "cpu", settingId: "aichat.provider"),
-    SettingsSearchItem(
-      name: "Espaço de Trabalho", subtitle: "Defina uma pasta de projeto para o contexto do chat no desktop",
-      keywords: ["workspace", "project", "directory", "folder", "working directory"],
-      section: .advanced, icon: "cpu", settingId: "aichat.workspace"),
-    SettingsSearchItem(
-      name: "Extensão do Navegador",
-      subtitle: "Permite que a IA use seu navegador Chrome com todas as suas sessões logadas",
-      keywords: [
-        "playwright", "chrome", "browser extension", "browser", "set up", "reconfigure", "token",
-      ], section: .advanced, icon: "cpu", settingId: "aichat.browserextension"),
-    SettingsSearchItem(
       name: "Modo Desenvolvedor", subtitle: "Ferramentas de desenvolvedor e opções de depuração",
       keywords: ["developer", "debug", "dev mode", "development"], section: .advanced, icon: "cpu",
       settingId: "aichat.devmode"),
@@ -278,61 +258,6 @@ struct SettingsSearchItem: Identifiable {
       subtitle: "Sugere novas metas todo dia com base nas suas conversas e tarefas",
       keywords: ["auto generate", "suggest goals", "daily goals"], section: .advanced,
       icon: "target", settingId: "advanced.goals.autogenerate"),
-    SettingsSearchItem(
-      name: "Barra Flutuante",
-      subtitle: "Configure a aparência e a visibilidade da barra flutuante",
-      keywords: ["floating bar", "ask omi", "show bar"], section: .floatingBar, icon: "sparkles",
-      settingId: "floatingbar.show"),
-    // HIDDEN DELIBERATELY (Nik, 2026-08-25): search entries for hidden floating-bar rows.
-    // SettingsSearchItem(
-    // name: "Notification Previews",
-    // subtitle: "Show assistant notifications under the Floating Bar",
-    // keywords: ["notification preview", "floating bar notification", "mute preview", "focus", "dnd"],
-    // section: .floatingBar, icon: "sparkles", settingId: "floatingbar.notificationpreviews"),
-    // SettingsSearchItem(
-    // name: "Background Style", subtitle: "Toggle between solid and transparent background",
-    // keywords: ["background", "solid", "transparent", "blur"], section: .floatingBar,
-    // icon: "sparkles", settingId: "floatingbar.background"),
-    // SettingsSearchItem(
-    // name: "Draggable Floating Bar",
-    // subtitle: "Allow repositioning the floating bar by dragging it",
-    // keywords: ["drag", "move", "reposition", "draggable"], section: .floatingBar,
-    // icon: "sparkles", settingId: "floatingbar.draggable"),
-    SettingsSearchItem(
-      name: "Perguntas Digitadas", subtitle: "Fala as respostas em voz alta para perguntas digitadas na barra flutuante",
-      keywords: ["typed", "text", "speech", "tts", "audio answers"], section: .floatingBar,
-      icon: "sparkles", settingId: "floatingbar.typedvoiceanswers"),
-    SettingsSearchItem(
-      name: "Compartilhar Tela no Chat",
-      subtitle: "Deixa o Perguntar ao Omi capturar sua tela quando você pergunta sobre ela",
-      keywords: ["screenshot", "screen", "capture", "share screen", "vision", "see my screen"],
-      section: .floatingBar, icon: "camera.viewfinder", settingId: "floatingbar.screenshare"),
-    SettingsSearchItem(
-      name: "Velocidade da Voz", subtitle: "Ajuste a velocidade de reprodução das respostas em voz",
-      keywords: ["voice speed", "speech speed", "playback speed", "tts speed"],
-      section: .floatingBar, icon: "sparkles", settingId: "floatingbar.voicespeed"),
-    SettingsSearchItem(
-      name: "Atalhos", subtitle: "Configure os atalhos de teclado de Abrir o Omi e de apertar para falar",
-      keywords: ["shortcuts", "keyboard", "hotkeys", "push to talk"], section: .shortcuts,
-      icon: "keyboard", settingId: "floatingbar.shortcut"),
-    SettingsSearchItem(
-      name: "Atalho de Abrir o Omi", subtitle: "Atalho global para abrir o app do Omi de qualquer lugar",
-      keywords: ["shortcut", "hotkey", "keyboard", "global shortcut"], section: .shortcuts,
-      icon: "keyboard", settingId: "floatingbar.shortcut"),
-    SettingsSearchItem(
-      name: "Apertar para Falar", subtitle: "Segure uma tecla para falar e solte para enviar sua pergunta à IA",
-      keywords: ["push to talk", "ptt", "hold to talk", "microphone key"], section: .shortcuts,
-      icon: "keyboard", settingId: "floatingbar.ptt"),
-    SettingsSearchItem(
-      name: "Toque Duplo para o Modo Travado",
-      subtitle: "Toque duas vezes na tecla de apertar para falar para continuar ouvindo sem usar as mãos",
-      keywords: ["double tap", "locked mode", "hands free", "listening"], section: .shortcuts,
-      icon: "keyboard", settingId: "floatingbar.doubletap"),
-    SettingsSearchItem(
-      name: "Sons de Apertar para Falar",
-      subtitle: "Toca um som ao iniciar e terminar a entrada de voz",
-      keywords: ["sounds", "audio feedback", "ptt sounds"], section: .shortcuts, icon: "keyboard",
-      settingId: "floatingbar.pttsounds"),
     SettingsSearchItem(
       name: "Abrir ao Iniciar a Sessão", subtitle: "Abre o Omi automaticamente quando você inicia a sessão",
       keywords: ["startup", "login", "boot"], section: .advanced, icon: "slider.horizontal.3",
@@ -388,10 +313,8 @@ enum SettingsSidebarRoutes {
     .account,
     .transcription,
     .rewind,
-    .floatingBar,
     .notifications,
     .permissions,
-    .shortcuts,
     .advanced,
     .referral,
     .about,
@@ -570,9 +493,6 @@ struct SettingsSidebarItem: View {
     case .privacy: return "lock.shield"
     case .account: return "person.circle"
     case .planUsage: return "creditcard"
-    case .aiChat: return "cpu"
-    case .floatingBar: return "sparkles"
-    case .shortcuts: return "keyboard"
     case .advanced: return "cpu"
     case .referral: return "gift"
     case .about: return "info.circle"
@@ -581,59 +501,53 @@ struct SettingsSidebarItem: View {
   }
 
   var body: some View {
-    Group {
-      if section == .aiChat {
-        EmptyView()
-      } else {
-        Button(action: onTap) {
-          // The settings kit's row metrics rather than generic spacing tokens, so a row in the
-          // table of contents and a row in the pane beside it are the same object at the same
-          // rhythm — and so the narrower sidebar keeps the longest label off its own edge.
-          HStack(spacing: SettingsGlassMetrics.rowContentSpacing) {
-            Image(systemName: icon)
-              .scaledFont(size: OmiType.subheading)
-              .foregroundColor(SettingsSelection.rowIcon(isSelected: isSelected))
-              .frame(width: iconWidth)
+    Button(action: onTap) {
+      // The settings kit's row metrics rather than generic spacing tokens, so a row in the
+      // table of contents and a row in the pane beside it are the same object at the same
+      // rhythm — and so the narrower sidebar keeps the longest label off its own edge.
+      HStack(spacing: SettingsGlassMetrics.rowContentSpacing) {
+        Image(systemName: icon)
+          .scaledFont(size: OmiType.subheading)
+          .foregroundColor(SettingsSelection.rowIcon(isSelected: isSelected))
+          .frame(width: iconWidth)
 
-            Text(section.displayTitle)
-              .scaledFont(size: OmiType.body, weight: SettingsSelection.rowWeight(isSelected: isSelected))
-              .foregroundColor(Ink.primary)
-              .lineLimit(1)
-              .truncationMode(.tail)
-              .layoutPriority(1)
+        Text(section.displayTitle)
+          .scaledFont(size: OmiType.body, weight: SettingsSelection.rowWeight(isSelected: isSelected))
+          .foregroundColor(Ink.primary)
+          .lineLimit(1)
+          .truncationMode(.tail)
+          .layoutPriority(1)
 
-            if showsMissingPermissionNotice {
-              Image(systemName: PermissionNavSymbol.missingNotice)
-                .scaledFont(size: OmiType.caption, weight: .semibold)
-                .foregroundColor(SettingsInk.notice)
-                .accessibilityHidden(true)
-            }
-
-            Spacer(minLength: 0)
-          }
-          .padding(.horizontal, SettingsGlassMetrics.rowHorizontalPadding)
-          .padding(.vertical, SettingsGlassMetrics.rowVerticalPadding)
-          .contentShape(Rectangle())
-          .background(
-            // The top bar's pill ladder, so the current page is marked the way the current tab is.
-            // See `SettingsSelection`.
-            RoundedRectangle(cornerRadius: SettingsGlassMetrics.controlRadius, style: .continuous)
-              .fill(SettingsSelection.rowFill(isSelected: isSelected, isHovering: isHovered))
-          )
+        if showsMissingPermissionNotice {
+          Image(systemName: PermissionNavSymbol.missingNotice)
+            .scaledFont(size: OmiType.caption, weight: .semibold)
+            .foregroundColor(SettingsInk.notice)
+            .accessibilityHidden(true)
         }
-        .buttonStyle(.plain)
-        .onHover { hovering in
-          isHovered = hovering
-        }
-        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
-        .accessibilityLabel(
-          Text(
-            showsMissingPermissionNotice
-              ? "\(section.displayTitle), permissões necessárias"
-              : section.displayTitle)
-        )
+
+        Spacer(minLength: 0)
       }
+      .padding(.horizontal, SettingsGlassMetrics.rowHorizontalPadding)
+      .padding(.vertical, SettingsGlassMetrics.rowVerticalPadding)
+      .contentShape(Rectangle())
+      .background(
+        // The top bar's pill ladder, so the current page is marked the way the current tab is.
+        // See `SettingsSelection`.
+        RoundedRectangle(cornerRadius: SettingsGlassMetrics.controlRadius, style: .continuous)
+          .fill(SettingsSelection.rowFill(isSelected: isSelected, isHovering: isHovered))
+      )
     }
+    .buttonStyle(.plain)
+    .onHover { hovering in
+      isHovered = hovering
+    }
+    .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
+    .accessibilityLabel(
+      Text(
+        showsMissingPermissionNotice
+          ? "\(section.displayTitle), permissões necessárias"
+          : section.displayTitle)
+    )
   }
 }
 

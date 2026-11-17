@@ -45,14 +45,12 @@ struct SBOnboardingView: View {
 
   init(
     appState: AppState,
-    chatProvider: ChatProvider,
     importConnectorStatusStore: ImportConnectorStatusStore,
     onComplete: (() -> Void)?
   ) {
     _model = StateObject(
       wrappedValue: SBOnboardingModel(
         appState: appState,
-        chatProvider: chatProvider,
         importConnectorStatusStore: importConnectorStatusStore,
         onComplete: onComplete
       ))
@@ -104,11 +102,6 @@ struct SBOnboardingView: View {
       )
       .frame(width: 520, height: 620)
     }
-    // Safety net: the `.shortcut` step suspends global hotkeys and nulls the main
-    // menu (restored only via the advance/skip/complete buttons). If the view is
-    // removed by any other path (e.g. auth flips to signed-out), restore them here
-    // so hotkeys/menu aren't left disabled until relaunch. Idempotent when unarmed.
-    .onDisappear { model.disarmShortcutSummon() }
   }
 
   private func panel(in panelSize: CGSize) -> some View {
@@ -163,12 +156,6 @@ struct SBOnboardingView: View {
         .onChange(of: model.thread.count) { _, _ in scrollDown(proxy) }
         .onChange(of: model.showWidget) { _, _ in scrollDown(proxy) }
         .onChange(of: model.streamingText) { _, _ in scrollDown(proxy) }
-        .onChange(of: model.shortcutPicked) { _, _ in scrollDown(proxy) }
-        .onChange(of: model.shortcutPressed) { _, _ in scrollDown(proxy) }
-        // Tapping "Custom shortcut" enters recording mode, which expands the widget with
-        // instructions/refusal text below the preset rows. Without this scroll trigger the new
-        // content is clipped below the fold.
-        .onChange(of: model.shortcutRecording) { _, _ in scrollDown(proxy) }
         // Revealing the assistants list grows the widget *below* the fold, so without this the
         // rows it just opened are clipped by the card's lower edge and nothing moves.
         .onChange(of: showAIAssistants) { _, _ in scrollDown(proxy) }
@@ -307,9 +294,6 @@ struct SBOnboardingView: View {
       permStepWidget("notifications", "Notificações", "um resumo no fim do dia, nos dias em que você gravar uma conversa") {
         model.answerNotifications()
       }
-    case .shortcutOpen: shortcutWidget(isTalk: false)
-    case .shortcutTalk: shortcutWidget(isTalk: true)
-    case .screenDemo: screenDemoWidget
     case .agents: agentsWidget
     case .context: contextWidget
     case .capture: captureWidget
@@ -602,204 +586,6 @@ struct SBOnboardingView: View {
       }
       .frame(maxWidth: 380, alignment: .leading)
     }
-  }
-
-  /// A physical-looking keycap (symbol + key name for modifiers, centered glyph
-  /// otherwise), mirroring the legacy OnboardingKeyCapView. Lights up when `active`.
-  private static let keyNames: [String: String] = [
-    "⌘": "command", "⇧": "shift", "⌥": "option", "⌃": "control", "↩": "return", "⏎": "return",
-  ]
-
-  @ViewBuilder
-  private func keycap(_ text: String, active: Bool = false) -> some View {
-    let name = Self.keyNames[text]
-    Group {
-      if let name {
-        VStack(spacing: 1) {
-          Text(text).font(.system(size: 14, weight: .semibold)).frame(maxWidth: .infinity, alignment: .leading)
-          Text(name).font(.system(size: 8, weight: .medium)).lineLimit(1).fixedSize()
-            .frame(maxWidth: .infinity, alignment: .center)
-        }
-      } else {
-        Text(text).font(.system(size: 15, weight: .semibold))
-      }
-    }
-    // A keycap is a control, so its outline is `Ink.hairline` rather than a card's `separator`, and
-    // it inverts when struck — `Ink.primary` fill with an `Ink.surface` glyph, the same inversion the
-    // primary button and the granted checkbox use. The 1 pt black drop under it is gone: on glass a
-    // tight dark shadow reads as dirt, and the panel already carries the one ambient shadow.
-    .foregroundStyle(active ? Ink.surface : Ink.primary)
-    .frame(minWidth: 34, minHeight: 34)
-    .padding(.horizontal, 7).padding(.vertical, 5)
-    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(active ? Ink.primary : Ink.rowFill))
-    .overlay(
-      RoundedRectangle(cornerRadius: 8, style: .continuous)
-        .strokeBorder(active ? Color.clear : Ink.hairline, lineWidth: 1.5)
-    )
-    .animation(InkReduceMotion.animation(.easeOut(duration: InkMotion.checkbox)), value: active)
-    .fixedSize()
-  }
-
-  // MARK: summon shortcut
-
-  private var shortcutOptionShape: RoundedRectangle {
-    RoundedRectangle(cornerRadius: PageGlass.rowRadius, style: .continuous)
-  }
-
-  private func shortcutWidget(isTalk: Bool) -> some View {
-    let options = isTalk ? model.talkShortcutOptions : model.openShortcutOptions
-    return VStack(alignment: .leading, spacing: 9) {
-      ForEach(options, id: \.id) { opt in
-        Button {
-          model.pickShortcut(opt.shortcut, isTalk: isTalk)
-        } label: {
-          HStack(spacing: 8) {
-            HStack(spacing: 5) {
-              ForEach(opt.shortcut.displayTokens, id: \.self) { tok in keycap(tok) }
-            }
-            Text(opt.sub).inkStyle(InkType.statusLabel, color: Ink.secondary)
-              .fixedSize(horizontal: false, vertical: true)
-            Spacer()
-            if model.chosenShortcut == opt.shortcut {
-              Text("✓").inkStyle(InkType.statusLabel, color: Ink.primary)
-            }
-          }
-          .padding(.horizontal, 14).padding(.vertical, 11)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          // A pressable option, so it keeps an outline at rest (`Ink.hairline`, a control's edge)
-          // rather than the list-row treatment, where rest is genuinely nothing. The selection is
-          // carried by the fill — a row of outlined boxes with one heavier outline is not a choice
-          // anyone can see at a glance.
-          .background(shortcutOptionShape.fill(model.chosenShortcut == opt.shortcut ? Ink.rowFillHover : .clear))
-          .overlay(shortcutOptionShape.strokeBorder(Ink.hairline, lineWidth: 1))
-          .contentShape(shortcutOptionShape)
-        }
-        .buttonStyle(.plain)
-      }
-      Button {
-        model.beginShortcutRecording(isTalk: isTalk)
-      } label: {
-        HStack(spacing: 8) {
-          Image(systemName: "keyboard")
-            .font(.system(size: 13, weight: .medium))
-          Text("Atalho personalizado").inkStyle(InkType.rowCopy, color: Ink.primary)
-          Spacer()
-          Text(model.shortcutRecording ? "Aperte agora" : "Defina o seu")
-            .inkStyle(InkType.statusLabel, color: Ink.secondary)
-        }
-        .padding(.horizontal, 14).padding(.vertical, 11)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(shortcutOptionShape.fill(model.shortcutRecording ? Ink.rowFillHover : .clear))
-        .overlay(shortcutOptionShape.strokeBorder(Ink.hairline, lineWidth: 1))
-        .contentShape(shortcutOptionShape)
-      }
-      .buttonStyle(.plain)
-      if model.shortcutRecording {
-        // A bare key is refused (`acceptsRecordedChord`) because a global bare `L` would make every
-        // `L` typed anywhere open Omi. The refusal used to be silent, so the step looked broken to
-        // anyone who pressed one; this is the refusal said out loud, in place of the instruction it
-        // has just answered.
-        Text(
-          model.shortcutNeedsModifier
-            ? "Essa tecla sozinha não serve, adicione ⌘, ⌃ ou ⌥."
-            : "Aperte o atalho que você quer usar."
-        )
-        .inkStyle(InkType.rowCopy, color: Ink.primary)
-        .fixedSize(horizontal: false, vertical: true)
-        .padding(.top, 6)
-      } else if let error = model.shortcutRegistrationError {
-        Text(error)
-          .inkStyle(InkType.rowCopy, color: Ink.errorRed)
-          .fixedSize(horizontal: false, vertical: true)
-          .padding(.top, 6)
-      } else if model.shortcutPicked {
-        VStack(alignment: .leading, spacing: 10) {
-          HStack(spacing: 6) {
-            ForEach(model.shortcutTokens, id: \.self) { tok in keycap(tok, active: model.shortcutPressed) }
-          }
-          // Confirmation is the one line here that gets the ink: "that works" is the answer the user
-          // pressed the key to find out, and it has to outrank the instruction it replaces.
-          Text(
-            model.shortcutPressed
-              ? "Perfeito, funcionou."
-              : "Teste agora, ou continue."
-          )
-          .inkStyle(InkType.rowCopy, color: model.shortcutPressed ? Ink.primary : Ink.secondary)
-          .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(.top, 6)
-      }
-      // Accepting a choice is required; the test press is optional encouragement.
-      Group {
-        if model.canContinueShortcut {
-          SBInkButton(title: "Continuar", isDefaultAction: true) {
-            isTalk ? model.answerShortcutTalk() : model.answerShortcutOpen()
-          }
-        }
-      }
-      .padding(.top, 6)
-    }
-    .frame(maxWidth: 380, alignment: .leading)
-  }
-
-  // MARK: screen + voice demo
-
-  private var screenDemoWidget: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      if model.screenDemoPTTReady {
-        VStack(alignment: .leading, spacing: 8) {
-          Text("Três portas. Três enigmas. Elas abrem no seu navegador.")
-            .inkStyle(InkType.rowCopy, color: Ink.primary)
-            .fixedSize(horizontal: false, vertical: true)
-          HStack(spacing: 5) {
-            Text("Se travar, segure").inkStyle(InkType.rowCopy, color: Ink.primary)
-            ForEach(model.voiceChordTokens, id: \.self) { tok in keycap(tok) }
-            Text("e diga o que a página pede.").inkStyle(InkType.rowCopy, color: Ink.primary)
-          }
-          Text("Eu vejo a página e respondo no topo da tela.")
-            .inkStyle(InkType.statusLabel, color: Ink.secondary)
-            .fixedSize(horizontal: false, vertical: true)
-          if model.threeDoorsOpened {
-            Button("Abrir as portas de novo") { model.openThreeDoorsPage() }
-              .buttonStyle(InkButtonStyle(kind: .secondary))
-          } else {
-            SBInkButton(title: "Abrir as portas", isDefaultAction: true) { model.openThreeDoorsPage() }
-          }
-        }
-      } else if model.screenDemoPTTUnavailable {
-        VStack(alignment: .leading, spacing: 8) {
-          Text("A configuração de voz ainda não está disponível. Você pode tentar de novo ou pular por enquanto.")
-            .inkStyle(InkType.rowCopy, color: Ink.primary)
-            .fixedSize(horizontal: false, vertical: true)
-          Button("Tentar de novo") {
-            model.startScreenDemo()
-          }
-          .buttonStyle(InkButtonStyle(kind: .secondary))
-        }
-      } else {
-        HStack(spacing: 8) {
-          ProgressView().controlSize(.small)
-          Text("Preparando a voz…").inkStyle(InkType.rowCopy, color: Ink.secondary)
-        }
-      }
-      // Skip for now is always offered, so the step never traps someone whose demo did not fire;
-      // Continue replaces it once Omi has answered (`SBOnboardingModel.screenDemoFooter`).
-      Group {
-        switch model.screenDemoFooter {
-        case .continue:
-          SBInkButton(title: "Continuar", isDefaultAction: true) { model.answerScreenDemo() }
-        case .skip:
-          Button {
-            model.answerScreenDemo()
-          } label: {
-            Text("Pular por enquanto").frame(maxWidth: .infinity)
-          }
-          .buttonStyle(InkButtonStyle(kind: .secondary))
-        }
-      }
-      .padding(.top, 6)
-    }
-    .frame(maxWidth: 380, alignment: .leading)
   }
 
   // MARK: agents + context connectors

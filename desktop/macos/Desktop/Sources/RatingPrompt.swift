@@ -109,10 +109,6 @@ final class RatingPromptManager: ObservableObject {
   }
 
   private init() {
-    historyFetch = { owner in
-      try await APIClient.shared.getMessages(
-        limit: 100, expectedOwnerId: owner == "anonymous" ? nil : owner)
-    }
     configFetch = {
       try await APIClient.shared.getCsatConfig()
     }
@@ -257,64 +253,8 @@ final class RatingPromptManager: ObservableObject {
     refresh()
   }
 
-  /// Users who already asked 3+ questions before this build ship must see
-  /// the ask on their NEXT LAUNCH, not after three more questions: a one-shot
-  /// seed of the counter from server chat history. Fetch failure leaves the
-  /// marker unset so the next launch retries.
-  /// Injectable for tests; production asks the backend for the owner's own
-  /// messages, owner-asserted end to end (expectedOwnerId). Assigned in init
-  /// (APIClient is actor-isolated, so it cannot be a property default).
-  var historyFetch: (String) async throws -> [ChatMessageDB]
   /// Injectable for tests; production reads the real auth state.
   var isSignedInCheck: () -> Bool = { AuthState.shared.isSignedIn }
-
-  func seedFromHistoryIfNeeded() async {
-    // Same launch seam: every caller that seeds also starts the config poll.
-    startConfigPolling()
-    // Owner-fenced: the seed reads and WRITES the account that started it.
-    // The fetch carries expectedOwnerId, and if the signed-in owner changed
-    // while the request was in flight the result is discarded — account B
-    // must never be seeded from account A's history.
-    let owner = ownerProvider()
-    // The fetched threshold if the config poll has landed, else the default.
-    let threshold = config.questionThreshold
-    guard !(defaults.object(forKey: scopedKey("historySeeded")) as? Bool ?? false) else { return }
-    guard submittedRating == 0, !isDismissed,
-      questionCount < threshold
-    else {
-      defaults.set(true, forKey: scopedKey("historySeeded"))
-      return
-    }
-    // Launch timing: auth/session may not be ready at first .task — retry a
-    // few times before deferring to the next launch (marker stays unset).
-    var history: [ChatMessageDB] = []
-    var fetched = false
-    for attempt in 1...5 {
-      guard ownerProvider() == owner, !Task.isCancelled else { return }
-      if isSignedInCheck(),
-        let result = try? await historyFetch(owner)
-      {
-        history = result
-        fetched = true
-        break
-      }
-      log("RatingPrompt: history seed attempt \(attempt) not ready, retrying")
-      try? await Task.sleep(nanoseconds: 15_000_000_000)
-    }
-    guard fetched, ownerProvider() == owner, !Task.isCancelled else { return }
-    let asked = history.filter { $0.sender == "human" }.count
-    log("RatingPrompt: history seed fetched \(history.count) messages, \(asked) questions")
-    if asked >= threshold {
-      // Merge, never decrease: questions asked live while the history fetch
-      // was in flight already advanced the persisted count past the seed
-      // value, and the seed must not roll that back.
-      defaults.set(
-        max(questionCount, threshold),
-        forKey: scopedKey("questionCount"))
-    }
-    defaults.set(true, forKey: scopedKey("historySeeded"))
-    refresh()
-  }
 
   /// Automation/testing hook: rewind the persisted state so the real trigger
   /// path can be exercised repeatedly on a dev bundle.
