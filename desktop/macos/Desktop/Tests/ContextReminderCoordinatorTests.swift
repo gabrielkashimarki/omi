@@ -36,7 +36,6 @@ final class ContextReminderCoordinatorTests: XCTestCase {
         presented.append(reminder)
         return true
       },
-      dismisser: {},
       now: { clock },
       ownerIDProvider: { "owner-1" },
       createActionItem: { _, _, _, _ in "task-1" },
@@ -73,7 +72,6 @@ final class ContextReminderCoordinatorTests: XCTestCase {
         presented.append(reminder.id)
         return true
       },
-      dismisser: {},
       now: { clock },
       calendar: Calendar(identifier: .gregorian),
       ownerIDProvider: { "owner-1" },
@@ -114,7 +112,6 @@ final class ContextReminderCoordinatorTests: XCTestCase {
       store: store,
       contextProvider: { omi },
       presenter: { _, _ in true },
-      dismisser: {},
       ownerIDProvider: { "owner-1" },
       createActionItem: { _, _, _, _ in nil },
       completeActionItem: { _, _, _ in })
@@ -131,7 +128,6 @@ final class ContextReminderCoordinatorTests: XCTestCase {
 
   func testOwnerChangeClearsInFlightDeliveryState() async throws {
     let store = try makeStore()
-    var dismissed = 0
     var presented = 0
     let coordinator = ContextReminderCoordinator(
       store: store,
@@ -140,7 +136,6 @@ final class ContextReminderCoordinatorTests: XCTestCase {
         presented += 1
         return true
       },
-      dismisser: { dismissed += 1 },
       ownerIDProvider: { "owner-1" },
       createActionItem: { _, _, _, _ in nil },
       completeActionItem: { _, _, _ in })
@@ -148,7 +143,6 @@ final class ContextReminderCoordinatorTests: XCTestCase {
     await coordinator.observe(project)
     XCTAssertEqual(presented, 1)
     coordinator.resetForOwnerChange()
-    XCTAssertEqual(dismissed, 1)
     // The in-flight delivery state must be cleared, not just the card: the same
     // place re-observed after the reset presents the reminder again.
     await coordinator.observe(project)

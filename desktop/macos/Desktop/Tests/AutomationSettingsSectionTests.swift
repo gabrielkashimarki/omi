@@ -21,7 +21,6 @@ final class AutomationSettingsSectionTests: XCTestCase {
     XCTAssertEqual(Section.automationMatch("general"), .general)
     XCTAssertEqual(Section.automationMatch("advanced"), .advanced)
     XCTAssertEqual(Section.automationMatch("refer-a-friend"), .referral)
-    XCTAssertEqual(Section.automationMatch("shortcuts"), .shortcuts)
     XCTAssertEqual(Section.automationMatch("about"), .about)
   }
 
@@ -33,12 +32,6 @@ final class AutomationSettingsSectionTests: XCTestCase {
     // Raw-value style
     XCTAssertEqual(Section.automationMatch("plan and usage"), .planUsage)
     XCTAssertEqual(Section.automationMatch("plan-and-usage"), .planUsage)
-    XCTAssertEqual(Section.automationMatch("aichat"), .aiChat)
-    XCTAssertEqual(Section.automationMatch("ai_chat"), .aiChat)
-    XCTAssertEqual(Section.automationMatch("AI Chat"), .aiChat)
-    XCTAssertEqual(Section.automationMatch("floating-bar"), .floatingBar)
-    XCTAssertEqual(Section.automationMatch("floatingBar"), .floatingBar)
-    XCTAssertEqual(Section.automationMatch("FLOATING BAR"), .floatingBar)
   }
 
   func testMergedSidebarAliasesKeepDeepLinksRoutable() {

@@ -31,10 +31,7 @@ final class SBOnboardingLayoutTests: XCTestCase {
     let scanning = SBOnboardingWidgetShape(
       step: .files,
       localFileProfile: .scanning,
-      permission: .allow,
-      screenDemoReady: false,
-      screenDemoUnavailable: false,
-      screenDemoDone: false)
+      permission: .allow)
     var complete = scanning
     complete.localFileProfile = .complete(fileCount: 22_391, memoryCount: 16, deniedFolders: [])
 
@@ -47,29 +44,11 @@ final class SBOnboardingLayoutTests: XCTestCase {
     let waiting = SBOnboardingWidgetShape(
       step: .screen,
       localFileProfile: .idle,
-      permission: .recheck,
-      screenDemoReady: false,
-      screenDemoUnavailable: false,
-      screenDemoDone: false)
+      permission: .recheck)
     var reopen = waiting
     reopen.permission = .reopen
 
     XCTAssertNotEqual(waiting, reopen)
-  }
-
-  /// The demo arming its chord swaps a one-line spinner for a chord row plus two lines of copy.
-  func testArmingTheScreenDemoChordChangesTheWidgetShape() {
-    let preparing = SBOnboardingWidgetShape(
-      step: .screenDemo,
-      localFileProfile: .idle,
-      permission: nil,
-      screenDemoReady: false,
-      screenDemoUnavailable: false,
-      screenDemoDone: false)
-    var armed = preparing
-    armed.screenDemoReady = true
-
-    XCTAssertNotEqual(preparing, armed)
   }
 
   /// Redrawing the same state must not fire a scroll animation on every publish.
@@ -77,10 +56,7 @@ final class SBOnboardingLayoutTests: XCTestCase {
     let shape = SBOnboardingWidgetShape(
       step: .capture,
       localFileProfile: .idle,
-      permission: nil,
-      screenDemoReady: false,
-      screenDemoUnavailable: false,
-      screenDemoDone: true)
+      permission: nil)
 
     XCTAssertEqual(shape, shape)
   }

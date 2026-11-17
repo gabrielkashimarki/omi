@@ -13,7 +13,7 @@ final class SBOnboardingLanguageCopyTests: XCTestCase {
   }
 
   func testDetectedLanguageDetailIsShownOnlyForAMacLocalePrefill() {
-    let model = SBOnboardingModel(appState: AppState(), chatProvider: ChatProvider(), onComplete: nil)
+    let model = SBOnboardingModel(appState: AppState(), onComplete: nil)
 
     model.prefillDetectedLanguage(from: "es")
 
@@ -22,7 +22,7 @@ final class SBOnboardingLanguageCopyTests: XCTestCase {
   }
 
   func testExistingLanguageDraftIsNotRelabeledAsMacDetected() {
-    let model = SBOnboardingModel(appState: AppState(), chatProvider: ChatProvider(), onComplete: nil)
+    let model = SBOnboardingModel(appState: AppState(), onComplete: nil)
     model.languageDraft = "English"
 
     model.prefillDetectedLanguage(from: "es")

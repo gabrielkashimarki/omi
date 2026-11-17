@@ -109,7 +109,6 @@ enum RewindStorageTestIsolation {
     await StagedTaskStorage.shared.invalidateCache()
     await GoalStorage.shared.invalidateCache()
     await ProactiveStorage.shared.invalidateCache()
-    await TaskChatMessageStorage.shared.invalidateCache()
   }
 
   static func userDirectory(for testUserId: String) -> URL {

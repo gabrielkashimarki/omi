@@ -39,7 +39,6 @@ final class SBOnboardingCloudContextStateTests: XCTestCase {
       forKey: SBOnboardingModel.resumeStepKey)
     let model = SBOnboardingModel(
       appState: appState,
-      chatProvider: ChatProvider(),
       onComplete: nil)
 
     model.begin()
@@ -52,10 +51,8 @@ final class SBOnboardingCloudContextStateTests: XCTestCase {
       [
         "completed_flag_with_active_stage",
         "completed_flag_with_resume_state",
-        "completed_flag_with_active_journal",
       ])
     XCTAssertTrue(appState.hasCompletedOnboarding)
-    XCTAssertTrue(model.chatProvider.isOnboarding)
   }
 
   func testMemoryContextRowsRouteToCanonicalImportConnectors() {
@@ -122,7 +119,6 @@ final class SBOnboardingCloudContextStateTests: XCTestCase {
     let statusStore = ImportConnectorStatusStore(defaults: testDefaults.defaults, sessionUserID: "test-user")
     let model = SBOnboardingModel(
       appState: AppState(),
-      chatProvider: ChatProvider(),
       importConnectorStatusStore: statusStore,
       onComplete: nil)
 
@@ -160,7 +156,6 @@ final class SBOnboardingCloudContextStateTests: XCTestCase {
     let statusStore = ImportConnectorStatusStore(defaults: testDefaults.defaults, sessionUserID: "test-user")
     let model = SBOnboardingModel(
       appState: AppState(),
-      chatProvider: ChatProvider(),
       importConnectorStatusStore: statusStore,
       onComplete: nil)
 
@@ -195,7 +190,6 @@ final class SBOnboardingCloudContextStateTests: XCTestCase {
   func testPersistedEmailConnectorIDUpdatesGmailContextRow() {
     let model = SBOnboardingModel(
       appState: AppState(),
-      chatProvider: ChatProvider(),
       onComplete: nil)
 
     model.markPersistedContextConnectorConnected("email")
@@ -217,7 +211,7 @@ final class SBOnboardingCloudContextStateTests: XCTestCase {
   func testContextCanAdvanceWhileGoogleConnectorsArePendingOrFailed() {
     for state in ["connecting", "needsSignIn", "error", "on"] {
       let appState = AppState()
-      let model = SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+      let model = SBOnboardingModel(appState: appState, onComplete: nil)
       model.step = .context
       model.contextStates = ["gmail": state, "calendar": "connecting"]
       model.answerContext()

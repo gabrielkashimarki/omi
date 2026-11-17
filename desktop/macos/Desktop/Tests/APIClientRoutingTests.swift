@@ -546,55 +546,6 @@ final class APIClientRoutingTests: XCTestCase {
     XCTAssertNotEqual(base, rust)
   }
 
-  func testRealtimeMintStructuredFailurePreservesDiagnostics() async throws {
-    let previousOwner = UserDefaults.standard.object(forKey: .authUserId)
-    let previousOverride = UserDefaults.standard.object(forKey: .automationOwnerOverride)
-    UserDefaults.standard.set("realtime-routing-owner", forKey: .authUserId)
-    UserDefaults.standard.removeObject(forKey: .automationOwnerOverride)
-    defer {
-      if let previousOwner {
-        UserDefaults.standard.set(previousOwner, forKey: .authUserId)
-      } else {
-        UserDefaults.standard.removeObject(forKey: .authUserId)
-      }
-      if let previousOverride {
-        UserDefaults.standard.set(previousOverride, forKey: .automationOwnerOverride)
-      } else {
-        UserDefaults.standard.removeObject(forKey: .automationOwnerOverride)
-      }
-    }
-    let body = Data(
-      """
-      {
-        "error": "quota exhausted",
-        "reason": "provider_quota_exceeded",
-        "provider": "openai",
-        "backend_route": "/v2/realtime/session",
-        "upstream_status_code": 429,
-        "retryable": true,
-        "code": "insufficient_quota"
-      }
-      """.utf8)
-    URLCapture.setResponse(statusCode: 429, body: body)
-    let client = await makeTestClient()
-
-    do {
-      _ = try await client.mintRealtimeToken(
-        provider: "openai",
-        expectedOwnerID: "realtime-routing-owner")
-      XCTFail("Expected structured realtime mint failure")
-    } catch let error as RealtimeTokenMintError {
-      XCTAssertEqual(error.statusCode, 429)
-      XCTAssertEqual(error.payload?.reason, "provider_quota_exceeded")
-      XCTAssertEqual(error.payload?.backendRoute, "/v2/realtime/session")
-      XCTAssertEqual(error.payload?.upstreamStatusCode, 429)
-      XCTAssertEqual(error.payload?.retryable, true)
-      XCTAssertEqual(error.healthError.failureClass.logValue, "provider_quota_exceeded")
-      XCTAssertTrue(error.localizedDescription.contains("status: 429"))
-      XCTAssertTrue(error.localizedDescription.contains("reason: provider_quota_exceeded"))
-      XCTAssertTrue(error.localizedDescription.contains("code: insufficient_quota"))
-    }
-  }
 
   func testAssignConversationSpeakerRoutesToPython() async throws {
     URLCapture.setResponse(
@@ -920,27 +871,6 @@ final class APIClientRoutingTests: XCTestCase {
       label: "fetchApiKeys")
   }
 
-  func testSynthesizeSpeechRoutesToRust() async {
-    let client = await makeTestClient()
-    _ = try? await client.synthesizeSpeech(
-      request: APIClient.TtsSynthesizeRequest(
-        text: "Hello",
-        voiceId: "onyx",
-        instructions: "Speak naturally"
-      )
-    )
-
-    let requests = URLCapture.capturedRequests
-    assertRoutes(
-      requests, host: "rust-test", port: 9002,
-      pathContains: "v1/tts/synthesize", method: "POST",
-      label: "synthesizeSpeech")
-
-    let body = requests.first?.body.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
-    XCTAssertEqual(body?["text"] as? String, "Hello")
-    XCTAssertEqual(body?["voice_id"] as? String, "onyx")
-    XCTAssertEqual(body?["instructions"] as? String, "Speak naturally")
-  }
 
   // -- Assistant settings (GET → Python, migrated from Rust) --
 
@@ -1042,25 +972,9 @@ final class APIClientRoutingTests: XCTestCase {
 
   // -- Chat sessions (DELETE → Python, migrated from Rust) --
 
-  func testDeleteChatSessionRoutesToPython() async {
-    let client = await makeTestClient()
-    try? await client.deleteChatSession(sessionId: "sess-1")
-    assertRoutes(
-      URLCapture.capturedRequests, host: "python-test", port: 9001,
-      pathContains: "v2/chat-sessions/sess-1", method: "DELETE",
-      label: "deleteChatSession")
-  }
 
   // -- Desktop messages (DELETE → Python, path changed to v2/desktop/messages) --
 
-  func testDeleteMessagesRoutesToPython() async {
-    let client = await makeTestClient()
-    _ = try? await client.deleteMessages() as MessageDeleteResponse
-    assertRoutes(
-      URLCapture.capturedRequests, host: "python-test", port: 9001,
-      pathContains: "v2/desktop/messages", method: "DELETE",
-      label: "deleteMessages")
-  }
 
   // -- LLM usage (GET → Python, migrated from Rust) --
 

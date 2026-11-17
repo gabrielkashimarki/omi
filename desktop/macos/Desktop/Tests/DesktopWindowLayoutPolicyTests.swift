@@ -16,7 +16,7 @@ final class DesktopWindowLayoutPolicyTests: XCTestCase {
 
   func testMaximumContentSizeUsesTheVisibleDisplayInsteadOfTheContentLane() throws {
     guard let screen = NSScreen.main else { throw XCTSkip("No display is available") }
-    guard screen.visibleFrame.width > ChatComposerLayout.contentLaneMaxWidth else {
+    guard screen.visibleFrame.width > QueryShellLayout.contentLaneMaxWidth else {
       throw XCTSkip("The test display is not wider than the content lane")
     }
 
@@ -30,6 +30,6 @@ final class DesktopWindowLayoutPolicyTests: XCTestCase {
     let expected = window.contentRect(forFrameRect: screen.visibleFrame).size
     XCTAssertEqual(maximum.width, expected.width, accuracy: 0.01)
     XCTAssertEqual(maximum.height, expected.height, accuracy: 0.01)
-    XCTAssertGreaterThan(maximum.width, ChatComposerLayout.contentLaneMaxWidth)
+    XCTAssertGreaterThan(maximum.width, QueryShellLayout.contentLaneMaxWidth)
   }
 }

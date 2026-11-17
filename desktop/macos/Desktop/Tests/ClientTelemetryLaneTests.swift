@@ -13,127 +13,6 @@ import XCTest
       XCTAssertTrue(ClientTelemetryFlags.postHogRetirementEnabled)
       XCTAssertFalse(ClientTelemetryFlags.retiresInfrastructurePostHog)
 
-      DesktopDiagnosticsManager.shared.recordVoiceTurnTerminal(
-        turnID: UUID().uuidString,
-        reason: "success",
-        route: "hub",
-        intent: "hold",
-        durationMs: 1_000,
-        answerDelivered: true,
-        staleEventCount: 0,
-        invalidTransitionCount: 0)
-      let snapshot = try telemetrySnapshot()
-      XCTAssertEqual(snapshot["event"] as? String, "voice_turn_terminal")
-    }
-
-    func testVoiceAndFallbackShadowKeepsPostHogAndExactPopulations() throws {
-      ClientTelemetryFlags.setTransportShadowForTests(true)
-      ClientTelemetryFlags.setChannelForTests("production")
-      ClientTelemetryIdentity.setOwnerForTests { "owner-physical" }
-      let box = TelemetryObservationBox()
-      ClientTelemetryShadow.setRecorderForTests { box.append($0) }
-
-      let physical = UUID()
-      DesktopDiagnosticsManager.shared.recordVoiceTurnStarted(turnID: physical.uuidString, intent: "hold")
-      DesktopDiagnosticsManager.shared.recordVoiceTurnTerminal(
-        turnID: physical.uuidString,
-        reason: "success",
-        route: "hub",
-        intent: "hold",
-        durationMs: 4_200,
-        answerDelivered: true,
-        staleEventCount: 0,
-        invalidTransitionCount: 0)
-      DesktopDiagnosticsManager.shared.recordVoiceTurnTerminal(
-        turnID: UUID().uuidString,
-        reason: "too_short",
-        route: "hub",
-        intent: "locked",
-        durationMs: 100,
-        answerDelivered: false,
-        staleEventCount: 0,
-        invalidTransitionCount: 0)
-      DesktopDiagnosticsManager.shared.recordFallback(
-        area: "brand_new_area",
-        from: "Cloud Tasks!",
-        to: "",
-        reason: "totally_novel_failure",
-        outcome: .degraded)
-      DesktopDiagnosticsManager.shared.recordFallback(
-        area: "realtime_hub",
-        from: "openai",
-        to: "gemini",
-        reason: "auth",
-        outcome: .recovered)
-
-      let snapshot = try telemetrySnapshot()
-      XCTAssertEqual(snapshot["event"] as? String, "fallback_triggered")
-      XCTAssertEqual(snapshot["area"] as? String, "realtime_hub")
-      XCTAssertEqual(snapshot["reason"] as? String, "auth")
-
-      let voice = box.items.filter { $0.family == "voice_turn" }
-      XCTAssertEqual(voice.filter { $0.attributes["population"] == .string("physical_shortcut") }.count, 3)
-      XCTAssertEqual(voice.filter { $0.attributes["population"] == .string("floating_voice") }.count, 0)
-      let success = try XCTUnwrap(voice.first { $0.attributes["outcome"] == .string("success") })
-      XCTAssertEqual(success.attributes["latency_ms"], .int(4_200))
-      XCTAssertEqual(success.attributes["route"], .string("hub"))
-      let excluded = try XCTUnwrap(voice.first { $0.attributes["outcome"] == .string("excluded") })
-      XCTAssertNil(excluded.attributes["latency_ms"])
-      let started = try XCTUnwrap(voice.first { $0.attributes["phase"] == .string("started") })
-      XCTAssertEqual(started.attributes["operation_id"], success.attributes["operation_id"])
-
-      let novel = try XCTUnwrap(
-        box.items.first { $0.family == "fallback" && $0.attributes["area"] == .string("other") })
-      XCTAssertEqual(novel.attributes["reason"], .string("unknown"))
-      XCTAssertEqual(novel.attributes["from"], .string("unknown"))
-      XCTAssertEqual(novel.attributes["to"], .string("unknown"))
-      XCTAssertEqual(novel.attributes["outcome"], .string("degraded"))
-      let known = try XCTUnwrap(
-        box.items.first { $0.family == "fallback" && $0.attributes["area"] == .string("realtime_hub") })
-      XCTAssertEqual(known.attributes["from"], .string("openai"))
-      XCTAssertEqual(known.attributes["to"], .string("gemini"))
-      XCTAssertEqual(known.attributes["reason"], .string("auth"))
-      XCTAssertEqual(known.attributes["outcome"], .string("recovered"))
-    }
-
-    func testFloatingVoiceShadowStaysDistinctFromPhysical() {
-      _ = ChatQueryTelemetryEvent.started(floatingContext(attempt: "33333333-3333-3333-3333-333333333333"))
-      let completed = ChatQueryTelemetryEvent.completed(
-        floatingContext(attempt: "33333333-3333-3333-3333-333333333333"),
-        durationMs: 1_800,
-        metrics: emptyChatMetrics())
-      let failed = ChatQueryTelemetryEvent.failed(
-        floatingContext(attempt: "44444444-4444-4444-4444-444444444444"),
-        durationMs: 50,
-        errorClass: .timeout,
-        partialResponse: false,
-        detail: nil)
-      let mainChat = ChatQueryTelemetryEvent.started(
-        ChatQueryTelemetryContext(attemptId: UUID().uuidString, surface: "main_chat", harness: "test"))
-      let owner = "owner-float"
-      let channel = "beta"
-      let startedObservation = ClientTelemetryShadow.voiceObservation(
-        ownerID: owner,
-        channel: channel,
-        population: "floating_voice",
-        phase: "started",
-        operationRaw: "33333333-3333-3333-3333-333333333333",
-        intent: "legacy",
-        route: "floating_voice",
-        reason: nil,
-        durationMs: nil,
-        outcome: nil)
-      let completedObservation = ClientTelemetryShadow.captureMapping(completed, ownerID: owner, channel: channel)
-      let failedObservation = ClientTelemetryShadow.captureMapping(failed, ownerID: owner, channel: channel)
-      XCTAssertNil(ClientTelemetryShadow.captureMapping(mainChat, ownerID: owner, channel: channel))
-      XCTAssertEqual(startedObservation?.attributes["population"], .string("floating_voice"))
-      XCTAssertEqual(completedObservation?.attributes["population"], .string("floating_voice"))
-      XCTAssertEqual(completedObservation?.attributes["latency_ms"], .int(1_800))
-      XCTAssertEqual(completedObservation?.attributes["operation_id"], startedObservation?.attributes["operation_id"])
-      XCTAssertEqual(failedObservation?.attributes["outcome"], .string("failure"))
-      XCTAssertEqual(failedObservation?.attributes["reason"], .string("timeout"))
-      XCTAssertNil(failedObservation?.attributes["latency_ms"])
-      XCTAssertNotEqual(failedObservation?.attributes["operation_id"], startedObservation?.attributes["operation_id"])
     }
 
     func testTelemetryDedupRetryOverflowAndAuthSwap() async throws {
@@ -387,38 +266,6 @@ import XCTest
       XCTAssertTrue(honoredPending.isEmpty)
     }
 
-    func testLane3ParityFixtureMatchesVoiceFallbackAndScreenPopulations() throws {
-      let observations = lane3FixtureObservations()
-      let receipt = ClientTelemetryParity.receipt(observations: observations)
-      let fixtureURL = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .appendingPathComponent("docs/finops/lane3-parity-fixture.json")
-      let data = try Data(contentsOf: fixtureURL)
-      let root = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-      let acceptance = try XCTUnwrap(root["acceptance"] as? [String: Any])
-      XCTAssertEqual(acceptance["live_canary"] as? String, "pending")
-      XCTAssertEqual(acceptance["lane4_voice_panel"] as? String, "pending")
-      XCTAssertEqual(acceptance["lane4_fallback_triage"] as? String, "pending")
-      XCTAssertEqual(acceptance["transport_shadow_flag"] as? String, "default_off")
-      XCTAssertEqual(acceptance["desktop_health_event"] as? String, "retained")
-      XCTAssertEqual(acceptance["device_disconnected"] as? String, "retained")
-      let measured = try XCTUnwrap(root["measured"] as? [String: Any])
-      XCTAssertTrue(telemetryJSONEqual(receipt, measured))
-
-      let encoded = try XCTUnwrap(ClientTelemetryCodec.batchData(batchID: UUID(), observations: observations))
-      let body = try XCTUnwrap(String(data: encoded, encoding: .utf8))
-      XCTAssertFalse(body.contains("owner-fixture"))
-      XCTAssertFalse(body.contains("@"))
-      let physical = observations.filter { $0.attributes["population"] == .string("physical_shortcut") }
-      let floating = observations.filter { $0.attributes["population"] == .string("floating_voice") }
-      XCTAssertEqual(physical.count, 4)
-      XCTAssertEqual(floating.count, 4)
-      XCTAssertTrue(physical.allSatisfy { $0.attributes["population"] == .string("physical_shortcut") })
-      XCTAssertTrue(floating.allSatisfy { $0.attributes["population"] == .string("floating_voice") })
-    }
-
     private func telemetrySnapshot() throws -> [String: Any] {
       let url = try XCTUnwrap(DesktopDiagnosticsManager.shared.writeDiagnosticsAttachment())
       defer { try? FileManager.default.removeItem(at: url) }
@@ -558,106 +405,7 @@ extension ScreenTaskPipelineTests {
   }
 }
 
-extension ClientTelemetryShadow {
-  fileprivate static func captureMapping(
-    _ event: ChatQueryTelemetryEvent, ownerID: String, channel: String
-  ) -> ClientTelemetryObservation? {
-    switch event {
-    case .started(let context):
-      guard context.surface == "floating_voice" else { return nil }
-      return voiceObservation(
-        ownerID: ownerID, channel: channel, population: "floating_voice", phase: "started",
-        operationRaw: context.attemptId, intent: "legacy", route: "floating_voice", reason: nil, durationMs: nil,
-        outcome: nil)
-    case .completed(let context, let durationMs, _):
-      guard context.surface == "floating_voice" else { return nil }
-      return voiceObservation(
-        ownerID: ownerID, channel: channel, population: "floating_voice", phase: "terminal",
-        operationRaw: context.attemptId, intent: "legacy", route: "floating_voice", reason: nil, durationMs: durationMs,
-        outcome: "success")
-    case .failed(let context, let durationMs, let errorClass, _, _, _):
-      guard context.surface == "floating_voice" else { return nil }
-      return voiceObservation(
-        ownerID: ownerID, channel: channel, population: "floating_voice", phase: "terminal",
-        operationRaw: context.attemptId, intent: "legacy", route: "floating_voice", reason: errorClass.rawValue,
-        durationMs: durationMs, outcome: "failure")
-    case .cancelled(let context, let durationMs, let reason, _):
-      guard context.surface == "floating_voice" else { return nil }
-      return voiceObservation(
-        ownerID: ownerID, channel: channel, population: "floating_voice", phase: "terminal",
-        operationRaw: context.attemptId, intent: "legacy", route: "floating_voice", reason: reason.rawValue,
-        durationMs: durationMs, outcome: "excluded")
-    }
-  }
-}
 
-private func lane3FixtureObservations() -> [ClientTelemetryObservation] {
-  let occurredAt = Date(timeIntervalSince1970: 1_760_227_200)
-  let owner = "owner-fixture"
-  let channel = "production"
-  func voice(
-    population: String, phase: String, operation: String, intent: String, route: String, reason: String?,
-    duration: Int?, outcome: String?
-  ) -> ClientTelemetryObservation {
-    let observation = ClientTelemetryShadow.voiceObservation(
-      ownerID: owner, channel: channel, population: population, phase: phase, operationRaw: operation,
-      intent: intent, route: route, reason: reason, durationMs: duration, outcome: outcome,
-      occurredAt: occurredAt)
-    return observation
-      ?? ClientTelemetryObservation(
-        eventID: UUID(),
-        occurredAt: occurredAt,
-        platform: "macos",
-        channel: channel,
-        family: "voice_turn",
-        attributes: [
-          "operation_id": .string(operation),
-          "phase": .string(phase),
-          "population": .string(population),
-          "route": .string(route),
-          "intent": .string(intent),
-        ],
-        ownerID: owner,
-        enqueuedAt: occurredAt,
-        attemptCount: 0
-      )
-  }
-  let physicalA = "11111111-1111-1111-1111-111111111111"
-  let physicalB = "22222222-2222-2222-2222-222222222222"
-  let floatingA = "33333333-3333-3333-3333-333333333333"
-  let floatingB = "44444444-4444-4444-4444-444444444444"
-  let screen = ScreenTaskPipelineTests.screenTerminalsForFixture(occurredAt: occurredAt)
-  return [
-    voice(
-      population: "physical_shortcut", phase: "started", operation: physicalA, intent: "hold", route: "unknown",
-      reason: nil, duration: nil, outcome: nil),
-    voice(
-      population: "physical_shortcut", phase: "terminal", operation: physicalA, intent: "hold", route: "hub",
-      reason: "success", duration: 4_200, outcome: "success"),
-    voice(
-      population: "physical_shortcut", phase: "started", operation: physicalB, intent: "locked", route: "unknown",
-      reason: nil, duration: nil, outcome: nil),
-    voice(
-      population: "physical_shortcut", phase: "terminal", operation: physicalB, intent: "locked", route: "hub",
-      reason: "too_short", duration: 100, outcome: "excluded"),
-    voice(
-      population: "floating_voice", phase: "started", operation: floatingA, intent: "legacy", route: "floating_voice",
-      reason: nil, duration: nil, outcome: nil),
-    voice(
-      population: "floating_voice", phase: "terminal", operation: floatingA, intent: "legacy", route: "floating_voice",
-      reason: nil, duration: 1_800, outcome: "success"),
-    voice(
-      population: "floating_voice", phase: "started", operation: floatingB, intent: "legacy", route: "floating_voice",
-      reason: nil, duration: nil, outcome: nil),
-    voice(
-      population: "floating_voice", phase: "terminal", operation: floatingB, intent: "legacy", route: "floating_voice",
-      reason: "timeout", duration: 50, outcome: "failure"),
-    fallbackObservation(area: "realtime_hub", from: "openai", to: "gemini", reason: "auth", outcome: "recovered"),
-    fallbackObservation(
-      area: "screen_task_gate", from: "jev", to: "gemini_3_8", reason: "ocr_unusable", outcome: "degraded"),
-    fallbackObservation(area: "ptt_cascade", from: "primary", to: "none", reason: "timeout", outcome: "exhausted"),
-  ] + screen
-}
 
 private func fallbackObservation(
   area: String, from: String, to: String, reason: String, outcome: String
@@ -742,15 +490,7 @@ private func telemetryTransport(
   return ClientTelemetryTransport(directory: directory, limits: limits, dependencies: dependencies)
 }
 
-private func floatingContext(attempt: String) -> ChatQueryTelemetryContext {
-  ChatQueryTelemetryContext(attemptId: attempt, surface: "floating_voice", harness: "test")
-}
 
-private func emptyChatMetrics() -> ChatQueryCompletionMetrics {
-  ChatQueryCompletionMetrics(
-    toolCallCount: 0, toolNames: [], costUsd: 0, responseLength: 0, screenToolRequested: false,
-    screenToolSucceeded: false, screenToolApprovalRequired: false, screenToolFailureCodes: [])
-}
 
 private final class TelemetryObservationBox: @unchecked Sendable {
   private let lock = NSLock()

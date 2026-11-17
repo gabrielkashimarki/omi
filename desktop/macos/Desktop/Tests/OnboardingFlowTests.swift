@@ -286,26 +286,6 @@ final class OnboardingFlowTests: XCTestCase {
     XCTAssertEqual(nextStep, OnboardingFlow.steps.count)
   }
 
-  func testVoiceShortcutContinueUnlocksOnlyAfterReleaseFollowingObservedPress() {
-    XCTAssertFalse(
-      OnboardingFlow.shouldUnlockVoiceShortcutContinue(
-        observedShortcutPress: false,
-        voiceTurnPhase: nil
-      )
-    )
-    XCTAssertFalse(
-      OnboardingFlow.shouldUnlockVoiceShortcutContinue(
-        observedShortcutPress: true,
-        voiceTurnPhase: .recording
-      )
-    )
-    XCTAssertTrue(
-      OnboardingFlow.shouldUnlockVoiceShortcutContinue(
-        observedShortcutPress: true,
-        voiceTurnPhase: nil
-      )
-    )
-  }
 
   func testNameFieldNeverPrefillsTherePlaceholder() {
     XCTAssertEqual(OnboardingFlow.nameFieldPrefill("there"), "")

@@ -79,26 +79,6 @@ import XCTest
       XCTAssertTrue(written.contains("hello"))
     }
 
-    func testBundleIncludesSanitizedHealthSnapshots() throws {
-      DesktopDiagnosticsManager.shared.recordPTTSilentTurn(
-        source: "hub",
-        mode: "hold",
-        audioSeconds: 2.14,
-        voicedSeconds: nil,
-        peak: 0,
-        rms: 0,
-        deviceDescription: "built-in id=123 Alice private microphone",
-        micPermissionGranted: true,
-        hubActive: true)
-
-      let logPath = tempDir.appendingPathComponent("omi-dev.log").path
-      let text = DesktopDiagnosticsManager.shared.buildLocalDiagnosticsText(logPath: logPath)
-
-      XCTAssertTrue(text.contains("ptt_audio_capture_silent_turn"))
-      // The device-description PII must not survive into the snapshot section.
-      XCTAssertFalse(text.contains("Alice"))
-      XCTAssertFalse(text.contains("private microphone"))
-    }
 
     func testMissingLogFileIsReportedNotCrashed() throws {
       let missing = tempDir.appendingPathComponent("does-not-exist.log").path

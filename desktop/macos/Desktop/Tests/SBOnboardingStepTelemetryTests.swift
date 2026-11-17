@@ -25,16 +25,16 @@ final class SBOnboardingStepTelemetryTests: XCTestCase {
   private func makeModel() -> SBOnboardingModel {
     let appState = AppState()
     retainedAppState = appState
-    return SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    return SBOnboardingModel(appState: appState, onComplete: nil)
   }
 
-  func testAnalyticsNamesMatchTheLiveNineteenSteps() {
+  func testAnalyticsNamesMatchTheLiveSixteenSteps() {
     XCTAssertEqual(
       SBOnboardingModel.Step.allCases.map(\.analyticsName),
       [
         "promise", "name", "howHeard", "language", "role",
         "mic", "systemAudio", "screen", "files", "accessibility", "automation", "notifications",
-        "shortcutOpen", "shortcutTalk", "screenDemo", "agents", "context", "capture", "referral",
+        "agents", "context", "capture", "referral",
       ])
   }
 
@@ -176,17 +176,17 @@ final class SBOnboardingStepTelemetryTests: XCTestCase {
     XCTAssertEqual(properties["granted"] as? Bool, false)
   }
 
-  func testScreenDemoStepUsesThePinnedAnalyticsName() {
+  func testAgentsStepUsesThePinnedAnalyticsName() {
     startCapturing()
     let model = makeModel()
-    model.step = .screenDemo
+    model.step = .agents
     model.stepStartedAt = OnboardingStepTelemetry.now()
 
-    model.advance(userAnswer: "Continue", to: .agents)
+    model.advance(userAnswer: "Continue", to: .context)
 
     XCTAssertEqual(captured.count, 1)
-    XCTAssertEqual(captured[0].1["step"] as? String, "screenDemo")
-    XCTAssertEqual(captured[0].1["index"] as? Int, SBOnboardingModel.Step.screenDemo.rawValue)
+    XCTAssertEqual(captured[0].1["step"] as? String, "agents")
+    XCTAssertEqual(captured[0].1["index"] as? Int, SBOnboardingModel.Step.agents.rawValue)
     XCTAssertEqual(captured[0].1["skipped"] as? Bool, false)
     XCTAssertEqual(captured[0].1["exit_reason"] as? String, "answered")
   }
@@ -205,14 +205,14 @@ final class SBOnboardingStepTelemetryTests: XCTestCase {
   func testSkipOverrideMarksANonPermissionStepSkipped() {
     startCapturing()
     let model = makeModel()
-    model.step = .screenDemo
+    model.step = .agents
     model.stepStartedAt = OnboardingStepTelemetry.now()
 
     model.recordStepExit(skipped: true)
 
     XCTAssertEqual(captured.count, 1)
     XCTAssertEqual(captured[0].0, "Onboarding Step Completed")
-    XCTAssertEqual(captured[0].1["step"] as? String, "screenDemo")
+    XCTAssertEqual(captured[0].1["step"] as? String, "agents")
     XCTAssertEqual(captured[0].1["skipped"] as? Bool, true)
     XCTAssertEqual(captured[0].1["exit_reason"] as? String, "skipped")
     XCTAssertNil(captured[0].1["permission"])

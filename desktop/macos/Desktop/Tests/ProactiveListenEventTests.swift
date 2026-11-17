@@ -200,40 +200,7 @@ final class ProactiveListenEventTests: XCTestCase {
 
   // MARK: - NotificationSpeech policy (TTS delivery decision)
 
-  func testSpeechUtteranceForProactiveMessage() {
-    // Proactive messages are spoken when speech is enabled
-    let result = NotificationSpeech.utterance(
-      message: "Hey, you mentioned needing to follow up.",
-      isEnabled: true,
-      isProactive: true
-    )
-    XCTAssertEqual(result, "Hey, you mentioned needing to follow up.")
-  }
 
-  func testSpeechSilentWhenDisabled() {
-    let result = NotificationSpeech.utterance(
-      message: "Hey, you mentioned needing to follow up.",
-      isEnabled: false,
-      isProactive: true
-    )
-    XCTAssertNil(result)
-  }
 
-  func testSpeechSilentForNonProactive() {
-    let result = NotificationSpeech.utterance(
-      message: "System notice",
-      isEnabled: true,
-      isProactive: false
-    )
-    XCTAssertNil(result)
-  }
 
-  func testSpeechSilentForEmptyBody() {
-    let result = NotificationSpeech.utterance(
-      message: "   ",
-      isEnabled: true,
-      isProactive: true
-    )
-    XCTAssertNil(result)
-  }
 }

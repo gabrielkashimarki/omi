@@ -92,30 +92,7 @@ final class PresenceAwareNotificationSuppressionTests: XCTestCase {
         presence: presence(shared: false, onCall: false)))
   }
 
-  /// The visual delivery and the voice are decided separately: on a call the nudge is shown
-  /// and not spoken, which is the whole shape of this change.
-  func testOnACallTheNudgeIsShownButNotSpoken() {
-    let onCall = presence(shared: false, onCall: true)
-    XCTAssertFalse(
-      NotificationService.shouldSuppressForPresence(respectFrequency: true, presence: onCall))
-    XCTAssertNil(
-      NotificationSpeech.utterance(
-        message: "You said you'd send Maya the spec.",
-        isEnabled: true,
-        isProactive: true,
-        othersCanHear: NotificationService.shouldWithholdSpeechForPresence(presence: onCall)))
-  }
 
-  func testAloneTheSameNudgeIsSpoken() {
-    let alone = presence(shared: false, onCall: false)
-    XCTAssertEqual(
-      NotificationSpeech.utterance(
-        message: "You said you'd send Maya the spec.",
-        isEnabled: true,
-        isProactive: true,
-        othersCanHear: NotificationService.shouldWithholdSpeechForPresence(presence: alone)),
-      "You said you'd send Maya the spec.")
-  }
 
   /// The reason a withheld suggestion must not be written into the dedup window.
   ///

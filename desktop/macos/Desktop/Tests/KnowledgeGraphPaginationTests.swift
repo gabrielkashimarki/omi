@@ -429,48 +429,6 @@ final class KnowledgeGraphPaginationTests: XCTestCase {
     }
   }
 
-  func testOwnerTransitionWithoutSnapshotFailsBeforeCanonicalFetchOrRebuildRequest() async throws {
-    let pause = OwnerTransitionPause()
-    let transition = Task {
-      try await RuntimeOwnerIdentity.performEffectiveOwnerTransition(
-        plannedNextOwner: { _, _ in "graph-transition-owner" },
-        quiesceVoice: { _, _ in await pause.suspend() },
-        retargetLocalStorage: { _, _ in },
-        prepareLocalStorageTransition: { _, _ in },
-        ownerDidChange: {},
-        { defaults in
-          defaults.set("graph-transition-owner", forKey: .authUserId)
-        }
-      )
-    }
-    await pause.waitUntilSuspended()
-    defer { pause.release() }
-    XCTAssertNil(RuntimeOwnerIdentity.captureAuthorizationSnapshot())
-
-    let client = await makeClient(urlProtocolClass: KnowledgeGraphURLStub.self)
-    await assertOwnerFence {
-      _ = try await client.getKnowledgeGraph()
-    }
-    await assertOwnerFence {
-      _ = try await client.rebuildKnowledgeGraph()
-    }
-    XCTAssertTrue(KnowledgeGraphURLStub.requests().isEmpty)
-
-    let viewModelFetches = LockedCounter()
-    let viewModel = MemoryGraphViewModel(
-      canonicalGraphFetcher: { _ in
-        viewModelFetches.increment()
-        return KnowledgeGraphResponse(nodes: [], edges: [])
-      },
-      initialGraphResponse: KnowledgeGraphResponse(nodes: [], edges: []))
-    await viewModel.prepareCanonicalAtlas()
-    let rebuilt = await viewModel.rebuildCanonicalAtlas()
-    XCTAssertFalse(rebuilt)
-    XCTAssertEqual(viewModelFetches.read(), 0)
-
-    pause.release()
-    _ = try await transition.value
-  }
 
   func testCanonicalAtlas503DoesNotPublishNonemptyLocalProjection() async throws {
     let localProjection = KnowledgeGraphResponse(
@@ -537,7 +495,6 @@ final class KnowledgeGraphPaginationTests: XCTestCase {
   private func transitionOwner(to ownerID: String?) async throws {
     _ = try await RuntimeOwnerIdentity.performEffectiveOwnerTransition(
       plannedNextOwner: { _, _ in ownerID },
-      quiesceVoice: { _, _ in },
       retargetLocalStorage: { _, _ in },
       prepareLocalStorageTransition: { _, _ in },
       ownerDidChange: {},

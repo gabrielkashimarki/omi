@@ -55,27 +55,4 @@ final class UnhandledKeystrokeSilenceTests: XCTestCase {
     XCTAssertNil(middle.nextResponder?.nextResponder, "a second install must not stack a second sink")
   }
 
-  func testTheFloatingPanelAbsorbsUnhandledKeysButStillActsOnEscape() throws {
-    let window = FloatingControlBarWindow(
-      contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
-    defer {
-      window.contentView = nil
-      window.close()
-    }
-    let probe = NextResponderProbe()
-    window.nextResponder = probe
-
-    window.keyDown(with: try plainKey("a"))
-    XCTAssertEqual(probe.forwardedKeys, 0, "a plain key with no field focused must not leave the panel")
-
-    window.state.showingAIConversation = true
-    window.state.aiInputText = "draft"
-    window.keyDown(with: try plainKey("\u{1B}", keyCode: 53))
-    XCTAssertEqual(window.state.aiInputText, "", "Escape is still the panel's own key")
-    XCTAssertEqual(probe.forwardedKeys, 0)
-
-    // Tab is answered by the window itself (key-view navigation) rather than forwarded.
-    window.keyDown(with: try plainKey("\t", keyCode: 48))
-    XCTAssertEqual(probe.forwardedKeys, 0)
-  }
 }

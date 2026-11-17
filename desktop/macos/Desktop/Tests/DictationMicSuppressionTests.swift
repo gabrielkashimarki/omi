@@ -181,8 +181,8 @@ final class AmbientIgnoresDictationAppsPersistenceTests: XCTestCase {
     let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    XCTAssertTrue(ShortcutSettings.persistedAmbientIgnoresDictationApps(from: defaults))
+    XCTAssertTrue(defaults.object(forKey: .transcriptionIgnoreDictationApps) as? Bool ?? true)
     defaults.set(false, forKey: DefaultsKey.transcriptionIgnoreDictationApps.rawValue)
-    XCTAssertFalse(ShortcutSettings.persistedAmbientIgnoresDictationApps(from: defaults))
+    XCTAssertFalse(defaults.object(forKey: .transcriptionIgnoreDictationApps) as? Bool ?? true)
   }
 }

@@ -116,36 +116,6 @@ final class SubscriptionEntitlementServiceTests: XCTestCase {
     XCTAssertEqual(fetches.value, 2)
   }
 
-  func testRealtimeUsageBodyIncludesTurnIdWhenProvided() {
-    let withTurn = APIClient.realtimeUsageReportBody(
-      provider: "gemini",
-      model: "gemini-live",
-      inputText: 1,
-      inputAudio: 2,
-      inputCached: 0,
-      outputText: 3,
-      outputAudio: 4,
-      contextPlanID: "plan",
-      stableCacheIdentity: "stable",
-      dynamicContextIdentity: "dynamic",
-      contextCacheReplaced: false,
-      turnId: "turn-1")
-    XCTAssertEqual(withTurn["turn_id"] as? String, "turn-1")
-    let withoutTurn = APIClient.realtimeUsageReportBody(
-      provider: "gemini",
-      model: "gemini-live",
-      inputText: 1,
-      inputAudio: 2,
-      inputCached: 0,
-      outputText: 3,
-      outputAudio: 4,
-      contextPlanID: "plan",
-      stableCacheIdentity: "stable",
-      dynamicContextIdentity: "dynamic",
-      contextCacheReplaced: false,
-      turnId: "")
-    XCTAssertNil(withoutTurn["turn_id"])
-  }
 
   func testManagedPlanGateHTTPReadsFastAPIDetail() {
     let detail = Data(#"{"detail":{"error":"plan_gated","plan_type":"basic"}}"#.utf8)
@@ -157,46 +127,6 @@ final class SubscriptionEntitlementServiceTests: XCTestCase {
     XCTAssertFalse(ManagedPlanGateHTTP.isPlanGated(status: 403, data: detail))
   }
 
-  func testManagedPlanGateHTTPTypedMintIgnoresProsePlanGated() {
-    let body = Data(
-      #"{"error":"trial_expired","detail":"This failure is not plan_gated; the chat trial expired."}"#
-        .utf8)
-    XCTAssertFalse(ManagedPlanGateHTTP.isPlanGatedTypedJSON(status: 402, data: body))
-    XCTAssertFalse(
-      ManagedPlanGateHTTP.isPlanGated(
-        status: 402,
-        payload: APIErrorPayload(
-          error: "trial_expired",
-          code: nil,
-          message: nil,
-          detail: "This failure is not plan_gated; the chat trial expired.",
-          provider: nil,
-          reason: nil,
-          backendRoute: nil,
-          upstreamStatusCode: nil,
-          retryable: nil,
-          retryAfterSeconds: nil)))
-    let error = RealtimeTokenMintError(
-      statusCode: 402,
-      healthError: .paywalled(message: "trial_expired"),
-      payload: APIErrorPayload(
-        error: "trial_expired",
-        code: nil,
-        message: nil,
-        detail: "This failure is not plan_gated; the chat trial expired.",
-        provider: nil,
-        reason: nil,
-        backendRoute: nil,
-        upstreamStatusCode: nil,
-        retryable: nil,
-        retryAfterSeconds: nil),
-      responseBody: body)
-    XCTAssertFalse(ManagedPlanGateHTTP.isPlanGatedMint(error))
-    XCTAssertFalse(ManagedPlanGateHTTP.isPlanGatedWarmFailure(error))
-    // Legacy Gemini/lane scanner still matches substring containment. The hub
-    // mint path must not use it.
-    XCTAssertTrue(ManagedPlanGateHTTP.isPlanGated(status: 402, data: body))
-  }
 
   func testManagedPlanGateHTTPTypedCodeTrimsAndLowercases() {
     XCTAssertTrue(ManagedPlanGateHTTP.isTypedPlanGatedCode(" Plan_Gated "))
@@ -209,34 +139,7 @@ final class SubscriptionEntitlementServiceTests: XCTestCase {
         status: 402, data: Data(#"{"detail":{"error":"plan_gated"}}"#.utf8)))
   }
 
-  func testMintErrorDescriptionDoesNotSurfaceResponseBody() {
-    let marker = "raw-mint-body-must-not-surface"
-    let body = Data(#"{"detail":{"error":"plan_gated","secret":"\#(marker)"}}"#.utf8)
-    let error = RealtimeTokenMintError(
-      statusCode: 402,
-      healthError: .paywalled(message: "plan_gated"),
-      payload: nil,
-      responseBody: body)
-    let description = error.errorDescription ?? ""
-    XCTAssertFalse(description.contains(marker))
-    XCTAssertFalse(description.contains(String(data: body, encoding: .utf8) ?? marker))
-  }
 
-  func testManagedPlanGateHTTPRecognizesMintBodyWhenPayloadDecodeFails() {
-    let body = Data(#"{"detail":{"error":"plan_gated","plan_type":"basic"}}"#.utf8)
-    let error = RealtimeTokenMintError(
-      statusCode: 402,
-      healthError: .paywalled(message: "plan_gated"),
-      payload: nil,
-      responseBody: body)
-    XCTAssertTrue(ManagedPlanGateHTTP.isPlanGatedMint(error))
-    XCTAssertTrue(ManagedPlanGateHTTP.isPlanGatedWarmFailure(error))
-    XCTAssertTrue(
-      ManagedPlanGateHTTP.isPlanGatedWarmFailure(GeminiClient.GeminiClientError.planGated))
-    XCTAssertFalse(
-      ManagedPlanGateHTTP.isPlanGatedWarmFailure(
-        CredentialHealthError.backendTransient(statusCode: 500, message: "boom")))
-  }
 
   func testManagedPlanGateLatchSkipsWhenDecisionIsPlanGated() {
     var latch = ManagedPlanGateLatch()

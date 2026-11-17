@@ -177,19 +177,12 @@ final class MeetingActionItemBannerServiceTests: XCTestCase {
         assistantId: MeetingActionItemBannerPolicy.assistantID,
         title: MeetingActionItemBannerPolicy.bannerTitle
       ),
-      .openMainChat
+      .openConversations
     )
     XCTAssertEqual(
       NotificationService.openAction(assistantId: "default", title: "Anything else"),
       .none
     )
-  }
-
-  func testSystemBannerOnlyDeliveryNeverPresentsOrJournalsThroughTheFloatingBar() {
-    XCTAssertFalse(NotificationDeliveryMode.systemBannerOnly.presentsInFloatingBar)
-    XCTAssertTrue(NotificationDeliveryMode.systemBannerOnly.requiresSystemBanner)
-    XCTAssertTrue(NotificationDeliveryMode.standard.presentsInFloatingBar)
-    XCTAssertFalse(NotificationDeliveryMode.standard.requiresSystemBanner)
   }
 
   @MainActor

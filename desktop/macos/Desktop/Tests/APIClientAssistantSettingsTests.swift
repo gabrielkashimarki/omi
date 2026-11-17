@@ -288,30 +288,6 @@ final class APIClientAssistantSettingsTests: XCTestCase {
     XCTAssertEqual(shared["screen_analysis_enabled"] as? Bool, true)
   }
 
-  func testAssistantSettingsDecodesValidSiblingsWhenOneKnownSectionIsMalformed() throws {
-    let data = """
-      {
-        "focus": "not-yet-a-focus-object",
-        "task": {
-          "enabled": true,
-          "min_confidence": 0.72
-        },
-        "floating_bar": {
-          "voice_answers_enabled": true,
-          "elevenlabs_voice_id": "voice-123"
-        },
-        "update_channel": "beta"
-      }
-      """.data(using: .utf8)!
-
-    let response = try JSONDecoder().decode(AssistantSettingsResponse.self, from: data)
-
-    XCTAssertEqual(response.task?.enabled, true)
-    XCTAssertEqual(response.task?.minConfidence, 0.72)
-    XCTAssertEqual(response.floatingBar?.voiceAnswersEnabled, true)
-    XCTAssertEqual(response.floatingBar?.elevenlabsVoiceId, "voice-123")
-    XCTAssertEqual(response.updateChannel, "beta")
-  }
 
   func testAssistantSettingsPreservesUnknownFutureSectionsWhenReEncoding() throws {
     let data = """

@@ -206,8 +206,6 @@ final class TopNavigationBarLayoutTests: XCTestCase {
       "the Brain pill must not wear Rewind's section glyph")
     // Chat is a peer pill, not a brand mark: the eight-dot mark belongs to the query bar, where it
     // animates while Omi is answering. The pill wears a chat glyph because the page IS the chat.
-    XCTAssertEqual(ShellDestination.home.navItem, .dashboard)
-    XCTAssertEqual(ShellDestination.home.reach, .topBar)
     XCTAssertEqual(
       TopNavigationRoutes.primaryItems.first?.icon, "bubble.left.and.text.bubble.right",
       "Chat must not spend the Omi mark on a static nav glyph")
@@ -472,8 +470,8 @@ final class TopNavigationBarLayoutTests: XCTestCase {
     // The 900 pt readable cap belongs to content inside the lane. The glass fills the window
     // horizontally — including a hypothetical 1400 pt host.
     XCTAssertEqual(
-      TopNavigationLayoutMetrics.contentLaneWidth(for: ChatComposerLayout.contentLaneMaxWidth),
-      ChatComposerLayout.contentLaneMaxWidth)
+      TopNavigationLayoutMetrics.contentLaneWidth(for: QueryShellLayout.contentLaneMaxWidth),
+      QueryShellLayout.contentLaneMaxWidth)
     XCTAssertEqual(TopNavigationLayoutMetrics.contentLaneWidth(for: 1_400), 1_400)
     XCTAssertEqual(TopNavigationLayoutMetrics.contentLaneWidth(for: 800), 800)
     XCTAssertEqual(TopNavigationLayoutMetrics.contentLaneWidth(for: 40), 40)

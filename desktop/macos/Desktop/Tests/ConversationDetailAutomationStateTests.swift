@@ -210,7 +210,7 @@ final class ConversationDetailAutomationStateTests: XCTestCase {
   func testSummaryMarkdownHostsSelectableAppKitProse() throws {
     let prose = "A **long** summary with `code` and an [example](https://example.com) link."
     let hostingView = NSHostingView(
-      rootView: OmiMarkdown(text: prose, sender: .ai, appKitProseSelection: true)
+      rootView: OmiMarkdown(text: prose, style: .assistant, appKitProseSelection: true)
         .frame(width: 360, alignment: .leading))
     hostingView.frame = NSRect(x: 0, y: 0, width: 360, height: 200)
     let window = NSWindow(

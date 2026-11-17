@@ -67,8 +67,6 @@ final class TaskSyncOwnerTestFixture: Sendable {
     _ = try await RuntimeOwnerIdentity.performEffectiveOwnerTransition(
       allowAutomationOverride: true,
       plannedNextOwner: { _, _ in plannedOwner },
-      quiesceVoice: { _, _ in },
-      revokeKernelOwner: { _, _ in },
       retargetLocalStorage: { _, _ in },
       prepareLocalStorageTransition: { _, _ in },
       ownerDidChange: {

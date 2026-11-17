@@ -89,8 +89,8 @@ final class ProactiveDateGroundingTests: XCTestCase {
   /// yyyy-MM-dd (EEEE)") is the one shared helper — day-stable within a timezone, so
   /// a same-day re-evaluation renders byte-identical prompt heads.
   func testCalendarDayIsStableWithinTheDay() {
-    let morning = ChatPromptBuilder.currentCalendarDay(at: instant(hour: 0, minute: 1), timeZone: tz)
-    let night = ChatPromptBuilder.currentCalendarDay(at: instant(hour: 23, minute: 59), timeZone: tz)
+    let morning = PromptCalendarDay.current(at: instant(hour: 0, minute: 1), timeZone: tz)
+    let night = PromptCalendarDay.current(at: instant(hour: 23, minute: 59), timeZone: tz)
 
     XCTAssertEqual(morning, "2026-08-25 (Tuesday)")
     XCTAssertEqual(morning, night)

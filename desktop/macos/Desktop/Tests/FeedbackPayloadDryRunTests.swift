@@ -102,30 +102,6 @@ import XCTest
       XCTAssertFalse(flow.contains("User Report (logs only)"))
     }
 
-    func testDiagnosticsPayloadIsParseableAndCarriesPrivacyMarker() throws {
-      DesktopDiagnosticsManager.shared.resetForTests()
-      defer { DesktopDiagnosticsManager.shared.resetForTests() }
-      DesktopDiagnosticsManager.shared.recordPTTSilentTurn(
-        source: "hub",
-        mode: "hold",
-        audioSeconds: 2.0,
-        voicedSeconds: nil,
-        peak: 0,
-        rms: 0,
-        deviceDescription: "built-in microphone",
-        micPermissionGranted: true,
-        hubActive: true)
-
-      let url = try XCTUnwrap(DesktopDiagnosticsManager.shared.writeDiagnosticsAttachment())
-      defer { try? FileManager.default.removeItem(at: url) }
-      let data = try Data(contentsOf: url)
-      let root = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-
-      // This is exactly the JSON the dry-run returns as `diagnostics_json`: valid,
-      // shaped, and flagged as operational-only so a secret-scan has a clean target.
-      XCTAssertEqual(root["privacy"] as? String, "safe_operational_fields_only")
-      XCTAssertNotNil(root["snapshots"] as? [[String: Any]])
-    }
 
     // MARK: - Helpers
 

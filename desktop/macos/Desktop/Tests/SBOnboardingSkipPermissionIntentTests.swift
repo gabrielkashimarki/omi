@@ -56,7 +56,7 @@ final class SBOnboardingSkipPermissionIntentTests: XCTestCase {
 
     // The model holds `appState` unowned, so the test must keep the AppState
     // alive for the model's whole lifetime.
-    return SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    return SBOnboardingModel(appState: appState, onComplete: nil)
   }
 
   // MARK: - Microphone skip
@@ -171,7 +171,6 @@ final class SBOnboardingSkipPermissionIntentTests: XCTestCase {
     var scanCalls = 0
     let model = SBOnboardingModel(
       appState: appState,
-      chatProvider: ChatProvider(),
       fileScanRunner: { _ in
         scanCalls += 1
         return .complete(fileCount: 1, memoryCount: 1, deniedFolders: [])

@@ -251,36 +251,6 @@ import XCTest
         == true)
   }
 
-  func testAgentRuntimeOnlyEnablesPlaywrightWhenBridgeIsConfigured() {
-    XCTAssertTrue(
-      AgentRuntimeProcess.shouldEnablePlaywrightExtension(
-        useExtension: true,
-        token: "token",
-        targetHasExtension: true
-      )
-    )
-    XCTAssertFalse(
-      AgentRuntimeProcess.shouldEnablePlaywrightExtension(
-        useExtension: false,
-        token: "token",
-        targetHasExtension: true
-      )
-    )
-    XCTAssertFalse(
-      AgentRuntimeProcess.shouldEnablePlaywrightExtension(
-        useExtension: true,
-        token: "",
-        targetHasExtension: true
-      )
-    )
-    XCTAssertFalse(
-      AgentRuntimeProcess.shouldEnablePlaywrightExtension(
-        useExtension: true,
-        token: "token",
-        targetHasExtension: false
-      )
-    )
-  }
 
   @MainActor
   func testClaudeNativeSetupWaitsForAccessibilityApprovalInsteadOfAgentFallback() {

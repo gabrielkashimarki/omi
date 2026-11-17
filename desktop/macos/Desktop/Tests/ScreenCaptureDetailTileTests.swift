@@ -78,26 +78,5 @@ final class ScreenCaptureDetailTileTests: XCTestCase {
 
   // MARK: - Tool-result contract
 
-  func testToolResultIsBarePathWhenThereAreNoTiles() {
-    // Small displays keep the original single-line contract exactly.
-    let result = ChatToolExecutor.captureScreenToolResult(fullPath: "/tmp/shot.webp", tiles: [])
-    XCTAssertEqual(result, "/tmp/shot.webp")
-  }
 
-  func testToolResultListsTilesWithPositionsAndLegibilityGuidance() {
-    let result = ChatToolExecutor.captureScreenToolResult(
-      fullPath: "/tmp/shot.webp",
-      tiles: [
-        (label: "top-left", rect: CGRect(x: 0, y: 0, width: 1512, height: 982), path: "/tmp/shot-top-left.webp"),
-        (label: "top-right", rect: CGRect(x: 1512, y: 0, width: 1512, height: 982), path: "/tmp/shot-top-right.webp"),
-      ]
-    )
-    let lines = result.components(separatedBy: "\n")
-    XCTAssertEqual(lines.first, "/tmp/shot.webp", "full-screen path must stay the first line")
-    XCTAssertTrue(result.contains("- top-left (x 0-1512, y 0-982): /tmp/shot-top-left.webp"))
-    XCTAssertTrue(result.contains("- top-right (x 1512-3024, y 0-982): /tmp/shot-top-right.webp"))
-    // The guidance that makes the model re-read small text from a tile instead of guessing.
-    XCTAssertTrue(result.contains("Read the tile"))
-    XCTAssertTrue(result.contains("titles, prices, sizes, labels"))
-  }
 }

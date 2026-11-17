@@ -108,29 +108,6 @@ import XCTest
     }
   }
 
-  func testBuildHeadersSuppressesOnlyInvalidByokHeader() async throws {
-    setAllBYOKKeys()
-    UserDefaults.standard.set(BYOKLLMProvider.openai.rawValue, forKey: .byokLLMProvider)
-    enroll(.openai)
-    enroll(.deepgram)
-    let openAIKey = try XCTUnwrap(APIKeyService.byokKey(.openai))
-    CredentialHealthManager.shared.recordProviderFailure(
-      .providerAuthFailed(provider: .openai, mode: .byok),
-      provider: .openai,
-      authMode: .byok,
-      fingerprint: APIKeyService.byokFingerprint(openAIKey),
-      context: "test")
-
-    let client = APIClient()
-    await client.setTestAuthHeader("Bearer test-token")
-    let headers = try await client.buildHeaders()
-
-    XCTAssertNil(headers[BYOKProvider.openai.headerName])
-    XCTAssertEqual(headers[BYOKProvider.deepgram.headerName], "sk-test-deepgram")
-    XCTAssertNil(headers[BYOKProvider.openrouter.headerName])
-    XCTAssertNil(headers[BYOKProvider.anthropic.headerName])
-    XCTAssertNil(headers[BYOKProvider.gemini.headerName])
-  }
 
   func testPaywallFlagSuppressedWhenByokActive() {
     // The exact bug: trial-expired flag set, then user configures BYOK keys.
@@ -355,61 +332,8 @@ import XCTest
       "the failover must not spend a key the user chose neither for text nor for voice")
   }
 
-  /// The two tests above pin `APIKeyService`'s boolean, but the boolean is only ever as
-  /// good as what the call sites pass. The decision that actually separates primary from
-  /// failover is the equality at the session call site: `effectiveProvider` is
-  /// `fallbackProvider ?? RealtimeHubSettings.shared.provider`, so comparing against the
-  /// settings value is what withholds the key from a provider reached by failover.
-  /// Widening it to a blanket `true` would spend a leftover key on the failover path and
-  /// still pass every behavioral test here, so the shape is pinned directly.
-  func testTheSessionCallSiteDerivesVoiceChoiceFromTheVoiceModelSetting() throws {
-    let source = try RealtimeHubControllerSourceTestSupport.moduleSource()
 
-    XCTAssertTrue(
-      source.contains("chosenForVoice: RealtimeHubSettings.shared.isVoiceModelChoice(provider)"),
-      "the session call site must derive voice choice from the Voice Model setting, so a "
-        + "provider reached by failover or by `.auto` is still refused the user's key")
-    XCTAssertFalse(
-      source.contains("chosenForVoice: true"),
-      "no RealtimeHubController call site may claim voice choice unconditionally")
-  }
 
-  /// The E2E harness exists to drive the real path, so it has to make the same decision.
-  /// Before this was aligned it called `selectedRealtimeBYOKKey(for:)` with no
-  /// `chosenForVoice`, which meant that for exactly the configuration this fix addresses
-  /// — Voice Model Gemini or OpenAI, text provider OpenRouter — the harness found no key
-  /// and minted an ephemeral token, testing the managed lane instead of the fix.
-  func testTheAutomationHarnessResolvesTheKeyThroughTheSameRule() throws {
-    let source = try RealtimeHubControllerSourceTestSupport.source(
-      named: "RealtimeHubTestHarness.swift")
-
-    XCTAssertTrue(
-      source.contains("chosenForVoice: RealtimeHubSettings.shared.isVoiceModelChoice(provider)"),
-      "the harness must resolve BYOK auth the way a real session does")
-  }
-
-  /// `.auto` is the default Voice Model and resolves to Gemini, so treating "the hub is
-  /// on Gemini" as "the user chose Gemini" would spend a stored Gemini key for every user
-  /// who never opened the setting — a provider picked by a benchmark, not by them. Only an
-  /// explicit selection counts; `.auto` keeps the stricter Developer-Keys-only rule.
-  @MainActor
-  func testAutoVoiceModelIsNotAVoiceChoice() {
-    let previous = RealtimeOmniSettings.shared.selectedProvider
-    defer { RealtimeOmniSettings.shared.selectedProvider = previous }
-
-    RealtimeOmniSettings.shared.selectedProvider = .auto
-    XCTAssertFalse(
-      RealtimeHubSettings.shared.isVoiceModelChoice(RealtimeHubSettings.shared.provider),
-      "`.auto` resolving to a provider is not the user choosing it")
-
-    RealtimeOmniSettings.shared.selectedProvider = .geminiFlashLive
-    XCTAssertTrue(
-      RealtimeHubSettings.shared.isVoiceModelChoice(.gemini),
-      "an explicit Voice Model selection is a choice")
-    XCTAssertFalse(
-      RealtimeHubSettings.shared.isVoiceModelChoice(.openai),
-      "choosing one provider does not unlock the other's key")
-  }
 }
 
 @MainActor

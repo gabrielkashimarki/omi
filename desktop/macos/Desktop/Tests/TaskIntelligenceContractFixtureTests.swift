@@ -247,11 +247,6 @@ final class TaskIntelligenceContractFixtureTests: XCTestCase {
     XCTAssertNil(outcome.analyticsProperties["task_text"])
   }
 
-  func testEvidenceKindNeverLeaksWorkstreamNoun() {
-    XCTAssertEqual(OmiAPI.EvidenceKind.workstream_event.userFacingLabel, "Thread event")
-    XCTAssertFalse(OmiAPI.EvidenceKind.workstream_event.userFacingLabel.localizedCaseInsensitiveContains("workstream"))
-    XCTAssertEqual(OmiAPI.EvidenceKind.external.userFacingLabel, "Journal")
-  }
 
   func testCanonicalScreenPayloadContainsOnlyLocalReferenceAndMinimizedTaskFacts() throws {
     let task = ExtractedTask(

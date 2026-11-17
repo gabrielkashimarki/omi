@@ -97,7 +97,7 @@ final class SBOnboardingPermissionFlowTests: XCTestCase {
   private func makeModel() -> SBOnboardingModel {
     let appState = AppState()
     retainedAppState = appState
-    return SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    return SBOnboardingModel(appState: appState, onComplete: nil)
   }
 
   override func setUp() {
@@ -407,7 +407,7 @@ final class SBOnboardingPermissionFlowTests: XCTestCase {
     )
 
     await gate.waitUntilEntered()
-    model.step = .shortcutOpen
+    model.step = .agents
     gate.release.signal()
     await request.value
 
@@ -667,7 +667,7 @@ final class AppStatePermissionProbeTests: XCTestCase {
 
   func testFirstUnaskedScanAwaitsItsCurrentOffMainProbeBeforeSkipping() async {
     let appState = AppState()
-    let model = SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    let model = SBOnboardingModel(appState: appState, onComplete: nil)
     var probedKeys: [String] = []
 
     let target = await model.firstUnaskedStepAwaitingCurrentProbes(from: .automation) { key in
@@ -684,7 +684,7 @@ final class AppStatePermissionProbeTests: XCTestCase {
     }
 
     XCTAssertEqual(probedKeys, ["automation", "notifications"])
-    XCTAssertEqual(target, .shortcutOpen)
+    XCTAssertEqual(target, .agents)
     XCTAssertEqual(model.autoState, .on)
     XCTAssertEqual(model.notifState, .on)
   }

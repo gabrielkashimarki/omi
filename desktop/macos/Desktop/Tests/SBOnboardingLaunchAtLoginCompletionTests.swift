@@ -17,7 +17,7 @@ import XCTest
 final class SBOnboardingLaunchAtLoginCompletionTests: XCTestCase {
 
   private func makeModel() -> SBOnboardingModel {
-    SBOnboardingModel(appState: AppState(), chatProvider: ChatProvider(), onComplete: nil)
+    SBOnboardingModel(appState: AppState(), onComplete: nil)
   }
 
   func testFreshInstallSeedsLaunchAtLoginOn() {

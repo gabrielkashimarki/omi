@@ -320,8 +320,6 @@ final class RewindAbandonedChunkRecoveryTests: XCTestCase {
         defaults: defaults,
         allowAutomationOverride: false,
         plannedNextOwner: { _, _ in ownerB },
-        quiesceVoice: { _, _ in },
-        revokeKernelOwner: { _, _ in },
         retargetLocalStorage: { _, _ in XCTFail("retarget must not run after failed preparation") },
         ownerDidChange: { XCTFail("owner notification must not publish after failed preparation") }
       ) { defaults in
@@ -387,8 +385,6 @@ final class RewindAbandonedChunkRecoveryTests: XCTestCase {
       defaults: defaults,
       allowAutomationOverride: false,
       plannedNextOwner: { _, _ in ownerB },
-      quiesceVoice: { _, _ in },
-      revokeKernelOwner: { _, _ in },
       retargetLocalStorage: { _, _ in
         let isSuspended = await RewindIndexer.shared.isOwnerTransitionSuspendedForTesting()
         XCTAssertTrue(isSuspended)

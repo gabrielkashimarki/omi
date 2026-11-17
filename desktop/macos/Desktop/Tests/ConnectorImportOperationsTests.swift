@@ -9,13 +9,12 @@ final class ConnectorImportOperationsTests: XCTestCase {
     didCompleteSuccessfully: Bool = true,
     indexedFileCount: Int = 0,
     deniedUserFolders: [String] = []
-  ) -> ChatToolExecutor.LocalFileScanOutcome {
-    ChatToolExecutor.LocalFileScanOutcome(
+  ) -> LocalFileScan.Outcome {
+    LocalFileScan.Outcome(
       hasReadableUserFileTarget: hasReadableUserFileTarget,
       didCompleteSuccessfully: didCompleteSuccessfully,
       indexedFileCount: indexedFileCount,
-      deniedUserFolders: deniedUserFolders,
-      summaryText: "# File Scan Results — agent-facing markdown that must never surface in the UI"
+      deniedUserFolders: deniedUserFolders
     )
   }
 

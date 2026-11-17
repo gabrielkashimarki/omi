@@ -247,7 +247,6 @@ final class TasksSortOrderSyncFailureTests: XCTestCase {
     do {
       _ = try await RuntimeOwnerIdentity.performEffectiveOwnerTransition(
         plannedNextOwner: { _, _ in ownerID },
-        quiesceVoice: { _, _ in },
         retargetLocalStorage: { _, _ in },
         ownerDidChange: {
           await MainActor.run {

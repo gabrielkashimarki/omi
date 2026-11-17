@@ -19,10 +19,6 @@ final class ProactiveNotificationKindTests: XCTestCase {
     "notch_receipt", "notch_end", "reach_error", "unknown-future-assistant",
   ]
 
-  /// The transcript row a journaled notification comes back as.
-  private static func journaledRow(clientTurnId: String) -> ChatMessage {
-    ChatMessage(id: UUID().uuidString, clientTurnId: clientTurnId, text: "Body", sender: .ai)
-  }
 
   func testNoProducerAssistantIDDerivesTheDecodeOnlyGeneralKind() {
     for assistantID in Self.producerAssistantIDs {
@@ -35,33 +31,7 @@ final class ProactiveNotificationKindTests: XCTestCase {
     }
   }
 
-  func testEveryProducerKindJournalsAKindedContinuityKey() {
-    let id = UUID()
-    let bare = ChatContinuityInvariants.proactiveNotificationContinuityKey(id: id)
 
-    for kind in ProactiveNotificationKind.allCases where kind != .general {
-      let key = ChatContinuityInvariants.proactiveNotificationContinuityKey(id: id, kind: kind)
-      XCTAssertNotEqual(key, bare, "\(kind.rawValue) must not journal the bare historical key")
-      XCTAssertTrue(key.hasPrefix("notification:\(kind.rawValue):"))
-      XCTAssertEqual(
-        ChatContinuityInvariants.proactiveNotificationKind(Self.journaledRow(clientTurnId: key)), kind,
-        "the kind must survive the round trip that renders the badge")
-    }
-  }
-
-  /// Historical rows carry the bare key. Decoding must keep working, and it must
-  /// keep resolving to `.general` — that arm is the only reason `.general` exists.
-  func testHistoricalBareKeysStillDecode() {
-    let id = UUID()
-    let bare = ChatContinuityInvariants.proactiveNotificationContinuityKey(id: id)
-    XCTAssertEqual(bare, "notification:\(id.uuidString)")
-    XCTAssertEqual(
-      ChatContinuityInvariants.proactiveNotificationKind(Self.journaledRow(clientTurnId: bare)),
-      .general)
-    XCTAssertEqual(
-      ChatContinuityInvariants.proactiveNotificationContinuityKey(id: id, kind: .general), bare,
-      "the bare form stays reachable for round-tripping history, never for minting")
-  }
 
   /// Trial messaging, onboarding permission help, and the daily recap's
   /// announcement are cards, not observations. They present and dismiss; they
@@ -112,13 +82,4 @@ final class ProactiveNotificationKindTests: XCTestCase {
     }
   }
 
-  /// Every kind still presents as one of the five user-facing badges (or the two
-  /// neutral ones), so a new kind cannot reach the transcript unlabelled.
-  func testEveryKindHasABadge() {
-    for kind in ProactiveNotificationKind.allCases {
-      let badge = ProactiveNotificationBadge(kind: kind)
-      XCTAssertFalse(badge.label.isEmpty, kind.rawValue)
-      XCTAssertFalse(badge.systemImage.isEmpty, kind.rawValue)
-    }
-  }
 }

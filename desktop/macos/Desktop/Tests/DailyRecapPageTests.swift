@@ -60,9 +60,9 @@ final class DailyRecapPageTests: XCTestCase {
     guard case .dailyRecap = navigation.route else {
       return XCTFail("expected the recap route, got \(navigation.route)")
     }
-    XCTAssertEqual(navigation.dailyRecapOrigin, .chat)
+    XCTAssertEqual(navigation.dailyRecapOrigin, .home)
     navigation.closeDailyRecap()
-    XCTAssertEqual(navigation.route, .chat)
+    XCTAssertEqual(navigation.route, .home)
     XCTAssertNil(navigation.dailyRecapOrigin)
 
     navigation.selectPrimary(.goals)

@@ -41,8 +41,8 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
     // 11 was `shortcutOpen` before `.notifications` claimed that slot.
     XCTAssertEqual(
       SBOnboardingModel.migratedResumeStepRaw(savedRaw: 11, storedSchema: 0),
-      SBOnboardingModel.Step.shortcutOpen.rawValue,
-      "a legacy resume at shortcutOpen must still land on shortcutOpen, not on notifications")
+      SBOnboardingModel.Step.agents.rawValue,
+      "a legacy resume at shortcutOpen (removed in v3) lands on agents, not on notifications")
     // 17 was `referral`, the final step.
     XCTAssertEqual(
       SBOnboardingModel.migratedResumeStepRaw(savedRaw: 17, storedSchema: 0),
@@ -86,7 +86,7 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
       SBOnboardingModel.Step.automation.rawValue + 1,
       "notifications must sit directly after automation, in the same permission block")
     XCTAssertEqual(
-      SBOnboardingModel.Step.shortcutOpen.rawValue,
+      SBOnboardingModel.Step.agents.rawValue,
       SBOnboardingModel.Step.notifications.rawValue + 1,
       "notifications must sit directly before the shortcut stages, not after the screen demo")
   }
@@ -102,7 +102,7 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
     // duration of the test — an inline `AppState()` argument is deallocated the
     // moment the initializer returns and crashes the first unowned access.
     let appState = AppState()
-    let model = SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    let model = SBOnboardingModel(appState: appState, onComplete: nil)
 
     XCTAssertEqual(model.permissionKey(for: .notifications), "notifications")
 
@@ -127,7 +127,7 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
   /// permission ask in one contiguous block.
   func testAnsweringAutomationAdvancesToNotificationsBeforeShortcuts() {
     let appState = AppState()
-    let model = SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    let model = SBOnboardingModel(appState: appState, onComplete: nil)
     model.step = .automation
     model.autoState = .ask
 
@@ -142,14 +142,14 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
   /// shortcut stages rather than getting stuck.
   func testOnboardingStillAdvancesPastNotificationsWhenTheStepIsSkipped() {
     let appState = AppState()
-    let model = SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    let model = SBOnboardingModel(appState: appState, onComplete: nil)
     model.step = .notifications
     model.notifState = .ask  // never granted — this is the "Skip for now" path
 
     model.answerNotifications()
 
     XCTAssertEqual(
-      model.step, .shortcutOpen,
+      model.step, .agents,
       "declining notifications must not block onboarding from reaching the shortcut stages")
   }
 
@@ -158,13 +158,13 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
   /// step's own row into some other step's widget.
   func testAutoAdvanceIfCurrentMovesOnOnceNotificationsIsGranted() {
     let appState = AppState()
-    let model = SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    let model = SBOnboardingModel(appState: appState, onComplete: nil)
     model.step = .notifications
     model.notifState = .on
 
     model.autoAdvanceIfCurrent("notifications")
 
-    XCTAssertEqual(model.step, .shortcutOpen)
+    XCTAssertEqual(model.step, .agents)
   }
 
   /// A user who already granted Notifications before reaching this step (for
@@ -174,9 +174,9 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
   func testFirstUnaskedStepSkipsAnAlreadyGrantedNotificationsPermission() {
     let appState = AppState()
     appState.hasNotificationPermission = true
-    let model = SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    let model = SBOnboardingModel(appState: appState, onComplete: nil)
 
-    XCTAssertEqual(model.firstUnaskedStep(from: .notifications), .shortcutOpen)
+    XCTAssertEqual(model.firstUnaskedStep(from: .notifications), .agents)
   }
 
   // MARK: the migration as `begin()` actually runs it
@@ -196,10 +196,7 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
     } else {
       UserDefaults.standard.removeObject(forKey: resumeSchemaKey)
     }
-    // Shortcuts already done, so the mandatory-shortcuts clamp does not mask
-    // where the migration actually landed.
-    UserDefaults.standard.set(true, forKey: shortcutsCompletedKey)
-    let model = SBOnboardingModel(appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+    let model = SBOnboardingModel(appState: appState, onComplete: nil)
     model.begin()
     return model.step
   }
@@ -209,9 +206,9 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
     // 13 was `screenDemo` under the version-1 layout; it is 14 under version 2.
     let step = resumedStep(fromPersistedRaw: 13, schema: nil, appState: appState)
 
-    XCTAssertEqual(step, .screenDemo, "a legacy screenDemo must resume at screenDemo")
+    XCTAssertEqual(step, .agents, "a legacy screenDemo (removed in v3) resumes at agents")
     XCTAssertEqual(
-      UserDefaults.standard.integer(forKey: resumeStepKey), SBOnboardingModel.Step.screenDemo.rawValue)
+      UserDefaults.standard.integer(forKey: resumeStepKey), SBOnboardingModel.Step.agents.rawValue)
     XCTAssertEqual(
       UserDefaults.standard.integer(forKey: resumeSchemaKey),
       SBOnboardingModel.resumeStepSchemaVersion,
@@ -227,7 +224,7 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
     XCTAssertEqual(resumedStep(fromPersistedRaw: 17, schema: nil, appState: appState), .referral)
 
     let secondLaunch = SBOnboardingModel(
-      appState: appState, chatProvider: ChatProvider(), onComplete: nil)
+      appState: appState, onComplete: nil)
     secondLaunch.begin()
 
     XCTAssertEqual(secondLaunch.step, .referral)
@@ -237,7 +234,7 @@ final class SBOnboardingNotificationsStepTests: XCTestCase {
   /// gets wrong, and it is the boundary the arithmetic is built around.
   func testBeginMovesTheStepThatSatExactlyAtTheInsertionPoint() {
     let appState = AppState()
-    XCTAssertEqual(resumedStep(fromPersistedRaw: 11, schema: nil, appState: appState), .shortcutOpen)
+    XCTAssertEqual(resumedStep(fromPersistedRaw: 11, schema: nil, appState: appState), .agents)
   }
 
   func testBeginLeavesAStepBeforeTheInsertionPointAlone() {

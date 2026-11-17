@@ -67,36 +67,4 @@ final class PTTMicrophoneMigrationTests: XCTestCase {
     body()
   }
 
-  func testLegacyPTTChoiceIsCarriedIntoTheSharedPreference() {
-    withCleanDefaults {
-      UserDefaults.standard.set("BuiltInMicrophoneDevice", forKey: legacyKey)
-      ShortcutSettings.migratePTTMicrophoneChoiceIfNeeded()
-      XCTAssertEqual(
-        UserDefaults.standard.string(forKey: sharedKey), "BuiltInMicrophoneDevice",
-        "unifying the setting must not silently discard a microphone the user picked")
-    }
-  }
-
-  /// An explicit transcription choice is the newer, more visible decision; the legacy
-  /// PTT-only value must not overwrite it.
-  func testAnExistingSharedChoiceIsNotOverwritten() {
-    withCleanDefaults {
-      UserDefaults.standard.set("legacy-ptt-uid", forKey: legacyKey)
-      UserDefaults.standard.set("chosen-in-transcription", forKey: sharedKey)
-      ShortcutSettings.migratePTTMicrophoneChoiceIfNeeded()
-      XCTAssertEqual(UserDefaults.standard.string(forKey: sharedKey), "chosen-in-transcription")
-    }
-  }
-
-  func testMigrationRunsOnlyOnce() {
-    withCleanDefaults {
-      UserDefaults.standard.set("legacy-ptt-uid", forKey: legacyKey)
-      ShortcutSettings.migratePTTMicrophoneChoiceIfNeeded()
-      UserDefaults.standard.set("", forKey: sharedKey)
-      ShortcutSettings.migratePTTMicrophoneChoiceIfNeeded()
-      XCTAssertEqual(
-        UserDefaults.standard.string(forKey: sharedKey), "",
-        "a second run must not resurrect a choice the user has since cleared")
-    }
-  }
 }

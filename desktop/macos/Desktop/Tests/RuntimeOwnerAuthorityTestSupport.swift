@@ -82,8 +82,6 @@ final class RuntimeOwnerAuthorityTestFixture: @unchecked Sendable {
         defaults: defaults.value,
         allowAutomationOverride: true,
         plannedNextOwner: { _, _ in nextOwner },
-        quiesceVoice: { _, _ in },
-        revokeKernelOwner: { _, _ in },
         retargetLocalStorage: { _, _ in },
         ownerDidChange: {}
       ) { defaults in

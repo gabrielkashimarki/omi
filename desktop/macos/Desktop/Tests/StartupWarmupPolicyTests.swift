@@ -104,10 +104,6 @@ final class StartupWarmupPolicyTests: XCTestCase {
     )
   }
 
-  func testFloatingBarPlanFetchRunsImmediatelyForQuotaGate() {
-    XCTAssertEqual(StartupWarmupPolicy.floatingBarPlanFetchDelay, 0)
-  }
-
   func testInitialSettingsSyncWaitsUntilAfterDeferredWarmupStarts() {
     XCTAssertGreaterThan(
       StartupWarmupPolicy.initialSettingsSyncDelay,
@@ -144,13 +140,6 @@ final class StartupWarmupPolicyTests: XCTestCase {
     XCTAssertTrue(
       source.contains("key fetch completed without loaded keys, retrying once"),
       "waitForKeys() must retry after awaiting a failed completed fetch"
-    )
-  }
-
-  func testChatPromptContextWarmupWaitsUntilAfterDeferredWarmupStarts() {
-    XCTAssertGreaterThan(
-      StartupWarmupPolicy.chatPromptContextWarmupDelay,
-      StartupWarmupPolicy.deferredWarmupDelay
     )
   }
 
