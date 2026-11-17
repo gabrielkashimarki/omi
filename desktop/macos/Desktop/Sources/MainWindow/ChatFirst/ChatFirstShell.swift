@@ -18,6 +18,8 @@ struct ChatFirstShell: View {
   @AppStorage(MemoryHubDestination.storageKey) private var memoryDestinationRawValue =
     MemoryHubDestination.memories.rawValue
   @AppStorage("topBarNewSince") private var topBarNewSinceRaw: Double = 0
+  /// Página do hub do Jarvis aberta por cima das rotas do Omi; nil mostra a rota.
+  @State private var paginaHub: JarvisPagina?
 
   init(
     navigation: ChatFirstShellNavigation,
@@ -45,6 +47,53 @@ struct ChatFirstShell: View {
   var body: some View {
     // No ground of its own — the window has none either (`ShellWindowChrome`), so the
     // panels below are the glass, and a scrim here would spend the passthrough budget twice.
+    HStack(spacing: 0) {
+      JarvisBarraLateral(selecionada: paginaSelecionada, escolher: escolherPagina)
+      conteudoPrincipal
+    }
+    .background(JarvisHubTema.janela.ignoresSafeArea())
+    .onChange(of: navigation.route) { _, _ in paginaHub = nil }
+  }
+
+  /// O item aceso na barra: a página do hub aberta ou o que a rota atual mostra.
+  private var paginaSelecionada: JarvisPagina {
+    paginaHub
+      ?? JarvisPagina.paraRota(
+        navigation.route, destinoMemoria: MemoryHubDestination(rawValue: memoryDestinationRawValue))
+  }
+
+  private func escolherPagina(_ pagina: JarvisPagina) {
+    if pagina.ehDoHub {
+      paginaHub = pagina
+      return
+    }
+    paginaHub = nil
+    switch pagina {
+    case .hoje: selectHubDestination(.activity)
+    case .conversas: selectHubDestination(.conversations)
+    case .integracoes: navigation.selectMore(.apps)
+    case .ajustes: navigation.selectMore(.settings)
+    case .tarefas, .cerebro, .estatisticas, .sessoes: break
+    }
+  }
+
+  @ViewBuilder
+  private var paginaDoHub: some View {
+    switch paginaHub {
+    case .tarefas:
+      JarvisEmBreve(titulo: "Tarefas", texto: "A matriz de demandas chega na fase 4.")
+    case .cerebro:
+      JarvisEmBreve(titulo: "Cérebro", texto: "As asserções por cliente e camada chegam na fase 4.")
+    case .estatisticas:
+      JarvisEmBreve(titulo: "Estatísticas", texto: "Em construção.")
+    case .sessoes:
+      JarvisEmBreve(titulo: "Sessões", texto: "As sessões dos agentes aparecem aqui.")
+    default:
+      EmptyView()
+    }
+  }
+
+  private var conteudoPrincipal: some View {
     VStack(spacing: 0) {
       DesktopTopBar(
         selectedIndex: modernTopBarSelection,
@@ -59,12 +108,16 @@ struct ChatFirstShell: View {
       // Without it, SwiftUI can structurally reuse compatible branches (notably
       // Home and More pages), leaving the automation contract stale even though
       // the requested route is selected.
-      destination
-        // Attached *inside* the identified subtree: a modifier above `.id` keeps
-        // its identity across the replacement and never observes the outgoing
-        // destination's disappearance.
-        .onDisappear { ChatSwitchPerfLog.mark("oldDestinationGone") }
-        .id(navigation.route.stableName)
+      if paginaHub != nil {
+        paginaDoHub
+      } else {
+        destination
+          // Attached *inside* the identified subtree: a modifier above `.id` keeps
+          // its identity across the replacement and never observes the outgoing
+          // destination's disappearance.
+          .onDisappear { ChatSwitchPerfLog.mark("oldDestinationGone") }
+          .id(navigation.route.stableName)
+      }
     }
     // The top bar occupies the hidden title-bar band; the window's top edge is the glass.
     .padding(.top, GlassShell.titlebarClearance)
