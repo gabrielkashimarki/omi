@@ -12,7 +12,6 @@ covers:
   - desktop/macos/Desktop/Sources/Rewind/Core/MemoryStorage+StaleLocalOnlyPurge.swift
   - desktop/macos/Desktop/Sources/Rewind/Core/MemoryStorage.swift
   - desktop/macos/Desktop/Sources/Services/APIClient/APIClient+MemoryDelete.swift
-  - desktop/macos/Desktop/Sources/Providers/ChatToolExecutor+MemoryCreation.swift
 preconditions:
   - automation_bridge_ready
 

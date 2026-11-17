@@ -33,14 +33,9 @@ def _bridge_action_sources() -> tuple[str, ...]:
 # resolver on this single list so an added bridge action cannot skip its flow
 # validation route.
 ACTION_SOURCE_RELATIVE_PATHS = _bridge_action_sources() + (
-    "Desktop/Sources/FloatingControlBar/RealtimeHubController.swift",
     "Desktop/Sources/Rewind/Core/RewindArtifactGauntlet.swift",
-    "Desktop/Sources/DesktopAutomationOpenOmiShortcutQA.swift",
     "Desktop/Sources/ProactiveAssistants/ProactiveCaptureStatusSnapshotRegistration.swift",
-    "Desktop/Sources/Automation/DesktopAutomationHomeStageActions.swift",
     "Desktop/Sources/Automation/DesktopAutomationActivationActions.swift",
-    "Desktop/Sources/Automation/DesktopAutomationAskOmiActions.swift",
-    "Desktop/Sources/Automation/DesktopAutomationPTTRecoveryActions.swift",
     "Desktop/Sources/Automation/DesktopAutomationItemLinkActions.swift",
     "Desktop/Sources/MainWindow/Pages/TasksPage.swift",
     "Desktop/Sources/MainWindow/Pages/MemoriesPage.swift",

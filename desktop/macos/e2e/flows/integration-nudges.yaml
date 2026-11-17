@@ -7,7 +7,6 @@ covers:
   - desktop/macos/Desktop/Sources/IntegrationNudges/IntegrationConnectOrigin.swift
   - desktop/macos/Desktop/Sources/IntegrationNudges/IntegrationConnectionInspector.swift
   - desktop/macos/Desktop/Sources/IntegrationNudges/IntegrationNudgeAutomation.swift
-  - desktop/macos/Desktop/Sources/IntegrationNudges/IntegrationNudgeCard.swift
   - desktop/macos/Desktop/Sources/IntegrationNudges/IntegrationNudgeCatalog.swift
   - desktop/macos/Desktop/Sources/IntegrationNudges/IntegrationNudgeCoordinator.swift
   - desktop/macos/Desktop/Sources/IntegrationNudges/IntegrationNudgeMatcher.swift

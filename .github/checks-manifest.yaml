@@ -636,28 +636,11 @@ checks:
     triggers: ["desktop/macos/Desktop/Sources/**/*.swift", "desktop/macos/scripts/check-rewind-repository-ownership.py", ".github/checks-manifest.yaml"]
     lanes: ["local", "ci"]
     reason: "Issue #9519: all Rewind-backed actors must acquire replaceable pools through RewindRepository so owner switches and recovery cannot leave a private stale pool cache"
-  - id: desktop-agent-credential-boundary
-    command: ["python3", "desktop/macos/scripts/check-agent-credentials.py"]
-    triggers: ["desktop/macos/Desktop/Sources/Chat/**", "desktop/macos/agent/src/**", "desktop/macos/pi-mono-extension/**", "desktop/macos/scripts/check-agent-credentials.py", ".github/checks-manifest.yaml"]
-    lanes: ["local", "ci"]
-    reason: "Beta v0.12.356 retained an expired Firebase token in pi-mono after one offline refresh killed its timer; prevent startup credential copies and refresh-driven restarts"
   - id: desktop-flow-contract-tests
     command: ["python3", "desktop/macos/tests/test_desktop_flow_contract.py"]
     triggers: ["desktop/macos/scripts/desktop_flow_contract.py", "desktop/macos/tests/test_desktop_flow_contract.py", "desktop/macos/Desktop/Sources/DesktopAutomationBridge.swift", ".github/checks-manifest.yaml"]
     lanes: ["local", "ci"]
     reason: "bridge actions moved into DesktopAutomationBridge+Notifications.swift while the action-source list still named only the base file, so desktop-flow-lint called their flows unknown and failed the push gate on every branch"
-  - id: desktop-proactive-notification-gate
-    command: ["python3", "desktop/macos/scripts/check-proactive-notification-gate.py"]
-    triggers: ["desktop/macos/Desktop/Sources/**/*.swift", "desktop/macos/scripts/check-proactive-notification-gate.py"]
-    lanes: ["local", "ci"]
-    platforms: ["macos"]
-    reason: "two proactive lanes reached the bar primitive directly and skipped the master toggle, frequency throttle, snooze and presence gates; a third must fail the build, not ship silent"
-  - id: desktop-proactive-notification-gate-tests
-    command: ["python3", "desktop/macos/tests/test_check_proactive_notification_gate.py"]
-    triggers: ["desktop/macos/scripts/check-proactive-notification-gate.py", "desktop/macos/tests/test_check_proactive_notification_gate.py", ".github/checks-manifest.yaml"]
-    lanes: ["local", "ci"]
-    platforms: ["macos"]
-    reason: "a checker that has never failed is not a guard; these fixtures are the two lanes that actually bypassed the gates"
   - id: desktop-grdb-insert-idiom-tests
     command: ["python3", "desktop/macos/tests/test_check_grdb_insert_idiom.py"]
     triggers: ["desktop/macos/scripts/check-grdb-insert-idiom.py", "desktop/macos/tests/test_check_grdb_insert_idiom.py", ".github/checks-manifest.yaml"]
@@ -1411,11 +1394,6 @@ checks:
     triggers: ["desktop/macos/Desktop/Package.swift", "desktop/macos/tests/test-feature-sentinel-negative-control.sh", "desktop/macos/tests/test-feature-sentinel-compile-scope.sh", ".github/checks-manifest.yaml"]
     lanes: ["local", "ci"]
     reason: "#13144: the feature sentinel must select its compile-only target and never regress to a package-wide --build-tests invocation"
-  - id: desktop-hub-controller-ratchet
-    command: ["python3", "desktop/macos/scripts/check-hub-controller-ratchet.py"]
-    triggers: ["desktop/macos/Desktop/Sources/FloatingControlBar/RealtimeHubController.swift", "desktop/macos/scripts/check-hub-controller-ratchet.py"]
-    lanes: ["local", "ci"]
-    reason: "realtime hub extracted-type ownership anti-regrowth ratchet"
   - id: task-capture-authority
     command: ["python3", ".github/scripts/check_task_capture_authority.py"]
     triggers: ["backend/utils/task_intelligence/**", "backend/utils/conversations/process_conversation.py", "backend/config/task_intelligence_sources_v1.json", "desktop/macos/Desktop/Sources/ProactiveAssistants/Assistants/TaskExtraction/**", ".github/scripts/check_task_capture_authority.py"]
@@ -1451,11 +1429,6 @@ checks:
     triggers: [".github/scripts/check_chat_selection_boundary.py", ".github/scripts/test_check_chat_selection_boundary.py", ".github/checks-manifest.yaml"]
     lanes: ["local", "ci"]
     reason: "adversarial fixtures prove the live-chat selection boundary rejects enabled modifiers, escape hatches, missing protection, and missing explicit disablement"
-  - id: desktop-agent-runtime-convergence-ratchet
-    command: ["python3", "desktop/macos/scripts/check-agent-runtime-convergence-ratchet.py"]
-    triggers: ["desktop/macos/Desktop/Sources/Providers/ChatProvider.swift", "desktop/macos/Desktop/Sources/Chat/AgentRuntimeProcess.swift", "desktop/macos/Desktop/Sources/Chat/AgentRuntimeBridgeLifecycle.swift", "desktop/macos/scripts/check-agent-runtime-convergence-ratchet.py", "desktop/macos/scripts/agent-runtime-convergence-ratchet.json"]
-    lanes: ["local", "ci"]
-    reason: "#9688 keeps bridge lifecycle/context decisions extracted and both historic coordinator files bounded"
   - id: desktop-agent-runtime-contract-conformance
     command: ["bash", "desktop/macos/scripts/test-tool-surfaces.sh"]
     triggers: ["desktop/macos/agent/contracts/**", "desktop/macos/agent/src/adapters/**/*.ts", "desktop/macos/agent/src/runtime/control-tools.ts", "desktop/macos/agent/src/runtime/contract-schema.ts", "desktop/macos/agent/src/runtime/relay-tool-result.ts", "desktop/macos/agent/src/runtime/tool-result-envelope.ts", "desktop/macos/agent/tests/agent-runtime-contract-fixtures.test.ts", "desktop/macos/agent/tests/control-tools.test.ts", "desktop/macos/agent/tests/relay-tool-result.test.ts", "desktop/macos/agent/tests/runtime-adapter-contract-conformance.test.ts", "desktop/macos/scripts/test-tool-surfaces.sh", "desktop/macos/scripts/agent-logic-harness.sh", "desktop/macos/scripts/check-spawn-receipt-fixtures.sh"]

@@ -7,7 +7,6 @@ covers:
   - desktop/macos/Desktop/Sources/Automation/DesktopBuildIdentity.swift
   - desktop/macos/Desktop/Sources/DesktopAutomationBridge.swift
   - desktop/macos/Desktop/Sources/DesktopAutomationBridge+Notifications.swift
-  - desktop/macos/Desktop/Sources/DesktopAutomationBridge+RealtimeHub.swift
   - desktop/macos/Desktop/Sources/MainWindow/DesktopAutomationWindowPresentation.swift
   - desktop/macos/Desktop/Sources/BrowserAutomationTarget.swift
   - desktop/macos/Desktop/Sources/AppState/AppState+Environment.swift
@@ -24,7 +23,6 @@ covers:
   - desktop/macos/Desktop/Sources/Logger.swift
   - desktop/macos/Desktop/Sources/Observability/AppStartupTiming.swift
   - desktop/macos/Desktop/Sources/ClientDeviceService.swift
-  - desktop/macos/Desktop/Sources/LocalAgentAPIServer.swift
   - desktop/macos/Desktop/Sources/AgentSyncService.swift
   - desktop/macos/Desktop/Sources/AgentVMService.swift
   - desktop/macos/Desktop/Sources/APIKeyService.swift
@@ -32,7 +30,6 @@ covers:
   - desktop/macos/Desktop/Sources/StartupWarmupCoordinator.swift
   - desktop/macos/Desktop/Sources/Startup/StartupWarmupPolicy.swift
   - desktop/macos/Desktop/Sources/OmiApp.swift
-  - desktop/macos/Desktop/Sources/Chat/AgentArtifactRetention.swift
   - desktop/macos/Desktop/Sources/OmiSupport/DesktopDevRuntimeManifest.swift
   - desktop/macos/Desktop/Sources/OmiSupport/DesktopLocalProfile.swift
   - desktop/macos/Desktop/Sources/ViewModelContainer.swift

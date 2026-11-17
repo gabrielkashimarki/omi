@@ -30,7 +30,6 @@ covers:
   - desktop/macos/Desktop/Sources/MainWindow/Conversations/MeetingFollowUpDraftSheet.swift
   - desktop/macos/Desktop/Sources/MainWindow/Components/LiveTranscriptView.swift
   - desktop/macos/Desktop/Sources/MainWindow/Components/TranscriptDetailView.swift
-  - desktop/macos/Desktop/Sources/MainWindow/Components/CitationCardView.swift
   - desktop/macos/Desktop/Sources/MeetingScreenshots/MeetingFrameJudge.swift
   - desktop/macos/Desktop/Sources/MeetingScreenshots/MeetingFrameSelector.swift
   - desktop/macos/Desktop/Sources/MeetingScreenshots/MeetingFrameSimilarity.swift
