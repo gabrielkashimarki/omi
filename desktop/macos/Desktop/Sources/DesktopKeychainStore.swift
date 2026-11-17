@@ -66,12 +66,18 @@ enum DesktopKeychainStore {
     if let _cachedBackend {
       return _cachedBackend
     }
-    let resolved: Backend = AppBuild.isProductionBundle ? .keychain : .developerFile
+    let resolved: Backend = usesLoginKeychain ? .keychain : .developerFile
     _cachedBackend = resolved
     return resolved
   }
 
   private nonisolated(unsafe) static var _cachedBackend: Backend?
+
+  /// Fork: bundle de produção assinado sem Team ID (ad hoc ou certificado local) não usa o Keychain.
+  /// Sem Team ID o macOS prende o item ao cdhash de cada build, e todo build novo perde o login.
+  static var usesLoginKeychain: Bool {
+    AppBuild.isProductionBundle && !signingTeamID.hasPrefix("adhoc.")
+  }
 
   private static var developerSecretStore: DesktopDeveloperSecretStore {
     developerSecretStoreOverride ?? .shared
