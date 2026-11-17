@@ -51,11 +51,21 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true
   }
 
+  var aberto: Bool { panel != nil }
+  var gravando: Bool { running }
+
+  /// Painel na frente com a aba Jarvis (o Jarvis chamado durante a reunião).
+  func mostrarJarvis() {
+    panel?.orderFrontRegardless()
+    if minimized { handle("compact", ["on": false]) }
+    web?.evaluateJavaScript("document.querySelector('#tabs [data-tab=jarvis]')?.click()")
+  }
+
   /// Sinal confirmado do `MeetingDetector`.
   func meetingChanged(_ active: Bool) {
     if active {
-      guard enabled, panel == nil else { return }
-      open()
+      guard enabled, !running else { return }
+      if panel == nil { open() } else { listen() }  // painel no fim da reunião anterior: volta a ouvir
     } else if running {
       stop(paused: false)
     }
@@ -92,6 +102,9 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
 
     let config = WKWebViewConfiguration()
     config.userContentController.add(self, name: "meeting")  // singleton: o ciclo não vaza
+    config.userContentController.add(JarvisPainel.shared, name: "jarvis")
+    config.userContentController.addUserScript(
+      WKUserScript(source: JarvisPainel.script, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
     config.userContentController.addUserScript(
       WKUserScript(
         source: i18n.isEmpty ? Self.extras : i18n + "\ni18n.start('page');i18n.setLanguage('pt');\n" + Self.extras,
@@ -134,6 +147,9 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
     if let dragMonitor { NSEvent.removeMonitor(dragMonitor) }
     dragMonitor = nil
     web?.configuration.userContentController.removeScriptMessageHandler(forName: "meeting")
+    web?.configuration.userContentController.removeScriptMessageHandler(forName: "jarvis")
+    JarvisPainel.shared.sairDaReuniao()
+    JarvisMenu.reuniaoAcabou()
     panel?.orderOut(nil)
     panel = nil
     web = nil
@@ -284,6 +300,8 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
   private func listen() {
     guard loaded else { return }
     running = true
+    if let web { JarvisPainel.shared.entrarNaReuniao(web) }
+    NotificationCenter.default.post(name: .jarvisMudou, object: nil)
     js("listen")
     js("capturing")
     js("saving", true)
@@ -310,6 +328,8 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
   private func stop(paused: Bool) {
     guard running else { return }
     running = false
+    JarvisPainel.shared.sairDaReuniao()
+    JarvisMenu.reuniaoAcabou()
     clock?.invalidate()
     subscriptions.removeAll()
     settle?.cancel()
@@ -627,6 +647,31 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
         if (toast) { toast.textContent = 'Transcrição copiada'; toast.hidden = false; setTimeout(() => toast.hidden = true, 4000); }
       }, true);
 
+      // Aba Jarvis: a mesma UI do painel solto (jarvis-painel.js), para pedir sem sair da reunião
+      const tabs = document.getElementById('tabs');
+      if (tabs && window.jarvis) {
+        const jb = document.createElement('button');
+        jb.setAttribute('role', 'tab'); jb.dataset.tab = 'jarvis'; jb.setAttribute('aria-selected', 'false');
+        jb.textContent = 'Jarvis';
+        tabs.append(jb);
+        const pane = document.createElement('section');
+        pane.id = 'jarvispane'; pane.className = 'pane'; pane.hidden = true;
+        pane.style.cssText = 'display:flex;flex-direction:column;min-height:0;flex:1';
+        document.getElementById('ctx')?.after(pane);
+        const askbar = document.getElementById('askbar');
+        tabs.addEventListener('click', e => {
+          const b = e.target.closest('button'); if (!b) return;
+          const on = b === jb;
+          if (on) {
+            for (const t of tabs.children) t.setAttribute('aria-selected', String(t === jb));
+            for (const id of ['scroll', 'transcript', 'ctx']) document.getElementById(id).hidden = true;
+          }
+          pane.hidden = !on;
+          if (askbar) askbar.style.display = on ? 'none' : '';
+        });
+        window.jarvis.mount(pane);
+      }
+
       window.omi = {
         muted(on) { muted = on; paint(); },
         liveNotes(items) {
@@ -643,11 +688,11 @@ final class MeetingCopilot: NSObject, WKScriptMessageHandler {
 }
 
 /// Painel que aceita teclado (campo de pergunta) sem ativar o Omi.
-private final class CopilotPanel: NSPanel {
+final class CopilotPanel: NSPanel {
   override var canBecomeKey: Bool { true }
 }
 
-private final class CopilotWebView: WKWebView {
+final class CopilotWebView: WKWebView {
   override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }
 

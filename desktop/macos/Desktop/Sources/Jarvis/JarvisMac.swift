@@ -39,6 +39,8 @@ final class JarvisMac {
     var c = URLComponents(url: r.url!, resolvingAgainstBaseURL: true)!
     c.scheme = "wss"
     r.url = c.url
+    // a conexão fica parada entre pedidos; quem derruba conexão morta é o ping de 25 s
+    r.timeoutInterval = 300
     let ws = URLSession.shared.webSocketTask(with: r)
     ws.resume()
     defer { ws.cancel(with: .goingAway, reason: nil) }
