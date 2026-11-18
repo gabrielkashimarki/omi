@@ -73,6 +73,7 @@ enum JarvisMaos {
 
   @MainActor static func executar(_ pedido: [String: Any]) async -> [String: Any] {
     if pedido["omi"] != nil { return await JarvisOmi.consultar(pedido) }
+    if pedido["tela"] != nil { return printDaTela() }
     let acao = ler(pedido)
     log("Jarvis: mexer_no_mac \(acao)")
     switch acao {
@@ -117,6 +118,34 @@ enum JarvisMaos {
     case .desconhecida:
       return falha("Não sei fazer isso ainda. " + formatos)
     }
+  }
+
+  /// Maior lado do print mandado ao cérebro: o Claude reduz imagem maior que ~1.568 px, então mandar mais é só peso.
+  nonisolated static let ladoPrint = 1568
+
+  /// Print da tela sob o mouse, em JPEG reduzido, para o cérebro ler o que está escrito (o `see` do Atticus só vê a
+  /// árvore de acessibilidade, e app como o Claude não expõe o texto da conversa nela).
+  static func printDaTela() -> [String: Any] {
+    guard let tela = ScreenCaptureManager.captureScreenImage() else {
+      return falha("Não consegui tirar o print: o Omi Fork precisa da permissão de Gravação de Tela.")
+    }
+    let escala = min(1, Double(ladoPrint) / Double(max(tela.width, tela.height)))
+    let largura = Int(Double(tela.width) * escala)
+    let altura = Int(Double(tela.height) * escala)
+    guard
+      let ctx = CGContext(
+        data: nil, width: largura, height: altura, bitsPerComponent: 8, bytesPerRow: 0,
+        space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
+    else { return falha("Não consegui reduzir o print.") }
+    ctx.interpolationQuality = .high
+    ctx.draw(tela, in: CGRect(x: 0, y: 0, width: largura, height: altura))
+    guard let menor = ctx.makeImage(), let jpeg = ScreenCaptureManager.jpegData(from: menor, quality: 0.75) else {
+      return falha("Não consegui gerar o JPEG do print.")
+    }
+    log("Jarvis: print da tela \(largura)x\(altura), \(jpeg.count / 1024) KB")
+    return [
+      "ok": true, "mensagem": "Print da tela \(largura)x\(altura).", "imagem_jpeg_base64": jpeg.base64EncodedString(),
+    ]
   }
 
   private static func ok(_ m: String) -> [String: Any] { ["ok": true, "mensagem": m] }
