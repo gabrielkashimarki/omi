@@ -72,6 +72,7 @@ enum JarvisMaos {
   // MARK: - Execução
 
   @MainActor static func executar(_ pedido: [String: Any]) async -> [String: Any] {
+    if pedido["omi"] != nil { return await JarvisOmi.consultar(pedido) }
     let acao = ler(pedido)
     log("Jarvis: mexer_no_mac \(acao)")
     switch acao {
@@ -101,7 +102,8 @@ enum JarvisMaos {
     case .preencherLogin:
       guard AXIsProcessTrusted() else {
         return falha(
-          "O Omi Fork não tem permissão de Acessibilidade para acionar o 1Password. O Gabriel precisa liberar nos Ajustes.")
+          "O Omi Fork não tem permissão de Acessibilidade para acionar o 1Password. O Gabriel precisa liberar nos Ajustes."
+        )
       }
       guard let navegador = trazerNavegador() else { return falha("Não achei um navegador aberto.") }
       // espera a página carregar (a URL costuma ter acabado de abrir)

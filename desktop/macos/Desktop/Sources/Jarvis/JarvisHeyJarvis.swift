@@ -199,7 +199,8 @@ final class JarvisHeyJarvis {
 
   private func ouviu() {
     // o mudo é conferido a cada 2 s: um segundo disparo nesse intervalo não reabre o painel já ouvindo
-    guard escutando, JarvisPainel.shared.fase != .ouvindo, JarvisPainel.shared.fase != .pensando else { return }
+    // pensando também vale: o pedido novo roda junto com o anterior
+    guard escutando, JarvisPainel.shared.fase != .ouvindo else { return }
     log("Jarvis: ouvi Hey Jarvis")
     NSSound(named: "Tink")?.play()
     JarvisPainel.shared.abrir(ouvindo: true)

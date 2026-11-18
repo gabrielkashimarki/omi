@@ -79,6 +79,7 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
   private var pronto: Set<ObjectIdentifier> = []
   private var fila: [(String, Any)] = []  // chamadas antes da página montar
   private var estado = JarvisPainelEstado()
+  private var tarefaPedido: Task<Void, Never>?
   private var relogio: Timer?
   private let legenda = JarvisLegenda()
   private var silencio: DispatchWorkItem?
@@ -162,7 +163,7 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
       x: tela.maxX - tamanho.width - 12, y: tela.maxY - tamanho.height - 12, width: tamanho.width,
       height: tamanho.height)
     let p = CopilotPanel(
-      contentRect: frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+      contentRect: frame, styleMask: [.borderless, .nonactivatingPanel, .resizable], backing: .buffered, defer: false)
     p.level = .statusBar
     p.isOpaque = false
     p.backgroundColor = .clear
@@ -170,6 +171,9 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     p.hidesOnDeactivate = false
     p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
     p.sharingType = .none
+    // arrasta a borda para aumentar; o tamanho e o lugar ficam salvos para a próxima vez
+    p.contentMinSize = tamanho
+    p.setFrameAutosaveName("JarvisPainel")
 
     let config = WKWebViewConfiguration()
     config.userContentController.add(self, name: "jarvis")  // singleton: o ciclo não vaza
@@ -201,7 +205,8 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     relogio = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
       MainActor.assumeIsolated {
         let s = JarvisPainel.shared
-        if s.proprio != nil, s.estado.deveSumir() { s.fechar() }
+        // com a voz tocando não some: fechar derruba a escuta e o engine, e a fala era cortada aos 20 s (18/11)
+        if s.proprio != nil, !JarvisVoz.shared.falando, s.estado.deveSumir() { s.fechar() }
       }
     }
   }
@@ -275,7 +280,10 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     if conversaAberta, !legenda.ouvindo { legenda.comecar(comEco: true) }
     let desde = fimDoTurno
     fimDoTurno = nil
-    JarvisVoz.shared.falar(fala, desde: desde) { JarvisPainel.shared.continuar() }
+    JarvisVoz.shared.falar(fala, desde: desde) {
+      JarvisPainel.shared.estado.atividade()  // os 20 s para sumir contam do fim da voz
+      JarvisPainel.shared.continuar()
+    }
   }
 
   /// O Gabriel falou por cima: a voz para e o que ele disser vira o próximo pedido.
@@ -367,17 +375,25 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     chamar("conversa", false)
     mudar(.pensando)
     chamar("pedido", t)
-    Task {
+    // pedido novo com outro ainda pensando: o anterior segue no servidor e responde pelo WhatsApp; aqui só o novo
+    // fala (o fluxo HTTP do anterior fecha, e o servidor marca o anterior como desligado)
+    tarefaPedido?.cancel()
+    tarefaPedido = Task {
       do {
         try await JarvisCliente.pedir(t) { e in
           await MainActor.run {
-            if case .passo = e {} else {
+            guard !Task.isCancelled else { return }
+            if case .passo = e {
+            } else {
               log("Jarvis: latência fim do turno → fala do servidor \(Int(Date().timeIntervalSince(inicio) * 1000)) ms")
             }
             JarvisPainel.shared.evento(e)
           }
         }
+        guard !Task.isCancelled else { return }
         if estado.fase == .pensando { mudar(.respondeu) }
+      } catch  where Task.isCancelled {
+        return
       } catch JarvisCliente.Falha.semChave {
         falhou("Falta a chave do Jarvis neste Mac.")
       } catch {

@@ -98,6 +98,25 @@ final class JarvisTests: XCTestCase {
     ["type": "TurnInfo", "event": evento, "transcript": texto]
   }
 
+  func testParakeetFechaOTurnoSoDepoisDoTrechoDaUltimaVozEDaPausa() {
+    let voz = Date(timeIntervalSince1970: 1000)
+    let trecho = voz.addingTimeInterval(0.7)
+    XCTAssertFalse(JarvisLegenda.fimLocal(texto: "", agora: voz + 5, ultimaVoz: voz, ultimoTrecho: trecho))
+    // o trecho que cobre a última voz ainda não chegou: falou de novo depois dele
+    XCTAssertFalse(JarvisLegenda.fimLocal(texto: "oi", agora: voz + 5, ultimaVoz: voz, ultimoTrecho: voz - 1))
+    XCTAssertFalse(JarvisLegenda.fimLocal(texto: "oi", agora: voz + 0.8, ultimaVoz: voz, ultimoTrecho: trecho))
+    XCTAssertTrue(JarvisLegenda.fimLocal(texto: "oi", agora: voz + 1.0, ultimaVoz: voz, ultimoTrecho: trecho))
+  }
+
+  func testOmiIntervaloDoDia() throws {
+    let agora = Date()
+    let (inicio, fim) = try XCTUnwrap(JarvisOmi.intervalo(dia: nil, agora: agora))
+    XCTAssertEqual(inicio, Calendar.current.startOfDay(for: agora))
+    XCTAssertEqual(fim.timeIntervalSince(inicio), 86_400, accuracy: 3_600)
+    XCTAssertNotNil(JarvisOmi.intervalo(dia: "2026-11-18"))
+    XCTAssertNil(JarvisOmi.intervalo(dia: "ontem"))
+  }
+
   func testAcumuladorDoFluxFechaNoEndOfTurn() {
     var a = JarvisLegenda.Acumulador()
     XCTAssertNil(a.receber(turno("StartOfTurn", "")))
@@ -139,6 +158,11 @@ final class JarvisTests: XCTestCase {
     XCTAssertTrue(fim.terminou)
     let url = JarvisLegenda.url.absoluteString
     XCTAssertTrue(url.contains("/v2/listen") && url.contains("flux-general-multi") && url.contains("pt-BR"))
+
+    // a marca de idioma do modelo multilíngue não vai para o pedido
+    var b = JarvisLegenda.Acumulador()
+    let marcado = try XCTUnwrap(b.receber(turno("EndOfTurn", "desconectar ele no WhatsApp <lang:pt> uazapi")))
+    XCTAssertEqual(marcado.texto, "desconectar ele no WhatsApp uazapi")
     XCTAssertEqual(JarvisLegenda.quadro, 16_000 * 2 * 80 / 1000, "80 ms de PCM 16 kHz por envio")
 
     // a ponte para o JS leva o texto inteiro, escapado
@@ -241,7 +265,8 @@ final class JarvisTests: XCTestCase {
       JarvisVoz.frases("Você tem três demandas vencidas. A mais antiga é da PACINI! Quer que eu cobre?"),
       ["Você tem três demandas vencidas.", "A mais antiga é da PACINI!", "Quer que eu cobre?"])
     XCTAssertEqual(JarvisVoz.frases("Ok. Mandei o relatório."), ["Ok. Mandei o relatório."], "pedaço curto vai junto")
-    XCTAssertEqual(JarvisVoz.frases("Custa R$ 1.500,00 por mês"), ["Custa R$ 1.500,00 por mês"], "ponto no número não corta")
+    XCTAssertEqual(
+      JarvisVoz.frases("Custa R$ 1.500,00 por mês"), ["Custa R$ 1.500,00 por mês"], "ponto no número não corta")
     XCTAssertEqual(JarvisVoz.frases("  "), [])
     XCTAssertEqual(
       JarvisVoz.frases(
@@ -369,7 +394,9 @@ final class JarvisTests: XCTestCase {
     detector.reset()
     var maior: Float = 0
     let tudo = silencio + positivo + silencio + negativo + silencio
-    for i in stride(from: 0, to: tudo.count, by: 1280) { maior = max(maior, detector.processar(Array(tudo[i..<min(i + 1280, tudo.count)]))) }
+    for i in stride(from: 0, to: tudo.count, by: 1280) {
+      maior = max(maior, detector.processar(Array(tudo[i..<min(i + 1280, tudo.count)])))
+    }
     XCTAssertGreaterThanOrEqual(maior, JarvisDetectorPalavra.limiar)
 
     // fechando o app: nenhum bloco chega mais ao onnxruntime

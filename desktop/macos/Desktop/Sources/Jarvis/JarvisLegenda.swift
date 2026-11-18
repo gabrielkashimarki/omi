@@ -76,7 +76,9 @@ final class JarvisMicrofone: @unchecked Sendable {
       return
     }
     if let m = montado, m.mic == mic, m.eco == eco || !mic { return }
-    if tocando > 0, montado != nil, !mic { return }  // a voz acaba antes: não corta por causa do microfone
+    // com a voz tocando, recriar o engine corta a fala: fica o que já está montado se ele cobre o que se pede (o
+    // eco que sobra não atrapalha); quando a voz acaba, montar() roda de novo
+    if tocando > 0, let m = montado, m.mic || !mic, m.eco || !eco { return }
     derrubar()
     let e = AVAudioEngine()
     let p = AVAudioPlayerNode()
@@ -150,14 +152,19 @@ final class JarvisMicrofone: @unchecked Sendable {
 }
 
 /// Legenda ao vivo da fala do Gabriel: Deepgram Flux (`flux-general-multi` com dica pt-BR, o mesmo da URA da BDR).
-/// O Flux decide o fim do turno (`EndOfTurn`, `eot_threshold` 0,7): ~0,8 a 1,2 s depois da fala, contra ~1,6 s do
-/// nova-3 com `endpointing` de 1,2 s (medido com o `say` em 18/11). O socket segue aberto entre turnos; quem usa
+/// O Flux decide o fim do turno (`EndOfTurn`): com `eot_threshold` 0,7 fechava ~0,8 a 1,2 s depois da fala, contra
+/// ~1,6 s do nova-3 com `endpointing` de 1,2 s (medido com o `say` em 18/11), mas cortava ditado longo na pausa entre
+/// itens (Gabriel, 18/11 14h16); 0,85 pede mais certeza de que acabou. O socket segue aberto entre turnos; quem usa
 /// decide quando parar.
+///
+/// Em teste (ajuste `jarvis_ouvido_local`): o Parakeet do Omi no Mac no lugar do Flux. Ele fecha um trecho a cada
+/// 0,6 s de pausa, sem parcial; o turno fecha quando o trecho que cobre a última voz chegou e já passou
+/// `pausaLocal` de silêncio. O log mostra "fim da fala → turno" dos dois motores para comparar.
 @MainActor
 final class JarvisLegenda {
   nonisolated static let url = URL(
     string: "wss://api.deepgram.com/v2/listen?model=flux-general-multi&language_hint=pt-BR&encoding=linear16"
-      + "&sample_rate=16000&eot_threshold=0.7")!
+      + "&sample_rate=16000&eot_threshold=0.85")!
   /// 80 ms de PCM 16 kHz por envio, como a Deepgram recomenda (em 20 ms o Flux fechava ~110 ms depois, BDR 25/10).
   nonisolated static let quadro = 2560
 
@@ -168,7 +175,10 @@ final class JarvisLegenda {
     /// Devolve o texto da legenda até agora e se o turno acabou. Depois do fim, o próximo turno começa vazio.
     mutating func receber(_ j: [String: Any]) -> (texto: String, terminou: Bool)? {
       guard j["type"] as? String == "TurnInfo", let evento = j["event"] as? String else { return nil }
-      let texto = (j["transcript"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+      // o modelo multilíngue marca a troca de idioma no meio do texto ("<lang:pt>"): não é fala
+      let texto = (j["transcript"] as? String ?? "").replacingOccurrences(
+        of: #"\s*<lang:[A-Za-z-]+>\s*"#, with: " ", options: .regularExpression
+      ).trimmingCharacters(in: .whitespacesAndNewlines)
       if evento == "EndOfTurn" {
         let t = texto.isEmpty ? textoAteAgora : texto
         textoAteAgora = ""
@@ -180,17 +190,37 @@ final class JarvisLegenda {
     }
   }
 
+  nonisolated static let ajusteLocal = "jarvis_ouvido_local"
+  nonisolated static let pausaLocal: TimeInterval = 1.0
+  /// RMS de um quadro com voz no microfone já tratado (ponytail: limiar fixo; sala barulhenta segura o turno aberto e
+  /// quem fecha é a guarda de 4 s do painel)
+  nonisolated static let limiarVoz: Float = 0.01
+
+  /// Fim do turno no Parakeet (puro, testado).
+  nonisolated static func fimLocal(texto: String, agora: Date, ultimaVoz: Date, ultimoTrecho: Date) -> Bool {
+    !texto.isEmpty && ultimoTrecho > ultimaVoz && agora.timeIntervalSince(ultimaVoz) >= pausaLocal
+  }
+
   var aoOuvir: ((String) -> Void)?
   var aoTerminar: ((String) -> Void)?
   var aoFalhar: ((String) -> Void)?
   private var ws: URLSessionWebSocketTask?
   private var acumulador = Acumulador()
+  private let voz = Voz()
+  // Parakeet: um só, carregado na primeira escuta local e mantido (o modelo leva segundos para subir)
+  private static var parakeet: LocalTranscriptionService?
+  private static weak var atual: JarvisLegenda?
+  private var local = false
+  private var turnoLocal = ""
+  private var ultimoTrecho = Date.distantPast
+  private var relogioLocal: Timer?
 
-  var ouvindo: Bool { ws != nil }
+  var ouvindo: Bool { ws != nil || local }
 
   /// `comEco`: liga o cancelamento de eco (fora de reunião), para ouvir enquanto o Jarvis fala.
   func comecar(comEco: Bool) {
     parar()
+    if UserDefaults.standard.bool(forKey: Self.ajusteLocal) { return comecarLocal(comEco: comEco) }
     guard let chave = APIKeyService.byokKey(.deepgram) else {
       aoFalhar?("Sem chave do Deepgram: digite o pedido")
       return
@@ -202,7 +232,10 @@ final class JarvisLegenda {
     acumulador = Acumulador()
     ws.resume()
     let pendente = Pendente()
+    let voz = voz
+    voz.zerar()
     JarvisMicrofone.shared.assinar("legenda", comEco: comEco) { dados in
+      voz.medir(dados)
       guard let q = pendente.juntar(dados, quadro: Self.quadro) else { return }
       ws.send(.data(q)) { _ in }
     }
@@ -212,8 +245,8 @@ final class JarvisLegenda {
   /// Fim pelo botão ou pela guarda de silêncio: entrega o que já foi dito. Falso se nada foi ouvido.
   @discardableResult
   func terminar() -> Bool {
-    guard ws != nil else { return false }
-    let t = acumulador.textoAteAgora
+    guard ouvindo else { return false }
+    let t = local ? turnoLocal : acumulador.textoAteAgora
     parar()
     guard !t.isEmpty else { return false }
     aoTerminar?(t)
@@ -221,9 +254,18 @@ final class JarvisLegenda {
   }
 
   /// Esquece o turno em aberto sem fechar o socket (fala curta por cima do Jarvis que não interrompeu).
-  func descartarTurno() { acumulador = Acumulador() }
+  func descartarTurno() {
+    acumulador = Acumulador()
+    turnoLocal = ""
+  }
 
   func parar() {
+    if local {
+      local = false
+      relogioLocal?.invalidate()
+      relogioLocal = nil
+      JarvisMicrofone.shared.cancelar("legenda")
+    }
     guard let ws else { return }
     self.ws = nil
     JarvisMicrofone.shared.cancelar("legenda")
@@ -246,7 +288,76 @@ final class JarvisLegenda {
       if j["type"] as? String == "Error" { log("Jarvis: Flux devolveu erro \(j["code"] ?? "")") }
       guard let r = acumulador.receber(j) else { continue }
       aoOuvir?(r.texto)
-      if r.terminou { aoTerminar?(r.texto) }
+      if r.terminou {
+        logLatencia("Flux")
+        aoTerminar?(r.texto)
+      }
+    }
+  }
+
+  private func logLatencia(_ motor: String) {
+    let ms = voz.ultima.map { Int(Date().timeIntervalSince($0) * 1000) }
+    log("Jarvis: fim da fala → turno fechado \(ms.map(String.init) ?? "?") ms (\(motor))")
+  }
+
+  // MARK: - Parakeet (teste)
+
+  private func comecarLocal(comEco: Bool) {
+    if Self.parakeet == nil {
+      let p = LocalTranscriptionService(
+        language: AssistantSettings.shared.transcriptionLanguageSelection, isUser: true)
+      p.start(
+        onSegments: { segmentos in JarvisLegenda.atual?.trechoLocal(segmentos.map(\.text).joined(separator: " ")) },
+        onModelLoadFailed: { JarvisLegenda.atual?.aoFalhar?("O Parakeet não carregou: desligue o ouvido local") })
+      Self.parakeet = p
+    }
+    guard let p = Self.parakeet else { return }
+    Self.atual = self
+    local = true
+    turnoLocal = ""
+    ultimoTrecho = .distantPast
+    let voz = voz
+    voz.zerar()
+    JarvisMicrofone.shared.assinar("legenda", comEco: comEco) { dados in
+      voz.medir(dados)
+      p.appendAudio(dados)
+    }
+    relogioLocal = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+      MainActor.assumeIsolated { JarvisLegenda.atual?.conferirFimLocal() }
+    }
+  }
+
+  private func trechoLocal(_ texto: String) {
+    let t = texto.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard local, !t.isEmpty else { return }
+    turnoLocal = turnoLocal.isEmpty ? t : turnoLocal + " " + t
+    ultimoTrecho = Date()
+    aoOuvir?(turnoLocal)
+  }
+
+  private func conferirFimLocal() {
+    guard local, let ultima = voz.ultima,
+      Self.fimLocal(texto: turnoLocal, agora: Date(), ultimaVoz: ultima, ultimoTrecho: ultimoTrecho)
+    else { return }
+    let t = turnoLocal
+    turnoLocal = ""
+    logLatencia("Parakeet")
+    aoTerminar?(t)
+  }
+
+  /// Último quadro com voz no microfone (medido na fila do microfone, lido no main).
+  final class Voz: @unchecked Sendable {
+    private let trava = NSLock()
+    private var _ultima: Date?
+    var ultima: Date? { trava.withLock { _ultima } }
+    func zerar() { trava.withLock { _ultima = nil } }
+    func medir(_ dados: Data) {
+      let n = dados.count / 2
+      guard n > 0 else { return }
+      let soma = dados.withUnsafeBytes { b in
+        b.bindMemory(to: Int16.self).reduce(Float(0)) { $0 + Float($1) * Float($1) }
+      }
+      if (soma / Float(n)).squareRoot() / 32768 > JarvisLegenda.limiarVoz { trava.withLock { _ultima = Date() } }
     }
   }
 
