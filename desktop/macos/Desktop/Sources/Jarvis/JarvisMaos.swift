@@ -74,6 +74,7 @@ enum JarvisMaos {
   @MainActor static func executar(_ pedido: [String: Any]) async -> [String: Any] {
     if pedido["omi"] != nil { return await JarvisOmi.consultar(pedido) }
     if pedido["tela"] != nil { return printDaTela() }
+    if pedido["sessoes"] != nil { return await JarvisSessoes.consultar(pedido) }
     let acao = ler(pedido)
     log("Jarvis: mexer_no_mac \(acao)")
     switch acao {

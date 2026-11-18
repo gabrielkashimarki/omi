@@ -108,6 +108,24 @@ final class JarvisTests: XCTestCase {
     XCTAssertTrue(JarvisLegenda.fimLocal(texto: "oi", agora: voz + 1.0, ultimaVoz: voz, ultimoTrecho: trecho))
   }
 
+  func testSessoesDoClaudeLeTituloPastaEFalas() {
+    let linhas: [Substring] = [
+      #"{"type":"user","cwd":"/Users/g/proj","entrypoint":"claude-desktop","message":{"role":"user","content":"corrige o login"}}"#,
+      #"{"type":"user","message":{"role":"user","content":"<system-reminder>x</system-reminder>"}}"#,
+      #"{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash"},{"type":"text","text":"Corrigi."}]}}"#,
+      #"{"type":"user","message":{"content":[{"type":"tool_result","content":"SEGREDO"}]}}"#,
+      #"{"type":"assistant","isSidechain":true,"message":{"content":[{"type":"text","text":"subagente"}]}}"#,
+      #"{"type":"custom-title","customTitle":"Login quebrado"}"#,
+      "linha cortada {",
+    ]
+    let r = JarvisSessoes.Resumo(linhas: linhas)
+    XCTAssertEqual(r.titulo, "Login quebrado")
+    XCTAssertEqual(r.pasta, "/Users/g/proj")
+    XCTAssertEqual(r.origem, "claude-desktop")
+    XCTAssertEqual(r.falas.map(\.quem), ["Gabriel", "Claude"])
+    XCTAssertEqual(r.falas.map(\.texto), ["corrige o login", "Corrigi."])
+  }
+
   func testOmiIntervaloDoDia() throws {
     let agora = Date()
     let (inicio, fim) = try XCTUnwrap(JarvisOmi.intervalo(dia: nil, agora: agora))
