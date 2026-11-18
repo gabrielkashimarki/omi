@@ -1,8 +1,9 @@
 @preconcurrency import AVFoundation
 import Foundation
 
-/// Voz do Jarvis em pedaços: a fala é dividida por frase e a primeira já começa a tocar enquanto as outras sintetizam.
-/// Padrão: TTS do Gemini (voz Charon) com todas as frases sintetizando em paralelo e tocando na ordem. A ElevenLabs
+/// Voz do Jarvis em pedaços. Padrão: Gemini Live (`JarvisLive`, voz Charon) lendo a fala inteira em streaming. Reserva,
+/// se o Live falhar antes do primeiro áudio: TTS do Gemini por frase, todas sintetizando em paralelo e tocando na ordem
+/// (a primeira já começa a tocar enquanto as outras sintetizam). A ElevenLabs
 /// `eleven_v4_turbo` em streaming (primeiro byte ~0,4 s em 18/11, mas cara) só entra com o ajuste ligado nos Ajustes
 /// e a chave no cofre de segredos do app. Toca pelo engine do `JarvisMicrofone`, para o cancelamento de eco tirar a
 /// voz do microfone.
@@ -18,6 +19,9 @@ final class JarvisVoz {
   nonisolated static let modeloElevenLabs = "eleven_v4_turbo"
   /// 100 ms de PCM 24 kHz: o pedaço que vai tocando enquanto o resto chega.
   private nonisolated static let pedaco = 4800
+  /// 150 ms segurados antes do primeiro pedaço do Live: ele entrega no ritmo da fala, sem folga (até 40 ms de atraso
+  /// entre pedaços, medido em 18/11); a folga evita picote com jitter de rede.
+  private nonisolated static let inicioLive = 7200
 
   private var tarefa: Task<Void, Never>?
   var falando: Bool { tarefa != nil }
@@ -55,7 +59,18 @@ final class JarvisVoz {
           relogio.marcar("Gemini", b)
         }
       } else if let gemini {
-        // o Gemini não tem streaming: todas as frases saem para síntese já, e cada uma toca assim que ela e as de
+        let texto = texto.trimmingCharacters(in: .whitespacesAndNewlines)
+        // sessão parada há muito tempo pode ter caído sem aviso: uma segunda tentativa já abre outra
+        var tocou = false
+        for _ in 0..<2 where !tocou && !Task.isCancelled {
+          tocou = await Self.live(texto, chave: gemini, relogio: relogio)
+        }
+        guard !Task.isCancelled else { return }
+        if tocou {
+          await self?.terminar(aoTerminar)
+          return
+        }
+        // o TTS do Gemini não tem streaming: todas as frases saem para síntese já, e cada uma toca assim que ela e as de
         // antes ficam prontas
         let sinteses = frases.map { f in Task { await Self.gemini(f, chave: gemini) } }
         defer { sinteses.forEach { $0.cancel() } }
@@ -65,20 +80,59 @@ final class JarvisVoz {
           if let wav, let b = Self.buffer(wav: wav) { relogio.marcar("Gemini", b) }
         }
       }
-      // marca de fim: toca depois de tudo o que foi agendado (ou volta na hora se a voz for cortada)
-      await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
-        JarvisMicrofone.shared.tocar(Self.silencio) { c.resume() }
-      }
-      guard let self, !Task.isCancelled else { return }
-      self.tarefa = nil
-      aoTerminar()
+      await self?.terminar(aoTerminar)
     }
+  }
+
+  /// Marca de fim: toca depois de tudo o que foi agendado (ou volta na hora se a voz for cortada).
+  private func terminar(_ aoTerminar: @MainActor () -> Void) async {
+    await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+      JarvisMicrofone.shared.tocar(Self.silencio) { c.resume() }
+    }
+    guard !Task.isCancelled else { return }
+    tarefa = nil
+    aoTerminar()
   }
 
   func parar() {
     tarefa?.cancel()
     tarefa = nil
+    JarvisLive.shared.cortar()
     JarvisMicrofone.shared.pararVoz()
+  }
+
+  /// Pedido saiu para o servidor: a sessão do Live abre enquanto ele pensa.
+  func aquecer() {
+    guard !MeetingCopilotVoice.shared.muted, !UserDefaults.standard.bool(forKey: Self.ajusteElevenLabs),
+      let gemini = APIKeyService.shared.effectiveGeminiKey
+    else { return }
+    JarvisLive.shared.aquecer(chave: gemini)
+  }
+
+  /// Fala pelo Gemini Live, tocando cada pedaço que chega. `false` só se falhou antes do primeiro áudio (vai a reserva);
+  /// cortada no meio ou falha com áudio já tocando contam como faladas.
+  private static func live(_ texto: String, chave: String, relogio: Relogio) async -> Bool {
+    var acumulado = Data()
+    var tocou = false
+    let tocar = {
+      if let b = buffer(pcm: acumulado) {
+        relogio.marcar("Gemini Live", b)
+        tocou = true
+      }
+      acumulado.removeAll(keepingCapacity: true)
+    }
+    do {
+      try await JarvisLive.shared.ler(texto, chave: chave) { pcm in
+        acumulado.append(pcm)
+        if tocou || acumulado.count >= inicioLive { tocar() }
+      }
+      tocar()
+      return tocou
+    } catch {
+      if Task.isCancelled { return true }
+      log("Jarvis: Gemini Live falhou (\(error.localizedDescription))\(tocou ? ", fala cortada" : ", vai o TTS")")
+      return tocou
+    }
   }
 
   /// Agenda cada pedaço e registra no log o tempo até o primeiro.

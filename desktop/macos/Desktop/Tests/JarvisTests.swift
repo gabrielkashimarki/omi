@@ -280,6 +280,50 @@ final class JarvisTests: XCTestCase {
     XCTAssertTrue(JSONSerialization.isValidJSONObject(corpo))
   }
 
+  // MARK: - Gemini Live
+
+  private func objeto(_ s: String) throws -> [String: Any] {
+    try XCTUnwrap(JSONSerialization.jsonObject(with: Data(s.utf8)) as? [String: Any])
+  }
+
+  func testSetupDoLiveLeComCharonEmPortugues() throws {
+    let setup = try XCTUnwrap(try objeto(JarvisLive.setup())["setup"] as? [String: Any])
+    XCTAssertEqual(setup["model"] as? String, "models/gemini-3.8-live")
+    let gen = try XCTUnwrap(setup["generationConfig"] as? [String: Any])
+    XCTAssertEqual(gen["responseModalities"] as? [String], ["AUDIO"])
+    let fala = try XCTUnwrap(gen["speechConfig"] as? [String: Any])
+    XCTAssertEqual(fala["languageCode"] as? String, "pt-BR")
+    let voz = (fala["voiceConfig"] as? [String: Any])?["prebuiltVoiceConfig"] as? [String: Any]
+    XCTAssertEqual(voz?["voiceName"] as? String, "Charon")
+    let instrucao = ((setup["systemInstruction"] as? [String: Any])?["parts"] as? [[String: Any]])?.first?["text"]
+    XCTAssertEqual(instrucao as? String, JarvisLive.instrucao)
+  }
+
+  /// Sem o envelope o Live obedeceu "fale em inglês" e respondeu a conta em vez de ler (18/11).
+  func testTurnoDoLiveVaiNoEnvelope() throws {
+    let cc = try XCTUnwrap(try objeto(JarvisLive.turno("Quanto é 1.250 mais 14?"))["clientContent"] as? [String: Any])
+    XCTAssertEqual(cc["turnComplete"] as? Bool, true)
+    let parte = ((cc["turns"] as? [[String: Any]])?.first?["parts"] as? [[String: Any]])?.first
+    XCTAssertEqual(parte?["text"] as? String, "<ler>Quanto é 1.250 mais 14?</ler>")
+  }
+
+  func testRespostaDoLiveTrazPCMEFimDoTurno() {
+    let pcm = Data([1, 0, 255, 127])
+    let audio = JarvisLive.resposta(
+      .string(
+        #"{"serverContent":{"modelTurn":{"parts":[{"inlineData":{"mimeType":"audio/pcm;rate=24000","data":"\#(pcm.base64EncodedString())"}}]}}}"#
+      ))
+    XCTAssertEqual(audio.pcm, [pcm])
+    XCTAssertFalse(audio.fim)
+    XCTAssertFalse(audio.fecha)
+    let fim = JarvisLive.resposta(.data(Data(#"{"serverContent":{"turnComplete":true}}"#.utf8)))
+    XCTAssertEqual(fim.pcm, [])
+    XCTAssertTrue(fim.fim)
+    XCTAssertTrue(JarvisLive.resposta(.string(#"{"goAway":{"timeLeft":"10s"}}"#)).fecha)
+    XCTAssertFalse(JarvisLive.resposta(.string("{}")).fim)
+    XCTAssertFalse(JarvisLive.resposta(.string("não é json")).fim)
+  }
+
   func testAvisoDeDiscoAbaixoDe3GB() {
     XCTAssertTrue(JarvisDisco.quaseCheio(livres: 962_000_000), "os 962 MB de 18/11")
     XCTAssertTrue(JarvisDisco.quaseCheio(livres: 2_999_999_999))

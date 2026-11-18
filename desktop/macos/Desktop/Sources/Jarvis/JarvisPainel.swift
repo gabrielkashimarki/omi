@@ -296,6 +296,7 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     silencio?.cancel()
     legenda.parar()
     JarvisVoz.shared.parar()
+    JarvisLive.shared.fechar()
     chamar("conversa", false)
     chamar("legenda", "")
     if estado.fase == .ouvindo { mudar(pendente == nil ? .respondeu : .confirmando) }
@@ -357,6 +358,7 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     silencio?.cancel()
     legenda.parar()
     JarvisVoz.shared.parar()
+    JarvisVoz.shared.aquecer()
     if fimDoTurno == nil { fimDoTurno = Date() }  // pedido digitado: a conta começa no envio
     let inicio = fimDoTurno ?? Date()
     encerrada = false
