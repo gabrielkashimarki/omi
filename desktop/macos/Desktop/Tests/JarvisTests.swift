@@ -126,6 +126,13 @@ final class JarvisTests: XCTestCase {
     XCTAssertEqual(r.falas.map(\.texto), ["corrige o login", "Corrigi."])
   }
 
+  func testLimiarDeVozSobeComOJarvisFalando() {
+    XCTAssertGreaterThan(
+      JarvisLegenda.limiarVoz(jarvisFalando: true), JarvisLegenda.limiarVoz(jarvisFalando: false))
+    // a fala do Gabriel por cima (janela de 0,048 de média) ainda conta como voz
+    XCTAssertLessThan(JarvisLegenda.limiarVoz(jarvisFalando: true), 0.05)
+  }
+
   func testOmiIntervaloDoDia() throws {
     let agora = Date()
     let (inicio, fim) = try XCTUnwrap(JarvisOmi.intervalo(dia: nil, agora: agora))

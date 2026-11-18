@@ -195,6 +195,13 @@ final class JarvisLegenda {
   /// RMS de um quadro com voz no microfone já tratado (ponytail: limiar fixo; sala barulhenta segura o turno aberto e
   /// quem fecha é a guarda de 4 s do painel)
   nonisolated static let limiarVoz: Float = 0.01
+  /// Com o Jarvis falando, o que sobra da voz dele depois do cancelamento de eco passava de 0,01 e segurava o turno
+  /// do Gabriel aberto até a guarda de 4 s (18/11 14h39); a janela com a fala dele por cima mediu 0,048 de média.
+  nonisolated static let limiarVozComJarvisFalando: Float = 0.03
+
+  nonisolated static func limiarVoz(jarvisFalando: Bool) -> Float {
+    jarvisFalando ? limiarVozComJarvisFalando : limiarVoz
+  }
 
   /// Fim do turno no Parakeet (puro, testado).
   nonisolated static func fimLocal(texto: String, agora: Date, ultimaVoz: Date, ultimoTrecho: Date) -> Bool {
@@ -336,6 +343,7 @@ final class JarvisLegenda {
   }
 
   private func conferirFimLocal() {
+    voz.limiar = Self.limiarVoz(jarvisFalando: JarvisVoz.shared.falando)
     guard local, let ultima = voz.ultima,
       Self.fimLocal(texto: turnoLocal, agora: Date(), ultimaVoz: ultima, ultimoTrecho: ultimoTrecho)
     else { return }
@@ -349,7 +357,12 @@ final class JarvisLegenda {
   final class Voz: @unchecked Sendable {
     private let trava = NSLock()
     private var _ultima: Date?
+    private var _limiar = JarvisLegenda.limiarVoz
     var ultima: Date? { trava.withLock { _ultima } }
+    var limiar: Float {
+      get { trava.withLock { _limiar } }
+      set { trava.withLock { _limiar = newValue } }
+    }
     func zerar() { trava.withLock { _ultima = nil } }
     func medir(_ dados: Data) {
       let n = dados.count / 2
@@ -357,7 +370,8 @@ final class JarvisLegenda {
       let soma = dados.withUnsafeBytes { b in
         b.bindMemory(to: Int16.self).reduce(Float(0)) { $0 + Float($1) * Float($1) }
       }
-      if (soma / Float(n)).squareRoot() / 32768 > JarvisLegenda.limiarVoz { trava.withLock { _ultima = Date() } }
+      let rms = (soma / Float(n)).squareRoot() / 32768
+      trava.withLock { if rms > _limiar { _ultima = Date() } }
     }
   }
 
