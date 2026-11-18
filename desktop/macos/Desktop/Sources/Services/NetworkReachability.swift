@@ -43,8 +43,14 @@ final class NetworkReachability {
         guard let self, self.online != satisfied else { return }
         self.online = satisfied
         log("NetworkReachability: network \(satisfied ? "available" : "unavailable")")
+        if satisfied { NotificationCenter.default.post(name: .redeVoltou, object: nil) }
       }
     }
     monitor.start(queue: queue)
   }
+}
+
+extension Notification.Name {
+  /// A rede estava fora e voltou (não dispara na primeira leitura, que já parte de online).
+  static let redeVoltou = Notification.Name("NetworkReachability.redeVoltou")
 }
