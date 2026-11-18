@@ -84,7 +84,7 @@ enum MeetingCopilotServer {
     return (trechos(in: result), result["proximo_apos_seq"] is NSNumber)
   }
 
-  private static func call(_ tool: String, _ args: [String: Any], key: String) async throws -> [String: Any] {
+  static func call(_ tool: String, _ args: [String: Any], key: String) async throws -> [String: Any] {
     var request = URLRequest(url: endpoint)
     request.httpMethod = "POST"
     request.timeoutInterval = 15

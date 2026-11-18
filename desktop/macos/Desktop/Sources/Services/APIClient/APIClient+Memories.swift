@@ -671,6 +671,20 @@ extension APIClient {
     }
   }
 
+  /// Espelho do `DevCalendarMeetingContext` do backend.
+  struct MeetingContextUpload: Encodable, Sendable {
+    struct Participant: Encodable, Sendable { let name: String }
+    // swift-format-ignore
+    let calendar_event_id: String
+    let title: String
+    let participants: [Participant]
+    let platform: String?
+    // swift-format-ignore
+    let start_time: String  // ISO8601
+    // swift-format-ignore
+    let duration_minutes: Int
+  }
+
   struct CreateConversationFromSegmentsRequest: Encodable, Sendable {
     // swift-format-ignore
     let transcript_segments: [UploadSegment]
@@ -690,8 +704,15 @@ extension APIClient {
     // swift-format-ignore
     let client_processing: Data?
     let captureEvidence: CaptureEvidenceLineage?
+    /// Reunião vinda de fora (extensão do Meet pelo Cérebro): título e participantes.
+    // swift-format-ignore
+    var calendar_meeting_context: MeetingContextUpload? = nil
+    // swift-format-ignore
+    var folder_id: String? = nil
 
     enum CodingKeys: String, CodingKey {
+      case calendarMeetingContext = "calendar_meeting_context"
+      case folderId = "folder_id"
       case transcriptSegments = "transcript_segments"
       case source
       case startedAt = "started_at"
@@ -716,6 +737,8 @@ extension APIClient {
       try container.encodeIfPresent(
         conversation_finalization_reason, forKey: .conversationFinalizationReason)
       try container.encodeIfPresent(captureEvidence, forKey: .captureEvidence)
+      try container.encodeIfPresent(calendar_meeting_context, forKey: .calendarMeetingContext)
+      try container.encodeIfPresent(folder_id, forKey: .folderId)
       if let clientProcessing = client_processing {
         let payload = try ClientProcessingContract.decode(clientProcessing)
         try container.encode(payload, forKey: .clientProcessing)

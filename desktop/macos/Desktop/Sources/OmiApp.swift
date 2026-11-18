@@ -315,6 +315,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
     NetworkReachability.shared.start()
     // Sessões do Claude Code e permissões no notch (hooks em ~/Library/Application Support/JarvisAgentes).
     AgentesCentral.shared.iniciar()
+    // Reuniões da extensão do Meet (pelo Cérebro) entram em Conversas, coleção Reuniões.
+    ReunioesImportador.shared.iniciar()
     publishNamedBundleRuntimeManifest()
 
     runStartupSystemMaintenance()

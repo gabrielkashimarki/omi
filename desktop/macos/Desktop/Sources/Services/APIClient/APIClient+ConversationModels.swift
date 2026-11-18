@@ -52,6 +52,8 @@ enum ConversationSource: String, Codable {
   case desktop
   case limitless
   case plaud
+  /// Reunião do Meet importada do Cérebro (`ReunioesImportador`).
+  case externalIntegration = "external_integration"
   case unknown
 
   init(from decoder: Decoder) throws {

@@ -19,6 +19,7 @@ extension ConversationSource {
     case .bee: return "Bee"
     case .limitless: return "Limitless"
     case .plaud: return "Plaud"
+    case .externalIntegration: return "Google Meet"
     default: return "Desconhecido"
     }
   }
@@ -29,6 +30,7 @@ extension ConversationSource {
     case .omi, .friend, .friendCom, .limitless, .plaud, .bee: return "dot.radiowaves.left.and.right"
     case .phone: return "iphone"
     case .appleWatch: return "applewatch"
+    case .externalIntegration: return "video"
     default: return "mic"
     }
   }
