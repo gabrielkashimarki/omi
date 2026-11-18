@@ -193,12 +193,28 @@ struct ServerCaptureGroup: Codable, Equatable {
 enum CaptureGroupPresentation {
   static func collapse(_ conversations: [ServerConversation]) -> [ServerConversation] {
     let representatives = representativeIds(conversations)
+    let meets = conversations.filter { $0.source == .externalIntegration }
     return conversations.filter { conversation in
+      if conversation.source != .externalIntegration, meets.contains(where: { covers($0, conversation) }) {
+        return false
+      }
       guard let group = conversation.captureGroup, let representative = representatives[group.id] else {
         return true
       }
       return representative == conversation.id
     }
+  }
+
+  /// A reunião do Meet importada do Cérebro (com os nomes) cobre a gravação do Mac ou do pingente
+  /// quando ao menos 80% dela cai dentro da reunião: é a mesma chamada, e a linha do Meet basta.
+  /// Só esconde na lista; a gravação continua no servidor. O backend agrupa isso sozinho quando o
+  /// agrupamento por fala em comum está ligado; quando não está, a lista ficava com as duas.
+  static func covers(_ meet: ServerConversation, _ other: ServerConversation) -> Bool {
+    guard let ms = meet.startedAt, let mf = meet.finishedAt, let os = other.startedAt, let of = other.finishedAt,
+      of > os
+    else { return false }
+    let overlap = min(mf, of).timeIntervalSince(max(ms, os))
+    return overlap >= 0.8 * of.timeIntervalSince(os)
   }
 
   /// Group id → the member shown for it, for groups with at least two loaded members.

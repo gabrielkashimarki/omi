@@ -100,4 +100,23 @@ final class CaptureGroupPresentationTests: XCTestCase {
       XCTAssertNil(try String.fetchOne(db, sql: "SELECT captureGroupJson FROM transcription_sessions"))
     }
   }
+
+  func testReuniaoDoMeetEscondeAGravacaoDoMacDaMesmaChamada() throws {
+    func conversa(_ id: String, _ source: String, _ inicio: String, _ fim: String) throws -> ServerConversation {
+      try ProjectionRenderingFixture.decode {
+        $0["id"] = id
+        $0["source"] = source
+        $0["started_at"] = inicio
+        $0["finished_at"] = fim
+        $0.removeValue(forKey: "client_processing")
+      }
+    }
+    let meet = try conversa("meet", "external_integration", "2026-11-18T12:00:00Z", "2026-11-18T13:00:00Z")
+    let mac = try conversa("mac", "desktop", "2026-11-18T12:02:00Z", "2026-11-18T13:01:00Z")
+    let maisLonga = try conversa("almoco", "desktop", "2026-11-18T12:30:00Z", "2026-11-18T14:30:00Z")
+    let outra = try conversa("tarde", "omi", "2026-11-18T15:00:00Z", "2026-11-18T15:30:00Z")
+    XCTAssertEqual(
+      CaptureGroupPresentation.collapse([meet, mac, maisLonga, outra]).map(\.id), ["meet", "almoco", "tarde"])
+    XCTAssertEqual(CaptureGroupPresentation.collapse([mac, outra]).map(\.id), ["mac", "tarde"])
+  }
 }
