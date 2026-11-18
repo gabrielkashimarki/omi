@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 /// WebSocket `/jarvis/mac` aberto o tempo todo: o Fly manda `{id, pedido}` quando o Jarvis usa o `mexer_no_mac`
 /// e o Mac devolve `{id, resultado}`. Cai, espera (1 s dobrando até 60 s) e reconecta.
@@ -80,8 +81,17 @@ final class JarvisMac {
   }
 
   private func ping(_ ws: URLSessionWebSocketTask) async -> Bool {
-    await withCheckedContinuation { c in
-      ws.sendPing { erro in c.resume(returning: erro == nil) }
+    // o URLSession pode chamar o callback do ping duas vezes (pong e depois cancelamento);
+    // um segundo resume da continuation derruba o app, então só o primeiro vale
+    let respondido = OSAllocatedUnfairLock(initialState: false)
+    return await withCheckedContinuation { c in
+      ws.sendPing { erro in
+        let primeiro = respondido.withLock { ja in
+          defer { ja = true }
+          return !ja
+        }
+        if primeiro { c.resume(returning: erro == nil) }
+      }
     }
   }
 }
