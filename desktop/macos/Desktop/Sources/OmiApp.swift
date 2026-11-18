@@ -548,6 +548,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, @unchecked S
       // Fork: mãos do Jarvis (WebSocket /jarvis/mac), aberto enquanto o app roda, e o Hey Jarvis
       JarvisMac.shared.ligar()
       JarvisHeyJarvis.shared.comecar()
+      JarvisDisco.comecar()
       self.jarvisObserver = NotificationCenter.default.addObserver(
         forName: .jarvisMudou, object: nil, queue: .main
       ) { [weak self] _ in

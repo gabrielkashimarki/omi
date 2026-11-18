@@ -22,12 +22,14 @@ struct JarvisPainelEstado: Equatable {
   }
 }
 
-/// Conversa contínua (puro, testado): depois da resposta o painel volta a ouvir por 8 s, sem o Hey Jarvis.
+/// Conversa contínua (puro, testado): depois da resposta o painel volta a ouvir por 20 s, sem o Hey Jarvis.
 enum JarvisConversa {
-  static let janela: TimeInterval = 8
+  static let janela: TimeInterval = 20
+  /// Palavras do Gabriel por cima da voz do Jarvis que cortam a fala (por palavra, não por energia, como na URA).
+  static let palavrasParaInterromper = 2
 
-  /// Abre só fora de reunião, com o painel solto aberto, sem o TTS tocando (o microfone ouviria a própria voz),
-  /// depois de resposta ou pedido de confirmação, e se o Gabriel não encerrou a conversa.
+  /// Abre só fora de reunião, com o painel solto aberto, sem o TTS tocando, depois de resposta ou pedido de
+  /// confirmação, e se o Gabriel não encerrou a conversa. Durante a fala a escuta já fica aberta, para interromper.
   static func abreJanela(
     fase: JarvisPainelEstado.Fase, reuniao: Bool, painelAberto: Bool, falando: Bool, encerrada: Bool
   ) -> Bool {
@@ -46,11 +48,27 @@ enum JarvisConversa {
     guard !palavras.isEmpty, palavras.allSatisfy({ sim.contains($0) || nao.contains($0) }) else { return nil }
     return !palavras.contains(where: nao.contains)
   }
+
+  private static let tchau: Set<String> = ["valeu", "obrigado", "obrigada", "tchau", "falou"]
+  private static let resto: Set<String> = ["jarvis", "era", "so", "isso", "e", "por", "hoje", "ta", "bom", "ok"]
+
+  /// "Valeu, Jarvis", "obrigado, era só isso": encerra a conversa em vez de virar pedido.
+  static func despedida(_ texto: String) -> Bool {
+    let palavras = texto.folding(
+      options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "pt_BR")
+    )
+    .split { !$0.isLetter }.map(String.init)
+    return palavras.contains(where: tchau.contains) && palavras.allSatisfy { tchau.contains($0) || resto.contains($0) }
+  }
+
+  /// Quantas palavras tem a fala (para o corte por interrupção).
+  static func palavras(_ texto: String) -> Int { texto.split { $0.isWhitespace }.count }
 }
 
 /// Painel do Jarvis: fora de reunião, um NSPanel próprio (as mesmas classes do copiloto) com o `jarvis-painel.js`;
-/// na reunião, a aba Jarvis do `meeting.html`, com a mesma UI. Ouve pela legenda do Deepgram, pede ao `/jarvis`
-/// e fala a resposta na voz do Gemini (`MeetingCopilotVoice`; sem chave do Gemini, só o texto).
+/// na reunião, a aba Jarvis do `meeting.html`, com a mesma UI. Ouve pelo Flux do Deepgram, pede ao `/jarvis` e fala
+/// a resposta em pedaços (`JarvisVoz`). Fora de reunião a escuta segue aberta enquanto ele fala: 2 palavras do Gabriel
+/// cortam a voz e viram o próximo pedido.
 @MainActor
 final class JarvisPainel: NSObject, WKScriptMessageHandler {
   static let shared = JarvisPainel()
@@ -70,8 +88,12 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
   private var continuando = false
   /// O Gabriel tocou em Encerrar: nada reabre sozinho até o próximo pedido dele.
   private var encerrada = false
+  /// Quando o turno do Gabriel acabou (ou o pedido digitado saiu): base da latência até o primeiro áudio.
+  private var fimDoTurno: Date?
 
   var ouvindo: Bool { estado.fase == .ouvindo }
+  /// Cancelamento de eco só fora de reunião (lá o microfone é da gravação, e não há conversa contínua).
+  private var comEco: Bool { reuniao == nil && !JarvisMenu.reuniaoAtiva }
   var fase: JarvisPainelEstado.Fase { estado.fase }
   private var alvo: WKWebView? { reuniao ?? proprio }
 
@@ -91,11 +113,26 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
   override init() {
     super.init()
     legenda.aoOuvir = { [weak self] t in
-      self?.chamar("legenda", t)
-      // já falou: a guarda dos 8 s sai; se o Deepgram calar sem fechar a frase, 4 s depois vai o que foi dito
-      self?.guardarSilencio(4)
+      guard let self else { return }
+      if JarvisVoz.shared.falando {
+        // por cima da voz: só corta com palavra de verdade, ruído e "hum" não
+        guard JarvisConversa.palavras(t) >= JarvisConversa.palavrasParaInterromper else { return }
+        self.interromper()
+      }
+      self.chamar("legenda", t)
+      // já falou: a guarda da janela sai; se o Flux calar sem fechar o turno, 4 s depois vai o que foi dito
+      self.guardarSilencio(4)
     }
-    legenda.aoTerminar = { [weak self] t in self?.ouviu(t) }
+    legenda.aoTerminar = { [weak self] t in
+      guard let self else { return }
+      if JarvisVoz.shared.falando {
+        // "confirmo", "não" e "valeu" curtos valem mesmo por cima da voz; outro turno curto é esquecido
+        let resposta = self.pendente != nil && JarvisConversa.respostaFalada(t) != nil
+        guard resposta || JarvisConversa.despedida(t) else { return self.legenda.descartarTurno() }
+        JarvisVoz.shared.parar()
+      }
+      self.ouviu(t)
+    }
     legenda.aoFalhar = { [weak self] t in
       guard let self else { return }
       self.mudar(.pronto)
@@ -211,23 +248,45 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
 
   private func escutar(continuacao: Bool) {
     continuando = continuacao
-    MeetingCopilotVoice.shared.stop()
+    JarvisVoz.shared.parar()
     mudar(.ouvindo)
     chamar("legenda", continuacao ? "Pode continuar, estou ouvindo…" : "")
     chamar("erro", "")
     chamar("conversa", continuacao)
-    legenda.comecar()
-    guardarSilencio(JarvisConversa.janela)  // sem fala em 8 s, para de ouvir
+    // na conversa a escuta já vem aberta da fala (para interromper): não reabre o socket
+    if !legenda.ouvindo { legenda.comecar(comEco: comEco) }
+    guardarSilencio(JarvisConversa.janela)  // sem fala na janela, para de ouvir
+  }
+
+  /// A conversa pode seguir sozinha agora? (falando = false: a pergunta é antes ou depois da voz.)
+  private var conversaAberta: Bool {
+    JarvisConversa.abreJanela(
+      fase: estado.fase, reuniao: !comEco, painelAberto: proprio != nil, falando: false, encerrada: encerrada)
   }
 
   /// Fim da fala ou da tela da resposta: a conversa segue sem o Hey Jarvis.
   private func continuar() {
-    guard
-      JarvisConversa.abreJanela(
-        fase: estado.fase, reuniao: JarvisMenu.reuniaoAtiva || reuniao != nil, painelAberto: proprio != nil,
-        falando: MeetingCopilotVoice.shared.falando, encerrada: encerrada)
-    else { return }
+    guard conversaAberta else { return }
     escutar(continuacao: true)
+  }
+
+  /// Fala a resposta. Com a conversa aberta, a escuta abre antes da voz: falar por cima interrompe.
+  private func falar(_ fala: String) {
+    if conversaAberta, !legenda.ouvindo { legenda.comecar(comEco: true) }
+    let desde = fimDoTurno
+    fimDoTurno = nil
+    JarvisVoz.shared.falar(fala, desde: desde) { JarvisPainel.shared.continuar() }
+  }
+
+  /// O Gabriel falou por cima: a voz para e o que ele disser vira o próximo pedido.
+  private func interromper() {
+    log("Jarvis: interrompido pela fala do Gabriel")
+    JarvisVoz.shared.parar()
+    encerrada = false
+    continuando = true
+    mudar(.ouvindo)
+    chamar("erro", "")
+    chamar("conversa", true)
   }
 
   /// Botão Encerrar: para de ouvir e de falar; o painel some pela regra de sempre.
@@ -236,14 +295,21 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     continuando = false
     silencio?.cancel()
     legenda.parar()
-    MeetingCopilotVoice.shared.stop()
+    JarvisVoz.shared.parar()
     chamar("conversa", false)
     chamar("legenda", "")
     if estado.fase == .ouvindo { mudar(pendente == nil ? .respondeu : .confirmando) }
   }
 
-  /// O que foi dito: com confirmação em aberto, "confirmo" ou "recuso" respondem a ela; o resto é pedido.
+  /// O que foi dito: "valeu, Jarvis" encerra; com confirmação em aberto, "confirmo" ou "recuso" respondem a ela; o
+  /// resto é pedido.
   private func ouviu(_ texto: String) {
+    fimDoTurno = Date()
+    if JarvisConversa.despedida(texto) {
+      log("Jarvis: conversa encerrada pela fala (\"\(texto)\")")
+      encerrar()
+      return
+    }
     if let id = pendente, let sim = JarvisConversa.respostaFalada(texto) {
       chamar("legenda", "")
       chamar("pedido", texto)
@@ -290,6 +356,9 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     guard !t.isEmpty else { return }
     silencio?.cancel()
     legenda.parar()
+    JarvisVoz.shared.parar()
+    if fimDoTurno == nil { fimDoTurno = Date() }  // pedido digitado: a conta começa no envio
+    let inicio = fimDoTurno ?? Date()
     encerrada = false
     continuando = false
     pendente = nil  // pedido novo recusa a confirmação em aberto no servidor
@@ -298,7 +367,14 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     chamar("pedido", t)
     Task {
       do {
-        try await JarvisCliente.pedir(t) { e in await MainActor.run { JarvisPainel.shared.evento(e) } }
+        try await JarvisCliente.pedir(t) { e in
+          await MainActor.run {
+            if case .passo = e {} else {
+              log("Jarvis: latência fim do turno → fala do servidor \(Int(Date().timeIntervalSince(inicio) * 1000)) ms")
+            }
+            JarvisPainel.shared.evento(e)
+          }
+        }
         if estado.fase == .pensando { mudar(.respondeu) }
       } catch JarvisCliente.Falha.semChave {
         falhou("Falta a chave do Jarvis neste Mac.")
@@ -323,12 +399,12 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
       pendente = id
       mudar(.confirmando)
       chamar("confirmar", ["id": id, "resumo": resumo])
-      MeetingCopilotVoice.shared.speak(fala) { JarvisPainel.shared.continuar() }
+      falar(fala)
     case .fim(let fala, let detalhe):
       pendente = nil
       mudar(.respondeu)
       chamar("resposta", ["fala": fala, "detalhe": detalhe])
-      MeetingCopilotVoice.shared.speak(fala) { JarvisPainel.shared.continuar() }
+      falar(fala)
     }
   }
 
@@ -370,8 +446,12 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
 
   // MARK: - Página
 
+  /// Aviso de disco quase cheio (`JarvisDisco`): fica na página até o disco ter espaço de novo.
+  func avisarDisco() { chamar("aviso", JarvisDisco.cheio ? JarvisDisco.aviso : "") }
+
   private func paginaPronta() {
     chamar("fase", estado.fase.rawValue)
+    avisarDisco()
     let pendentes = fila
     fila = []
     for (f, v) in pendentes { chamar(f, v) }

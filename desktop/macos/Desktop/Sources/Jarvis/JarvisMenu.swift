@@ -31,7 +31,8 @@ enum JarvisMenu {
     case .pensando: fase = "pensando"
     case .gravando: fase = "gravando reunião"
     }
-    return "Jarvis \(fase) · " + (JarvisMac.shared.conectado ? "Mac conectado" : "Mac sem conexão")
+    let estado = "Jarvis \(fase) · " + (JarvisMac.shared.conectado ? "Mac conectado" : "Mac sem conexão")
+    return JarvisDisco.cheio ? estado + " · ⚠︎ " + JarvisDisco.aviso : estado
   }
 
   /// Liga: abre o copiloto e gira a conversa do Omi como reunião. Para: desfaz.
@@ -49,6 +50,39 @@ enum JarvisMenu {
   /// O copiloto parou de ouvir (Parar, Concluir ou fim da chamada): a reunião manual acaba junto.
   static func reuniaoAcabou() {
     reuniaoManual = false
+    NotificationCenter.default.post(name: .jarvisMudou, object: nil)
+  }
+}
+
+/// Aviso de disco quase cheio no menu e no painel. Em 18/11, com o disco cheio, o Parakeet levou de 400 a 977 s para
+/// carregar, a memória passou de 3 GB e o `ResourceMonitor` reiniciou o app em loop. Confere ao abrir e a cada 10 min.
+@MainActor
+enum JarvisDisco {
+  nonisolated static let limite: Int64 = 3_000_000_000
+  static let aviso = "Disco quase cheio: a transcrição local pode travar"
+  private(set) static var cheio = false
+  private static var relogio: Timer?
+
+  /// Puro, testado. Sem leitura do disco não avisa.
+  nonisolated static func quaseCheio(livres: Int64?) -> Bool { (livres ?? .max) < limite }
+
+  static func comecar() {
+    guard relogio == nil else { return }
+    conferir()
+    relogio = Timer.scheduledTimer(withTimeInterval: 600, repeats: true) { _ in
+      MainActor.assumeIsolated { JarvisDisco.conferir() }
+    }
+  }
+
+  static func conferir() {
+    // o mesmo número do `df` (sem o espaço "purgável" que o macOS só promete liberar)
+    let livres = (try? URL(fileURLWithPath: NSHomeDirectory()).resourceValues(forKeys: [.volumeAvailableCapacityKey]))?
+      .volumeAvailableCapacity.map(Int64.init)
+    let novo = quaseCheio(livres: livres)
+    guard novo != cheio else { return }
+    cheio = novo
+    log("Jarvis: disco \(novo ? "quase cheio" : "com espaço de novo") (\((livres ?? 0) / 1_000_000) MB livres)")
+    JarvisPainel.shared.avisarDisco()
     NotificationCenter.default.post(name: .jarvisMudou, object: nil)
   }
 }

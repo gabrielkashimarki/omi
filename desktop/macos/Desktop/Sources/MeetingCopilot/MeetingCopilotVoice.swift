@@ -64,31 +64,45 @@ final class MeetingCopilotVoice {
     player = nil
   }
 
+  /// Corpo do pedido de TTS (puro, testado). O texto vai sozinho: o 3.8 lê o campo `text` ao pé da letra, e a
+  /// instrução de estilo no texto saía falada. O estilo vai na anotação `speech_metadata` (Interactions API); o
+  /// `systemInstruction` o modelo recusa ("Developer instruction is not enabled", testado em 18/11). O idioma ele detecta.
+  nonisolated static func corpo(_ text: String) -> [String: Any] {
+    [
+      "model": model,
+      "input": [
+        [
+          "type": "user_input",
+          "content": [
+            [
+              "type": "text", "text": text,
+              "annotations": [["type": "speech_metadata", "style": "natural, conversational Brazilian Portuguese"]],
+            ]
+          ],
+        ]
+      ],
+      "response_format": ["type": "audio"],
+      "generation_config": ["speech_config": [["voice": "Charon"]]],
+    ]
+  }
+
   /// Áudio pronto para tocar (WAV).
-  private nonisolated static func synthesize(_ text: String, key: String) async throws -> Data {
-    var request = URLRequest(url: URL(string: "\(GeminiClient.directBaseURL)\(model):generateContent")!)
+  nonisolated static func synthesize(_ text: String, key: String) async throws -> Data {
+    var request = URLRequest(url: URL(string: "https://generativelanguage.googleapis.com/v1beta/interactions")!)
     request.httpMethod = "POST"
     request.timeoutInterval = 20
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue(key, forHTTPHeaderField: "x-goog-api-key")
-    let body: [String: Any] = [
-      "contents": [["parts": [["text": "Diga em português do Brasil, com naturalidade: \(text)"]]]],
-      "generationConfig": [
-        "responseModalities": ["AUDIO"],
-        "speechConfig": ["voiceConfig": ["prebuiltVoiceConfig": ["voiceName": "Charon"]]],
-      ],
-    ]
-    request.httpBody = try JSONSerialization.data(withJSONObject: body)
+    request.httpBody = try JSONSerialization.data(withJSONObject: corpo(text))
     let (data, response) = try await URLSession.shared.data(for: request)
     guard (response as? HTTPURLResponse)?.statusCode == 200,
       let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-      let candidates = json["candidates"] as? [[String: Any]],
-      let parts = (candidates.first?["content"] as? [String: Any])?["parts"] as? [[String: Any]],
-      let inline = parts.compactMap({ $0["inlineData"] as? [String: Any] }).first,
-      let base64 = inline["data"] as? String, let pcm = Data(base64Encoded: base64), !pcm.isEmpty
+      let steps = json["steps"] as? [[String: Any]],
+      let audio = steps.flatMap({ $0["content"] as? [[String: Any]] ?? [] }).first(where: { $0["type"] as? String == "audio" }),
+      let base64 = audio["data"] as? String, let pcm = Data(base64Encoded: base64), !pcm.isEmpty
     else { throw URLError(.badServerResponse) }
-    // O TTS 3.8 já devolve WAV; o 2.5 devolvia PCM cru.
-    return (inline["mimeType"] as? String)?.contains("wav") == true ? pcm : wav(pcm)
+    // O padrão é WAV; PCM cru (audio/l16) ganha o cabeçalho.
+    return (audio["mime_type"] as? String)?.contains("wav") != false ? pcm : wav(pcm)
   }
 
   private nonisolated static func wav(_ pcm: Data, rate: UInt32 = 24_000) -> Data {

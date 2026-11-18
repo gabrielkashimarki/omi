@@ -28,6 +28,11 @@ final class JarvisDetectorPalavra: @unchecked Sendable {
   private var embeddings: [[Float]] = []
   private var previsoes = 0
   var ultimoDisparo = Date.distantPast
+  /// O app está fechando: não roda mais o onnxruntime. Os dois "Flatten_0 ... GetElementType is not implemented"
+  /// do log de 18/11 (07:57:21 e 08:18:01) vieram 0,1 a 0,4 s depois do "app terminating": o microfone ainda
+  /// entregava blocos enquanto a saída do processo desmontava o runtime. Os tipos de entrada estão certos (float);
+  /// fora do fechamento o detector roda sem erro.
+  var desligado = false
 
   /// `pasta` com os três .onnx; sem ela, o bundle de recursos do app.
   init?(pasta: URL? = nil) {
@@ -72,6 +77,7 @@ final class JarvisDetectorPalavra: @unchecked Sendable {
 
   /// PCM 16 bits; devolve a maior pontuação dos blocos de 80 ms completados por estas amostras.
   func processar(_ amostras: [Int16]) -> Float {
+    guard !desligado else { return 0 }
     sobra += amostras.map(Float.init)
     var maior: Float = 0
     while sobra.count >= Self.bloco {
@@ -145,6 +151,9 @@ final class JarvisHeyJarvis {
 
   func comecar() {
     guard relogio == nil else { return }
+    NotificationCenter.default.addObserver(
+      forName: NSApplication.willTerminateNotification, object: nil, queue: .main
+    ) { _ in MainActor.assumeIsolated { JarvisHeyJarvis.shared.desligar() } }
     // ponytail: confere a cada 2 s em vez de observar cada fonte de reunião; observar se o atraso incomodar
     relogio = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
       MainActor.assumeIsolated { JarvisHeyJarvis.shared.atualizar() }
@@ -176,6 +185,16 @@ final class JarvisHeyJarvis {
         }
       }
     }
+  }
+
+  /// No fechamento do app: solta o microfone e espera o bloco em andamento antes de o runtime ser desmontado.
+  private func desligar() {
+    relogio?.invalidate()
+    relogio = nil
+    escutando = false
+    JarvisMicrofone.shared.cancelar("heyjarvis")
+    guard let detector else { return }
+    fila.sync { detector.desligado = true }
   }
 
   private func ouviu() {

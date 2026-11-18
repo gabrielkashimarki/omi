@@ -56,7 +56,7 @@
   const hora = d => d ? new Date(d).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : '';
   const FASES = {pronto: 'Pronto', ouvindo: 'Ouvindo…', pensando: 'Pensando…', confirmando: 'Esperando você', respondeu: 'Pronto'};
 
-  let raiz, rolo, antigos, legenda, passos, cartao, erro, campo, estado, encerrar;
+  let raiz, rolo, antigos, legenda, passos, cartao, erro, aviso, campo, estado, encerrar;
   // a sessão do Claude no servidor dura até 6 h sem uso: o que é dela fica aberto no painel
   const CONVERSA_MS = 6 * 3600 * 1000;
 
@@ -97,6 +97,7 @@
       legenda = el('div', 'legenda vazia', 'Diga “Hey Jarvis” ou digite abaixo.');
       cartao = el('div', 'cartao'); cartao.hidden = true;
       erro = el('div', 'erro'); erro.hidden = true;
+      aviso = el('div', 'erro'); aviso.hidden = true;
       const form = el('form');
       campo = el('input'); campo.placeholder = 'Peça ao Jarvis…'; campo.maxLength = 2000; campo.autocomplete = 'off';
       campo.setAttribute('aria-label', 'Pedido para o Jarvis');
@@ -107,7 +108,7 @@
       form.onsubmit = e => { e.preventDefault(); const t = campo.value.trim(); if (!t) return; campo.value = ''; post({do: 'pedir', texto: t}); };
       campo.addEventListener('input', () => post({do: 'ativo'}));
       campo.addEventListener('focus', () => post({do: 'foco'}));
-      raiz.append(topo, rolo, legenda, passos, cartao, erro, form);
+      raiz.append(topo, rolo, legenda, passos, cartao, erro, aviso, form);
       caixa.append(raiz);
       post({do: 'pronto'});
     },
@@ -149,5 +150,7 @@
     conversa(on) { if (encerrar) encerrar.hidden = !on; },
     erro(t) { passos.textContent = ''; erro.textContent = t; erro.hidden = !t; },
     focar() { campo?.focus(); },
+    // fica até o Swift limpar: não some com o erro do pedido
+    aviso(t) { if (!aviso) return; aviso.textContent = t || ''; aviso.hidden = !t; },
   };
 })();

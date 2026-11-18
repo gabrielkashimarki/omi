@@ -70,46 +70,31 @@ final class JarvisTests: XCTestCase {
     XCTAssertEqual(JarvisMac.espera(depois: 20), 60)
   }
 
-  // MARK: - Legenda do Deepgram
+  // MARK: - Legenda do Deepgram (Flux)
 
-  func testAcumuladorJuntaFinaisEParciais() {
-    var a = JarvisLegenda.Acumulador()
-    func r(_ texto: String, final: Bool = false, fala: Bool = false) -> [String: Any] {
-      [
-        "type": "Results", "is_final": final, "speech_final": fala,
-        "channel": ["alternatives": [["transcript": texto]]],
-      ]
-    }
-    XCTAssertEqual(a.receber(r("quantas"))?.texto, "quantas")
-    XCTAssertEqual(a.receber(r("quantas demandas", final: true))?.terminou, false)
-    XCTAssertEqual(a.receber(r("abertas"))?.texto, "quantas demandas abertas")
-    let fim = a.receber(r("abertas eu tenho", final: true, fala: true))
-    XCTAssertEqual(fim?.texto, "quantas demandas abertas eu tenho")
-    XCTAssertEqual(fim?.terminou, true)
-    XCTAssertNil(a.receber(r("")))
-
-    var b = JarvisLegenda.Acumulador()
-    XCTAssertNil(b.receber(["type": "UtteranceEnd"]), "fim de fala sem nada dito não vira pedido")
-    _ = b.receber(r("abre a calculadora", final: true))
-    XCTAssertEqual(b.receber(["type": "UtteranceEnd"])?.terminou, true)
+  private func turno(_ evento: String, _ texto: String) -> [String: Any] {
+    ["type": "TurnInfo", "event": evento, "transcript": texto]
   }
 
-  func testFimDeFalaUsaOParcialQuandoOFinalNaoChegou() {
-    func r(_ texto: String, final: Bool = false) -> [String: Any] {
-      ["type": "Results", "is_final": final, "channel": ["alternatives": [["transcript": texto]]]]
-    }
+  func testAcumuladorDoFluxFechaNoEndOfTurn() {
     var a = JarvisLegenda.Acumulador()
-    XCTAssertEqual(a.textoAteAgora, "", "nada ouvido: aí sim é \"Não ouvi nada\"")
-    _ = a.receber(r("abre a conta das no gerenciador de anúncio do Facebook"))
-    XCTAssertEqual(a.textoAteAgora, "abre a conta das no gerenciador de anúncio do Facebook")
-    XCTAssertEqual(a.receber(["type": "UtteranceEnd"])?.texto, "abre a conta das no gerenciador de anúncio do Facebook")
+    XCTAssertNil(a.receber(turno("StartOfTurn", "")))
+    XCTAssertEqual(a.receber(turno("Update", "quantas"))?.terminou, false)
+    XCTAssertEqual(a.receber(turno("Update", "quantas demandas abertas"))?.texto, "quantas demandas abertas")
+    let fim = a.receber(turno("EndOfTurn", "quantas demandas abertas eu tenho?"))
+    XCTAssertEqual(fim?.texto, "quantas demandas abertas eu tenho?")
+    XCTAssertEqual(fim?.terminou, true)
+    XCTAssertEqual(a.textoAteAgora, "", "o turno seguinte começa vazio")
+    XCTAssertNil(a.receber(turno("EndOfTurn", "")), "fim de turno sem nada dito não vira pedido")
+    XCTAssertNil(a.receber(["type": "Connected"]))
+    XCTAssertNil(a.receber(["type": "Results", "is_final": true]), "formato do nova-3 não conta")
+  }
 
-    var b = JarvisLegenda.Acumulador()
-    _ = b.receber(r("abre a conta", final: true))
-    _ = b.receber(r("do Facebook"))
-    XCTAssertEqual(b.textoAteAgora, "abre a conta do Facebook", "finais primeiro, depois o parcial em aberto")
-    _ = b.receber(r("do Facebook Ads", final: true))
-    XCTAssertEqual(b.textoAteAgora, "abre a conta do Facebook Ads", "o final substitui o parcial")
+  func testFimDoTurnoVazioUsaOQueJaFoiOuvido() {
+    var a = JarvisLegenda.Acumulador()
+    _ = a.receber(turno("Update", "abre a conta do Facebook"))
+    XCTAssertEqual(a.textoAteAgora, "abre a conta do Facebook")
+    XCTAssertEqual(a.receber(turno("EndOfTurn", ""))?.texto, "abre a conta do Facebook")
   }
 
   func testFalaLongaComAspasEAcentosChegaInteira() throws {
@@ -120,16 +105,19 @@ final class JarvisTests: XCTestCase {
       "e depois anota isso no Cérebro com a data de hoje — sem pausar a campanha.",
     ]
     var a = JarvisLegenda.Acumulador()
+    var ate = ""
     for t in trechos {
-      _ = a.receber(["type": "Results", "is_final": false, "channel": ["alternatives": [["transcript": t]]]])
-      _ = a.receber(["type": "Results", "is_final": true, "channel": ["alternatives": [["transcript": t]]]])
+      ate = ate.isEmpty ? t : ate + " " + t
+      _ = a.receber(turno("Update", ate))
     }
-    let fim = try XCTUnwrap(a.receber(["type": "UtteranceEnd"]))
+    let fim = try XCTUnwrap(a.receber(turno("EndOfTurn", ate)))
     let esperado = trechos.joined(separator: " ")
     XCTAssertGreaterThan(esperado.count, 200)
     XCTAssertEqual(fim.texto, esperado)
     XCTAssertTrue(fim.terminou)
-    XCTAssertTrue(JarvisLegenda.url.absoluteString.contains("endpointing=1200"), "fim por silêncio de 1,2 s")
+    let url = JarvisLegenda.url.absoluteString
+    XCTAssertTrue(url.contains("/v2/listen") && url.contains("flux-general-multi") && url.contains("pt-BR"))
+    XCTAssertEqual(JarvisLegenda.quadro, 16_000 * 2 * 80 / 1000, "80 ms de PCM 16 kHz por envio")
 
     // a ponte para o JS leva o texto inteiro, escapado
     let js = try XCTUnwrap(JarvisPainel.chamadaJS("legenda", esperado + "\nlinha 2"))
@@ -184,7 +172,7 @@ final class JarvisTests: XCTestCase {
     for fase in [JarvisPainelEstado.Fase.pronto, .ouvindo, .pensando] {
       XCTAssertFalse(abre(fase), "\(fase) não abre a janela")
     }
-    XCTAssertEqual(JarvisConversa.janela, 8)
+    XCTAssertEqual(JarvisConversa.janela, 20)
   }
 
   func testJanelaQueFechaEmSilencioSegueARegraDeSumir() {
@@ -192,9 +180,9 @@ final class JarvisTests: XCTestCase {
     var e = JarvisPainelEstado()
     e.ir(.ouvindo, agora: t0)
     XCTAssertFalse(e.deveSumir(agora: t0.addingTimeInterval(60)), "ouvindo na janela não some")
-    e.ir(.respondeu, agora: t0.addingTimeInterval(8))
-    XCTAssertFalse(e.deveSumir(agora: t0.addingTimeInterval(27)))
-    XCTAssertTrue(e.deveSumir(agora: t0.addingTimeInterval(28)))
+    e.ir(.respondeu, agora: t0.addingTimeInterval(20))
+    XCTAssertFalse(e.deveSumir(agora: t0.addingTimeInterval(39)))
+    XCTAssertTrue(e.deveSumir(agora: t0.addingTimeInterval(40)))
   }
 
   func testConfirmacaoFalada() {
@@ -207,6 +195,66 @@ final class JarvisTests: XCTestCase {
     for t in ["", "  ", "manda para o Pedro", "sim, e manda também para a Carla", "pode abrir o Gmail"] {
       XCTAssertNil(JarvisConversa.respostaFalada(t), t)
     }
+  }
+
+  func testDespedidaEncerraAConversa() {
+    for t in ["Valeu, Jarvis.", "valeu", "obrigado, Jarvis", "Obrigada, era só isso.", "tchau jarvis"] {
+      XCTAssertTrue(JarvisConversa.despedida(t), t)
+    }
+    for t in ["", "Jarvis", "valeu, manda o relatório para a Lélia", "obrigado por mandar, agora abre o Gmail"] {
+      XCTAssertFalse(JarvisConversa.despedida(t), t)
+    }
+  }
+
+  func testInterrupcaoPedeDuasPalavras() {
+    XCTAssertEqual(JarvisConversa.palavrasParaInterromper, 2)
+    XCTAssertEqual(JarvisConversa.palavras("hum"), 1)
+    XCTAssertEqual(JarvisConversa.palavras(" espera aí "), 2)
+  }
+
+  // MARK: - Voz
+
+  func testFalaDivididaPorFrase() {
+    XCTAssertEqual(
+      JarvisVoz.frases("Você tem três demandas vencidas. A mais antiga é da PACINI! Quer que eu cobre?"),
+      ["Você tem três demandas vencidas.", "A mais antiga é da PACINI!", "Quer que eu cobre?"])
+    XCTAssertEqual(JarvisVoz.frases("Ok. Mandei o relatório."), ["Ok. Mandei o relatório."], "pedaço curto vai junto")
+    XCTAssertEqual(JarvisVoz.frases("Custa R$ 1.500,00 por mês"), ["Custa R$ 1.500,00 por mês"], "ponto no número não corta")
+    XCTAssertEqual(JarvisVoz.frases("  "), [])
+  }
+
+  func testWavDoGeminiViraBufferDe24kHz() throws {
+    let amostras: [Int16] = [0, 16384, -16384, 32767]
+    var pcm = Data()
+    for a in amostras { withUnsafeBytes(of: a.littleEndian) { pcm.append(contentsOf: $0) } }
+    func le<T: FixedWidthInteger>(_ v: T) -> Data { withUnsafeBytes(of: v.littleEndian) { Data($0) } }
+    var wav = Data("RIFF".utf8) + le(UInt32(36 + pcm.count)) + Data("WAVEfmt ".utf8)
+    wav += le(UInt32(16)) + le(UInt16(1)) + le(UInt16(1)) + le(UInt32(24_000)) + le(UInt32(48_000)) + le(UInt16(2))
+    wav += le(UInt16(16)) + Data("data".utf8) + le(UInt32(pcm.count)) + pcm
+    let b = try XCTUnwrap(JarvisVoz.buffer(wav: wav))
+    XCTAssertEqual(b.frameLength, 4)
+    XCTAssertEqual(b.format.sampleRate, 24_000)
+    XCTAssertEqual(b.floatChannelData![0][1], 0.5, accuracy: 0.001)
+    XCTAssertEqual(b.floatChannelData![0][2], -0.5, accuracy: 0.001)
+  }
+
+  /// A instrução de estilo saía falada ("Diga em português do Brasil..."): o texto vai sozinho e o estilo na anotação.
+  func testTTSDoGeminiMandaSoOTexto() throws {
+    let corpo = MeetingCopilotVoice.corpo("Pronto, mandei.")
+    let input = try XCTUnwrap(corpo["input"] as? [[String: Any]])
+    let item = try XCTUnwrap((input.first?["content"] as? [[String: Any]])?.first)
+    XCTAssertEqual(item["text"] as? String, "Pronto, mandei.")
+    let nota = try XCTUnwrap((item["annotations"] as? [[String: Any]])?.first)
+    XCTAssertEqual(nota["type"] as? String, "speech_metadata")
+    XCTAssertNil(corpo["systemInstruction"], "o 3.8 TTS recusa systemInstruction")
+    XCTAssertTrue(JSONSerialization.isValidJSONObject(corpo))
+  }
+
+  func testAvisoDeDiscoAbaixoDe3GB() {
+    XCTAssertTrue(JarvisDisco.quaseCheio(livres: 962_000_000), "os 962 MB de 18/11")
+    XCTAssertTrue(JarvisDisco.quaseCheio(livres: 2_999_999_999))
+    XCTAssertFalse(JarvisDisco.quaseCheio(livres: 3_000_000_000))
+    XCTAssertFalse(JarvisDisco.quaseCheio(livres: nil), "sem leitura do disco não avisa")
   }
 
   func testIconeMostraOQueOJarvisFazAntesDaReuniao() {
@@ -242,6 +290,18 @@ final class JarvisTests: XCTestCase {
     detector.reset()
     let falso = detector.processar(silencio + negativo + silencio)
     XCTAssertLessThan(falso, JarvisDetectorPalavra.limiar, "nota \(falso)")
+
+    // a palavra seguida em blocos de 80 ms não falha (o erro do onnxruntime só aparecia no fechamento do app)
+    detector.reset()
+    var maior: Float = 0
+    let tudo = silencio + positivo + silencio + negativo + silencio
+    for i in stride(from: 0, to: tudo.count, by: 1280) { maior = max(maior, detector.processar(Array(tudo[i..<min(i + 1280, tudo.count)]))) }
+    XCTAssertGreaterThanOrEqual(maior, JarvisDetectorPalavra.limiar)
+
+    // fechando o app: nenhum bloco chega mais ao onnxruntime
+    detector.reset()
+    detector.desligado = true
+    XCTAssertEqual(detector.processar(silencio + positivo + silencio), 0)
   }
 
   /// Áudio do `say` em PCM 16 bits a 16 kHz.
