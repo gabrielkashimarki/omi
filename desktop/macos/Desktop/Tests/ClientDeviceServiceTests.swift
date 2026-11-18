@@ -17,6 +17,28 @@ final class ClientDeviceServiceTests: XCTestCase {
     XCTAssertEqual(id, "macos_\(ClientDeviceService.shared.deviceIdHash)")
   }
 
+  /// Fork sem Team ID: ler o Keychain abria o pedido de senha e travava o pool de concorrência inteiro.
+  func testProducaoSemTeamIDNaoLeOKeychainEUsaOEspelho() {
+    let suiteName = "ClientDeviceServiceTests.semTeam.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    defer { defaults.removePersistentDomain(forName: suiteName) }
+    defaults.set("id-estavel", forKey: "client-device-install-uuid-mirror")
+    var leituras = 0
+    let service = ClientDeviceService(
+      bundleIdentifier: "com.omi.computer-macos",
+      userDefaults: defaults,
+      keychainReader: {
+        leituras += 1
+        return .found("do-keychain")
+      },
+      keychainWriter: { _ in XCTFail("não grava no Keychain") },
+      usesLoginKeychain: false
+    )
+    let esperado = SHA256.hash(data: Data("id-estavel".utf8)).map { String(format: "%02x", $0) }.joined().prefix(8)
+    XCTAssertEqual(service.deviceIdHash, String(esperado))
+    XCTAssertEqual(leituras, 0)
+  }
+
   func testNamedDevelopmentBundleUsesBundleScopedInstallId() {
     let suiteName = "ClientDeviceServiceTests.named.\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suiteName)!
@@ -98,7 +120,8 @@ final class ClientDeviceServiceTests: XCTestCase {
       bundleIdentifier: AppBuild.productionBundleIdentifier,
       userDefaults: defaults,
       keychainReader: { .missing },
-      keychainWriter: { persistedInstallIds.append($0) }
+      keychainWriter: { persistedInstallIds.append($0) },
+      usesLoginKeychain: true
     )
 
     let expectedHash = SHA256.hash(data: Data(mirror.utf8))

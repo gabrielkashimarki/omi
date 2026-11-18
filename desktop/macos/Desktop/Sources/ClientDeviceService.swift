@@ -20,6 +20,7 @@ final class ClientDeviceService {
   private let userDefaults: UserDefaults
   private let keychainReader: (() -> ClientDeviceKeychainReadResult)?
   private let keychainWriter: ((String) -> Void)?
+  private let usesLoginKeychain: Bool
   private let cacheLock = NSLock()
   private var cachedInstallId: String?
 
@@ -37,12 +38,14 @@ final class ClientDeviceService {
     bundleIdentifier: String? = Bundle.main.bundleIdentifier,
     userDefaults: UserDefaults = .standard,
     keychainReader: (() -> ClientDeviceKeychainReadResult)? = nil,
-    keychainWriter: ((String) -> Void)? = nil
+    keychainWriter: ((String) -> Void)? = nil,
+    usesLoginKeychain: Bool = DesktopKeychainStore.usesLoginKeychain
   ) {
     self.bundleIdentifier = bundleIdentifier
     self.userDefaults = userDefaults
     self.keychainReader = keychainReader
     self.keychainWriter = keychainWriter
+    self.usesLoginKeychain = usesLoginKeychain
   }
 
   var deviceIdHash: String {
@@ -98,6 +101,17 @@ final class ClientDeviceService {
     // prompts. Production Beta/Prod use the team+bundle scoped Keychain item.
     if usesUserDefaultsInstallId {
       return loadOrCreateDevInstallId()
+    }
+    // Fork: sem Team ID o item do Keychain fica preso ao cdhash do build. A leitura abre o pedido de senha mesmo com
+    // interactionNotAllowed e segura o cacheLock; as threads que esperam o lock lotam o pool de concorrência e todo o
+    // async para (o /jarvis/mac não conectou em 18/11). O id fica no espelho, que já guarda o valor estável.
+    if !usesLoginKeychain {
+      if let mirror = userDefaults.string(forKey: installIdMirrorDefaultsKey), !mirror.isEmpty {
+        return mirror
+      }
+      let fresh = UUID().uuidString
+      userDefaults.set(fresh, forKey: installIdMirrorDefaultsKey)
+      return fresh
     }
     switch keychainReader?() ?? readKeychainInstallId() {
     case .found(let existing):
