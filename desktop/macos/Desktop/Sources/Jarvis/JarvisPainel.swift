@@ -22,6 +22,32 @@ struct JarvisPainelEstado: Equatable {
   }
 }
 
+/// Conversa contínua (puro, testado): depois da resposta o painel volta a ouvir por 8 s, sem o Hey Jarvis.
+enum JarvisConversa {
+  static let janela: TimeInterval = 8
+
+  /// Abre só fora de reunião, com o painel solto aberto, sem o TTS tocando (o microfone ouviria a própria voz),
+  /// depois de resposta ou pedido de confirmação, e se o Gabriel não encerrou a conversa.
+  static func abreJanela(
+    fase: JarvisPainelEstado.Fase, reuniao: Bool, painelAberto: Bool, falando: Bool, encerrada: Bool
+  ) -> Bool {
+    (fase == .respondeu || fase == .confirmando) && !reuniao && painelAberto && !falando && !encerrada
+  }
+
+  private static let sim: Set<String> = ["sim", "confirmo", "confirma", "pode"]
+  private static let nao: Set<String> = ["nao", "recuso", "recusa", "cancela"]
+
+  /// "Confirmo." vira true, "não, cancela" vira false; frase com outra coisa é pedido novo (nil).
+  static func respostaFalada(_ texto: String) -> Bool? {
+    let palavras = texto.folding(
+      options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "pt_BR")
+    )
+    .split { !$0.isLetter }.map(String.init)
+    guard !palavras.isEmpty, palavras.allSatisfy({ sim.contains($0) || nao.contains($0) }) else { return nil }
+    return !palavras.contains(where: nao.contains)
+  }
+}
+
 /// Painel do Jarvis: fora de reunião, um NSPanel próprio (as mesmas classes do copiloto) com o `jarvis-painel.js`;
 /// na reunião, a aba Jarvis do `meeting.html`, com a mesma UI. Ouve pela legenda do Deepgram, pede ao `/jarvis`
 /// e fala a resposta na voz do Gemini (`MeetingCopilotVoice`; sem chave do Gemini, só o texto).
@@ -38,6 +64,12 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
   private var relogio: Timer?
   private let legenda = JarvisLegenda()
   private var silencio: DispatchWorkItem?
+  /// Id da confirmação em aberto: "confirmo" ou "recuso" falados respondem a ela.
+  private var pendente: String?
+  /// Escuta aberta sozinha depois da resposta: silêncio só para de ouvir, sem "Não ouvi nada".
+  private var continuando = false
+  /// O Gabriel tocou em Encerrar: nada reabre sozinho até o próximo pedido dele.
+  private var encerrada = false
 
   var ouvindo: Bool { estado.fase == .ouvindo }
   var fase: JarvisPainelEstado.Fase { estado.fase }
@@ -63,7 +95,7 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
       // já falou: a guarda dos 8 s sai; se o Deepgram calar sem fechar a frase, 4 s depois vai o que foi dito
       self?.guardarSilencio(4)
     }
-    legenda.aoTerminar = { [weak self] t in self?.pedir(t) }
+    legenda.aoTerminar = { [weak self] t in self?.ouviu(t) }
     legenda.aoFalhar = { [weak self] t in
       guard let self else { return }
       self.mudar(.pronto)
@@ -138,6 +170,7 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
   }
 
   func fechar() {
+    continuando = false
     legenda.parar()
     relogio?.invalidate()
     relogio = nil
@@ -172,12 +205,52 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
       terminarFala()
       return
     }
+    encerrada = false
+    escutar(continuacao: false)
+  }
+
+  private func escutar(continuacao: Bool) {
+    continuando = continuacao
     MeetingCopilotVoice.shared.stop()
     mudar(.ouvindo)
-    chamar("legenda", "")
+    chamar("legenda", continuacao ? "Pode continuar, estou ouvindo…" : "")
     chamar("erro", "")
+    chamar("conversa", continuacao)
     legenda.comecar()
-    guardarSilencio(8)  // sem fala em 8 s, para de ouvir
+    guardarSilencio(JarvisConversa.janela)  // sem fala em 8 s, para de ouvir
+  }
+
+  /// Fim da fala ou da tela da resposta: a conversa segue sem o Hey Jarvis.
+  private func continuar() {
+    guard
+      JarvisConversa.abreJanela(
+        fase: estado.fase, reuniao: JarvisMenu.reuniaoAtiva || reuniao != nil, painelAberto: proprio != nil,
+        falando: MeetingCopilotVoice.shared.falando, encerrada: encerrada)
+    else { return }
+    escutar(continuacao: true)
+  }
+
+  /// Botão Encerrar: para de ouvir e de falar; o painel some pela regra de sempre.
+  private func encerrar() {
+    encerrada = true
+    continuando = false
+    silencio?.cancel()
+    legenda.parar()
+    MeetingCopilotVoice.shared.stop()
+    chamar("conversa", false)
+    chamar("legenda", "")
+    if estado.fase == .ouvindo { mudar(pendente == nil ? .respondeu : .confirmando) }
+  }
+
+  /// O que foi dito: com confirmação em aberto, "confirmo" ou "recuso" respondem a ela; o resto é pedido.
+  private func ouviu(_ texto: String) {
+    if let id = pendente, let sim = JarvisConversa.respostaFalada(texto) {
+      chamar("legenda", "")
+      chamar("pedido", texto)
+      confirmar(id, sim: sim)
+      return
+    }
+    pedir(texto)
   }
 
   /// Guarda contra silêncio sem fim de frase do Deepgram. Antes de qualquer fala é a espera inicial; depois, é
@@ -198,8 +271,16 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
   /// "Não ouvi nada" só quando nem final nem parcial trouxeram texto.
   private func terminarFala() {
     silencio?.cancel()
-    if legenda.terminar() { return }  // aoTerminar → pedir
+    if legenda.terminar() { return }  // aoTerminar → ouviu
     legenda.parar()
+    chamar("conversa", false)
+    if continuando {
+      // a janela da conversa fechou em silêncio: volta ao que era, e o painel some pela regra
+      continuando = false
+      chamar("legenda", "")
+      mudar(pendente == nil ? .respondeu : .confirmando)
+      return
+    }
     mudar(.pronto)
     chamar("erro", "Não ouvi nada. Fale de novo ou digite.")
   }
@@ -209,6 +290,10 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     guard !t.isEmpty else { return }
     silencio?.cancel()
     legenda.parar()
+    encerrada = false
+    continuando = false
+    pendente = nil  // pedido novo recusa a confirmação em aberto no servidor
+    chamar("conversa", false)
     mudar(.pensando)
     chamar("pedido", t)
     Task {
@@ -235,17 +320,24 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
       estado.atividade()
       chamar("passo", JarvisCliente.passoLegivel(p))
     case .confirmar(let id, let resumo, let fala):
+      pendente = id
       mudar(.confirmando)
       chamar("confirmar", ["id": id, "resumo": resumo])
-      MeetingCopilotVoice.shared.speak(fala)
+      MeetingCopilotVoice.shared.speak(fala) { JarvisPainel.shared.continuar() }
     case .fim(let fala, let detalhe):
+      pendente = nil
       mudar(.respondeu)
       chamar("resposta", ["fala": fala, "detalhe": detalhe])
-      MeetingCopilotVoice.shared.speak(fala)
+      MeetingCopilotVoice.shared.speak(fala) { JarvisPainel.shared.continuar() }
     }
   }
 
   private func confirmar(_ id: String, sim: Bool) {
+    pendente = nil
+    continuando = false
+    silencio?.cancel()
+    legenda.parar()
+    chamar("conversa", false)
     mudar(.pensando)
     Task {
       do {
@@ -321,6 +413,7 @@ final class JarvisPainel: NSObject, WKScriptMessageHandler {
     case "confirmar": confirmar(b["id"] as? String ?? "", sim: b["sim"] as? Bool ?? false)
     case "foco": panel?.makeKey()
     case "fechar": fechar()
+    case "encerrar": encerrar()
     default: break  // "ativo": a atividade já contou
     }
   }

@@ -56,7 +56,9 @@
   const hora = d => d ? new Date(d).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : '';
   const FASES = {pronto: 'Pronto', ouvindo: 'Ouvindo…', pensando: 'Pensando…', confirmando: 'Esperando você', respondeu: 'Pronto'};
 
-  let raiz, rolo, antigos, legenda, passos, cartao, erro, campo, estado;
+  let raiz, rolo, antigos, legenda, passos, cartao, erro, campo, estado, encerrar;
+  // a sessão do Claude no servidor dura até 6 h sem uso: o que é dela fica aberto no painel
+  const CONVERSA_MS = 6 * 3600 * 1000;
 
   function mensagem(papel, texto, detalhe, quando, onde) {
     const m = el('div', 'msg' + (papel === 'gabriel' ? ' eu' : ''));
@@ -76,6 +78,10 @@
       topo.append(el('span', 'ponto'), el('b', null, 'Jarvis'));
       estado = el('span', 'estado', 'Pronto');
       topo.append(estado);
+      encerrar = el('button', null, 'Encerrar'); encerrar.hidden = true;
+      encerrar.title = 'Parar de ouvir e encerrar a conversa';
+      encerrar.onclick = () => post({do: 'encerrar'});
+      topo.append(encerrar);
       if (opcoes.sozinho) {
         const fechar = el('button', null, '✕'); fechar.title = 'Fechar'; fechar.setAttribute('aria-label', 'Fechar');
         fechar.onclick = () => post({do: 'fechar'});
@@ -83,7 +89,7 @@
       }
       rolo = el('div', 'rolo');
       const hist = el('details'); hist.hidden = true;
-      hist.append(el('summary', null, 'Últimas 24 horas'));
+      hist.append(el('summary', null, 'Antes'));
       antigos = el('div'); antigos.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-top:6px';
       hist.append(antigos);
       rolo.append(hist);
@@ -126,10 +132,21 @@
       mensagem('jarvis', fala, detalhe); rolar();
     },
     historico(itens) {
+      // a conversa corrente (até 6 h) aparece aberta, depois de "Antes"; o resto fica recolhido
       antigos.replaceChildren();
-      for (const m of itens) mensagem(m.papel, m.texto, m.detalhe, m.quando, antigos);
-      antigos.parentElement.hidden = !itens.length;
+      rolo.querySelectorAll(':scope > .msg.h').forEach(m => m.remove());
+      const corte = Date.now() - CONVERSA_MS, depois = antigos.parentElement.nextSibling;
+      let velhas = 0;
+      for (const m of itens) {
+        if (m.quando && m.quando < corte) { mensagem(m.papel, m.texto, m.detalhe, m.quando, antigos); velhas++; continue; }
+        const e = mensagem(m.papel, m.texto, m.detalhe, m.quando);
+        e.classList.add('h');
+        rolo.insertBefore(e, depois);
+      }
+      antigos.parentElement.hidden = !velhas;
+      rolar();
     },
+    conversa(on) { if (encerrar) encerrar.hidden = !on; },
     erro(t) { passos.textContent = ''; erro.textContent = t; erro.hidden = !t; },
     focar() { campo?.focus(); },
   };

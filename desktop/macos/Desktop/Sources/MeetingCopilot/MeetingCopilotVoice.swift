@@ -20,12 +20,18 @@ final class MeetingCopilotVoice {
     }
   }
 
-  func speak(_ text: String) {
+  /// Enquanto o TTS sintetiza ou toca: o microfone do Jarvis não abre (não pode ouvir a própria voz).
+  var falando: Bool { speaking != nil }
+
+  /// `aoTerminar` vem depois do fim do áudio, ou logo se não houver voz (mudo, sem chave, TTS falhou);
+  /// nunca quando a fala é interrompida por `stop()`.
+  func speak(_ text: String, aoTerminar: (@MainActor () -> Void)? = nil) {
     let line = text.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !muted, !line.isEmpty else { return }
+    let semVoz = { DispatchQueue.main.async { MainActor.assumeIsolated { aoTerminar?() } } }
+    guard !muted, !line.isEmpty else { return semVoz() }
     guard let key = APIKeyService.shared.effectiveGeminiKey else {
       log("MeetingCopilotVoice: sem chave do Gemini, resposta não falada")
-      return
+      return semVoz()
     }
     stop()
     speaking = Task { [weak self] in
@@ -35,9 +41,18 @@ final class MeetingCopilotVoice {
         let player = try AVAudioPlayer(data: audio)
         self.player = player
         player.play()
+        // folga de 0,4 s: o fim do som no alto-falante não entra no microfone
+        try await Task.sleep(for: .seconds(player.duration + 0.4))
+        guard !Task.isCancelled, self.player === player else { return }
+        self.player = nil
+        self.speaking = nil
+        aoTerminar?()
       } catch is CancellationError {
       } catch {
         log("MeetingCopilotVoice: TTS do Gemini falhou (\(type(of: error)))")
+        guard let self, !Task.isCancelled else { return }
+        self.speaking = nil
+        aoTerminar?()
       }
     }
   }

@@ -165,6 +165,50 @@ final class JarvisTests: XCTestCase {
     }
   }
 
+  // MARK: - Conversa contínua
+
+  func testJanelaDaConversaAbreDepoisDaRespostaSoComTudoLivre() {
+    func abre(
+      _ fase: JarvisPainelEstado.Fase, reuniao: Bool = false, aberto: Bool = true, falando: Bool = false,
+      encerrada: Bool = false
+    ) -> Bool {
+      JarvisConversa.abreJanela(
+        fase: fase, reuniao: reuniao, painelAberto: aberto, falando: falando, encerrada: encerrada)
+    }
+    XCTAssertTrue(abre(.respondeu))
+    XCTAssertTrue(abre(.confirmando), "confirmação pendente também ouve o confirmo falado")
+    XCTAssertFalse(abre(.respondeu, falando: true), "TTS tocando: o microfone ouviria a própria voz")
+    XCTAssertFalse(abre(.respondeu, reuniao: true), "na reunião fica mudo")
+    XCTAssertFalse(abre(.respondeu, aberto: false), "painel fechado não reabre sozinho")
+    XCTAssertFalse(abre(.respondeu, encerrada: true), "Encerrar vale até o próximo pedido")
+    for fase in [JarvisPainelEstado.Fase.pronto, .ouvindo, .pensando] {
+      XCTAssertFalse(abre(fase), "\(fase) não abre a janela")
+    }
+    XCTAssertEqual(JarvisConversa.janela, 8)
+  }
+
+  func testJanelaQueFechaEmSilencioSegueARegraDeSumir() {
+    let t0 = Date()
+    var e = JarvisPainelEstado()
+    e.ir(.ouvindo, agora: t0)
+    XCTAssertFalse(e.deveSumir(agora: t0.addingTimeInterval(60)), "ouvindo na janela não some")
+    e.ir(.respondeu, agora: t0.addingTimeInterval(8))
+    XCTAssertFalse(e.deveSumir(agora: t0.addingTimeInterval(27)))
+    XCTAssertTrue(e.deveSumir(agora: t0.addingTimeInterval(28)))
+  }
+
+  func testConfirmacaoFalada() {
+    for t in ["Confirmo.", "sim", "Sim, pode", "pode sim", "CONFIRMA!"] {
+      XCTAssertEqual(JarvisConversa.respostaFalada(t), true, t)
+    }
+    for t in ["Não.", "nao", "recuso", "Não, cancela", "cancela"] {
+      XCTAssertEqual(JarvisConversa.respostaFalada(t), false, t)
+    }
+    for t in ["", "  ", "manda para o Pedro", "sim, e manda também para a Carla", "pode abrir o Gmail"] {
+      XCTAssertNil(JarvisConversa.respostaFalada(t), t)
+    }
+  }
+
   func testIconeMostraOQueOJarvisFazAntesDaReuniao() {
     XCTAssertEqual(JarvisMenu.icone(fase: .pronto, reuniao: false), .pronto)
     XCTAssertEqual(JarvisMenu.icone(fase: .respondeu, reuniao: true), .gravando)
