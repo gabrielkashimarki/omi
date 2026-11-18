@@ -2,14 +2,17 @@
 import Foundation
 
 /// Voz do Jarvis em pedaços: a fala é dividida por frase e a primeira já começa a tocar enquanto as outras sintetizam.
-/// ElevenLabs `eleven_v4_turbo` em streaming (PCM 24 kHz, primeiro byte ~0,4 s em 18/11) com a chave no cofre de
-/// segredos do app; sem ela, o TTS do Gemini por frase (~3,6 s por frase). Toca pelo engine do `JarvisMicrofone`, para
-/// o cancelamento de eco tirar a voz do microfone.
+/// Padrão: TTS do Gemini (voz Charon) com todas as frases sintetizando em paralelo e tocando na ordem. A ElevenLabs
+/// `eleven_v4_turbo` em streaming (primeiro byte ~0,4 s em 18/11, mas cara) só entra com o ajuste ligado nos Ajustes
+/// e a chave no cofre de segredos do app. Toca pelo engine do `JarvisMicrofone`, para o cancelamento de eco tirar a
+/// voz do microfone.
 @MainActor
 final class JarvisVoz {
   static let shared = JarvisVoz()
   static let servicoChave = "com.omi.desktop.elevenlabs"
   static let contaChave = "chave"
+  /// Ajuste (UserDefaults) que liga a ElevenLabs; desligado, a voz é a do Gemini.
+  nonisolated static let ajusteElevenLabs = "jarvis_voz_elevenlabs"
   /// Voz "Dani" do `config/voz.php` da BDR (`voz_padrao_elevenlabs`) e o mesmo modelo do agente de ligação.
   nonisolated static let vozElevenLabs = "PznTnBc8X6pvixs9UkQm"
   nonisolated static let modeloElevenLabs = "eleven_v4_turbo"
@@ -24,7 +27,9 @@ final class JarvisVoz {
   func falar(_ texto: String, desde: Date? = nil, aoTerminar: @escaping @MainActor () -> Void) {
     parar()
     let frases = Self.frases(texto)
-    let eleven = DesktopKeychainStore.string(service: Self.servicoChave, account: Self.contaChave)
+    let eleven =
+      UserDefaults.standard.bool(forKey: Self.ajusteElevenLabs)
+      ? DesktopKeychainStore.string(service: Self.servicoChave, account: Self.contaChave) : nil
     let gemini = APIKeyService.shared.effectiveGeminiKey
     guard !MeetingCopilotVoice.shared.muted, !frases.isEmpty, eleven != nil || gemini != nil else {
       if eleven == nil, gemini == nil { log("Jarvis: sem chave da ElevenLabs nem do Gemini, resposta não falada") }
@@ -33,9 +38,9 @@ final class JarvisVoz {
     }
     let relogio = Relogio(desde: desde)
     tarefa = Task { [weak self] in
-      for frase in frases {
-        guard !Task.isCancelled else { return }
-        if let eleven {
+      if let eleven {
+        for frase in frases {
+          guard !Task.isCancelled else { return }
           do {
             try await Self.elevenLabs(frase, chave: eleven) { relogio.marcar("ElevenLabs", $0) }
             continue
@@ -44,14 +49,20 @@ final class JarvisVoz {
           } catch {
             log("Jarvis: ElevenLabs falhou (\(error.localizedDescription)), frase vai pelo Gemini")
           }
+          guard let gemini, let wav = await Self.gemini(frase, chave: gemini), let b = Self.buffer(wav: wav) else {
+            continue
+          }
+          relogio.marcar("Gemini", b)
         }
-        guard let gemini else { continue }
-        do {
-          let wav = try await MeetingCopilotVoice.synthesize(frase, key: gemini)
+      } else if let gemini {
+        // o Gemini não tem streaming: todas as frases saem para síntese já, e cada uma toca assim que ela e as de
+        // antes ficam prontas
+        let sinteses = frases.map { f in Task { await Self.gemini(f, chave: gemini) } }
+        defer { sinteses.forEach { $0.cancel() } }
+        for s in sinteses {
+          let wav = await s.value
           guard !Task.isCancelled else { return }
-          if let b = Self.buffer(wav: wav) { relogio.marcar("Gemini", b) }
-        } catch {
-          log("Jarvis: TTS do Gemini falhou (\(type(of: error)))")
+          if let wav, let b = Self.buffer(wav: wav) { relogio.marcar("Gemini", b) }
         }
       }
       // marca de fim: toca depois de tudo o que foi agendado (ou volta na hora se a voz for cortada)
@@ -89,10 +100,46 @@ final class JarvisVoz {
     }
   }
 
+  /// WAV de uma frase pelo Gemini; falha vira `nil` (a frase fica sem voz, as outras seguem).
+  private nonisolated static func gemini(_ frase: String, chave: String) async -> Data? {
+    do {
+      return try await MeetingCopilotVoice.synthesize(frase, key: chave)
+    } catch {
+      if !Task.isCancelled { log("Jarvis: TTS do Gemini falhou (\(type(of: error)))") }
+      return nil
+    }
+  }
+
   // MARK: - Puro (testado)
 
   /// Frases para sintetizar uma a uma. Pedaço muito curto ("Ok.") vai junto com o seguinte, para não picotar.
+  /// A primeira frase longa (mais de 12 palavras) quebra na vírgula, para o primeiro áudio sair mais cedo.
   nonisolated static func frases(_ texto: String) -> [String] {
+    var saida = frasesInteiras(texto)
+    if let primeira = saida.first, let (a, b) = quebraNaVirgula(primeira) {
+      saida.replaceSubrange(0...0, with: [a, b])
+    }
+    return saida
+  }
+
+  /// Corta na primeira vírgula seguida de espaço que já deixa umas 4 palavras antes; nada se a frase for curta.
+  nonisolated static func quebraNaVirgula(_ frase: String) -> (String, String)? {
+    guard JarvisConversa.palavras(frase) > 12 else { return nil }
+    var i = frase.startIndex
+    while let v = frase[i...].firstIndex(of: ",") {
+      let depois = frase.index(after: v)
+      if depois < frase.endIndex, frase[depois].isWhitespace,
+        JarvisConversa.palavras(String(frase[...v])) >= 4
+      {
+        let resto = frase[depois...].trimmingCharacters(in: .whitespaces)
+        return resto.isEmpty ? nil : (String(frase[...v]), resto)
+      }
+      i = depois
+    }
+    return nil
+  }
+
+  private nonisolated static func frasesInteiras(_ texto: String) -> [String] {
     var saida: [String] = []
     var atual = ""
     let fim: Set<Character> = [".", "!", "?", "…"]

@@ -573,6 +573,7 @@ struct SettingsContentView: View {
   @AppStorage("dev_openai_api_key") var devOpenAIKey: String = ""
   @AppStorage("dev_openrouter_api_key") var devOpenRouterKey: String = ""
   @AppStorage("dev_deepgram_api_key") var devDeepgramKey: String = ""
+  @AppStorage(JarvisVoz.ajusteElevenLabs) var jarvisVozElevenLabs = false
   @AppStorage(DefaultsKey.byokLLMProvider.rawValue) var devBYOKLLMProvider: String = ""
   @State var byokKeyStatuses: [BYOKProvider: BYOKValidator.Status] = [:]
   @State var byokActivationError: String?

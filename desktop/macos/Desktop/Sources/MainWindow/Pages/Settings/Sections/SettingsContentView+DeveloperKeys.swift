@@ -74,6 +74,24 @@ extension SettingsContentView {
         value: $devDeepgramKey
       )
 
+      // Fork: a voz do Jarvis é a do Gemini; a ElevenLabs é mais rápida, mas cara, então só com este ajuste
+      settingsCard(settingId: "advanced.devkeys.jarvis-elevenlabs") {
+        HStack {
+          VStack(alignment: .leading, spacing: OmiSpacing.xs) {
+            Text("Voz do Jarvis pela ElevenLabs")
+              .scaledFont(size: OmiType.body, weight: .medium)
+              .foregroundColor(Ink.primary)
+            Text("Desligado, o Jarvis fala com a voz Charon do Gemini. Ligado, usa a ElevenLabs (mais rápida e paga).")
+              .scaledFont(size: OmiType.caption)
+              .foregroundColor(Ink.secondary)
+          }
+          Spacer()
+          Toggle("Voz do Jarvis pela ElevenLabs", isOn: $jarvisVozElevenLabs)
+            .toggleStyle(OmiToggleStyle())
+            .labelsHidden()
+        }
+      }
+
       if let byokActivationError {
         byokWarningCard(byokActivationError, settingId: "advanced.devkeys.error")
       }

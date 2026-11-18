@@ -70,6 +70,28 @@ final class JarvisTests: XCTestCase {
     XCTAssertEqual(JarvisMac.espera(depois: 20), 60)
   }
 
+  func testSemPongCaiEAgendaReconexao() async {
+    // conexão meio aberta: o callback do ping nunca vem, e o prazo tem de dar falha em vez de travar
+    let semPong = await JarvisMac.comPrazo(.milliseconds(50)) { _ in }
+    XCTAssertFalse(semPong)
+    // pong e depois cancelamento no mesmo callback: vale o primeiro e não derruba o app
+    let duplo = await JarvisMac.comPrazo(.seconds(5)) { responder in
+      responder(true)
+      responder(false)
+    }
+    XCTAssertTrue(duplo)
+
+    var l = JarvisLigacao()
+    l.conectou()
+    XCTAssertTrue(l.conectado)
+    XCTAssertEqual(l.caiu(), 1, "caiu depois de conectado: tenta de novo em 1 s")
+    XCTAssertFalse(l.conectado)
+    XCTAssertEqual(l.caiu(), 2, "tentativa que não conectou dobra a espera")
+    XCTAssertEqual(l.caiu(), 4)
+    l.cutucado()
+    XCTAssertEqual(l.caiu(), 1, "Mac acordou ou rede voltou: sem espera acumulada")
+  }
+
   // MARK: - Legenda do Deepgram (Flux)
 
   private func turno(_ evento: String, _ texto: String) -> [String: Any] {
@@ -221,6 +243,14 @@ final class JarvisTests: XCTestCase {
     XCTAssertEqual(JarvisVoz.frases("Ok. Mandei o relatório."), ["Ok. Mandei o relatório."], "pedaço curto vai junto")
     XCTAssertEqual(JarvisVoz.frases("Custa R$ 1.500,00 por mês"), ["Custa R$ 1.500,00 por mês"], "ponto no número não corta")
     XCTAssertEqual(JarvisVoz.frases("  "), [])
+    XCTAssertEqual(
+      JarvisVoz.frases(
+        "Hoje você tem três reuniões marcadas, a primeira é com a PACINI às dez e a segunda com a Zago. Quer o resumo?"),
+      [
+        "Hoje você tem três reuniões marcadas,", "a primeira é com a PACINI às dez e a segunda com a Zago.",
+        "Quer o resumo?",
+      ], "primeira frase longa quebra na vírgula")
+    XCTAssertNil(JarvisVoz.quebraNaVirgula("Custa R$ 1.500,00 por mês e o resto do plano fica igual ao de antes"))
   }
 
   func testWavDoGeminiViraBufferDe24kHz() throws {
